@@ -1,0 +1,45 @@
+name: Markside Agent Skill
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/markside-skill.yml"
+      - "skills/markside/**"
+  push:
+    paths:
+      - ".github/workflows/markside-skill.yml"
+      - "skills/markside/**"
+
+permissions:
+  contents: read
+
+jobs:
+  launcher-tests:
+    name: ${{ matrix.name }} launcher
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS
+            os: macos-latest
+          - name: Linux
+            os: ubuntu-latest
+          - name: Windows
+            os: windows-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Test macOS launcher
+        if: runner.os == 'macOS'
+        run: sh skills/markside/tests/test-macos.sh
+
+      - name: Test Linux launcher
+        if: runner.os == 'Linux'
+        run: sh skills/markside/tests/test-linux.sh
+
+      - name: Test Windows launcher
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./skills/markside/tests/test-windows.ps1

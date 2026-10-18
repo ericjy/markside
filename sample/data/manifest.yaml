@@ -1,0 +1,20 @@
+name: markside
+version: 1.0.0
+manifest_version: 3
+
+permissions:
+  - storage
+  - unlimitedStorage
+
+host_permissions:
+  - "file:///*"
+  - "https://raw.githubusercontent.com/*"
+
+content_scripts:
+  - matches:
+      - "file://*"
+      - "https://raw.githubusercontent.com/*"
+    js:
+      - markside.js
+    run_at: document_start
+    all_frames: false

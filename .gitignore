@@ -1,0 +1,23 @@
+.plasmo
+build
+coverage
+tsconfig.tsbuildinfo
+research
+node_modules
+.DS_Store
+lib/shiki-engine-bundle.mjs
+lib/mermaid-bundle.mjs
+lib/codemirror-bundle.mjs
+lib/katex-bundle.css
+assets/icon.png
+skills/*-workspace/
+.hallmark
+
+# Local env overrides and secrets
+.env.local
+.env.*.local
+
+# Release artifacts and local planning tools
+*.zip
+.superpowers/
+.impeccable/

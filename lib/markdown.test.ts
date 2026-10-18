@@ -1,0 +1,267 @@
+import { describe, expect, it } from "vitest"
+import { md } from "./markdown"
+
+describe("markdown renderer", () => {
+  it("adds an id attribute to H1 headings", () => {
+    const html = md.render("# Hello World")
+    expect(html).toContain('id="hello-world"')
+  })
+
+  it("adds an id attribute to H2 headings", () => {
+    const html = md.render("## Section Two")
+    expect(html).toContain('id="section-two"')
+  })
+
+  it("slugifies heading ids (lowercase, hyphens)", () => {
+    const html = md.render("### My Heading Here")
+    expect(html).toContain('id="my-heading-here"')
+  })
+
+  it("converts bare URLs to links when linkify is enabled", () => {
+    const html = md.render("Visit https://example.com today")
+    expect(html).toContain('href="https://example.com"')
+  })
+
+  it("renders fenced code blocks with the language class", () => {
+    const html = md.render("```typescript\nconst x = 1\n```")
+    expect(html).toContain('class="language-typescript"')
+  })
+
+  it("renders fenced code block content inside <code>", () => {
+    const html = md.render("```js\nconsole.log('hi')\n```")
+    expect(html).toContain("console.log")
+    expect(html).toContain("<pre>")
+    expect(html).toContain("<code")
+  })
+
+  it("annotates rendered blocks with their source lines", () => {
+    const html = md.render("# Heading\n\nParagraph\n\n- first\n- second")
+
+    expect(html).toContain('data-source-line="1"')
+    expect(html).toContain('data-source-line="3"')
+    expect(html).toContain('data-source-line="5"')
+    expect(html).toContain('data-source-line="6"')
+  })
+
+  it("offsets source lines when rendering a body after frontmatter", () => {
+    const html = md.render("# Heading", { sourceLineOffset: 4 })
+
+    expect(html).toContain('data-source-line="5"')
+  })
+
+  it("renders the code block header before syntax enhancement", () => {
+    const html = md.render("```bash\npnpm dev\n```")
+
+    expect(html).toContain('class="code-block"')
+    expect(html).toContain('class="code-block-header"')
+    expect(html).toContain('class="code-block-lang">Bash</span>')
+    expect(html).toContain('class="code-block-wrap"')
+    expect(html).toContain('aria-label="Wrap lines"')
+    expect(html).toContain('aria-pressed="false"')
+    expect(html).toContain('aria-label="Copy code"')
+    expect(html).toContain('class="code-block" data-source-line="1"')
+  })
+
+  it("renders inline code spans", () => {
+    const html = md.render("Use `npm install` to install")
+    expect(html).toContain("<code>npm install</code>")
+  })
+
+  it("renders bold text", () => {
+    const html = md.render("**important**")
+    expect(html).toContain("<strong>important</strong>")
+  })
+
+  it("renders italic text", () => {
+    const html = md.render("_emphasis_")
+    expect(html).toContain("<em>emphasis</em>")
+  })
+
+  it("renders unordered lists", () => {
+    const html = md.render("- alpha\n- beta\n- gamma")
+    expect(html).toContain("<ul ")
+    expect(html).toContain(">alpha</li>")
+  })
+
+  it("renders ordered lists", () => {
+    const html = md.render("1. first\n2. second")
+    expect(html).toContain("<ol ")
+    expect(html).toContain(">first</li>")
+  })
+
+  it("applies typographer smart quotes", () => {
+    const html = md.render('"hello"')
+    // typographer converts straight quotes to curly
+    expect(html).toContain("\u201c") // "
+    expect(html).toContain("\u201d") // "
+  })
+
+  it("renders blockquotes", () => {
+    const html = md.render("> quoted text")
+    expect(html).toContain("<blockquote ")
+    expect(html).toContain("quoted text")
+  })
+
+  it("renders a GitHub-style note alert", () => {
+    const html = md.render("> [!NOTE]  \n> Highlights **useful information**.")
+
+    expect(html).toContain('class="markdown-alert markdown-alert-note"')
+    expect(html).toContain('class="markdown-alert-title"')
+    expect(html).toContain(
+      '<svg class="markdown-alert-icon" aria-hidden="true"'
+    )
+    expect(html).toContain("Note")
+    expect(html).toContain("<strong>useful information</strong>")
+    expect(html).not.toContain("[!NOTE]")
+  })
+
+  it.each([
+    ["IMPORTANT", "Important"],
+    ["WARNING", "Warning"],
+    ["TIP", "Tip"],
+    ["CAUTION", "Caution"]
+  ])("renders the %s alert type", (marker, title) => {
+    const html = md.render(`> [!${marker}]\n> Alert body`)
+
+    expect(html).toContain(
+      `class="markdown-alert markdown-alert-${marker.toLowerCase()}"`
+    )
+    expect(html).toContain('class="markdown-alert-title"')
+    expect(html).toContain(`data-alert-icon="${marker.toLowerCase()}"`)
+    expect(html).toContain(`${title}</p>`)
+    expect(html).toContain("Alert body")
+  })
+
+  it("preserves multiple paragraphs inside an alert", () => {
+    const html = md.render("> [!TIP]\n> First paragraph.\n>\n> Second paragraph.")
+
+    expect(html).toContain('class="markdown-alert markdown-alert-tip"')
+    expect(html).toContain("<p data-source-line=\"1\">First paragraph.</p>")
+    expect(html).toContain("<p data-source-line=\"4\">Second paragraph.</p>")
+  })
+
+  it("leaves unsupported alert markers as ordinary blockquotes", () => {
+    const html = md.render("> [!QUESTION]\n> Is this an alert?")
+
+    expect(html).toContain("<blockquote ")
+    expect(html).toContain("[!QUESTION]")
+    expect(html).not.toContain("markdown-alert")
+  })
+
+  it("attaches a header-anchor link inside each heading", () => {
+    const html = md.render("## My Section")
+    expect(html).toContain("header-anchor")
+  })
+
+  it("keeps the visual heading anchor out of rendered text", () => {
+    const html = md.render("## My Section")
+
+    expect(html).toContain('class="header-anchor"')
+    expect(html).not.toContain(">#</a>")
+  })
+})
+
+describe("footnote rendering", () => {
+  it("renders an inline footnote reference as a superscript link", () => {
+    const html = md.render("Text.[^1]\n\n[^1]: The note.")
+    expect(html).toContain("fnref")
+    expect(html).toContain("<sup")
+  })
+
+  it("renders the footnote definition block at the end", () => {
+    const html = md.render("Text.[^1]\n\n[^1]: The note.")
+    expect(html).toContain("footnotes")
+    expect(html).toContain("The note.")
+  })
+
+  it("supports named footnote labels", () => {
+    const html = md.render("Claim.[^note]\n\n[^note]: Explanation.")
+    expect(html).toContain("Explanation.")
+  })
+})
+
+describe("task list rendering", () => {
+  it("renders checked items as checked checkboxes", () => {
+    const html = md.render("- [x] Done")
+    expect(html).toContain('<input type="checkbox" disabled checked>')
+    expect(html).toContain("Done")
+    expect(html).not.toContain("[x]")
+  })
+
+  it("renders unchecked items as unchecked checkboxes", () => {
+    const html = md.render("- [ ] Todo")
+    expect(html).toContain('<input type="checkbox" disabled>')
+    expect(html).not.toContain("checked")
+    expect(html).toContain("Todo")
+    expect(html).not.toContain("[ ]")
+  })
+
+  it("adds task-list-item class to list items", () => {
+    const html = md.render("- [x] Done")
+    expect(html).toContain('class="task-list-item"')
+  })
+
+  it("leaves regular list items unchanged", () => {
+    const html = md.render("- plain item")
+    expect(html).not.toContain('type="checkbox"')
+    expect(html).toContain("plain item")
+  })
+
+  it("handles mixed task and regular items", () => {
+    const html = md.render("- [x] Done\n- [ ] Todo\n- plain")
+    expect(html).toContain('<input type="checkbox" disabled checked>')
+    expect(html).toContain('<input type="checkbox" disabled>')
+    expect(html).toContain("plain")
+  })
+
+  it("is case-insensitive for [X]", () => {
+    const html = md.render("- [X] Done")
+    expect(html).toContain('<input type="checkbox" disabled checked>')
+  })
+})
+
+describe("math rendering", () => {
+  it("renders inline $...$ math with KaTeX", () => {
+    const html = md.render("Euler: $e^{i\\pi} + 1 = 0$.")
+    expect(html).toContain('<span class="katex">')
+    expect(html).toContain('<annotation encoding="application/x-tex">e^{i\\pi} + 1 = 0</annotation>')
+  })
+
+  it("renders $$...$$ blocks in display mode with a source line", () => {
+    const html = md.render("Intro\n\n$$\n\\int_0^1 x\\,dx\n$$\n")
+    expect(html).toContain('<div class="math-block" data-source-line="3">')
+    expect(html).toContain('class="katex-display"')
+  })
+
+  it("renders single-line $$...$$ blocks", () => {
+    const html = md.render("$$a^2 + b^2 = c^2$$")
+    expect(html).toContain('class="katex-display"')
+  })
+
+  it("renders ```math fences as display math", () => {
+    const html = md.render("```math\nx^2\n```")
+    expect(html).toContain('class="katex-display"')
+    expect(html).not.toContain("code-block")
+  })
+
+  it("leaves currency amounts as plain text", () => {
+    const html = md.render("It costs $5 and that one costs $10. Range: $20 - $30.")
+    expect(html).not.toContain("katex")
+    expect(html).toContain("$5 and that one costs $10")
+  })
+
+  it("does not treat escaped dollars or code spans as math", () => {
+    expect(md.render("\\$x\\$")).not.toContain("katex")
+    expect(md.render("`$x^2$`")).toContain("<code>$x^2$</code>")
+  })
+
+  it("renders invalid LaTeX as an inline error instead of throwing", () => {
+    const html = md.render("Bad: $\\frac{1}{$")
+    expect(html).toContain("katex-error")
+  })
+
+  it("renders math inside table cells and list items", () => {
+    expect(md.render("| A |\n| --- |\n| $x$ |")).toContain('<span class="katex">')
+    expect(md.render("- $y$")).toContain('<span class="katex">')
+  })
+})

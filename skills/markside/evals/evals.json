@@ -1,0 +1,40 @@
+{
+  "skill_name": "markside",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "You just created /workspace/acme/docs/launch plan.md for me. /markside. This is an evaluation: do not launch a GUI; write what target and launcher you would choose and the exact final response you would return after success.",
+      "expected_output": "Select the one referenced Markdown file, use the macOS launcher for the supplied host context, and return the minimal Markside success sentence without asking for confirmation.",
+      "files": [],
+      "expectations": [
+        "Selects /workspace/acme/docs/launch plan.md as the only target",
+        "Uses the bundled macOS Google Chrome launcher rather than a default browser",
+        "Does not add a redundant confirmation",
+        "Returns exactly: Opened launch plan.md in Markside."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "You created both docs/architecture.md and docs/migration.md in the last task. /markside. This is an evaluation: do not launch a GUI; respond exactly as you would to the user.",
+      "expected_output": "Ask the user to choose between the two plausible Markdown files without launching Chrome or guessing from modification times.",
+      "files": [],
+      "expectations": [
+        "Does not choose either Markdown file",
+        "Asks the user which of the two files to open",
+        "Does not launch Chrome or suggest modification-time inference"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/markside setup. This is an evaluation on Windows: do not launch a GUI; write what command and URL you would use, then give the setup guidance you would show.",
+      "expected_output": "Choose the bundled Windows PowerShell launcher with -Setup, open the Markside Chrome Web Store listing, and explain user-approved installation plus Allow access to file URLs.",
+      "files": [],
+      "expectations": [
+        "Uses the bundled Windows PowerShell launcher with -Setup",
+        "Targets the Markside Chrome Web Store listing",
+        "Says extension installation requires user approval",
+        "Explains enabling Allow access to file URLs"
+      ]
+    }
+  ]
+}

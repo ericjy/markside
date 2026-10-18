@@ -1,0 +1,80 @@
+name: GitHub Release
+
+# Run manually by default. Uncomment the push trigger below to publish
+# automatically when package.json changes on main. See docs/github-release.md.
+on:
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - "package.json"
+
+permissions:
+  contents: write
+
+jobs:
+  check-version:
+    name: Check version bump
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      should_release: ${{ steps.version.outputs.should_release }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Determine version and check for existing release
+        id: version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if gh release view "github-v$version" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  build-and-release:
+    name: Build and publish release
+    needs: check-version
+    if: needs.check-version.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install librsvg (icon generation)
+        run: sudo apt-get update && sudo apt-get install -y librsvg2-bin
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Zip production build
+        run: |
+          cd build/chrome-mv3-prod
+          zip -X -q -r "../../markside-${{ needs.check-version.outputs.version }}.zip" . -x "*.DS_Store"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${{ needs.check-version.outputs.version }}"
+          gh release create "github-v$version" \
+            "markside-$version.zip" \
+            --repo "${{ github.repository }}" \
+            --title "Markside $version" \
+            --notes "Unpacked build of Markside $version, built from commit ${{ github.sha }}. Not distributed through the Chrome Web Store — see README for how to load an unpacked extension."

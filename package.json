@@ -1,0 +1,112 @@
+{
+  "name": "markside",
+  "displayName": "Markside: Local Markdown Viewer & Editor",
+  "version": "1.6.0",
+  "description": "Read, edit, comment on, and share local Markdown files in Chrome. Built for reviewing what your AI agents write.",
+  "author": "Jing Yang",
+  "license": "MIT",
+  "scripts": {
+    "bundle-engine": "node scripts/bundle-shiki-engine.mjs && node scripts/bundle-mermaid.mjs && node scripts/bundle-codemirror.mjs && node scripts/bundle-katex-css.mjs",
+    "dev": "node scripts/bundle-shiki-engine.mjs && node scripts/bundle-mermaid.mjs && node scripts/bundle-codemirror.mjs && node scripts/bundle-katex-css.mjs && rsvg-convert -w 512 -h 512 assets/icon.svg -o assets/icon.png && node scripts/fix-manifest.mjs --watch & plasmo dev",
+    "build": "node scripts/bundle-shiki-engine.mjs && node scripts/bundle-mermaid.mjs && node scripts/bundle-codemirror.mjs && node scripts/bundle-katex-css.mjs && rsvg-convert -w 512 -h 512 assets/icon.svg -o assets/icon.png && plasmo build && node scripts/fix-manifest.mjs",
+    "package": "plasmo package",
+    "webstore": "node scripts/webstore-release.mjs",
+    "webstore:prepare": "node scripts/webstore-release.mjs prepare",
+    "test": "node scripts/bundle-codemirror.mjs && vitest run",
+    "test:watch": "node scripts/bundle-codemirror.mjs && vitest",
+    "test:coverage": "node scripts/bundle-codemirror.mjs && vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@codemirror/lang-css": "^6.3.1",
+    "@codemirror/lang-html": "^6.4.11",
+    "@codemirror/lang-javascript": "^6.2.5",
+    "@codemirror/lang-json": "^6.0.2",
+    "@codemirror/lang-markdown": "^6.5.0",
+    "@codemirror/lang-python": "^6.2.1",
+    "@codemirror/language": "^6.13.1",
+    "@codemirror/legacy-modes": "^6.5.2",
+    "@codemirror/state": "^6.6.0",
+    "@codemirror/theme-one-dark": "^6.1.3",
+    "@codemirror/view": "^6.41.1",
+    "@radix-ui/react-collapsible": "^1.1.12",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.24",
+    "@radix-ui/react-separator": "^1.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "@shikijs/core": "^4.0.2",
+    "@shikijs/engine-javascript": "^4.0.2",
+    "@shikijs/langs": "^4.0.2",
+    "@shikijs/themes": "^4.0.2",
+    "@tailwindcss/typography": "^0.5.19",
+    "autoprefixer": "^10.4.27",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "codemirror": "^6.0.2",
+    "dompurify": "^3.3.3",
+    "fflate": "^0.8.3",
+    "katex": "^0.19.0",
+    "lucide-react": "^1.8.0",
+    "markdown-it": "^14.1.1",
+    "markdown-it-anchor": "^9.2.0",
+    "markdown-it-footnote": "^4.0.0",
+    "mermaid": "^11.14.0",
+    "postcss": "^8.5.9",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^3.4.19",
+    "yaml": "^2.8.3"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "@types/dompurify": "^3.2.0",
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "@types/wicg-file-system-access": "^2023.10.7",
+    "@vitest/coverage-v8": "^4.1.4",
+    "esbuild": "^0.28.0",
+    "jsdom": "^29.0.2",
+    "plasmo": "^0.90.5",
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.4"
+  },
+  "manifest": {
+    "permissions": [
+      "storage",
+      "activeTab"
+    ],
+    "host_permissions": [
+      "$PLASMO_PUBLIC_SNAPSHOT_ORIGIN/*"
+    ]
+  },
+  "alias": {
+    "@shikijs/engine-javascript": "./lib/shiki-engine-bundle.mjs",
+    "mermaid": "./lib/mermaid-bundle.mjs",
+    "codemirror": "./lib/codemirror-bundle.mjs",
+    "@codemirror/state": "./lib/codemirror-bundle.mjs",
+    "@codemirror/view": "./lib/codemirror-bundle.mjs",
+    "@codemirror/lang-markdown": "./lib/codemirror-bundle.mjs",
+    "@codemirror/theme-one-dark": "./lib/codemirror-bundle.mjs",
+    "@codemirror/lang-javascript": "./lib/codemirror-bundle.mjs",
+    "@codemirror/lang-json": "./lib/codemirror-bundle.mjs",
+    "@codemirror/lang-css": "./lib/codemirror-bundle.mjs",
+    "@codemirror/lang-html": "./lib/codemirror-bundle.mjs",
+    "@codemirror/lang-python": "./lib/codemirror-bundle.mjs",
+    "@codemirror/legacy-modes": "./lib/codemirror-bundle.mjs"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@swc/core",
+      "esbuild",
+      "lmdb",
+      "msgpackr-extract",
+      "sharp"
+    ]
+  },
+  "packageManager": "pnpm@10.28.2"
+}

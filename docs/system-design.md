@@ -1,0 +1,476 @@
+# Markside System Design
+
+## Extension Surfaces
+
+| Surface | File | Purpose |
+| --- | --- | --- |
+| Content script | `contents/markside.tsx` | Registers supported local URLs and bootstraps the Markside UI |
+| Content application | `components/content-app.tsx` | Coordinates document state and composes the content UI |
+| Paused entry | `lib/localhost-review-entry.tsx` | Localhost Review code, not registered in any build |
+| Background worker | `background.ts` | Relays local-file reads and tab navigation requested by the content script, and registers the uninstall survey URL |
+| Popup | `popup.tsx` | Lists pending document Reviews, reports file-access readiness, and links to Settings |
+| Options page | `options.tsx` | Stores extension preferences and explains supported behavior |
+
+The content application keeps the document state shared by every feature
+(content, draft, mode, and the disk refs) and composes `hooks/use-content-*`
+hooks that own the rest:
+
+| Hook | Owns |
+| --- | --- |
+| `use-content-file-loading` | File reads, navigation, and wikilink resolution |
+| `use-content-save` | Saving, Auto Save, and the unsaved-draft warning |
+| `use-content-reload` | Reload from disk, reload changes, and Review copy reloads |
+| `use-content-preview` | Rendering and mode changes |
+| `use-content-review-highlights` | Resolving Review Comments against the rendered preview |
+| `use-content-review` | Review Comment creation, editing, selection, and copying |
+| `use-content-review-overlay` | Review overlay open state, size, docking, and position |
+| `use-content-selection` | The selection toolbar and comment composer |
+| `use-content-readability` | Readability Check results and consent |
+| `use-content-snapshots` | Link and hosted snapshots, and Review import |
+| `use-content-split-pane` | Split divider and sidebar state around Split |
+| `use-content-pdf-export` | PDF export and copying the rendered preview |
+| `use-content-review-prompt` | Review prompt activity and the prompt dialog |
+| `use-content-preferences` | Theme, heading numbering, and typeface |
+| `use-content-shortcuts` | Keyboard handling |
+
+Hooks whose effects read the rendered preview are called after
+`use-content-preview`, because React runs a component's effects in call order;
+`lib/content-hooks.test.ts` guards that order. `content-toolbar`,
+`content-view`, `content-dialogs`, and `content-review-overlay` render the UI.
+
+The content script is the product's primary surface. It matches local Markdown
+and the supported source-text extensions and special filenames defined in
+`lib/file-types.ts`. Selecting another supported text file with a known absolute
+path asks the background worker to navigate the tab to its `file://` URL, which
+remounts the content application after a full page reload. Files whose full path
+cannot be inferred, images, and unsupported file types are loaded into the
+mounted application without a full page reload.
+
+Chrome URL globs are case-sensitive. Runtime support therefore uses the exact
+extension and special-filename casing registered in the manifest;
+case variants remain in the mounted application instead of navigating to a page
+where the content script would not initialize.
+
+## Loading and Rendering
+
+```text
+file:// Markdown page
+→ content script reads the initial document or requests the file through background.ts
+→ parseFrontmatter(source)
+→ markdown-it renders the body
+→ DOMPurify sanitizes the HTML
+→ relative image and document links are resolved against the current file
+→ Shiki enhances code blocks
+→ Mermaid enhances diagram blocks
+→ headings are extracted for the outline
+```
+
+Rendered Mermaid diagrams keep zoom, pan, and reset controls in a toolbar above
+an isolated viewport. Theme changes replace only the SVG inside that viewport so its current
+view remains stable. Expanded view temporarily moves the diagram to a
+viewport-filling overlay and restores its inline position and view state on exit.
+
+The file actions (`…`) menu includes **Full width**, which lets Preview use the
+whole window and persists in `chrome.storage.local`, and **Number headings**, stored in `chrome.storage.local`
+and off by default. It applies to Preview, Split Preview, Outline, and PDF Export.
+A sole opening H1 stays unnumbered as the title; nested sections use decimal
+numbers, compressing skipped heading levels. If any heading already has an
+explicit numeric section prefix, the entire document keeps its authored labels.
+Generated labels hang in Preview’s permanent five-rem left margin, including in
+full-width and Split views. Heading text aligns with body text, and toggling
+numbering never changes the content width. They use CSS content backed by heading
+attributes, leaving source,
+heading IDs, and Review text anchors unchanged. Link Snapshots carry source only,
+so this local display preference is not included.
+
+Readability Check is unreleased and off unless `PLASMO_PUBLIC_READABILITY_CHECK=true`
+(see `.env`). When it is on, Markdown Preview and Split Preview add
+**Show readability buttons** to the same menu.
+It defaults to on and persists across files. Turning it off hides heading controls
+without deleting locally saved scores or Review Comments. The first readability
+check opens a consent prompt; the selected section, including nested subsections,
+is sent to Markside's service and its AI provider only after the user confirms.
+Consent persists for later one-click checks.
+
+Split Preview uses the same rendering pipeline. Lightweight Markdown rendering is scheduled during typing, while Shiki and Mermaid enhancement is deferred so editing remains responsive.
+
+## Folder and File Navigation
+
+`usePersistedDirectory` owns the selected `FileSystemDirectoryHandle`, its
+inferred `file://` root, and the permission lifecycle. IndexedDB stores a
+catalog of directory handles keyed by root URL. On each page load, Markside
+selects the longest saved root that contains the current file URL, allowing
+different tabs to browse different folders without per-tab state.
+
+The File System Access API exposes a directory's name but not its absolute path. `deriveRootUrl()` can infer the full root only when the directory name appears in the current URL. The folder picker rejects path-incomplete roots and asks the user to open a file from that folder directly to establish the full path.
+
+Chrome treats local files as opaque origins, so the History API cannot update the address bar from one `file://` path to another. Address-bar synchronization therefore uses `chrome.tabs.update()` in the background worker and necessarily performs a full page reload.
+
+`useFileTree` reads directories lazily and excludes large or generated folders.
+File entries are native links, allowing Chrome's context menu, Command/Ctrl-click,
+and middle-click to open them in another tab. Ordinary clicks retain Markside's
+existing navigation and Unsaved Draft handling. Each path segment is URL-encoded
+so filenames containing spaces, `#`, or `?` identify the correct file.
+Expanded directory paths are stored in `chrome.storage.local`, scoped to the
+opened root URL, and rehydrated after full-page file navigation. `useFileIndex`
+recursively indexes the same allowed tree when the quick file switcher opens.
+
+## Editing and Saving
+
+Markdown files support Preview, Source, and Split. Non-Markdown text files use Source only; images use the image viewer.
+
+Source defaults to full width for all text files, including Markdown. Its width
+control is in the Source options menu alongside Word wrap and Copy. Preview defaults to column width and has its
+own Full width item in the file actions menu, present only when Preview is shown.
+Both choices persist independently across reloads and files, including in Split
+mode. The Split divider persists separately: releasing a drag, or a keyboard
+adjustment, stores the position for the next load.
+
+```text
+editor change
+→ update the Unsaved Draft
+→ schedule Split Preview rendering
+→ if Auto Save is enabled, schedule a disk write after 1.5 seconds
+```
+
+Manual save and Auto Save both use `tryHandleFromDirectory()` to traverse the
+saved directory handle whose root most specifically contains the target file.
+For a file outside every saved directory, Markside asks the user to choose
+its folder with read-write access, saves that directory, and retries the save.
+It does not use `showSaveFilePicker()`, which could write a copy elsewhere.
+
+Before writing, Markside compares the file's current modification time with the last loaded version. A mismatch presents an overwrite/reload conflict instead of silently replacing external work.
+
+Auto Save is stored in `chrome.storage.local`, defaults to off, and updates open content-script tabs through `chrome.storage.onChanged`.
+
+### Reload comparisons
+
+The document toolbar exposes Reload directly. For Markdown, an explicit reload
+compares the last loaded or saved source with the newly read file and opens the
+changes in Preview. The existing Unsaved Draft confirmation still applies.
+Reload results are discarded if the user navigated elsewhere or edited the draft
+while the read was in progress.
+
+`lib/reload-changes.ts` compares the two rendered documents block by block and
+only then word by word inside a block that was rewritten, so an edit is never
+spliced across a paragraph or list item. Blocks that share too little text are
+shown as a removal followed by an addition instead of a word comparison. The
+current document is decorated with green additions and red struck-through
+removals; a removed block returns as a copy of the original element, complete
+with its list marker or table row, placed next to the neighbour it used to have.
+The document toolbar carries the controls beside Reload, so nothing shifts the
+document: a Show changes checkbox toggles clean reading, and Done closes the
+comparison. Its menu repeats Done and adds Done and clear comments, which
+also clears the entire Review. A reload without a comparison to show reports
+No changes on disk, or Reloaded from disk for a file type that has no
+comparison, beside Reload for a moment. Source-only changes, such as link
+destinations, have no dedicated indicator in this version. Code and
+Mermaid definitions remain plain code while changes are shown. Normal syntax
+highlighting and diagram rendering resume in clean reading.
+
+A newly added comment is not selected: its passage highlight and badge already
+mark it, so the panel only plays a brief entrance on its card, scrolling the
+card into view when it falls outside the list.
+
+Removed text is excluded from the current document's Review text index, rendered
+clipboard output, and printing. Selecting a removed passage creates a Review
+Comment whose anchor carries `removed: true`. Such comments remain unanchored,
+even if an identical passage survives elsewhere, and copied prompts describe the
+quote as historical context. Select current or removed text separately.
+
+The panel's full clear action clears the entire Review.
+
+Comparison state lives only in the mounted page. Another explicit reload
+replaces the comparison, even when it finds no changes. Editing clears the
+comparison; Done, file navigation, and browser refresh clear it as well.
+There is no file watching, polling, or persistent version history.
+
+### Creating Markdown files
+
+**New Markdown file** is an icon beside Find file in the folder header, available
+once a folder is opened.
+A filename dialog shows the opened root folder as the destination, regardless
+of which document is currently open. Names cannot contain
+path separators. The input starts with `Untitled.md`, with only `Untitled` selected.
+The filename must end in `.md`; Markside does not append the extension. Existing files or directories
+with the chosen name are rejected.
+
+The explicit Create action requests write permission on the opened directory
+and creates an empty file directly in that directory. Creation
+never opens a writable stream, so an external process creating the same filename
+concurrently cannot have its contents truncated. The tree refreshes after this
+explicit action; there is no filesystem watcher or polling.
+
+The background worker opens a normal `file://` tab. A tab-scoped, one-time request
+starts it in Source mode with editor focus, without changing the saved view
+preference. The original tab and its Unsaved Draft remain untouched. Popup
+creation and the separate extension editor page are not part of this flow.
+
+## Snapshots
+
+Markdown files expose a Share action. Two kinds of snapshot are available, and
+the sender chooses between them on every share. Both create a read-only copy
+that a recipient can open in a browser without installing the extension. Size
+decides which one is preselected.
+
+A **Link Snapshot** carries the document entirely inside the link. `lib/link-snapshot.ts`
+serializes the saved basename and Markdown as compact JSON, compresses it with
+raw DEFLATE, and encodes the result as unpadded Base64URL in an `x1` URL
+fragment. The extension does not send the fragment over the network. When the
+constructed URL is at most 2,000 characters, it is preselected. Between 2,000
+and roughly 4,000 characters, where chat clients begin to refuse to send
+links, creation still succeeds but the confirmation dialog warns the sender.
+Creation is only blocked when the decompressed envelope exceeds the 256 KiB the
+viewer's decoder will accept.
+
+A **Hosted Snapshot** encrypts the document in the sender's browser with
+AES-256-GCM, stores the ciphertext on Vercel Blob, and carries only the
+identifier and decryption key in the link. The key stays in the URL fragment,
+which the browser never sends to the server, so Markside receives and stores
+ciphertext only. When the Link Snapshot URL exceeds 2,000 characters, the
+Hosted Snapshot is preselected. The sender can always select the other kind.
+Hosted snapshots expire on a sender-chosen 7, 30, or 90 day schedule.
+
+Unsaved drafts must be written successfully before the URL is copied. The
+existing save conflict and permission policies remain authoritative. `lib/link-snapshot-resources.ts`
+reports local images and document links that the standalone viewer cannot
+resolve.
+
+The public `/s` viewer is maintained in the separate website repository. It
+decodes and renders entirely in the browser, limits decompressed output to 256
+KiB, sanitizes rendered HTML, and treats local resources as unavailable. Link
+Snapshots are decoded in the page, and Hosted Snapshots are decrypted after
+fetching from `/api/snapshots/<id>`. See [ADR-0004](adr/0004-carry-link-snapshots-in-url-fragments.md)
+for Link Snapshots and [ADR-0007](adr/0007-host-encrypted-snapshots.md) for
+Hosted Snapshots.
+
+## Key State
+
+| State | Purpose |
+| --- | --- |
+| `fileUrl` | Currently loaded local file |
+| `content` | Last loaded or rendered source |
+| `draft` | Current Unsaved Draft |
+| `mode` | `"preview"`, `"source"`, or `"split"`; the last selection is restored from `chrome.storage.local` |
+| `splitPercent` | Preview-pane percentage; a dragged or keyboard-adjusted split is stored in `chrome.storage.local` and restored before the first paint |
+| `autoSaveEnabledRef` | Current Auto Save preference |
+| `saveState` | Idle, unsaved, saving, saved, or failed |
+| `conflict` | Whether the disk version changed externally |
+| `dark`, `previewFullWidth`, and `sourceFullWidth` | Current theme and independent pane width choices; both width choices persist in `chrome.storage.local` |
+| `leftOpen` and `outlineOpen` | Sidebar visibility |
+| `sidebarWidth` and `rightSidebarWidth` | Sidebar widths |
+| `reviewOverlaySize` | Session-only compact, standard, or wide Review width; compact is the default |
+| `reviewOverlayPosition` | Per-file Review position stored in `chrome.storage.local`; restored after reload and clamped to the current document area |
+| `reviewOverlayOpen` | Per-file Review visibility stored in `chrome.storage.local`; an open panel reappears after reload |
+| Expanded file-tree paths | Open directories for each persisted root folder |
+
+## Review Layout
+
+Copying a local document Review or a single Review Comment checks the file on
+disk first. If it changed, copying stops and a dialog offers **Cancel** or
+**Reload file**. Reloading preserves the Active Review and closes the dialog
+without copying. The user can inspect the refreshed text before choosing Copy
+again, which checks the file and uses the refreshed text anchors.
+Reload failures stay in the dialog for retry; an Unsaved Draft still blocks
+copying and is never discarded by this action.
+
+Review opens as a compact overlay. In Preview mode, a `ResizeObserver` measures
+the actual `SidebarInset` after the file tree or Outline changes width. Review
+docks beside the document only when reserving its selected width and gutter
+leaves at least 896 px for the document. Otherwise it floats over the document
+without shrinking the reading area. Split mode always uses the floating layout.
+The header can be dragged within `SidebarInset`, or moved with the grip's arrow
+keys. Moving Review turns off the reserved document space until the file changes.
+The position is saved per file after a drag or keyboard move and survives reload.
+It remains within the inset when the panel or window is resized.
+
+Refs mirror values used by keyboard handlers and scheduled work so those callbacks do not read stale React closures.
+
+## Localhost Review
+
+Localhost Review is paused. Its entry is kept at `lib/localhost-review-entry.tsx`,
+outside Plasmo's `contents/` directory, so no build registers it or requests
+localhost access, and the popup hides its controls unless the build sets
+`PLASMO_PUBLIC_LOCALHOST_REVIEW=true`. Shipping it again means moving the entry
+back into `contents/`, restoring the `scripting` permission, and setting that
+flag. The rest of this section describes the feature as designed.
+
+When registered, the entry matches `localhost`, `*.localhost`, and
+`127.0.0.1` on http and https, at any port. Chrome match patterns cannot express
+the IPv6 loopback, so `lib/localhost-review.ts` rejects it too and the popup
+never offers a Review the content script could not serve.
+
+The script adds nothing to the page until the user chooses **Review this page**
+in the popup, which sets a per-origin panel flag in `chrome.storage.local`. The
+script watches that flag and mounts the surface when it turns on, so the panel
+also opens on the next page the user visits within the same application; closing
+the panel clears the flag and unmounts everything, leaving the stored Review
+untouched.
+
+While mounted, the whole surface — panel, selection toolbar, composer, and
+target markers — lives in a shadow root on a single host element appended to
+`documentElement`. It carries its own copy of the `--review-*` tokens from
+`style.css` and plain CSS, because the shadow root cannot see the content
+application's Tailwind build. Markside adds no styles or attributes to the
+application's own DOM and never mutates its text.
+
+The panel is the same floating card as the Markdown Review overlay: inset from
+the top-right corner, rounded, shadowed, and capped at 70% of the viewport
+height. Unlike the Markdown surface, it cannot reserve document width to stay
+clear of content — reflowing the reviewed application is not allowed — so the
+card is repositionable instead. Dragging its header moves it, the grip button
+moves it with the arrow keys, and the position is stored per origin under
+`localhostReviewPanelPosition:<origin>`. `lib/localhost-review-layout.ts` holds
+that geometry: it clamps the panel back into view when the window changes, and
+places the selection toolbar and composer clear of wherever the panel currently
+sits rather than of a reserved edge.
+
+One Active Review covers one origin, including port. Each annotation records the
+page URL it was captured on, with the fragment removed, and the panel groups
+annotations by page. Reviews live in `chrome.storage.local` under
+`localhostReview:<origin>` rather than in the application's own storage, so they
+survive tab closure and browser restarts until the user clears them. Copying
+does not clear a Review.
+
+Selecting text offers Comment, Replace, and Reword, with Delete text as an
+icon-only button in its own trailing segment. Reword seeds an editable Review
+Comment asking the coding agent to suggest alternative wordings; Markside neither
+calls AI nor generates wording. Deleting is its own intent rather than an empty
+replacement: it commits straight from the toolbar, since the selection is the
+whole input, while the replacement composer requires text. **Pick element**
+consumes exactly one click in the capture phase so the application control does
+not activate, then opens a comment box; later clicks reach the application
+normally.
+
+Targets resolve by identity rather than DOM position; unresolved and ambiguous
+targets stay in the panel marked "Target not found" and are copied with a
+warning. See [ADR-0006](adr/0006-resolve-localhost-targets-by-identity.md).
+While the composer is open, the content being annotated carries an amber pending
+highlight with no badge, matching the Markdown surface's pending Review Comment
+highlight. Opening the composer takes focus, which clears the browser's own
+selection, so without it the user loses sight of what they are commenting on.
+
+Each marker carries a numbered badge at its corner that selects the annotation
+and scrolls the panel to its card, closing the loop with the card's own
+scroll-to-target click. The badge is the only part of the overlay that takes
+pointer events: a marker sits on top of the very content it annotates, which is
+often a control, so making the marker itself clickable would stop the
+application's own button from being pressed.
+
+Markers carry document coordinates and are positioned absolutely, so the browser
+scrolls them with the content and the window scroll costs no work. Repositioning
+runs only for a scroll inside the application's own scrolling container or a
+window resize; positioning them against the viewport instead made them lag the
+page by a frame and visibly bounce.
+
+Markers and target resolution refresh from a debounced `MutationObserver` that
+also detects client-side route changes. The observer does nothing beyond
+re-reading the page.
+
+## Pending Reviews in the popover
+
+The popover lists every Active Review waiting to be handed to an agent, and the
+toolbar badge carries the total item count. While localhost Review is paused,
+both show document Reviews only; stored localhost entries are filtered out
+without being deleted.
+
+Reviews live in two places and only one of them is reachable from the popover: a
+localhost Review is in extension storage, while a document Review is in the
+IndexedDB of the *page* origin the content script runs on. So each write mirrors
+a small entry — kind, key, label, item count, updated-at — into
+`chrome.storage.local` under `reviewIndex`. Reviewed content is never mirrored.
+`lib/db.ts` writes the document entries and `lib/localhost-review-storage.ts`
+the localhost ones; `background.ts` repaints the badge whenever that key
+changes.
+
+A content script only runs on pages loaded after the extension was installed or
+reloaded, so the tab in front of the user may have none. Rather than telling them
+to reload the page, the popover injects the script with `chrome.scripting` — the
+`activeTab` grant covers the host — and each content script guards its own
+bootstrap so injecting one that is already running does nothing.
+
+On a local development origin the popover switches Review Mode on and off. That
+is a mode, not a panel: with it on, selecting text offers Comment, Replace,
+Reword and Delete text, Pick element becomes available, and saved annotations are
+marked on the page; with it off the page behaves normally again. The lasting
+per-origin flag holds that state, and the popover reads it back so one button
+carries both directions.
+
+A rendered Markdown file needs no such switch — selecting text in Preview offers
+Add comment whether or not the Review panel is open — so the popover offers no
+button there. Opening a pending document Review instead leaves a one-shot request
+under `openReviewRequest`, which `contents/markside.tsx` consumes to show its
+Review overlay on arrival. The request carries the file URL and a timestamp and
+expires after a minute, so it never opens the Review on a page the user has since
+navigated to.
+
+The list takes the user to a Review rather than acting on it: copying and
+clearing stay in the panel, where the items are visible. That also keeps the two
+kinds of entry alike, since only the localhost half is readable from the popover
+and an asymmetry there would show up as one card carrying buttons the other
+lacks, for reasons a user cannot see.
+
+## Chrome Web Store review prompt
+
+Markside keeps aggregate review-prompt scheduling state in
+`chrome.storage.local`. It records the first-use time, active-day dates,
+meaningful-action counts by category, per-day caps, prompt count, and snooze
+state. It does not store document contents or paths in this state, and it does
+not transmit the state.
+
+The first prompt becomes eligible after three active days, or after five
+meaningful actions across at least two categories and 20 minutes of use. An
+action category contributes at most three times per day. Adding the first
+Review Comment can qualify the user, but cannot open the prompt because the
+user is mid-task. The content application waits for a completed save, copy,
+export, or later file open before claiming and displaying the modal.
+
+Claiming the first prompt starts a 14-day snooze and resets its action count.
+The one permitted follow-up requires both the elapsed snooze and five new
+meaningful actions. Claiming that second prompt disables further automatic
+prompts. Choosing the Store action at any time also disables automatic prompts.
+The popup and Options page keep a permanent Store review action available. The
+modal and Options page also link to `hello@zhuge.app` for direct feedback.
+Opening that email link does not complete the automatic review-prompt sequence.
+
+## Durable Constraints
+
+### Pre-bundled ESM dependencies
+
+Shiki, Mermaid, and CodeMirror are pre-bundled with esbuild and aliased through `package.json` because Plasmo's Parcel pipeline cannot reliably bundle their ESM dependency graphs for this extension.
+
+Never import those packages directly. Use the project wrappers and update the matching bundle script when adding a language, theme, or editor dependency. See [ADR-0001](adr/0001-prebundle-esm-only-dependencies.md).
+
+### No file watching
+
+Markside does not poll the filesystem or automatically reload external changes. Users navigate to or select a file when they want to reload it. See [ADR-0002](adr/0002-no-file-watching.md).
+
+### Rendering safety
+
+Markdown rendering disables raw HTML. DOMPurify sanitizes generated HTML and explicitly preserves the `data-wikilink` attribute used for local navigation.
+
+### Browser permissions
+
+The popup reads the active tab's URL through `activeTab`, which Chrome grants
+when the user opens the popup, so Markside holds no standing host permission for
+localhost pages.
+
+Directory selection and permission requests require a user gesture. Auto Save may query permission but cannot trigger a permission prompt; users recover with an explicit save action.
+
+### Generated manifest patch
+
+Plasmo only extracts inline string literals from content-script configuration,
+so `contents/markside.tsx` keeps one valid broad `file:///*` match and the
+supported filename `include_globs` inline even though runtime classification
+lives in `lib/file-types.ts`.
+
+Chrome MV3 rejects `file://` patterns in `web_accessible_resources`.
+`scripts/fix-manifest.mjs` removes them from the generated manifest after a
+production build and watches for regenerated manifests during development.
+
+### Plasmo development overlay
+
+Plasmo's content-script development overlay requires a default export.
+`contents/markside.tsx` exports a null-rendering placeholder component for that
+contract; the application continues to mount through the content script's
+existing bootstrap code.

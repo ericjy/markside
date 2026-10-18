@@ -1,0 +1,3 @@
+# Separate the open client from Markside Cloud
+
+If Markside graduates sharing from Beta, its extension, marketing site, Link Snapshot viewer, shared renderer, and Link Snapshot codec will live together in a public MIT-licensed monorepo. Any paid hosted-sharing service, including its storage, authorization, billing, abuse prevention, migrations, infrastructure, and internal administration tools, will live in a separate private `markside-cloud` repository and integrate with the public clients through a documented HTTP API. This keeps the open client independently buildable and its privacy behavior auditable without licensing managed-service infrastructure under MIT.

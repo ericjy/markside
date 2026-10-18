@@ -1,0 +1,13 @@
+{
+  "theme": "system",
+  "sidebarWidth": 280,
+  "outline": true,
+  "extensions": [".md", ".mdx", ".markdown"],
+  "exclude": ["node_modules", ".git", "dist", "build"],
+  "editor": {
+    "tabSize": 2,
+    "wordWrap": true,
+    "autoSave": true,
+    "autoSaveDelay": 1500
+  }
+}

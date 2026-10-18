@@ -813,6 +813,15 @@ button.readability-score-filter {
 @keyframes readability-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .readability-spinning { animation: none; } }
 
+/* ── Markdown images ── */
+/* Tailwind makes images blocks with large margins; GitHub keeps them inline, so
+   README badge and icon rows stay on one line. */
+.prose img {
+  display: inline;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 /* ── Markdown links ── */
 .prose a,
 .prose .wikilink {

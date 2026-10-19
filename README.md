@@ -2,31 +2,32 @@
 
 <a href="https://markside.app"><img src="assets/icon.svg" alt="Markside logo" width="72"></a>
 
-<h1>Markside</h1>
+<h1 style="border-bottom: none;">Markside</h1>
 
-<h3>Read, review, edit, and share local Markdown in Chrome.</h3>
+<h3>Your local Markdown workspace in Chrome</h3>
 
-Built for reviewing the plans, specs, and docs your AI agents write.
+A human layer for the plans, specs, and docs your AI agents write.
 
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/ccokohfaicfjkilcakhnlckbbkhhknhj?label=Chrome%20Web%20Store&logo=googlechrome&logoColor=white&color=18181b)](https://chromewebstore.google.com/detail/markside-%E2%80%94-markdown-viewe/ccokohfaicfjkilcakhnlckbbkhhknhj)
 [![Rating](https://img.shields.io/chrome-web-store/rating/ccokohfaicfjkilcakhnlckbbkhhknhj?color=18181b)](https://chromewebstore.google.com/detail/markside-%E2%80%94-markdown-viewe/ccokohfaicfjkilcakhnlckbbkhhknhj)
 [![CI](https://github.com/ericjy/markside/actions/workflows/ci.yml/badge.svg)](https://github.com/ericjy/markside/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-18181b)](LICENSE)
 
-**[Website](https://markside.app)** ·
-**[Install](https://chromewebstore.google.com/detail/markside-%E2%80%94-markdown-viewe/ccokohfaicfjkilcakhnlckbbkhhknhj)** ·
-**[User Guide](docs/user-guide.md)** ·
-**[Changelog](CHANGELOG.md)**
+<a href="https://chromewebstore.google.com/detail/markside-%E2%80%94-markdown-viewe/ccokohfaicfjkilcakhnlckbbkhhknhj"><img src=".github/assets/install-chrome.png" alt="Install for Chrome" width="256" height="52" /></a>&nbsp;
+<a href="https://markside.app"><img src=".github/assets/visit-website.png" alt="Visit website" width="256" height="52" /></a>
 
-<sub>WORKS WITH</sub><br/>
-<img src=".github/assets/icons/claude.svg" alt="Claude Code" title="Claude Code" height="28" />&nbsp;&nbsp;
-<img src=".github/assets/icons/codex.svg" alt="Codex" title="Codex" height="28" />&nbsp;&nbsp;
-<img src=".github/assets/icons/cursor.svg" alt="Cursor" title="Cursor" height="28" />&nbsp;&nbsp;
-<img src=".github/assets/icons/opencode.svg" alt="OpenCode" title="OpenCode" height="28" />&nbsp;&nbsp;
-<img src=".github/assets/icons/kilocode.svg" alt="Kilo Code" title="Kilo Code" height="28" />&nbsp;&nbsp;
-<img src=".github/assets/icons/openclaw.svg" alt="OpenClaw" title="OpenClaw" height="28" />&nbsp;&nbsp;
-<img src=".github/assets/icons/hermesagent.svg" alt="Hermes Agent" title="Hermes Agent" height="28" />&nbsp;&nbsp;
-<img src=".github/assets/icons/pi.svg" alt="Pi" title="Pi" height="28" />
+<p><sub><strong>WORKS WITH</strong></sub></p>
+
+<p>
+<img src=".github/assets/icons/claude.svg" alt="Claude Code" title="Claude Code" width="40" height="40" />&nbsp;&nbsp;&nbsp;
+<img src=".github/assets/icons/codex.svg" alt="Codex" title="Codex" width="40" height="40" />&nbsp;&nbsp;&nbsp;
+<img src=".github/assets/icons/cursor.svg" alt="Cursor" title="Cursor" width="40" height="40" />&nbsp;&nbsp;&nbsp;
+<img src=".github/assets/icons/opencode.svg" alt="OpenCode" title="OpenCode" width="40" height="40" />&nbsp;&nbsp;&nbsp;
+<img src=".github/assets/icons/kilocode.svg" alt="Kilo Code" title="Kilo Code" width="40" height="40" />&nbsp;&nbsp;&nbsp;
+<img src=".github/assets/icons/openclaw.svg" alt="OpenClaw" title="OpenClaw" width="40" height="40" />&nbsp;&nbsp;&nbsp;
+<img src=".github/assets/icons/hermesagent.svg" alt="Hermes Agent" title="Hermes Agent" width="40" height="40" />&nbsp;&nbsp;&nbsp;
+<img src=".github/assets/icons/pi.svg" alt="Pi" title="Pi" width="40" height="40" />
+</p>
 
 </div>
 
@@ -38,16 +39,20 @@ Built for reviewing the plans, specs, and docs your AI agents write.
 
 ## Why Markside
 
-Coding agents write a lot of Markdown: plans, specs, notes, and skills. Reading
-it raw in a terminal is awkward, precise feedback means copying and pasting
-quotes, and a one-word fix means opening an IDE or asking the agent to make it.
+You spend more time than ever reviewing Markdown your agents write: plans, specs,
+research notes, and more. Reading raw Markdown in a terminal is awkward. Copying
+and pasting quotes for feedback is slow. Simple fixes mean opening an IDE or
+describing changes to an agent. Sharing and collecting human feedback means
+asking PMs to navigate a pull request. Or pasting Markdown into Google Docs,
+fighting the formatting, and keeping two versions in sync.
 
 Markside turns the browser you already have open into a Markdown workspace:
 
+- **One workspace for every agent.** Read, review, and edit Markdown in the same place, whichever coding agent you use.
 - **Read comfortably.** Rendered tables, diagrams, math, and code instead of raw syntax.
 - **Review precisely.** Comment on passages like in Google Docs, then copy one agent-ready prompt.
-- **Edit instantly.** Fix a typo yourself in Source or Split view and save it back to disk.
-- **Share easily.** Send a rendered, read-only snapshot that opens in any browser.
+- **Edit instantly.** Fix a sentence yourself and save it back to disk without describing the change through chat.
+- **Share easily.** Send a rendered snapshot that others can read and comment on in any browser.
 
 Everything runs locally. No account, no telemetry.
 

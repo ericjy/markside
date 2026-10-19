@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="52" viewBox="0 0 256 52">
+  <rect x="3" y="3" width="250" height="44" rx="22" fill="#edc675"/>
+  <g transform="translate(31 25)">
+    <path d="M0 0-10.392-6A12 12 0 0 1 12 0Z" fill="#ea4335"/>
+    <path d="M0 0H12A12 12 0 0 1-6 10.392Z" fill="#fbbc05"/>
+    <path d="M0 0-6 10.392A12 12 0 0 1-10.392-6Z" fill="#34a853"/>
+    <circle r="5.7" fill="#fff"/>
+    <circle r="4.4" fill="#4285f4"/>
+  </g>
+  <text x="55" y="31" fill="#253436" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600">Install for Chrome</text>
+  <path d="M220 25h15m-6-6 6 6-6 6" fill="none" stroke="#253436" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -14,7 +14,7 @@ A human layer for the plans, specs, and docs your AI agents write.
 [![License: MIT](https://img.shields.io/badge/license-MIT-18181b)](LICENSE)
 
 <a href="https://chromewebstore.google.com/detail/markside-%E2%80%94-markdown-viewe/ccokohfaicfjkilcakhnlckbbkhhknhj"><img src=".github/assets/install-chrome.png" alt="Install for Chrome" width="256" height="52" /></a>&nbsp;
-<a href="https://markside.app"><img src=".github/assets/visit-website.png" alt="Visit website" width="256" height="52" /></a>
+<a href="https://markside.app"><img src=".github/assets/visit-website.png" alt="Visit website" width="216" height="52" /></a>
 
 <p><sub><strong>WORKS WITH</strong></sub></p>
 
@@ -41,14 +41,13 @@ A human layer for the plans, specs, and docs your AI agents write.
 
 You spend more time than ever reviewing Markdown your agents write: plans, specs,
 research notes, and more. Reading raw Markdown in a terminal is awkward. Copying
-and pasting quotes for feedback is slow. Simple fixes mean opening an IDE or
-describing changes to an agent. Sharing and collecting human feedback means
-asking PMs to navigate a pull request. Or pasting Markdown into Google Docs,
-fighting the formatting, and keeping two versions in sync.
+quotes into chat is slow. Quick fixes mean opening an IDE or describing changes
+to an agent. Human feedback means asking PMs to navigate a pull request. Or
+pasting into Google Docs, fighting the formatting, and keeping two versions in sync.
 
 Markside turns the browser you already have open into a Markdown workspace:
 
-- **One workspace for every agent.** Read, review, and edit Markdown in the same place, whichever coding agent you use.
+- **One workspace for every agent.** Read, review, and edit Markdown from any coding agent.
 - **Read comfortably.** Rendered tables, diagrams, math, and code instead of raw syntax.
 - **Review precisely.** Comment on passages like in Google Docs, then copy one agent-ready prompt.
 - **Edit instantly.** Fix a sentence yourself and save it back to disk without describing the change through chat.
@@ -69,12 +68,9 @@ keyboard shortcuts, and sharing.
 
 ## Features
 
-- **Rich Markdown:** frontmatter, tables, task lists, GitHub-style alerts,
-  footnotes, math, wikilinks, heading anchors, and relative images.
-- **Code and diagrams:** syntax highlighting with copy buttons, and Mermaid
-  diagrams that follow the active theme.
-- **Agent-ready Review:** anchored Review Comments and an optional Review Note,
-  copied as one structured prompt or one comment at a time.
+- **Rich Markdown:** tables, tasks, alerts, math, footnotes, wikilinks, frontmatter, and more.
+- **Code and diagrams:** highlighted code with copy buttons and theme-aware Mermaid diagrams.
+- **Agent-ready Review:** anchored comments and an overall note, copied together or one comment at a time.
 - **Preview, Source, and Split:** a CodeMirror editor beside the live preview,
   with a resizable divider.
 - **Safe saving:** `Cmd+S` / `Ctrl+S` writes the original file. Auto Save is

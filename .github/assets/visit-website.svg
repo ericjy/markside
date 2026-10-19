@@ -1,15 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="256" height="52" viewBox="0 0 256 52">
+<svg xmlns="http://www.w3.org/2000/svg" width="216" height="52" viewBox="0 0 216 52">
   <defs>
     <filter id="shadow" x="-10%" y="-30%" width="120%" height="170%">
       <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#18181b" flood-opacity="0.08"/>
     </filter>
   </defs>
-  <rect x="3" y="3" width="250" height="44" rx="22" fill="#eeedea" stroke="#d9d8d4" filter="url(#shadow)"/>
+  <rect x="3" y="3" width="210" height="44" rx="22" fill="#eeedea" stroke="#d9d8d4" filter="url(#shadow)"/>
   <g transform="translate(19 13) scale(.1875)">
     <rect width="128" height="128" rx="28" fill="#18181b"/>
     <path d="M22 92 V28 h12 l26 38 26-38 h12 V92 h-12 V50 l-22 32 h-8 L34 50 V92 Z" fill="#fff"/>
     <path d="M90 108 H118 M109 99 L118 108 L109 117" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
   <text x="55" y="31" fill="#303033" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600">Visit website</text>
-  <path d="M220 25h15m-6-6 6 6-6 6" fill="none" stroke="#62625f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M180 25h15m-6-6 6 6-6 6" fill="none" stroke="#62625f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

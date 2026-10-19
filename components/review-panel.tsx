@@ -145,6 +145,7 @@ export function ReviewPanel({
     if (enteringTimeoutRef.current) clearTimeout(enteringTimeoutRef.current)
     if (copiedCommentTimeoutRef.current) clearTimeout(copiedCommentTimeoutRef.current)
   }, [])
+  const activeAgentHandoff = agentHandoff?.completed ? undefined : agentHandoff
   const itemCount = review ? getReviewItemCount(review) : 0
   useEffect(() => {
     if (!clearArmed) return
@@ -273,6 +274,8 @@ export function ReviewPanel({
         {comments.length > 0 && (
           <div className="space-y-3 px-4 py-3">
             {comments.map((comment) => {
+              const result = agentHandoff?.results?.get(comment.id)
+              const resolvedByAgent = result?.status === "resolved"
               const selected = selectedId === comment.id
               const collapsed = expandedCommentId !== comment.id
               const detailsId = `review-comment-${comment.id}-details`
@@ -310,10 +313,15 @@ export function ReviewPanel({
                         </span>
                       </span>
                   </button>
+                  {resolvedByAgent && (
+                    <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                      <Check size={12} aria-hidden="true" />Resolved
+                    </span>
+                  )}
                   {comment.anchor.removed && (
                     <p className="mt-2 pl-1 text-[11px] text-muted-foreground">Comment on removed text</p>
                   )}
-                  {comment.status === "unanchored" && !comment.anchor.removed && (
+                  {comment.status === "unanchored" && !comment.anchor.removed && !resolvedByAgent && (
                     jumpableCommentIds.has(comment.id) ? (
                       <button
                         type="button"
@@ -413,6 +421,12 @@ export function ReviewPanel({
                       </div>
                     </div>
                   )}
+                  {result?.reply && (
+                    <div className="mt-3 border-t pt-3 pl-1">
+                      <p className="text-[11px] font-medium text-muted-foreground">Agent reply</p>
+                      <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{result.reply}</p>
+                    </div>
+                  )}
                   {copyError?.commentId === comment.id && (
                     <div className="mt-3">{copyErrorNotice}</div>
                   )}
@@ -491,23 +505,23 @@ export function ReviewPanel({
         {copyError && !inlineCopyError && (
           <div className="mb-2">{copyErrorNotice}</div>
         )}
-        {agentHandoff?.sentAt && (
+        {activeAgentHandoff?.sentAt && (
           <p role="status" className="mb-2 text-xs text-muted-foreground">
-            Sent to agent at {new Date(agentHandoff.sentAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+            Sent to agent at {new Date(activeAgentHandoff.sentAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
           </p>
         )}
-        {agentHandoff?.error && <p role="alert" className="mb-2 text-xs text-destructive">{agentHandoff.error}</p>}
-        <div className={agentHandoff ? "flex flex-col gap-2" : "flex gap-2"}>
-          {agentHandoff ? (
+        {activeAgentHandoff?.error && <p role="alert" className="mb-2 text-xs text-destructive">{activeAgentHandoff.error}</p>}
+        <div className={activeAgentHandoff ? "flex flex-col gap-2" : "flex gap-2"}>
+          {activeAgentHandoff ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="flex min-w-0 flex-1" tabIndex={agentHandoff.disabled ? 0 : undefined}>
-                  <Button className="h-11 flex-1" disabled={agentHandoff.disabled} onClick={agentHandoff.send} aria-busy={agentHandoff.sending}>
-                    <Send size={14} />{agentHandoff.sending ? "Sending comments…" : "Send comments to agent"}
+                <span className="flex min-w-0 flex-1" tabIndex={activeAgentHandoff.disabled ? 0 : undefined}>
+                  <Button className="h-11 flex-1" disabled={activeAgentHandoff.disabled} onClick={activeAgentHandoff.send} aria-busy={activeAgentHandoff.sending}>
+                    <Send size={14} />{activeAgentHandoff.sending ? "Sending comments…" : "Send comments to agent"}
                   </Button>
                 </span>
               </TooltipTrigger>
-              {agentHandoff.disabledReason && <TooltipContent>{agentHandoff.disabledReason}</TooltipContent>}
+              {activeAgentHandoff.disabledReason && <TooltipContent>{activeAgentHandoff.disabledReason}</TooltipContent>}
             </Tooltip>
           ) : <Button className="h-11 flex-1" disabled={itemCount === 0} onClick={onCopy}>
             {copied
@@ -517,7 +531,7 @@ export function ReviewPanel({
           {itemCount > 0 && (
             <Button
               ref={clearButtonRef}
-              className={`${agentHandoff ? "h-8 self-end" : "h-11"} px-3 ${clearArmed ? "text-red-700 hover:text-red-700 dark:text-red-300 dark:hover:text-red-300" : "text-muted-foreground"}`}
+              className={`${activeAgentHandoff ? "h-8 self-end" : "h-11"} px-3 ${clearArmed ? "text-red-700 hover:text-red-700 dark:text-red-300 dark:hover:text-red-300" : "text-muted-foreground"}`}
               variant="ghost"
               onBlur={() => setClearArmed(false)}
               onClick={() => {

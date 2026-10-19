@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { agentReviewUrl, reviewSendFingerprint, prepareAgentReview } from "./agent-review"
+import { agentReviewUrl, reviewSendFingerprint, prepareAgentReview, getAgentReviewResults } from "./agent-review"
 import { type AgentReviewFile } from "../cli/review-file.mjs"
 import { createEmptyReview } from "./review"
 
@@ -25,6 +25,20 @@ describe("agent Review handoff", () => {
     const changed = { ...review, comments: [{ ...review.comments[0], body: "Still unclear" }] }
     expect(prepareAgentReview(sent, changed, sent.docHash, () => 12).comments[0]).toMatchObject({ status: "open", body: "Still unclear" })
     expect(prepareAgentReview(sent, changed, sent.docHash, () => 12).comments[0].reply).toBeUndefined()
+  })
+  it("exposes resolved results even after the entire Review is resolved", () => {
+    const resolved = prepareAgentReview(pending, review, "a".repeat(64), () => 12)
+    resolved.status = "resolved"
+    resolved.comments[0].status = "resolved"
+    resolved.comments[0].reply = "Clarified."
+    expect(getAgentReviewResults(resolved, review).get("c1")).toMatchObject({ status: "resolved", reply: "Clarified." })
+  })
+  it("does not attach an old resolution to a revised comment", () => {
+    const sent = prepareAgentReview(pending, review, "a".repeat(64), () => 12)
+    sent.comments[0].status = "resolved"
+    const changed = { ...review, comments: [{ ...review.comments[0], body: "Another question" }] }
+    expect(getAgentReviewResults(sent, changed).size).toBe(0)
+    expect(getAgentReviewResults(null, review).size).toBe(0)
   })
   it("disables repeat sends until the user changes the Review", () => {
     const sent = prepareAgentReview(pending, review, "a".repeat(64), () => null)

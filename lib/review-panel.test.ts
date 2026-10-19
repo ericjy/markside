@@ -125,6 +125,33 @@ describe("ReviewPanel", () => {
     expect(container.querySelector('[role="alert"]')?.textContent).toContain("Allow folder write access")
   })
 
+  it("shows resolved status and the agent reply on a collapsed unanchored comment", () => {
+    renderPanel({
+      jumpableCommentIds: new Set([comment.id]),
+      agentHandoff: {
+        completed: true, disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn(),
+        results: new Map([[comment.id, { id: comment.id, quote: comment.anchor.exact, body: comment.body, line: 3, status: "resolved", reply: "Clarified the first step." }]]),
+      },
+    })
+    expect(container.textContent).toContain("Resolved")
+    expect(container.textContent).toContain("Agent reply")
+    expect(container.textContent).toContain("Clarified the first step.")
+    expect(container.textContent).not.toContain("Passage no longer found")
+    expect(container.textContent).toContain("Copy review as prompt")
+    expect(container.textContent).not.toContain("Send comments to agent")
+  })
+
+  it("keeps passage warnings on unresolved comments", () => {
+    renderPanel({
+      agentHandoff: {
+        disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn(),
+        results: new Map([[comment.id, { id: comment.id, quote: comment.anchor.exact, body: comment.body, line: 3, status: "open" }]]),
+      },
+    })
+    expect(container.textContent).toContain("Passage no longer found")
+    expect(container.textContent).not.toContain("Resolved")
+  })
+
   function jumpButton() {
     return Array.from(container.querySelectorAll("button")).find((button) =>
       button.textContent?.includes("Jump to section")

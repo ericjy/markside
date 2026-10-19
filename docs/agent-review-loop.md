@@ -60,8 +60,12 @@ Markside's renderer, or `null` for unanchored or removed passages. It is a hint;
 the quote identifies the passage. A resolved comment may carry `reply`.
 
 `resolve` marks the named comment resolved and saves its optional reply. When
-all comments are resolved it marks the file `resolved`. Showing those replies
-as resolved threads in the extension is deferred; the file and CLI retain them.
+all comments are resolved it marks the file `resolved`. The extension shows a
+Resolved badge and the agent reply on matching comment cards, including
+collapsed cards. It refreshes these results on explicit Reload
+and when Review is reopened. Editing a comment hides the old result until that
+revision is addressed. Resolved cards retain the original quote as context and
+do not show the passage-not-found warning.
 The agent handoff sends the user's current Review Comments and Review Note.
 Imported snapshot Review Rounds are omitted from this local handoff.
 

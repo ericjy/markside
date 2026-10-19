@@ -490,6 +490,7 @@ export function FileRenderer({
     fileUrl,
     enabled: isMdFile,
     open: overlay.reviewOverlayOpen,
+    reloadVersion: reload.reloadVersion,
     openReview: () => overlay.setReviewOverlayOpen(true),
     review,
     openDirectory,

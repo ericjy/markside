@@ -85,6 +85,13 @@ pull request or review response.
   explains why. Add two comments, send, grant the document's folder access if
   prompted, and confirm the CLI prints Got 2 comments and exits 0. The agent
   revises the plan and resolves each ID with a reply in the Review file.
+- [ ] Click Reload or close and reopen Review after the agent resolves comments.
+  Each matching comment shows Resolved and the agent reply, including when
+  collapsed. Resolved comments whose quotes changed retain the original quote
+  without a passage-not-found warning. Unresolved comments keep their warnings.
+  Edit a resolved comment and confirm its old badge and reply disappear.
+  Repeat a Reload after changing only a sidecar reply, without changing the
+  Markdown file, and confirm the new reply appears.
 - [ ] Confirm the Markdown file is unchanged by sending, the Review file has a
   matching SHA-256 of the exact disk bytes, and sent time appears in the panel.
   The button stays disabled until a comment is added or edited.
@@ -106,4 +113,4 @@ pull request or review response.
   Open a pending request on a document already displayed by closing and opening
   Review. Confirm there is no polling or automatic document reload in Chrome.
 - [ ] Check network activity: this flow performs local file reads and writes
-  only, with no HTTP requests. Replies and resolved-thread UI are deferred.
+  only, with no HTTP requests.

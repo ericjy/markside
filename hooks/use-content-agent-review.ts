@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
-import { parseReviewFile, type AgentReviewFile } from "../cli/review-file.mjs"
-import { agentReviewUrl, prepareAgentReview, reviewSendFingerprint } from "~lib/agent-review"
+import { parseReviewFile, type AgentReviewComment, type AgentReviewFile } from "../cli/review-file.mjs"
+import { agentReviewUrl, getAgentReviewResults, prepareAgentReview, reviewSendFingerprint } from "~lib/agent-review"
 import { getSavePathParts } from "~lib/content-app-policy"
 import { normalizeDiskText, requestHandlePermission } from "~lib/content-file-access"
 import { getDirectoryEntryForUrl } from "~lib/db"
@@ -9,6 +9,8 @@ import { resolveReviewPolicy, type ActiveReview, type ReviewComment } from "~lib
 import { rangeFromOffsets, sourceLineForNode, type RenderedTextIndex } from "~lib/review-dom"
 
 export interface AgentReviewHandoff {
+  completed?: boolean
+  results?: ReadonlyMap<string, AgentReviewComment>
   disabled: boolean
   disabledReason: string | null
   sending: boolean
@@ -21,6 +23,7 @@ interface Options {
   fileUrl: string
   enabled: boolean
   open: boolean
+  reloadVersion?: number
   openReview: () => void
   review: ActiveReview | null
   openDirectory: (mode: "readwrite") => Promise<boolean>
@@ -30,7 +33,7 @@ interface Options {
 }
 
 export function useContentAgentReview(options: Options): AgentReviewHandoff | undefined {
-  const { fileUrl, enabled, open, review } = options
+  const { fileUrl, enabled, open, review, reloadVersion } = options
   const [state, setState] = useState<{ url: string; file: AgentReviewFile } | null>(null)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -67,12 +70,15 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
     }
     void load()
     return () => { active = false }
-  }, [fileUrl, enabled, open])
+  }, [fileUrl, enabled, open, reloadVersion])
 
   const file = state?.url === fileUrl ? state.file : null
-  if (!enabled || !file || file.status === "resolved") return undefined
+  if (!enabled || !file) return undefined
+  const completed = file.status === "resolved"
   const unchanged = file.status === "sent" && reviewSendFingerprint(review) === reviewSendFingerprint(file)
-  const disabledReason = !review?.comments.length
+  const disabledReason = completed
+    ? "This Review is resolved."
+    : !review?.comments.length
     ? "Add a comment before sending to the agent."
     : unchanged ? "Add or edit a comment to send again." : null
 
@@ -145,5 +151,5 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       setSending(false)
     }
   }
-  return { disabled: sending || !!disabledReason, disabledReason, sending, sentAt: file.sentAt, error, send: () => void send() }
+  return { completed, results: getAgentReviewResults(file, review), disabled: sending || !!disabledReason, disabledReason, sending, sentAt: file.sentAt, error, send: () => void send() }
 }

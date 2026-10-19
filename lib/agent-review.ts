@@ -1,4 +1,4 @@
-import type { AgentReviewFile } from "../cli/review-file.mjs"
+import type { AgentReviewComment, AgentReviewFile } from "../cli/review-file.mjs"
 import type { ActiveReview, ReviewComment } from "./review"
 
 export function agentReviewUrl(fileUrl: string) {
@@ -18,6 +18,17 @@ export function reviewSendFingerprint(review: ActiveReview | AgentReviewFile | n
       body: comment.body,
     })) ?? [],
   })
+}
+
+export function getAgentReviewResults(file: AgentReviewFile | null, review: ActiveReview | null) {
+  const results = new Map<string, AgentReviewComment>()
+  for (const comment of review?.comments ?? []) {
+    const result = file?.comments.find((item) =>
+      item.id === comment.id && item.quote === comment.anchor.exact && item.body === comment.body
+    )
+    if (result) results.set(comment.id, result)
+  }
+  return results
 }
 
 export function prepareAgentReview(

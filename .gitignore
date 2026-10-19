@@ -21,6 +21,7 @@ skills/*-workspace/
 *.zip
 .superpowers/
 .impeccable/
+.scratch/
 
 # Local agent Review handoffs
 *.review.json

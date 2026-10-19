@@ -4,6 +4,7 @@ import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
 import { spawn } from "node:child_process"
 import { once } from "node:events"
+import { parseReviewFile, setReviewerCommentStatus } from "../cli/review-file.mjs"
 
 const cli = resolve("cli/markside.mjs")
 let folder: string
@@ -53,14 +54,43 @@ describe("markside CLI with real files", () => {
     expect(await process.done).toMatchObject({ code: 0, stdout: expect.stringContaining("Got 1 comment") })
     const comments = await run(["comments", doc]).done
     expect(comments.stdout).toContain("Explain why.")
-    expect((await run(["resolve", doc, "c1", "--reply", "Added rationale."]).done).code).toBe(0)
+    expect((await run(["address", doc, "c1", "--reply", "Added rationale."]).done).code).toBe(0)
     expect(JSON.parse(await readFile(sidecar, "utf8"))).toMatchObject({
-      status: "resolved", comments: [{ status: "resolved", reply: "Added rationale." }],
+      status: "sent", comments: [{ status: "addressed", reply: "Added rationale." }],
     })
     const resolved = await run(["comments", doc]).done
-    expect(resolved.stdout).toContain("[resolved]")
+    expect(resolved.stdout).toContain("[addressed]")
     expect(resolved.stdout).toContain("Added rationale.")
   })
+  it("rejects agent resolution and waits after comments are addressed", async () => {
+    const first = run(["review", doc, "--no-open", "--timeout", "3"])
+    await first.waiting
+    await send()
+    await first.done
+    await run(["address", doc, "c1", "--reply", "Clarified."]).done
+    const rejected = await run(["resolve", doc, "c1"]).done
+    expect(rejected.code).toBe(1)
+    expect(rejected.stderr).toContain("reviewer resolves")
+    const second = await run(["review", doc, "--no-open", "--timeout", "0.03"]).done
+    expect(second.code).toBe(2)
+    expect(JSON.parse(await readFile(sidecar, "utf8")).comments[0].status).toBe("addressed")
+  })
+
+  it("finishes a waiting request when the reviewer accepts all addressed comments", async () => {
+    const first = run(["review", doc, "--no-open", "--timeout", "3"])
+    await first.waiting
+    await send()
+    await first.done
+    await run(["address", doc, "c1", "--reply", "Clarified."]).done
+    const waiting = run(["review", doc, "--no-open", "--timeout", "3"])
+    await waiting.waiting
+    const current = parseReviewFile(await readFile(sidecar, "utf8"), "plan #1.md")
+    const accepted = setReviewerCommentStatus(current, "c1", "resolved")
+    await writeFile(`${sidecar}.tmp`, JSON.stringify(accepted))
+    await rename(`${sidecar}.tmp`, sidecar)
+    expect(await waiting.done).toMatchObject({ code: 0, stdout: expect.stringContaining("Review resolved for plan #1.md") })
+  })
+
   it.runIf(process.platform === "darwin")("opens Chrome with a correctly encoded file URL", async () => {
     const log = join(folder, "open-args.json")
     const launcher = join(folder, "open")

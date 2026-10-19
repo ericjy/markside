@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { parseReviewFile, type AgentReviewComment, type AgentReviewFile } from "../cli/review-file.mjs"
+import { parseReviewFile, setReviewerCommentStatus, type AgentReviewComment, type AgentReviewFile } from "../cli/review-file.mjs"
 import { agentReviewUrl, getAgentReviewResults, prepareAgentReview, reviewSendFingerprint } from "~lib/agent-review"
 import { getSavePathParts } from "~lib/content-app-policy"
 import { normalizeDiskText, requestHandlePermission } from "~lib/content-file-access"
@@ -9,6 +9,8 @@ import { resolveReviewPolicy, type ActiveReview, type ReviewComment } from "~lib
 import { rangeFromOffsets, sourceLineForNode, type RenderedTextIndex } from "~lib/review-dom"
 
 export interface AgentReviewHandoff {
+  updatingCommentId?: string | null
+  changeStatus?: (id: string, status: "open" | "resolved") => void
   completed?: boolean
   results?: ReadonlyMap<string, AgentReviewComment>
   disabled: boolean
@@ -37,7 +39,8 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
   const [state, setState] = useState<{ url: string; file: AgentReviewFile } | null>(null)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const sendingRef = useRef(false)
+  const [updatingCommentId, setUpdatingCommentId] = useState<string | null>(null)
+  const writingRef = useRef(false)
   const optionsRef = useRef(options)
   optionsRef.current = options
   const autoOpenedRef = useRef<string | null>(null)
@@ -77,34 +80,78 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
   if (!enabled || !file) return undefined
   const completed = file.status === "resolved"
   const unchanged = file.status === "sent" && reviewSendFingerprint(review) === reviewSendFingerprint(file)
+  const hasOpenComments = review?.comments.some(({ id }) => (results.get(id)?.status ?? "open") === "open")
   const disabledReason = completed
     ? "This Review is resolved."
     : !review?.comments.length
     ? "Add a comment before sending to the agent."
+    : !hasOpenComments ? "Add or reopen a comment to send again."
     : unchanged ? "Add or edit a comment to send again." : null
 
+  const getReviewDirectory = async () => {
+    // Request permission first, while the click's user gesture is active.
+    let entry = directoryRef.current
+    if (!entry || !getSavePathParts(fileUrl, entry.rootUrl)) {
+      if (!await options.openDirectory("readwrite")) throw new DOMException("Folder selection cancelled", "AbortError")
+      entry = await getDirectoryEntryForUrl(fileUrl)
+    } else if (await requestHandlePermission(entry.handle, "readwrite") !== "granted") {
+      throw new Error("Allow folder write access, then try again.")
+    }
+    const parts = entry && getSavePathParts(fileUrl, entry.rootUrl)
+    if (!entry || !parts) throw new Error("Choose the folder containing this document, then send again.")
+    directoryRef.current = entry
+    let directory = entry.handle
+    for (const part of parts.slice(0, -1)) directory = await directory.getDirectoryHandle(part)
+    return { directory, documentName: parts[parts.length - 1] }
+  }
+
+  const writeReview = async (handle: FileSystemFileHandle, next: AgentReviewFile) => {
+    const writable = await handle.createWritable()
+    try {
+      await writable.write(JSON.stringify(next, null, 2) + "\n")
+      // Chrome commits the staged replacement on close.
+      await writable.close()
+    } catch (error) {
+      await writable.abort().catch(() => undefined)
+      throw error
+    }
+    if (optionsRef.current.fileUrl === fileUrl) setState({ url: fileUrl, file: next })
+  }
+
+  const changeStatus = async (id: string, status: "open" | "resolved") => {
+    if (writingRef.current) return
+    writingRef.current = true
+    setUpdatingCommentId(id)
+    setError(null)
+    try {
+      const { directory } = await getReviewDirectory()
+      const handle = await directory.getFileHandle(`${doc}.review.json`)
+      const latest = parseReviewFile(await (await handle.getFile()).text(), doc)
+      if (optionsRef.current.fileUrl !== fileUrl) return
+      if (latest.requestedAt !== file.requestedAt || !getAgentReviewResults(latest, optionsRef.current.review).has(id)) {
+        throw new Error("This comment changed. Reload Review before updating its status.")
+      }
+      await writeReview(handle, setReviewerCommentStatus(latest, id, status))
+    } catch (error) {
+      if (optionsRef.current.fileUrl === fileUrl && (error as DOMException).name !== "AbortError") {
+        setError(error instanceof Error ? error.message : "Could not update the comment. Try again.")
+      }
+    } finally {
+      writingRef.current = false
+      setUpdatingCommentId(null)
+    }
+  }
+
   const send = async () => {
-    if (sendingRef.current || disabledReason || !review) return
-    sendingRef.current = true
+    if (writingRef.current || disabledReason || !review) return
+    writingRef.current = true
     setSending(true)
     setError(null)
     const current = () => optionsRef.current.fileUrl === fileUrl
     try {
-      // Ask for access before hashing or reading files, while the click is active.
-      let entry = directoryRef.current
-      if (!entry || !getSavePathParts(fileUrl, entry.rootUrl)) {
-        if (!await options.openDirectory("readwrite")) return
-        entry = await getDirectoryEntryForUrl(fileUrl)
-      } else if (await requestHandlePermission(entry.handle, "readwrite") !== "granted") {
-        throw new Error("Allow folder write access, then send again.")
-      }
-      const parts = entry && getSavePathParts(fileUrl, entry.rootUrl)
-      if (!entry || !parts) throw new Error("Choose the folder containing this document, then send again.")
-      directoryRef.current = entry
+      const { directory, documentName } = await getReviewDirectory()
       if (options.hasUnsavedDraftRef.current) throw new Error("Save or discard the Unsaved Draft before sending comments.")
-      let directory = entry.handle
-      for (const part of parts.slice(0, -1)) directory = await directory.getDirectoryHandle(part)
-      const documentHandle = await directory.getFileHandle(parts[parts.length - 1])
+      const documentHandle = await directory.getFileHandle(documentName)
       const documentFile = await documentHandle.getFile()
       const bytes = await documentFile.arrayBuffer()
       const diskText = new TextDecoder().decode(bytes)
@@ -133,24 +180,15 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       }
       const sent = prepareAgentReview(latest, review, docHash, sourceLine)
       if (!current() || options.hasUnsavedDraftRef.current) return
-      const writable = await sidecarHandle.createWritable()
-      try {
-        await writable.write(JSON.stringify(sent, null, 2) + "\n")
-        // Chrome commits the staged replacement on close; no local rename API is needed.
-        await writable.close()
-      } catch (error) {
-        await writable.abort().catch(() => undefined)
-        throw error
-      }
-      if (current()) setState({ url: fileUrl, file: sent })
+      await writeReview(sidecarHandle, sent)
     } catch (error) {
       if (current() && (error as DOMException).name !== "AbortError") {
         setError(error instanceof Error ? error.message : "Could not send comments. Try again.")
       }
     } finally {
-      sendingRef.current = false
+      writingRef.current = false
       setSending(false)
     }
   }
-  return { completed, results, disabled: sending || !!disabledReason, disabledReason, sending, sentAt: file.sentAt, error, send: () => void send() }
+  return { completed, results, updatingCommentId, changeStatus: (id, status) => void changeStatus(id, status), disabled: sending || updatingCommentId !== null || !!disabledReason, disabledReason, sending, sentAt: file.sentAt, error, send: () => void send() }
 }

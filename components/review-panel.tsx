@@ -212,6 +212,180 @@ export function ReviewPanel({
     setExpandedCommentId((current) => current === id ? null : id)
   }
 
+  const resolvedComments = comments.filter((comment) => agentHandoff?.results?.get(comment.id)?.status === "resolved")
+  const currentComments = comments.filter((comment) => agentHandoff?.results?.get(comment.id)?.status !== "resolved")
+  const renderComment = (comment: ResolvedReviewComment) => {
+    const result = agentHandoff?.results?.get(comment.id)
+    const addressed = result?.status === "addressed"
+    const finished = addressed || result?.status === "resolved"
+    const selected = selectedId === comment.id
+    const collapsed = expandedCommentId !== comment.id
+    const detailsId = `review-comment-${comment.id}-details`
+    return (
+      <article
+        ref={(element) => {
+          if (element) commentElementRefs.current.set(comment.id, element)
+          else commentElementRefs.current.delete(comment.id)
+        }}
+        key={comment.id}
+        aria-current={selected ? "true" : undefined}
+        onClick={(event) => {
+          if (event.target instanceof Element && event.target.closest("button, textarea, input, select, a, [role='menuitem']")) return
+          toggleComment(comment.id)
+          if (collapsed) onSelectComment(comment.id)
+        }}
+        className={`${selected ? "review-card-selected" : "review-card"} cursor-pointer rounded-lg border px-4 py-4 shadow-sm transition-colors ${
+          enteringCommentId === comment.id ? "review-card-entering" : ""
+        }`}>
+        <button
+          type="button"
+          aria-label={collapsed ? "Expand Review Comment" : "Collapse Review Comment"}
+          aria-expanded={!collapsed}
+          aria-controls={detailsId}
+          onClick={() => {
+            toggleComment(comment.id)
+            if (collapsed) onSelectComment(comment.id)
+          }}
+          className="flex w-full items-stretch rounded-md p-1 text-left text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:text-foreground focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50">
+            <span className="flex min-w-0 flex-1 items-start">
+              <span className="min-w-0 flex-1">
+                <span className="line-clamp-2 border-l-2 border-border py-0.5 pl-2 text-xs italic leading-relaxed text-muted-foreground">
+                  {comment.anchor.exact}
+                </span>
+              </span>
+            </span>
+        </button>
+        {finished && (
+          <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+            <Check size={12} aria-hidden="true" />{addressed ? "Addressed" : "Resolved"}
+          </span>
+        )}
+        {comment.anchor.removed && (
+          <p className="mt-2 pl-1 text-[11px] text-muted-foreground">Comment on removed text</p>
+        )}
+        {comment.status === "unanchored" && !comment.anchor.removed && !finished && (
+          jumpableCommentIds.has(comment.id) ? (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation()
+                onJumpToSection(comment.id)
+              }}
+              className="mt-2 flex w-full items-center gap-2 rounded-sm px-1 py-1 text-left text-[11px] font-medium text-blue-700 outline outline-2 outline-offset-1 outline-transparent hover:bg-accent focus-visible:outline-ring active:bg-accent/80 dark:text-blue-300">
+              <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
+              <span>Passage no longer found. Jump to section</span>
+            </button>
+          ) : (
+            <p className="mt-2 flex items-center gap-2 pl-1 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+              <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
+              Passage no longer found.
+            </p>
+          )
+        )}
+        {collapsed || finished ? (
+          <p id={detailsId} className={`mt-2 pl-1 text-sm leading-relaxed text-foreground ${collapsed ? "line-clamp-2" : ""}`}>
+            {comment.body}
+          </p>
+        ) : (
+          <div id={detailsId}>
+            <textarea
+              ref={(element) => {
+                if (element) commentTextareaRefs.current.set(comment.id, element)
+                else commentTextareaRefs.current.delete(comment.id)
+              }}
+              aria-label="Review Comment"
+              rows={2}
+              value={comment.body}
+              onFocus={(event) => {
+                onSelectComment(comment.id)
+                commentSelectionRefs.current.set(
+                  comment.id,
+                  getTextSelection(event.currentTarget),
+                )
+              }}
+              onSelect={(event) => commentSelectionRefs.current.set(
+                comment.id,
+                getTextSelection(event.currentTarget),
+              )}
+              onChange={(event) => {
+                commentSelectionRefs.current.set(
+                  comment.id,
+                  getTextSelection(event.currentTarget),
+                )
+                onUpdateComment(comment.id, event.currentTarget.value)
+              }}
+              className="review-input mt-3 min-h-16 max-h-40 w-full resize-y rounded-md border px-3 py-2.5 text-sm leading-relaxed outline outline-2 outline-offset-1 outline-transparent [field-sizing:content] placeholder:text-muted-foreground focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <ReviewPresetPicker
+                open={openPresetTarget === comment.id}
+                onOpenChange={(next) => setOpenPresetTarget(next ? comment.id : null)}
+                trigger={(
+                  <button
+                    type="button"
+                    className="flex h-9 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:bg-accent hover:text-foreground focus-visible:outline-ring active:bg-accent/80">
+                    Presets <ChevronDown size={13} />
+                  </button>
+                )}
+                onSelect={(preset) => insertIntoComment(comment, preset.instruction)}
+              />
+              <div className="flex items-center gap-1">
+                {selected && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label={copiedCommentId === comment.id ? "Comment copied as prompt" : "Copy comment as prompt"}
+                        disabled={copyingCommentId !== null}
+                        onClick={() => void copyComment(comment.id)}
+                        className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:bg-accent hover:text-foreground focus-visible:outline-ring active:bg-accent/80 disabled:cursor-not-allowed disabled:opacity-50">
+                        {copiedCommentId === comment.id ? <Check size={14} /> : <Copy size={14} />}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      {copiedCommentId === comment.id ? "Copied" : "Copy comment as prompt"}
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Delete Review Comment"
+                      onClick={() => onDeleteComment(comment.id)}
+                      className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:bg-destructive/10 hover:text-destructive focus-visible:outline-ring active:bg-destructive/15 disabled:cursor-not-allowed disabled:opacity-50">
+                      <Trash2 size={14} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">Delete comment</TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+          </div>
+        )}
+        {result?.reply && (
+          <div className="mt-3 border-t pt-3 pl-1">
+            <p className="text-[11px] font-medium text-muted-foreground">Agent reply</p>
+            <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{result.reply}</p>
+          </div>
+        )}
+        {finished && agentHandoff?.changeStatus && (
+          <div className="mt-3 flex justify-end gap-2">
+            <Button variant="ghost" size="sm" aria-label={`Reopen comment ${comment.displayNumber}`}
+              disabled={agentHandoff.sending || agentHandoff.updatingCommentId != null}
+              onClick={() => agentHandoff.changeStatus?.(comment.id, "open")}>Reopen</Button>
+            {addressed && <Button size="sm" aria-label={`Resolve comment ${comment.displayNumber}`}
+              disabled={agentHandoff.sending || agentHandoff.updatingCommentId != null}
+              onClick={() => agentHandoff.changeStatus?.(comment.id, "resolved")}>Resolve</Button>}
+          </div>
+        )}
+        {copyError?.commentId === comment.id && (
+          <div className="mt-3">{copyErrorNotice}</div>
+        )}
+      </article>
+    )
+  }
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div
@@ -263,180 +437,30 @@ export function ReviewPanel({
       <section className="pt-3">
         <div className="flex w-full items-center justify-between px-4 pb-3">
           <span className="text-sm font-semibold tracking-tight">Comments</span>
-          <span className="text-xs tabular-nums text-muted-foreground">{comments.length}</span>
+          <span className="text-xs tabular-nums text-muted-foreground">{currentComments.length}</span>
         </div>
         <div>
-        {comments.length === 0 && (
+        {currentComments.length === 0 && (
           <div className="px-4 pb-8 pt-2 text-xs leading-relaxed text-muted-foreground">
-            No comments. Select text in Preview to add comment.
+            {resolvedComments.length ? "All comments resolved." : "No comments. Select text in Preview to add comment."}
           </div>
         )}
-        {comments.length > 0 && (
+        {currentComments.length > 0 && (
           <div className="space-y-3 px-4 py-3">
-            {comments.map((comment) => {
-              const result = agentHandoff?.results?.get(comment.id)
-              const resolvedByAgent = result?.status === "resolved"
-              const selected = selectedId === comment.id
-              const collapsed = expandedCommentId !== comment.id
-              const detailsId = `review-comment-${comment.id}-details`
-              return (
-                <article
-                  ref={(element) => {
-                    if (element) commentElementRefs.current.set(comment.id, element)
-                    else commentElementRefs.current.delete(comment.id)
-                  }}
-                  key={comment.id}
-                  aria-current={selected ? "true" : undefined}
-                  onClick={(event) => {
-                    if (event.target instanceof Element && event.target.closest("button, textarea, input, select, a, [role='menuitem']")) return
-                    toggleComment(comment.id)
-                    if (collapsed) onSelectComment(comment.id)
-                  }}
-                  className={`${selected ? "review-card-selected" : "review-card"} cursor-pointer rounded-lg border px-4 py-4 shadow-sm transition-colors ${
-                    enteringCommentId === comment.id ? "review-card-entering" : ""
-                  }`}>
-                  <button
-                    type="button"
-                    aria-label={collapsed ? "Expand Review Comment" : "Collapse Review Comment"}
-                    aria-expanded={!collapsed}
-                    aria-controls={detailsId}
-                    onClick={() => {
-                      toggleComment(comment.id)
-                      if (collapsed) onSelectComment(comment.id)
-                    }}
-                    className="flex w-full items-stretch rounded-md p-1 text-left text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:text-foreground focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50">
-                      <span className="flex min-w-0 flex-1 items-start">
-                        <span className="min-w-0 flex-1">
-                          <span className="line-clamp-2 border-l-2 border-border py-0.5 pl-2 text-xs italic leading-relaxed text-muted-foreground">
-                            {comment.anchor.exact}
-                          </span>
-                        </span>
-                      </span>
-                  </button>
-                  {resolvedByAgent && (
-                    <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                      <Check size={12} aria-hidden="true" />Resolved
-                    </span>
-                  )}
-                  {comment.anchor.removed && (
-                    <p className="mt-2 pl-1 text-[11px] text-muted-foreground">Comment on removed text</p>
-                  )}
-                  {comment.status === "unanchored" && !comment.anchor.removed && !resolvedByAgent && (
-                    jumpableCommentIds.has(comment.id) ? (
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          onJumpToSection(comment.id)
-                        }}
-                        className="mt-2 flex w-full items-center gap-2 rounded-sm px-1 py-1 text-left text-[11px] font-medium text-blue-700 outline outline-2 outline-offset-1 outline-transparent hover:bg-accent focus-visible:outline-ring active:bg-accent/80 dark:text-blue-300">
-                        <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
-                        <span>Passage no longer found. Jump to section</span>
-                      </button>
-                    ) : (
-                      <p className="mt-2 flex items-center gap-2 pl-1 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
-                        <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
-                        Passage no longer found.
-                      </p>
-                    )
-                  )}
-                  {collapsed ? (
-                    <p id={detailsId} className="mt-2 line-clamp-2 pl-1 text-sm leading-relaxed text-foreground">
-                      {comment.body}
-                    </p>
-                  ) : (
-                    <div id={detailsId}>
-                      <textarea
-                        ref={(element) => {
-                          if (element) commentTextareaRefs.current.set(comment.id, element)
-                          else commentTextareaRefs.current.delete(comment.id)
-                        }}
-                        aria-label="Review Comment"
-                        rows={2}
-                        value={comment.body}
-                        onFocus={(event) => {
-                          onSelectComment(comment.id)
-                          commentSelectionRefs.current.set(
-                            comment.id,
-                            getTextSelection(event.currentTarget),
-                          )
-                        }}
-                        onSelect={(event) => commentSelectionRefs.current.set(
-                          comment.id,
-                          getTextSelection(event.currentTarget),
-                        )}
-                        onChange={(event) => {
-                          commentSelectionRefs.current.set(
-                            comment.id,
-                            getTextSelection(event.currentTarget),
-                          )
-                          onUpdateComment(comment.id, event.currentTarget.value)
-                        }}
-                        className="review-input mt-3 min-h-16 max-h-40 w-full resize-y rounded-md border px-3 py-2.5 text-sm leading-relaxed outline outline-2 outline-offset-1 outline-transparent [field-sizing:content] placeholder:text-muted-foreground focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50"
-                      />
-                      <div className="mt-1 flex items-center justify-between gap-2">
-                        <ReviewPresetPicker
-                          open={openPresetTarget === comment.id}
-                          onOpenChange={(next) => setOpenPresetTarget(next ? comment.id : null)}
-                          trigger={(
-                            <button
-                              type="button"
-                              className="flex h-9 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:bg-accent hover:text-foreground focus-visible:outline-ring active:bg-accent/80">
-                              Presets <ChevronDown size={13} />
-                            </button>
-                          )}
-                          onSelect={(preset) => insertIntoComment(comment, preset.instruction)}
-                        />
-                        <div className="flex items-center gap-1">
-                          {selected && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  aria-label={copiedCommentId === comment.id ? "Comment copied as prompt" : "Copy comment as prompt"}
-                                  disabled={copyingCommentId !== null}
-                                  onClick={() => void copyComment(comment.id)}
-                                  className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:bg-accent hover:text-foreground focus-visible:outline-ring active:bg-accent/80 disabled:cursor-not-allowed disabled:opacity-50">
-                                  {copiedCommentId === comment.id ? <Check size={14} /> : <Copy size={14} />}
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top">
-                                {copiedCommentId === comment.id ? "Copied" : "Copy comment as prompt"}
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                type="button"
-                                aria-label="Delete Review Comment"
-                                onClick={() => onDeleteComment(comment.id)}
-                                className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:bg-destructive/10 hover:text-destructive focus-visible:outline-ring active:bg-destructive/15 disabled:cursor-not-allowed disabled:opacity-50">
-                                <Trash2 size={14} />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">Delete comment</TooltipContent>
-                          </Tooltip>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {result?.reply && (
-                    <div className="mt-3 border-t pt-3 pl-1">
-                      <p className="text-[11px] font-medium text-muted-foreground">Agent reply</p>
-                      <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{result.reply}</p>
-                    </div>
-                  )}
-                  {copyError?.commentId === comment.id && (
-                    <div className="mt-3">{copyErrorNotice}</div>
-                  )}
-                </article>
-              )
-            })}
+            {currentComments.map(renderComment)}
           </div>
         )}
         </div>
       </section>
+
+      {resolvedComments.length > 0 && (
+        <details className="mx-4 my-3 rounded-lg border">
+          <summary className="cursor-pointer rounded-lg px-4 py-3 text-sm font-semibold outline outline-2 outline-offset-1 outline-transparent focus-visible:outline-ring">
+            Resolved · {resolvedComments.length}
+          </summary>
+          <div className="space-y-3 px-3 pb-3">{resolvedComments.map(renderComment)}</div>
+        </details>
+      )}
 
       {importedRounds.length > 0 && (
         <>
@@ -510,7 +534,7 @@ export function ReviewPanel({
             Sent to agent at {new Date(activeAgentHandoff.sentAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
           </p>
         )}
-        {activeAgentHandoff?.error && <p role="alert" className="mb-2 text-xs text-destructive">{activeAgentHandoff.error}</p>}
+        {agentHandoff?.error && <p role="alert" className="mb-2 text-xs text-destructive">{agentHandoff.error}</p>}
         <div className={activeAgentHandoff ? "flex flex-col gap-2" : "flex gap-2"}>
           {activeAgentHandoff ? (
             <Tooltip>

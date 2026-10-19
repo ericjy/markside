@@ -18,7 +18,7 @@ export function parseReviewFile(text, doc) {
     if (!comment || typeof comment.id !== "string" || !comment.id || ids.has(comment.id) ||
         typeof comment.quote !== "string" || typeof comment.body !== "string" ||
         !(comment.line === null || (Number.isInteger(comment.line) && comment.line > 0)) ||
-        !["open", "resolved"].includes(comment.status) ||
+        !["open", "addressed", "resolved"].includes(comment.status) ||
         (comment.reply !== undefined && typeof comment.reply !== "string")) {
       throw new Error(`Invalid Review comment for ${doc}`)
     }
@@ -29,20 +29,47 @@ export function parseReviewFile(text, doc) {
 
 export function refreshReviewFile(existing, doc, now = new Date().toISOString()) {
   // A timeout retry must not discard a send made while the agent wasn't running.
-  if (existing && existing.status !== "resolved") return existing
+  if (existing?.status === "pending" || (existing?.status === "sent" && existing.comments.some(({ status }) => status === "open"))) return existing
   return {
     version: 1, doc, docHash: "", status: "pending", requestedAt: now,
-    comments: existing?.comments.filter(({ status }) => status === "open") ?? [],
+    comments: existing?.comments ?? [],
   }
 }
 
-export function formatReviewComments(review, includeResolved = false) {
-  const comments = review.comments.filter(({ status }) => includeResolved || status === "open")
+export function addressReviewComment(review, id, reply) {
+  const comment = review.comments.find((item) => item.id === id)
+  if (!comment) throw new Error(`Review comment not found: ${id}`)
+  if (review.status === "pending") throw new Error("Wait for the user to send the Review before addressing comments")
+  if (comment.status === "resolved") throw new Error("The reviewer resolved this comment. Ask them to reopen it first.")
+  return {
+    ...review,
+    comments: review.comments.map((item) => item.id === id
+      ? { ...item, status: "addressed", ...(reply !== undefined ? { reply } : {}) }
+      : item),
+  }
+}
+
+export function setReviewerCommentStatus(review, id, status) {
+  const comment = review.comments.find((item) => item.id === id)
+  if (!comment) throw new Error(`Review comment not found: ${id}`)
+  if (status === "resolved" ? comment.status !== "addressed" : status !== "open" || comment.status === "open") {
+    throw new Error("Resolve an addressed comment, or reopen an addressed or resolved comment.")
+  }
+  const comments = review.comments.map((item) => item.id === id ? { ...item, status } : item)
+  return {
+    ...review, comments,
+    status: status === "open" ? "pending" : comments.every((item) => item.status === "resolved") ? "resolved" : review.status,
+  }
+}
+
+export function formatReviewComments(review, includeAll = false) {
+  if (!includeAll && review.status === "resolved") return `Review resolved for ${review.doc}. No open comments.`
+  const comments = review.comments.filter(({ status }) => includeAll || status === "open")
   return [
     `Got ${comments.length} comment${comments.length === 1 ? "" : "s"} for ${review.doc}`,
     ...(review.note ? [`Review note:\n${review.note}`] : []),
     ...comments.map((comment) => [
-      `Comment ${comment.id}${comment.line === null ? " (line unavailable; verify the passage in the current document)" : ` (line ${comment.line})`}${comment.status === "resolved" ? " [resolved]" : ""}`,
+      `Comment ${comment.id}${comment.line === null ? " (line unavailable; verify the passage in the current document)" : ` (line ${comment.line})`}${comment.status !== "open" ? ` [${comment.status}]` : ""}`,
       comment.quote.split("\n").map((line) => `> ${line}`).join("\n"),
       comment.body,
       ...(comment.reply ? [`Agent reply: ${comment.reply}`] : []),

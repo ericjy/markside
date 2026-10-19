@@ -152,6 +152,42 @@ describe("ReviewPanel", () => {
     expect(container.textContent).not.toContain("Resolved")
   })
 
+  it("shows Addressed with reviewer Resolve and Reopen actions", () => {
+    const changeStatus = vi.fn()
+    renderPanel({ agentHandoff: {
+      disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn(), changeStatus,
+      results: new Map([[comment.id, { id: comment.id, quote: comment.anchor.exact, body: comment.body, line: 3, status: "addressed", reply: "Clarified." }]]),
+    } })
+    expect(container.textContent).toContain("Addressed")
+    const expand = container.querySelector<HTMLButtonElement>('[aria-label="Expand Review Comment"]')!
+    act(() => expand.click())
+    expect(container.querySelector('textarea[aria-label="Review Comment"]')).toBeNull()
+    expect(container.querySelector('[aria-label="Delete Review Comment"]')).toBeNull()
+    expect(container.textContent).not.toContain("Passage no longer found")
+    const resolve = container.querySelector<HTMLButtonElement>('[aria-label="Resolve comment 1"]')!
+    act(() => resolve.click())
+    expect(changeStatus).toHaveBeenCalledWith(comment.id, "resolved")
+    const reopen = container.querySelector<HTMLButtonElement>('[aria-label="Reopen comment 1"]')!
+    act(() => reopen.click())
+    expect(changeStatus).toHaveBeenCalledWith(comment.id, "open")
+  })
+
+  it("groups resolved comments in a collapsed section with a Reopen action", () => {
+    const changeStatus = vi.fn()
+    renderPanel({ agentHandoff: {
+      completed: true, disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn(), changeStatus,
+      results: new Map([[comment.id, { id: comment.id, quote: comment.anchor.exact, body: comment.body, line: 3, status: "resolved", reply: "Clarified." }]]),
+    } })
+    const group = container.querySelector("details")!
+    expect(group).not.toBeNull()
+    expect(group.open).toBe(false)
+    expect(group.querySelector("summary")?.textContent).toContain("Resolved · 1")
+    expect(group.querySelector('[aria-label="Resolve comment 1"]')).toBeNull()
+    const reopen = group.querySelector<HTMLButtonElement>('[aria-label="Reopen comment 1"]')!
+    act(() => { group.open = true; reopen.click() })
+    expect(changeStatus).toHaveBeenCalledWith(comment.id, "open")
+  })
+
   function jumpButton() {
     return Array.from(container.querySelectorAll("button")).find((button) =>
       button.textContent?.includes("Jump to section")

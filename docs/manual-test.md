@@ -84,14 +84,25 @@ pull request or review response.
 - [ ] With zero comments, Send comments to agent is disabled and its tooltip
   explains why. Add two comments, send, grant the document's folder access if
   prompted, and confirm the CLI prints Got 2 comments and exits 0. The agent
-  revises the plan and resolves each ID with a reply in the Review file.
-- [ ] Click Reload or close and reopen Review after the agent resolves comments.
-  Each matching comment shows Resolved and the agent reply, including when
-  collapsed. Resolved comments whose quotes changed retain the original quote
+  revises the plan and marks each ID addressed with a reply in the Review file.
+- [ ] Click Reload or close and reopen Review after the agent addresses comments.
+  Each matching comment shows Addressed and the agent reply, including when
+  collapsed. Addressed comments whose quotes changed retain the original quote
   without a passage-not-found warning. Their blue ? markers and passage
   highlights disappear from Preview and stay absent after resizing the window.
-  Unresolved comments keep their warnings and markers.
-  Edit a resolved comment and confirm its old badge and reply disappear.
+  Open comments keep their warnings and markers.
+- [ ] On an Addressed card, click Resolve. It moves into the collapsed Resolved
+  group. Expand the group and click Reopen; the comment returns to Open with
+  its reply retained and Send comments to agent available. The waiting CLI must
+  not receive it until Send is clicked. Reopen an Addressed card as well.
+  Deny folder write access for a status change and confirm an error appears
+  without changing the card. Retry with access, then resolve all comments.
+- [ ] Run the CLI resolve command and confirm it is rejected. After all comments
+  are addressed, start another review and confirm it waits and retains replies
+  and resolved history. Resolve every comment while the CLI waits and confirm
+  it exits successfully with Review resolved for the document.
+  Addressed and Resolved comments are read-only until reopened. Reopen a
+  comment, edit it, and confirm its old reply disappears for the new wording.
   Repeat a Reload after changing only a sidecar reply, without changing the
   Markdown file, and confirm the new reply appears.
 - [ ] Confirm the Markdown file is unchanged by sending, the Review file has a

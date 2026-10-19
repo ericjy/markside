@@ -28,15 +28,19 @@ below. Invocation authorizes opening Chrome and waiting for the user's Review.
    the task until comments arrive, unless the user asks to stop or proceed.
    Other failures require reporting the error, not a retry loop.
 4. When comments arrive, address every comment by ID, make the requested changes,
-   and answer questions. Then run `markside resolve <file> <id> --reply "..."`
+   and answer questions. Then run `markside address <file> <id> --reply "..."`
    for each addressed comment with a one-line reply. Leave unaddressed comments
    open and explain what needs the user's decision. Use the same CLI executable
-   for review, comments, and resolve.
+   for review, comments, and address. Addressed means the agent has finished;
+   only the user resolves a comment in Markside. Never mark it resolved yourself.
 
 The adjacent `<file>.review.json` is the only handoff channel. Never write
 `status: "sent"` yourself or infer approval from elapsed time. Read current
 comments without waiting with `markside comments <file>`. Starting another
-Review after all comments are resolved creates a fresh pending request.
+Review after all comments are addressed or resolved creates a fresh pending
+request and keeps the previous comment statuses and replies. If the CLI returns
+`Review resolved for ...`, the user has accepted all comments; continue the task
+without making further changes for those comments.
 
 If the user explicitly prefers to keep chatting while reviewing, the waiting
 command may run as a background tool task. Check its output before the next

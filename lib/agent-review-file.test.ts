@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { type AgentReviewFile, parseReviewFile, refreshReviewFile, formatReviewComments } from "../cli/review-file.mjs"
+import { type AgentReviewFile, parseReviewFile, refreshReviewFile, formatReviewComments, addressReviewComment, setReviewerCommentStatus } from "../cli/review-file.mjs"
 
 const sent: AgentReviewFile = {
   version: 1, doc: "PLAN.md", docHash: "a".repeat(64), status: "sent",
@@ -25,8 +25,37 @@ describe("agent Review file", () => {
   it("starts a fresh request after resolution", () => {
     const next = refreshReviewFile({ ...sent, status: "resolved", comments: sent.comments.map((comment) => ({ ...comment, status: "resolved" })) }, "PLAN.md", "2026-10-18T13:00:00.000Z")
     expect(next.status).toBe("pending")
-    expect(next.comments).toEqual([])
+    expect(next.comments[0].status).toBe("resolved")
     expect(next.sentAt).toBeUndefined()
+  })
+  it("separates agent addressing from reviewer resolution and reopening", () => {
+    const addressed = addressReviewComment(sent, "c1", "Clarified the plan.")
+    expect(addressed.status).toBe("sent")
+    expect(addressed.comments[0]).toMatchObject({ status: "addressed", reply: "Clarified the plan." })
+    expect(sent.comments[0].status).toBe("open")
+    expect(parseReviewFile(JSON.stringify(addressed), "PLAN.md")).toEqual(addressed)
+    const resolved = setReviewerCommentStatus(addressed, "c1", "resolved")
+    expect(resolved.status).toBe("resolved")
+    expect(resolved.comments[0].status).toBe("resolved")
+    expect(() => addressReviewComment(resolved, "c1", "Changed again")).toThrow()
+    const reopened = setReviewerCommentStatus(resolved, "c1", "open")
+    expect(reopened.status).toBe("pending")
+    expect(reopened.comments[0]).toMatchObject({ status: "open", reply: "Clarified the plan." })
+  })
+  it("does not allow resolution before the agent addresses a comment", () => {
+    expect(() => setReviewerCommentStatus(sent, "c1", "resolved")).toThrow()
+  })
+  it("waits for another send after addressing and retains comment history", () => {
+    const addressed = addressReviewComment(sent, "c1", "Clarified.")
+    const next = refreshReviewFile(addressed, "PLAN.md", "2026-10-18T13:00:00Z")
+    expect(next.status).toBe("pending")
+    expect(next.comments[0]).toMatchObject({ status: "addressed", reply: "Clarified." })
+    expect(next.sentAt).toBeUndefined()
+  })
+  it("labels addressed comments in the comments command and excludes them from agent work", () => {
+    const addressed = addressReviewComment(sent, "c1", "Clarified.")
+    expect(formatReviewComments(addressed, true)).toContain("[addressed]")
+    expect(formatReviewComments(addressed)).not.toContain("Comment c1")
   })
   it("prints comment IDs, quotes, lines and bodies for the agent", () => {
     const prompt = formatReviewComments(sent)

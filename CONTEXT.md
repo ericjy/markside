@@ -63,3 +63,13 @@ _Avoid_: Published Snapshot, shared file, synced document, live document
 **Hosted Snapshot**:
 An immutable, read-only copy of successfully saved local Markdown encrypted in the sender's browser before Markside stores its ciphertext. Its decryption key stays in the URL fragment, it expires after 7, 30, or 90 days, and it cannot be revoked early.
 _Avoid_: Uploaded document, cloud file, live document
+
+**Addressed Review Comment**:
+A Review Comment the agent reports having handled, with an optional reply. It
+stays visible for the user to check and may be resolved or reopened by the user.
+_Avoid_: Accepted comment, completed review
+
+**Resolved Review Comment**:
+A Review Comment the user has accepted after checking the agent's response. It
+is grouped under Resolved and can be reopened by the user.
+_Avoid_: Agent-resolved comment, deleted comment

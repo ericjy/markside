@@ -491,11 +491,15 @@ writable stream on close. Watching and a one-second fallback poll exist only
 inside the waiting CLI and end on send, timeout, or interrupt. ADR-0002 still
 applies to the extension. See [the contract and prototype setup](agent-review-loop.md).
 
-Completed agent Reviews retain their per-comment status and reply in the panel.
+Agent Review Comments have three states: Open, Addressed, and Resolved. The
+agent uses the CLI `address` command to report its work and reply; only the user
+can Resolve or Reopen in the panel. Addressed cards remain visible for checking.
+Resolved cards move into a collapsed Resolved group. Reopening returns a comment
+to Open and the request to pending, requiring an explicit send before agent work
+continues. The CLI rejects agent resolution and retains history across rounds.
+
 Results match the comment ID, original quote, and body; revising the comment
-hides a previous result. Resolved cards show a Resolved badge and agent reply,
-including while collapsed, and suppress the passage-not-found warning. Resolved
-comments are excluded from Preview highlights, missing-passage markers, and
-passage hit testing, including when the viewport is resized. A
-successful explicit Reload refreshes these results even when source text is
-unchanged. No timer, focus refresh, or filesystem watcher is used.
+hides a previous result. Addressed and Resolved comments hide passage warnings,
+Preview highlights, missing-passage markers, and passage hit testing, including
+after resizing. A successful explicit Reload refreshes results even when source
+text is unchanged. No timer, focus refresh, or filesystem watcher is used.

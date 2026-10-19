@@ -51,11 +51,11 @@
     {
       "id": 5,
       "prompt": "The waiting markside CLI returned Got 2 comments for PLAN.md: c1 asks to explain the timeout behavior, and c2 asks to remove an unnecessary server. Describe how you would continue.",
-      "expected_output": "Address each comment in PLAN.md, answer any questions, and resolve each addressed ID through the CLI with a one-line reply.",
+      "expected_output": "Address each comment in PLAN.md, answer any questions, and mark each ID addressed through the CLI and leave resolution to the user with a one-line reply.",
       "files": [],
       "expectations": [
         "Addresses both comments",
-        "Resolves c1 and c2 individually with replies after addressing them",
+        "Runs markside address for c1 and c2 with replies after making the changes; leaves resolution to the user",
         "Does not confuse this with the open-only success response"
       ]
     }

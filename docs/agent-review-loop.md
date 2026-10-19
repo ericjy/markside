@@ -23,14 +23,16 @@ can replace `markside` in every command.
 ```sh
 markside review PLAN.md
 markside comments PLAN.md
-markside resolve PLAN.md c1 --reply "Clarified the scope."
+markside address PLAN.md c1 --reply "Clarified the scope."
 ```
 
 The agent waits with a 600-second tool timeout. The CLI waits for 540 seconds by
 default, exits 2 with `STILL_WAITING:`, and the agent reruns it until the user
 sends comments or asks to stop. An existing pending request keeps its timestamp;
 a send received between invocations is returned immediately. After all comments
-are resolved, the next review creates a new pending request.
+are addressed or resolved, the next review creates a new pending request while
+retaining the previous comments and replies. If the user resolves every comment
+during a wait, the CLI exits 0 with `Review resolved for ...`.
 
 ## Shared contract
 
@@ -57,15 +59,27 @@ Review Note so existing overall guidance is not lost.
 Each comment has `id`, `quote`, `line`, `body`, and `status`. `quote` is the exact
 rendered text selected by the user. `line` is a one-based source block line from
 Markside's renderer, or `null` for unanchored or removed passages. It is a hint;
-the quote identifies the passage. A resolved comment may carry `reply`.
+the quote identifies the passage.
 
-`resolve` marks the named comment resolved and saves its optional reply. When
-all comments are resolved it marks the file `resolved`. The extension shows a
-Resolved badge and the agent reply on matching comment cards, including
-collapsed cards. It refreshes these results on explicit Reload
-and when Review is reopened. Editing a comment hides the old result until that
-revision is addressed. Resolved cards retain the original quote as context and
-do not show the passage-not-found warning.
+Comment status is `open`, `addressed`, or `resolved`. The agent uses
+`markside address <file> <id> --reply "..."` to mark its work Addressed and record
+a reply. This does not mean the user has accepted the change. The CLI rejects
+`resolve`; only the reviewer resolves a comment in Markside.
+
+Addressed cards stay in the Comments list with the reply and Resolve and Reopen
+buttons. Resolve moves a comment into a collapsed Resolved group. Reopen moves
+an addressed or resolved comment back to Open, preserving its reply for context.
+It makes the request pending, so the user can add feedback before explicitly
+sending it again. Resolving the final outstanding comment marks the file
+`resolved`. All status changes use the remembered folder access and a staged
+writable stream, leaving the Markdown file unchanged.
+
+The extension refreshes results on explicit Reload and when Review is reopened.
+Editing a comment hides the old result until that revision is addressed. Both
+Addressed and Resolved comments retain the original quote as context and hide
+the passage-not-found warning, Preview markers, and highlights. Open comments
+keep their usual markers. Existing files with resolved comments remain readable.
+
 The agent handoff sends the user's current Review Comments and Review Note.
 Imported snapshot Review Rounds are omitted from this local handoff.
 

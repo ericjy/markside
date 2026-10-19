@@ -22,6 +22,7 @@ function setup() {
   const hook = renderHook(useContentAgentReview, options)
   return {
     hook, options, sendMessage,
+    address: () => { file = { ...file, comments: [{ ...file.comments[0], status: "addressed", reply: "Changed to Create the feature." }] } },
     resolve: () => { file = { ...file, status: "resolved", comments: [{ ...file.comments[0], status: "resolved", reply: "Changed to Create the feature." }] } },
   }
 }
@@ -49,6 +50,18 @@ describe("local agent Review result discovery", () => {
     hook.rerender(options)
     await flush()
     expect(hook.result.current?.results?.get("c1")?.reply).toBe("Changed to Create the feature.")
+    hook.unmount()
+  })
+  it("loads addressed comments without treating them as accepted or sending them again", async () => {
+    const { hook, options, address } = setup()
+    await flush()
+    address()
+    hook.rerender({ ...options, reloadVersion: 1 })
+    await flush()
+    expect(hook.result.current?.completed).toBe(false)
+    expect(hook.result.current?.results?.get("c1")?.status).toBe("addressed")
+    expect(hook.result.current?.disabled).toBe(true)
+    expect(hook.result.current?.changeStatus).toBeTypeOf("function")
     hook.unmount()
   })
   it("does not reread files when only the draft or comment text changes", async () => {

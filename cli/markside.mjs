@@ -6,7 +6,7 @@ import { pathToFileURL } from "node:url"
 import { randomUUID } from "node:crypto"
 import { spawn } from "node:child_process"
 import { parseArgs } from "node:util"
-import { parseReviewFile, refreshReviewFile, formatReviewComments } from "./review-file.mjs"
+import { parseReviewFile, addressReviewComment, refreshReviewFile, formatReviewComments } from "./review-file.mjs"
 
 async function readReview(path, doc) {
   try {
@@ -70,7 +70,7 @@ function waitForReview(path, doc, seconds, signal) {
       reading = true
       try {
         const review = await readReview(path, doc)
-        if (review?.status === "sent") finish(null, review)
+        if (review?.status === "sent" || review?.status === "resolved") finish(null, review)
       } catch (error) {
         finish(new Error(`Cannot read Review: ${error.message}`))
       } finally { reading = false }
@@ -97,13 +97,14 @@ async function main() {
     options: { timeout: { type: "string", default: "540" }, "no-open": { type: "boolean" }, reply: { type: "string" }, help: { type: "boolean" } },
   })
   if (values.help) {
-    console.log('markside review <file> [--timeout 540] [--no-open]\nmarkside comments <file>\nmarkside resolve <file> <id> [--reply "..."]')
+    console.log('markside review <file> [--timeout 540] [--no-open]\nmarkside comments <file>\nmarkside address <file> <id> [--reply "..."]')
     return 0
   }
   const [command, input, id] = positionals
-  if (!input || !["review", "comments", "resolve"].includes(command) ||
-      positionals.length !== (command === "resolve" ? 3 : 2)) {
-    throw new Error("Usage: markside review <file> | comments <file> | resolve <file> <id> [--reply \"...\"]")
+  if (command === "resolve") throw new Error("The reviewer resolves comments in Markside. Use markside address <file> <id> --reply \"...\" to report your changes.")
+  if (!input || !["review", "comments", "address"].includes(command) ||
+      positionals.length !== (command === "address" ? 3 : 2)) {
+    throw new Error("Usage: markside review <file> | comments <file> | address <file> <id> [--reply \"...\"]")
   }
   const seconds = Number(values.timeout)
   if (!Number.isFinite(seconds) || seconds <= 0 || seconds * 1000 > 2 ** 31 - 1) throw new Error("--timeout must be a positive number of seconds")
@@ -118,16 +119,11 @@ async function main() {
     console.log(formatReviewComments(existing, true))
     return 0
   }
-  if (command === "resolve") {
+  if (command === "address") {
     if (!existing) throw new Error(`No Review file: ${path}`)
-    const comment = existing.comments.find((item) => item.id === id)
-    if (!comment) throw new Error(`Review comment not found: ${id}`)
-    if (existing.status === "pending") throw new Error("Wait for the user to send the Review before resolving comments")
-    comment.status = "resolved"
-    if (values.reply !== undefined) comment.reply = values.reply
-    if (existing.comments.every((item) => item.status === "resolved")) existing.status = "resolved"
-    await atomicWrite(path, existing)
-    console.log(`Resolved ${id}`)
+    const addressed = addressReviewComment(existing, id, values.reply)
+    await atomicWrite(path, addressed)
+    console.log(`Addressed ${id}`)
     return 0
   }
   const controller = new AbortController()

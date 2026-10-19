@@ -36,11 +36,11 @@ function options(text: string) {
 }
 
 describe("resolved agent comments in Preview", () => {
-  it("removes missing-passage markers on resolution and keeps them removed after resize", () => {
+  it.each(["addressed", "resolved"] as const)("removes missing-passage markers for %s comments and keeps them removed after resize", (status) => {
     const props = options("New wording")
     const hook = renderHook(useContentReviewHighlights, props)
     expect(hook.result.current.reviewBadgeAnchors.map(({ id }) => id)).toEqual(["c1"])
-    hook.rerender({ ...props, agentResults: new Map([["c1", result]]) })
+    hook.rerender({ ...props, agentResults: new Map([["c1", { ...result, status }]]) })
     expect(hook.result.current.reviewBadgeAnchors).toEqual([])
     act(() => window.dispatchEvent(new Event("resize")))
     expect(hook.result.current.reviewBadgeAnchors).toEqual([])
@@ -48,11 +48,11 @@ describe("resolved agent comments in Preview", () => {
     expect(hook.result.current.resolvedReviewComments).toHaveLength(1)
     hook.unmount()
   })
-  it("clears passage highlights for resolved comments and restores them when results are cleared", () => {
+  it.each(["addressed", "resolved"] as const)("clears passage highlights for %s comments and restores them when results are cleared", (status) => {
     const props = options("Old wording")
     const hook = renderHook(useContentReviewHighlights, props)
     expect(highlights.has("markside-review")).toBe(true)
-    hook.rerender({ ...props, agentResults: new Map([["c1", result]]) })
+    hook.rerender({ ...props, agentResults: new Map([["c1", { ...result, status }]]) })
     expect(highlights.has("markside-review")).toBe(false)
     hook.rerender(props)
     expect(highlights.has("markside-review")).toBe(true)

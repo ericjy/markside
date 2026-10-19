@@ -3,7 +3,7 @@ export interface AgentReviewComment {
   quote: string
   line: number | null
   body: string
-  status: "open" | "resolved"
+  status: "open" | "addressed" | "resolved"
   reply?: string
 }
 export interface AgentReviewFile {
@@ -18,4 +18,7 @@ export interface AgentReviewFile {
 }
 export function parseReviewFile(text: string, doc: string): AgentReviewFile
 export function refreshReviewFile(existing: AgentReviewFile | null, doc: string, now?: string): AgentReviewFile
-export function formatReviewComments(review: AgentReviewFile, includeResolved?: boolean): string
+export function formatReviewComments(review: AgentReviewFile, includeAll?: boolean): string
+
+export function addressReviewComment(review: AgentReviewFile, id: string, reply?: string): AgentReviewFile
+export function setReviewerCommentStatus(review: AgentReviewFile, id: string, status: "open" | "resolved"): AgentReviewFile

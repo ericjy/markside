@@ -1,0 +1,11 @@
+{
+  "name": "markside",
+  "version": "0.1.0",
+  "description": "Send local Markdown files to Markside for review and wait for comments",
+  "type": "module",
+  "bin": { "markside": "markside.mjs" },
+  "files": ["markside.mjs", "review-file.mjs", "review-file.d.mts", "README.md", "LICENSE"],
+  "engines": { "node": ">=20" },
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/ericjy/markside.git", "directory": "cli" }
+}

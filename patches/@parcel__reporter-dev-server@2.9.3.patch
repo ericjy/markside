@@ -1,0 +1,13 @@
+diff --git a/lib/ServerReporter.js b/lib/ServerReporter.js
+index 34be5b7c14f91d84a12d4571a08eba535d6d381e..205041693edbf3429f20030b438099bb4dc95f0f 100644
+--- a/lib/ServerReporter.js
++++ b/lib/ServerReporter.js
+@@ -16,7 +16,7 @@ var $3uB8d$crypto = require("crypto");
+ var $3uB8d$events = require("events");
+ var $3uB8d$parcelplugin = require("@parcel/plugin");
+ var $3uB8d$parcelutils = require("@parcel/utils");
+-var $3uB8d$punycode = require("punycode");
++var $3uB8d$punycode = require("punycode/");
+ var $3uB8d$child_process = require("child_process");
+ 
+ function $parcel$export(e, n, v, s) {

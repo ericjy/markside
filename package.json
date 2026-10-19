@@ -99,6 +99,13 @@
     "@codemirror/legacy-modes": "./lib/codemirror-bundle.mjs"
   },
   "pnpm": {
+    "packageExtensions": {
+      "@parcel/reporter-dev-server@2.9.3": {
+        "dependencies": {
+          "punycode": "2.3.1"
+        }
+      }
+    },
     "onlyBuiltDependencies": [
       "@parcel/watcher",
       "@swc/core",
@@ -106,7 +113,10 @@
       "lmdb",
       "msgpackr-extract",
       "sharp"
-    ]
+    ],
+    "patchedDependencies": {
+      "@parcel/reporter-dev-server@2.9.3": "patches/@parcel__reporter-dev-server@2.9.3.patch"
+    }
   },
   "packageManager": "pnpm@10.28.2"
 }

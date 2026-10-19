@@ -47,6 +47,25 @@ pnpm bundle-engine
 
 Generated Shiki, Mermaid, and CodeMirror bundles are not committed.
 
+### Build dependency maintenance
+
+When Browserslist warns that its browser data is old, refresh it with the
+[official updater](https://github.com/browserslist/update-db):
+
+```bash
+pnpm dlx update-browserslist-db@latest
+```
+
+Use the pnpm version in `package.json`, review the lockfile diff for unrelated
+updates, and commit the browser-data update. The data ages, so this warning can
+return even when the build tooling has not changed.
+
+Plasmo 0.90.5 uses Parcel 2.9.3, whose dev-server reporter imports Node's deprecated
+built-in `punycode` module even during production builds. A pnpm patch changes
+that import to `punycode/`, and `packageExtensions` supplies the npm dependency.
+The patch applies during installation. When upgrading Plasmo or Parcel, check
+whether the reporter still needs it and remove both entries when it does not.
+
 ## Testing
 
 Add or update unit tests for pure logic such as parsing, rendering, URL

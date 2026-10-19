@@ -1,6 +1,8 @@
 <div align="center">
 
-<a href="https://markside.app"><img src="assets/og-image.png" alt="Markside — Work seamlessly with agents on Markdown" width="100%"></a>
+<a href="https://markside.app"><img src="assets/icon.svg" alt="Markside logo" width="72"></a>
+
+<h1>Markside</h1>
 
 <h3>Read, review, edit, and share local Markdown in Chrome.</h3>
 
@@ -30,7 +32,9 @@ Built for reviewing the plans, specs, and docs your AI agents write.
 
 <br/>
 
-![Markside Split view with a file tree, source editor, rendered diagram, and outline](assets/screenshots/markside-split-view.png)
+<a href="https://youtu.be/KkyPkU2aOfY"><img src="assets/markside-demo.gif" alt="Commenting on a rendered plan in Markside, copying the Review as a prompt, and pasting it into a coding agent" width="100%"></a>
+
+<p align="center"><a href="https://youtu.be/KkyPkU2aOfY"><img src=".github/assets/watch-video.png" alt="Watch the overview video on YouTube (1:43)" width="260" /></a></p>
 
 ## Why Markside
 

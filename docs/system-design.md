@@ -494,6 +494,8 @@ applies to the extension. See [the contract and prototype setup](agent-review-lo
 Completed agent Reviews retain their per-comment status and reply in the panel.
 Results match the comment ID, original quote, and body; revising the comment
 hides a previous result. Resolved cards show a Resolved badge and agent reply,
-including while collapsed, and suppress the passage-not-found warning. A
+including while collapsed, and suppress the passage-not-found warning. Resolved
+comments are excluded from Preview highlights, missing-passage markers, and
+passage hit testing, including when the viewport is resized. A
 successful explicit Reload refreshes these results even when source text is
 unchanged. No timer, focus refresh, or filesystem watcher is used.

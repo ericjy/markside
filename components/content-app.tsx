@@ -439,8 +439,22 @@ export function FileRenderer({
     selectMode("split")
   }
 
+  const agentHandoff = useContentAgentReview({
+    fileUrl,
+    enabled: isMdFile,
+    open: overlay.reviewOverlayOpen,
+    reloadVersion: reload.reloadVersion,
+    openReview: () => overlay.setReviewOverlayOpen(true),
+    review,
+    openDirectory,
+    diskContentRef,
+    hasUnsavedDraftRef,
+    renderedTextIndexRef,
+  })
+
   const highlights = useContentReviewHighlights({
     review,
+    agentResults: agentHandoff?.results,
     content,
     fileUrl,
     contentRef,
@@ -484,19 +498,6 @@ export function FileRenderer({
       selection.selectionComposerOpen ||
       selection.selectionPresetPickerOpen ||
       selection.quickCommentMenuOpen,
-  })
-
-  const agentHandoff = useContentAgentReview({
-    fileUrl,
-    enabled: isMdFile,
-    open: overlay.reviewOverlayOpen,
-    reloadVersion: reload.reloadVersion,
-    openReview: () => overlay.setReviewOverlayOpen(true),
-    review,
-    openDirectory,
-    diskContentRef,
-    hasUnsavedDraftRef,
-    renderedTextIndexRef,
   })
 
   const reviewActions = useContentReview({

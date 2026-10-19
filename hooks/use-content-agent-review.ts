@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { parseReviewFile, type AgentReviewComment, type AgentReviewFile } from "../cli/review-file.mjs"
 import { agentReviewUrl, getAgentReviewResults, prepareAgentReview, reviewSendFingerprint } from "~lib/agent-review"
 import { getSavePathParts } from "~lib/content-app-policy"
@@ -73,6 +73,7 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
   }, [fileUrl, enabled, open, reloadVersion])
 
   const file = state?.url === fileUrl ? state.file : null
+  const results = useMemo(() => getAgentReviewResults(file, review), [file, review])
   if (!enabled || !file) return undefined
   const completed = file.status === "resolved"
   const unchanged = file.status === "sent" && reviewSendFingerprint(review) === reviewSendFingerprint(file)
@@ -151,5 +152,5 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       setSending(false)
     }
   }
-  return { completed, results: getAgentReviewResults(file, review), disabled: sending || !!disabledReason, disabledReason, sending, sentAt: file.sentAt, error, send: () => void send() }
+  return { completed, results, disabled: sending || !!disabledReason, disabledReason, sending, sentAt: file.sentAt, error, send: () => void send() }
 }

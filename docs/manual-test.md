@@ -88,7 +88,9 @@ pull request or review response.
 - [ ] Click Reload or close and reopen Review after the agent resolves comments.
   Each matching comment shows Resolved and the agent reply, including when
   collapsed. Resolved comments whose quotes changed retain the original quote
-  without a passage-not-found warning. Unresolved comments keep their warnings.
+  without a passage-not-found warning. Their blue ? markers and passage
+  highlights disappear from Preview and stay absent after resizing the window.
+  Unresolved comments keep their warnings and markers.
   Edit a resolved comment and confirm its old badge and reply disappear.
   Repeat a Reload after changing only a sidecar reply, without changing the
   Markdown file, and confirm the new reply appears.

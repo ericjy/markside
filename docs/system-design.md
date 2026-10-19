@@ -22,6 +22,7 @@ hooks that own the rest:
 | `use-content-reload` | Reload from disk, reload changes, and Review copy reloads |
 | `use-content-preview` | Rendering and mode changes |
 | `use-content-review-highlights` | Resolving Review Comments against the rendered preview |
+| `use-content-agent-review` | Local Review-file discovery and explicit send to a waiting agent |
 | `use-content-review` | Review Comment creation, editing, selection, and copying |
 | `use-content-review-overlay` | Review overlay open state, size, docking, and position |
 | `use-content-selection` | The selection toolbar and comment composer |
@@ -474,3 +475,18 @@ Plasmo's content-script development overlay requires a default export.
 `contents/markside.tsx` exports a null-rendering placeholder component for that
 contract; the application continues to mount through the content script's
 existing bootstrap code.
+
+## Local agent Review handoff
+
+The optional `cli/` npm package creates `<document>.review.json` beside a local
+Markdown document, opens Chrome, and waits for an explicit send. The extension
+checks for the file at document load and Review-panel open, and offers **Send
+comments to agent** for an active request. It uses the existing stored folder
+handles and read-write folder picker. Document contents are verified against
+disk before sending; only the Review file is written.
+
+The version 1 contract and parser live in `cli/review-file.mjs` and are shared
+by the CLI and extension. Node uses temp-file rename; Chrome commits its staged
+writable stream on close. Watching and a one-second fallback poll exist only
+inside the waiting CLI and end on send, timeout, or interrupt. ADR-0002 still
+applies to the extension. See [the contract and prototype setup](agent-review-loop.md).

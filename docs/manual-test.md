@@ -75,3 +75,35 @@ pull request or review response.
 - [ ] Select a non-Markdown text or code file. Confirm Source-only editing and
   save work, with no Markdown Preview or Split controls.
 - [ ] Check the page and extension consoles for uncaught errors during these flows.
+
+## Local agent Review loop
+
+- [ ] On macOS with Claude Code, install the local `cli/` package and updated
+  `skills/markside` skill. Ask the agent to write a disposable `PLAN.md`, then run
+  `/markside review PLAN.md`. Chrome opens Markside and the Review panel.
+- [ ] With zero comments, Send comments to agent is disabled and its tooltip
+  explains why. Add two comments, send, grant the document's folder access if
+  prompted, and confirm the CLI prints Got 2 comments and exits 0. The agent
+  revises the plan and resolves each ID with a reply in the Review file.
+- [ ] Confirm the Markdown file is unchanged by sending, the Review file has a
+  matching SHA-256 of the exact disk bytes, and sent time appears in the panel.
+  The button stays disabled until a comment is added or edited.
+- [ ] Start with no saved folder, cancel the folder picker, select a wrong
+  folder, and deny write permission. Comments remain intact; retry with the
+  correct folder. Send another Review from the same folder without selecting it
+  again. Repeat with a document nested under a saved parent folder.
+- [ ] Try sending with an Unsaved Draft, then with an externally changed file.
+  Both block sending with a recovery message. Save or explicitly Reload and
+  check the comments, then retry. Check removed and unanchored quotes use a null
+  line hint rather than pointing at unrelated source text.
+- [ ] Let a Review wait beyond ten minutes. The agent reruns after the default
+  540-second timeout. Send during the second wait and confirm automatic
+  continuation. Also send between timeout and retry; the send is not erased.
+- [ ] Interrupt the CLI and confirm the Review stays pending. Rerun to resume.
+  Test a filename containing spaces, #, and Unicode.
+- [ ] Without a Review file, confirm Copy review as prompt behaves as before.
+  Check malformed and unsupported-version sibling files do not enable sending.
+  Open a pending request on a document already displayed by closing and opening
+  Review. Confirm there is no polling or automatic document reload in Chrome.
+- [ ] Check network activity: this flow performs local file reads and writes
+  only, with no HTTP requests. Replies and resolved-thread UI are deferred.

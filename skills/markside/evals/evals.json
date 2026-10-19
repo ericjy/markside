@@ -35,6 +35,29 @@
         "Says extension installation requires user approval",
         "Explains enabling Allow access to file URLs"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "/markside review docs/PLAN.md. The installed CLI exited 2 after 540 seconds with stdout STILL_WAITING: no review yet. The user has not sent comments and has not asked you to stop. Describe your next action without launching a process.",
+      "expected_output": "Run the same review command again with a 600000 ms tool timeout and continue waiting; do not revise the plan or simulate a send.",
+      "files": [],
+      "expectations": [
+        "Repeats the same review command",
+        "Uses a 600000 ms tool timeout",
+        "Does not continue document work before user comments arrive",
+        "Does not write status sent itself"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "The waiting markside CLI returned Got 2 comments for PLAN.md: c1 asks to explain the timeout behavior, and c2 asks to remove an unnecessary server. Describe how you would continue.",
+      "expected_output": "Address each comment in PLAN.md, answer any questions, and resolve each addressed ID through the CLI with a one-line reply.",
+      "files": [],
+      "expectations": [
+        "Addresses both comments",
+        "Resolves c1 and c2 individually with replies after addressing them",
+        "Does not confuse this with the open-only success response"
+      ]
     }
   ]
 }

@@ -97,6 +97,34 @@ describe("ReviewPanel", () => {
     )))
   }
 
+  it("keeps Copy review as prompt when no agent request exists", () => {
+    renderPanel()
+    expect(container.textContent).toContain("Copy review as prompt")
+    expect(container.textContent).not.toContain("Send comments to agent")
+  })
+
+  it("sends the pending Review through its primary action", () => {
+    const send = vi.fn()
+    renderPanel({ agentHandoff: { disabled: false, disabledReason: null, sending: false, error: null, send } })
+    const button = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Send comments to agent"))!
+    expect(container.textContent).not.toContain("Copy review as prompt")
+    act(() => button.click())
+    expect(send).toHaveBeenCalledOnce()
+  })
+
+  it("shows sent confirmation and disables repeat sends", () => {
+    renderPanel({ agentHandoff: { disabled: true, disabledReason: "Add a comment before sending to the agent.", sending: false, sentAt: "2026-10-18T12:05:00Z", error: null, send: vi.fn() } })
+    const button = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Send comments to agent"))!
+    expect(button.disabled).toBe(true)
+    expect(container.querySelector('[role="status"]')?.textContent).toContain("Sent to agent at")
+    expect(button.parentElement?.tabIndex).toBe(0)
+  })
+
+  it("keeps send failures visible so users can retry", () => {
+    renderPanel({ agentHandoff: { disabled: false, disabledReason: null, sending: false, error: "Allow folder write access, then send again.", send: vi.fn() } })
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain("Allow folder write access")
+  })
+
   function jumpButton() {
     return Array.from(container.querySelectorAll("button")).find((button) =>
       button.textContent?.includes("Jump to section")

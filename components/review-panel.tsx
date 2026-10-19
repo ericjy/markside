@@ -1,6 +1,7 @@
-import { AlertTriangle, Check, ChevronDown, Copy, FileText, Plus, Trash2 } from "lucide-react"
+import { AlertTriangle, Check, ChevronDown, Copy, FileText, Plus, Send, Trash2 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
+import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
 import { ReviewPresetPicker } from "~components/review-preset-picker"
 import { Button } from "~components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "~components/ui/tooltip"
@@ -30,6 +31,7 @@ interface ReviewPanelProps {
   comments: ResolvedReviewComment[]
   selectedId: string | null
   persistenceError: boolean
+  agentHandoff?: AgentReviewHandoff
   copyStatus: ReviewCopyStatus | null
   jumpableCommentIds: ReadonlySet<string>
   resolvedImportedComments: ReadonlyMap<string, ReviewComment & ResolvedAnchor>
@@ -61,6 +63,7 @@ export function ReviewPanel({
   selectedId,
   persistenceError,
   copyStatus,
+  agentHandoff,
   jumpableCommentIds,
   resolvedImportedComments,
   jumpableImportedCommentIds,
@@ -488,12 +491,29 @@ export function ReviewPanel({
         {copyError && !inlineCopyError && (
           <div className="mb-2">{copyErrorNotice}</div>
         )}
+        {agentHandoff?.sentAt && (
+          <p role="status" className="mb-2 text-xs text-muted-foreground">
+            Sent to agent at {new Date(agentHandoff.sentAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+          </p>
+        )}
+        {agentHandoff?.error && <p role="alert" className="mb-2 text-xs text-destructive">{agentHandoff.error}</p>}
         <div className="flex gap-2">
-          <Button className="h-11 flex-1" disabled={itemCount === 0} onClick={onCopy}>
+          {agentHandoff ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="flex min-w-0 flex-1" tabIndex={agentHandoff.disabled ? 0 : undefined}>
+                  <Button className="h-11 flex-1" disabled={agentHandoff.disabled} onClick={agentHandoff.send} aria-busy={agentHandoff.sending}>
+                    <Send size={14} />{agentHandoff.sending ? "Sending comments…" : "Send comments to agent"}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {agentHandoff.disabledReason && <TooltipContent>{agentHandoff.disabledReason}</TooltipContent>}
+            </Tooltip>
+          ) : <Button className="h-11 flex-1" disabled={itemCount === 0} onClick={onCopy}>
             {copied
               ? <Check size={14} strokeWidth={2.5} className="text-[hsl(132_60%_46%)] dark:text-[hsl(130_78%_29%)]" />
               : <Copy size={14} />} {copied ? "Review copied for this file" : "Copy review as prompt"}
-          </Button>
+          </Button>}
           {itemCount > 0 && (
             <Button
               ref={clearButtonRef}

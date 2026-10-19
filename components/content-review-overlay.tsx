@@ -16,7 +16,10 @@ import {
   REVIEW_OVERLAY_WIDTHS
 } from "~lib/review-layout"
 
+import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
+
 interface ContentReviewOverlayProps {
+  agentHandoff?: AgentReviewHandoff
   isMdFile: boolean
   reviewOverlayRef: React.RefObject<HTMLElement>
   reviewOverlayOpen: boolean
@@ -80,6 +83,7 @@ export function ContentReviewOverlay({
   selectedReviewId,
   reviewPersistenceError,
   copyReviewStatus,
+  agentHandoff,
   jumpableReviewCommentIds,
   resolvedImportedComments,
   jumpableImportedCommentIds,
@@ -187,6 +191,7 @@ export function ContentReviewOverlay({
                 selectedId={selectedReviewId}
                 persistenceError={reviewPersistenceError}
                 copyStatus={copyReviewStatus}
+                agentHandoff={agentHandoff}
                 jumpableCommentIds={jumpableReviewCommentIds}
                 resolvedImportedComments={resolvedImportedComments}
                 jumpableImportedCommentIds={jumpableImportedCommentIds}

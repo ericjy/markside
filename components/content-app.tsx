@@ -23,6 +23,7 @@ import { useContentPreferences } from "~hooks/use-content-preferences"
 import { useContentPreview } from "~hooks/use-content-preview"
 import { useContentReadability } from "~hooks/use-content-readability"
 import { useContentReload } from "~hooks/use-content-reload"
+import { useContentAgentReview } from "~hooks/use-content-agent-review"
 import { useContentReview } from "~hooks/use-content-review"
 import { useContentReviewHighlights } from "~hooks/use-content-review-highlights"
 import { useContentReviewOverlay } from "~hooks/use-content-review-overlay"
@@ -485,6 +486,18 @@ export function FileRenderer({
       selection.quickCommentMenuOpen,
   })
 
+  const agentHandoff = useContentAgentReview({
+    fileUrl,
+    enabled: isMdFile,
+    open: overlay.reviewOverlayOpen,
+    openReview: () => overlay.setReviewOverlayOpen(true),
+    review,
+    openDirectory,
+    diskContentRef,
+    hasUnsavedDraftRef,
+    renderedTextIndexRef,
+  })
+
   const reviewActions = useContentReview({
     fileUrl,
     isMdFile,
@@ -815,6 +828,7 @@ export function FileRenderer({
         setActiveHeadingId={setActiveHeadingId}
       />
       <ContentReviewOverlay
+        agentHandoff={agentHandoff}
         isMdFile={isMdFile}
         reviewOverlayRef={overlay.reviewOverlayRef}
         reviewOverlayOpen={overlay.reviewOverlayOpen}

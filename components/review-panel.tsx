@@ -454,11 +454,11 @@ export function ReviewPanel({
       </section>
 
       {resolvedComments.length > 0 && (
-        <details className="mx-4 my-3 rounded-lg border">
-          <summary className="cursor-pointer rounded-lg px-4 py-3 text-sm font-semibold outline outline-2 outline-offset-1 outline-transparent focus-visible:outline-ring">
+        <details className="mx-4 my-3">
+          <summary className="cursor-pointer py-3 text-sm font-semibold outline outline-2 outline-offset-1 outline-transparent focus-visible:outline-ring">
             Resolved · {resolvedComments.length}
           </summary>
-          <div className="space-y-3 px-3 pb-3">{resolvedComments.map(renderComment)}</div>
+          <div className="space-y-3 pb-3">{resolvedComments.map(renderComment)}</div>
         </details>
       )}
 

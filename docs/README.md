@@ -6,6 +6,7 @@
 
 ## Contributors
 
+- [Product brief](../PRODUCT.md) — audience, core workflow, product boundaries, and feature status
 - [Development guide](dev-guide.md) — local setup, workflow, testing, and technical references
 - [Contributing](../CONTRIBUTING.md) — bug reports, enhancement proposals, and pull requests
 - [System design](system-design.md) — extension surfaces, data flow, state, and durable implementation constraints

@@ -18,4 +18,4 @@ export interface AgentReviewFile {
 }
 export function parseReviewFile(text: string, doc: string): AgentReviewFile
 export function refreshReviewFile(existing: AgentReviewFile | null, doc: string, now?: string): AgentReviewFile
-export function formatReviewComments(review: AgentReviewFile): string
+export function formatReviewComments(review: AgentReviewFile, includeResolved?: boolean): string

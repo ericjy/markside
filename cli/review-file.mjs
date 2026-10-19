@@ -36,15 +36,16 @@ export function refreshReviewFile(existing, doc, now = new Date().toISOString())
   }
 }
 
-export function formatReviewComments(review) {
-  const comments = review.comments.filter(({ status }) => status === "open")
+export function formatReviewComments(review, includeResolved = false) {
+  const comments = review.comments.filter(({ status }) => includeResolved || status === "open")
   return [
     `Got ${comments.length} comment${comments.length === 1 ? "" : "s"} for ${review.doc}`,
     ...(review.note ? [`Review note:\n${review.note}`] : []),
     ...comments.map((comment) => [
-      `Comment ${comment.id}${comment.line === null ? " (line unavailable)" : ` (line ${comment.line})`}`,
+      `Comment ${comment.id}${comment.line === null ? " (line unavailable; verify the passage in the current document)" : ` (line ${comment.line})`}${comment.status === "resolved" ? " [resolved]" : ""}`,
       comment.quote.split("\n").map((line) => `> ${line}`).join("\n"),
       comment.body,
+      ...(comment.reply ? [`Agent reply: ${comment.reply}`] : []),
     ].join("\n")),
   ].join("\n\n")
 }

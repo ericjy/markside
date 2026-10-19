@@ -111,12 +111,15 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       }
       const digest = await crypto.subtle.digest("SHA-256", bytes)
       const docHash = Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, "0")).join("")
+      const index = options.renderedTextIndexRef.current
+      const resolvedComments = index
+        ? resolveReviewPolicy({ review, document: index, request: { type: "reattach" } }).comments
+        : []
       const sourceLine = (comment: ReviewComment) => {
         if (comment.anchor.removed) return null
-        const index = options.renderedTextIndexRef.current
         if (!index) return null
         // Resolve against today's rendered text, including after an explicit reload.
-        const resolved = resolveReviewPolicy({ review, document: index, request: { type: "reattach" } }).comments.find(({ id }) => id === comment.id)
+        const resolved = resolvedComments.find(({ id }) => id === comment.id)
         if (!resolved || resolved.status !== "anchored") return null
         const range = rangeFromOffsets(index, resolved.range.start, resolved.range.end)
         return range ? sourceLineForNode(range.startContainer) : null

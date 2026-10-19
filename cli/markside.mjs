@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import { watch } from "node:fs"
+import { existsSync, watch } from "node:fs"
 import { readFile, writeFile, rename, unlink, stat } from "node:fs/promises"
-import { basename, dirname, resolve } from "node:path"
+import { basename, dirname, join, resolve } from "node:path"
 import { pathToFileURL } from "node:url"
 import { randomUUID } from "node:crypto"
 import { spawn } from "node:child_process"
@@ -29,15 +29,25 @@ async function atomicWrite(path, review) {
 
 function openChrome(file) {
   const url = pathToFileURL(file).href
+  const windowsChrome = process.platform === "win32"
+    ? [process.env.PROGRAMFILES, process.env["PROGRAMFILES(X86)"], process.env.LOCALAPPDATA]
+        .filter(Boolean)
+        .map((root) => join(root, "Google", "Chrome", "Application", "chrome.exe"))
+        .find((path) => existsSync(path)) ?? "chrome.exe"
+    : "chrome.exe"
   const [command, args] = process.platform === "darwin"
     ? ["open", ["-a", "Google Chrome", url]]
     : process.platform === "win32"
-      ? ["cmd.exe", ["/d", "/c", "start", '""', "chrome", url]]
+      ? [windowsChrome, [url]]
       : ["google-chrome", [url]]
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, { stdio: "ignore", detached: process.platform !== "darwin" })
     child.once("error", () => reject(new Error("Could not open Google Chrome. Install Chrome or use --no-open.")))
-    child.once("spawn", () => { child.unref(); resolve() })
+    if (process.platform === "darwin") {
+      child.once("exit", (code) => code === 0 ? resolve() : reject(new Error("Could not open Google Chrome. Install Chrome or use --no-open.")))
+    } else {
+      child.once("spawn", () => { child.unref(); resolve() })
+    }
   })
 }
 
@@ -73,7 +83,7 @@ function waitForReview(path, doc, seconds, signal) {
       watcher = watch(dirname(path), (_event, filename) => {
         if (!filename || filename.toString() === basename(path)) void check()
       })
-      watcher.on("error", () => { watcher.close(); watcher = undefined })
+      watcher.on("error", () => { watcher?.close(); watcher = undefined })
     } catch { /* Polling also covers filesystems without fs.watch support. */ }
     signal.addEventListener("abort", abort, { once: true })
     if (signal.aborted) abort()
@@ -105,7 +115,7 @@ async function main() {
   const existing = await readReview(path, doc)
   if (command === "comments") {
     if (!existing) throw new Error(`No Review file: ${path}`)
-    console.log(formatReviewComments(existing))
+    console.log(formatReviewComments(existing, true))
     return 0
   }
   if (command === "resolve") {
@@ -136,7 +146,8 @@ async function main() {
     const sent = await waitForReview(path, doc, seconds, controller.signal)
     if (controller.signal.aborted) return 130
     if (sent) { console.log(formatReviewComments(sent)); return 0 }
-    console.log(`STILL_WAITING: no review yet. Run "markside review ${JSON.stringify(input)}" again to keep waiting.`)
+    const quotedInput = "'" + input.replaceAll("'", "'\\''") + "'"
+    console.log(`STILL_WAITING: no review yet. Run "markside review ${quotedInput}" again to keep waiting.`)
     return 2
   } finally {
     process.removeListener("SIGINT", interrupt)

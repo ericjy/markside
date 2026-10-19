@@ -33,12 +33,18 @@ export function prepareAgentReview(
     sentAt,
     docHash,
     note: review.note,
-    comments: review.comments.map((comment) => ({
-      id: comment.id,
-      quote: comment.anchor.exact,
-      line: sourceLine(comment),
-      body: comment.body,
-      status: "open",
-    })),
+    comments: review.comments.map((comment) => {
+      const previous = pending.comments.find((item) =>
+        item.id === comment.id && item.quote === comment.anchor.exact && item.body === comment.body
+      )
+      return {
+        id: comment.id,
+        quote: comment.anchor.exact,
+        line: sourceLine(comment),
+        body: comment.body,
+        status: previous?.status ?? "open",
+        ...(previous?.reply !== undefined ? { reply: previous.reply } : {}),
+      }
+    }),
   }
 }

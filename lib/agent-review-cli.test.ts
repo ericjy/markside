@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { mkdtemp, readFile, writeFile, rename, rm } from "node:fs/promises"
+import { chmod, mkdtemp, readFile, writeFile, rename, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
 import { spawn } from "node:child_process"
@@ -11,8 +11,8 @@ let doc: string
 let sidecar: string
 const children: ReturnType<typeof spawn>[] = []
 
-function run(args: string[]) {
-  const child = spawn(process.execPath, [cli, ...args], { stdio: ["ignore", "pipe", "pipe"] })
+function run(args: string[], env = process.env) {
+  const child = spawn(process.execPath, [cli, ...args], { env, stdio: ["ignore", "pipe", "pipe"] })
   children.push(child)
   let stdout = "", stderr = ""
   child.stdout!.on("data", (chunk) => { stdout += chunk })
@@ -57,7 +57,20 @@ describe("markside CLI with real files", () => {
     expect(JSON.parse(await readFile(sidecar, "utf8"))).toMatchObject({
       status: "resolved", comments: [{ status: "resolved", reply: "Added rationale." }],
     })
+    const resolved = await run(["comments", doc]).done
+    expect(resolved.stdout).toContain("[resolved]")
+    expect(resolved.stdout).toContain("Added rationale.")
   })
+  it.runIf(process.platform === "darwin")("opens Chrome with a correctly encoded file URL", async () => {
+    const log = join(folder, "open-args.json")
+    const launcher = join(folder, "open")
+    await writeFile(launcher, '#!/usr/bin/env node\nrequire("node:fs").writeFileSync(process.env.MARKSIDE_LAUNCH_LOG, JSON.stringify(process.argv.slice(2)))\n')
+    await chmod(launcher, 0o755)
+    const result = await run(["review", doc, "--timeout", "0.03"], { ...process.env, PATH: `${folder}:${process.env.PATH}`, MARKSIDE_LAUNCH_LOG: log }).done
+    expect(result.code).toBe(2)
+    expect(JSON.parse(await readFile(log, "utf8"))).toEqual(["-a", "Google Chrome", expect.stringContaining("plan%20%231.md")])
+  })
+
   it("keeps a send made between timeout and retry", async () => {
     const timedOut = await run(["review", doc, "--no-open", "--timeout", "0.03"]).done
     expect(timedOut.code).toBe(2)

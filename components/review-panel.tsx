@@ -497,7 +497,7 @@ export function ReviewPanel({
           </p>
         )}
         {agentHandoff?.error && <p role="alert" className="mb-2 text-xs text-destructive">{agentHandoff.error}</p>}
-        <div className="flex gap-2">
+        <div className={agentHandoff ? "flex flex-col gap-2" : "flex gap-2"}>
           {agentHandoff ? (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -517,7 +517,7 @@ export function ReviewPanel({
           {itemCount > 0 && (
             <Button
               ref={clearButtonRef}
-              className={`h-11 px-3 ${clearArmed ? "text-red-700 hover:text-red-700 dark:text-red-300 dark:hover:text-red-300" : "text-muted-foreground"}`}
+              className={`${agentHandoff ? "h-8 self-end" : "h-11"} px-3 ${clearArmed ? "text-red-700 hover:text-red-700 dark:text-red-300 dark:hover:text-red-300" : "text-muted-foreground"}`}
               variant="ghost"
               onBlur={() => setClearArmed(false)}
               onClick={() => {

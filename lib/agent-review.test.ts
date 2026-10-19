@@ -17,6 +17,15 @@ describe("agent Review handoff", () => {
     const sent = prepareAgentReview(pending, review, "a".repeat(64), () => 12, "2026-10-18T12:05:00Z")
     expect(sent).toMatchObject({ status: "sent", requestedAt: pending.requestedAt, sentAt: "2026-10-18T12:05:00Z", note: review.note, comments: [{ id: "c1", quote: "Selected text", line: 12, body: "Clarify", status: "open" }] })
   })
+  it("retains resolved comments and replies unless the user revises them", () => {
+    const sent = prepareAgentReview(pending, review, "a".repeat(64), () => 12)
+    sent.comments[0].status = "resolved"
+    sent.comments[0].reply = "Clarified."
+    expect(prepareAgentReview(sent, review, sent.docHash, () => 12).comments[0]).toMatchObject({ status: "resolved", reply: "Clarified." })
+    const changed = { ...review, comments: [{ ...review.comments[0], body: "Still unclear" }] }
+    expect(prepareAgentReview(sent, changed, sent.docHash, () => 12).comments[0]).toMatchObject({ status: "open", body: "Still unclear" })
+    expect(prepareAgentReview(sent, changed, sent.docHash, () => 12).comments[0].reply).toBeUndefined()
+  })
   it("disables repeat sends until the user changes the Review", () => {
     const sent = prepareAgentReview(pending, review, "a".repeat(64), () => null)
     expect(reviewSendFingerprint(review)).toBe(reviewSendFingerprint(sent))

@@ -4,17 +4,16 @@
 
 <h1 style="border-bottom: none;">Markside</h1>
 
-<h3>Your local Markdown workspace in Chrome</h3>
+<h3>Local Markdown workspace in Chrome</h3>
 
-A human layer for the plans, specs, and docs your AI agents write.
+A human layer for the docs your AI agents write.
 
-[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/ccokohfaicfjkilcakhnlckbbkhhknhj?label=Chrome%20Web%20Store&logo=googlechrome&logoColor=white&color=18181b)](https://chromewebstore.google.com/detail/markside-%E2%80%94-markdown-viewe/ccokohfaicfjkilcakhnlckbbkhhknhj)
 [![Rating](https://img.shields.io/chrome-web-store/rating/ccokohfaicfjkilcakhnlckbbkhhknhj?color=18181b)](https://chromewebstore.google.com/detail/markside-%E2%80%94-markdown-viewe/ccokohfaicfjkilcakhnlckbbkhhknhj)
 [![CI](https://github.com/ericjy/markside/actions/workflows/ci.yml/badge.svg)](https://github.com/ericjy/markside/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-18181b)](LICENSE)
 
-<a href="https://chromewebstore.google.com/detail/markside-%E2%80%94-markdown-viewe/ccokohfaicfjkilcakhnlckbbkhhknhj"><img src=".github/assets/install-chrome.png" alt="Install for Chrome" width="256" height="52" /></a>&nbsp;
-<a href="https://markside.app"><img src=".github/assets/visit-website.png" alt="Visit website" width="216" height="52" /></a>
+<a href="https://chromewebstore.google.com/detail/markside-%E2%80%94-markdown-viewe/ccokohfaicfjkilcakhnlckbbkhhknhj"><img src=".github/assets/install-chrome.png" alt="Install for Chrome" width="187" height="38" /></a>&nbsp;
+<a href="https://markside.app"><img src=".github/assets/visit-website.png" alt="Visit website" width="158" height="38" /></a>
 
 <p><sub><strong>WORKS WITH</strong></sub></p>
 
@@ -23,7 +22,6 @@ A human layer for the plans, specs, and docs your AI agents write.
 <img src=".github/assets/icons/codex.svg" alt="Codex" title="Codex" width="40" height="40" />&nbsp;&nbsp;&nbsp;
 <img src=".github/assets/icons/cursor.svg" alt="Cursor" title="Cursor" width="40" height="40" />&nbsp;&nbsp;&nbsp;
 <img src=".github/assets/icons/opencode.svg" alt="OpenCode" title="OpenCode" width="40" height="40" />&nbsp;&nbsp;&nbsp;
-<img src=".github/assets/icons/kilocode.svg" alt="Kilo Code" title="Kilo Code" width="40" height="40" />&nbsp;&nbsp;&nbsp;
 <img src=".github/assets/icons/openclaw.svg" alt="OpenClaw" title="OpenClaw" width="40" height="40" />&nbsp;&nbsp;&nbsp;
 <img src=".github/assets/icons/hermesagent.svg" alt="Hermes Agent" title="Hermes Agent" width="40" height="40" />&nbsp;&nbsp;&nbsp;
 <img src=".github/assets/icons/pi.svg" alt="Pi" title="Pi" width="40" height="40" />

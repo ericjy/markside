@@ -66,6 +66,7 @@ export function useContentReload({
   const [reloadConfirmOpen, setReloadConfirmOpen] = useState(false)
   const [reloadNoticeOpen, setReloadNoticeOpen] = useState(false)
   const [reloadLoading, setReloadLoading] = useState(false)
+  const [reloadVersion, setReloadVersion] = useState(0)
   const reloadLoadingRef = useRef(false)
   const reloadTriggerRef = useRef<HTMLButtonElement>(null)
   const reloadNoticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -134,6 +135,7 @@ export function useContentReload({
         setDraft(text)
         draftRef.current = text
       }
+      setReloadVersion((version) => version + 1)
       setSaveState("idle")
       setConflict(false)
       hasUnsavedDraftRef.current = false
@@ -202,6 +204,7 @@ export function useContentReload({
     setReloadConfirmOpen,
     reloadNoticeOpen,
     reloadLoading,
+    reloadVersion,
     reloadTriggerRef,
     reloadComparison,
     hasReloadChanges,

@@ -350,6 +350,18 @@ describe("useContentReload", () => {
     expect(readFileFromDisk).not.toHaveBeenCalled()
   })
 
+  it("increments the explicit reload version even when the source text is unchanged", async () => {
+    vi.mocked(readFileFromDisk).mockResolvedValue({ text: "old", buffer: null, type: "", lastModified: 7 })
+    const { hook } = setup()
+    expect(hook.result.current.reloadVersion).toBe(0)
+    await act(() => hook.result.current.handleReloadFromDisk())
+    expect(hook.result.current.reloadVersion).toBe(1)
+    vi.mocked(readFileFromDisk).mockRejectedValueOnce(new Error("File unavailable"))
+    await act(() => hook.result.current.handleReloadFromDisk())
+    expect(hook.result.current.reloadVersion).toBe(1)
+    hook.unmount()
+  })
+
   it("replaces the draft with disk text and shows what changed", async () => {
     vi.mocked(readFileFromDisk).mockResolvedValue({ text: "new", buffer: null, type: "", lastModified: 7 })
     const { hook, refs, setters, options } = setup({ mode: "source" })

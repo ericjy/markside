@@ -1,0 +1,131 @@
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { chmod, mkdtemp, readFile, writeFile, rename, rm } from "node:fs/promises"
+import { tmpdir } from "node:os"
+import { join, resolve } from "node:path"
+import { spawn } from "node:child_process"
+import { once } from "node:events"
+import { parseReviewFile, setReviewerCommentStatus } from "../cli/review-file.mjs"
+
+const cli = resolve("cli/markside.mjs")
+let folder: string
+let doc: string
+let sidecar: string
+const children: ReturnType<typeof spawn>[] = []
+
+function run(args: string[], env = process.env) {
+  const child = spawn(process.execPath, [cli, ...args], { env, stdio: ["ignore", "pipe", "pipe"] })
+  children.push(child)
+  let stdout = "", stderr = ""
+  child.stdout!.on("data", (chunk) => { stdout += chunk })
+  child.stderr!.on("data", (chunk) => { stderr += chunk })
+  const done = once(child, "exit").then(([code]) => ({ code, stdout, stderr }))
+  const waiting = new Promise<void>((resolve) => {
+    child.stderr!.on("data", () => { if (stderr.includes("Waiting for review")) resolve() })
+  })
+  return { child, done, waiting }
+}
+
+beforeEach(async () => {
+  folder = await mkdtemp(join(tmpdir(), "markside-review-"))
+  doc = join(folder, "plan #1.md")
+  sidecar = `${doc}.review.json`
+  await writeFile(doc, "# Plan\n\nFirst step.\n")
+})
+afterEach(async () => {
+  for (const child of children.splice(0)) if (child.exitCode === null) child.kill()
+  await rm(folder, { recursive: true, force: true })
+})
+
+async function send() {
+  const review = JSON.parse(await readFile(sidecar, "utf8"))
+  Object.assign(review, {
+    status: "sent", sentAt: new Date().toISOString(), docHash: "a".repeat(64),
+    comments: [{ id: "c1", quote: "First step.", line: 3, body: "Explain why.", status: "open" }],
+  })
+  await writeFile(`${sidecar}.tmp`, JSON.stringify(review))
+  await rename(`${sidecar}.tmp`, sidecar)
+}
+
+describe("markside CLI with real files", () => {
+  it("waits across atomic replacement and returns an agent prompt", async () => {
+    const process = run(["review", doc, "--no-open", "--timeout", "3"])
+    await process.waiting
+    await send()
+    expect(await process.done).toMatchObject({ code: 0, stdout: expect.stringContaining("Got 1 comment") })
+    const comments = await run(["comments", doc]).done
+    expect(comments.stdout).toContain("Explain why.")
+    expect((await run(["address", doc, "c1", "--reply", "Added rationale."]).done).code).toBe(0)
+    expect(JSON.parse(await readFile(sidecar, "utf8"))).toMatchObject({
+      status: "sent", comments: [{ status: "addressed", reply: "Added rationale." }],
+    })
+    const resolved = await run(["comments", doc]).done
+    expect(resolved.stdout).toContain("[addressed]")
+    expect(resolved.stdout).toContain("Added rationale.")
+  })
+  it("rejects agent resolution and waits after comments are addressed", async () => {
+    const first = run(["review", doc, "--no-open", "--timeout", "3"])
+    await first.waiting
+    await send()
+    await first.done
+    await run(["address", doc, "c1", "--reply", "Clarified."]).done
+    const rejected = await run(["resolve", doc, "c1"]).done
+    expect(rejected.code).toBe(1)
+    expect(rejected.stderr).toContain("reviewer resolves")
+    const second = await run(["review", doc, "--no-open", "--timeout", "0.03"]).done
+    expect(second.code).toBe(2)
+    expect(JSON.parse(await readFile(sidecar, "utf8")).comments[0].status).toBe("addressed")
+  })
+
+  it("finishes a waiting request when the reviewer accepts all addressed comments", async () => {
+    const first = run(["review", doc, "--no-open", "--timeout", "3"])
+    await first.waiting
+    await send()
+    await first.done
+    await run(["address", doc, "c1", "--reply", "Clarified."]).done
+    const waiting = run(["review", doc, "--no-open", "--timeout", "3"])
+    await waiting.waiting
+    const current = parseReviewFile(await readFile(sidecar, "utf8"), "plan #1.md")
+    const accepted = setReviewerCommentStatus(current, "c1", "resolved")
+    await writeFile(`${sidecar}.tmp`, JSON.stringify(accepted))
+    await rename(`${sidecar}.tmp`, sidecar)
+    expect(await waiting.done).toMatchObject({ code: 0, stdout: expect.stringContaining("Review resolved for plan #1.md") })
+  })
+
+  it.runIf(process.platform === "darwin")("opens Chrome with a correctly encoded file URL", async () => {
+    const log = join(folder, "open-args.json")
+    const launcher = join(folder, "open")
+    await writeFile(launcher, '#!/usr/bin/env node\nrequire("node:fs").writeFileSync(process.env.MARKSIDE_LAUNCH_LOG, JSON.stringify(process.argv.slice(2)))\n')
+    await chmod(launcher, 0o755)
+    const result = await run(["review", doc, "--timeout", "0.03"], { ...process.env, PATH: `${folder}:${process.env.PATH}`, MARKSIDE_LAUNCH_LOG: log }).done
+    expect(result.code).toBe(2)
+    expect(JSON.parse(await readFile(log, "utf8"))).toEqual(["-a", "Google Chrome", expect.stringContaining("plan%20%231.md")])
+  })
+
+  it("keeps a send made between timeout and retry", async () => {
+    const timedOut = await run(["review", doc, "--no-open", "--timeout", "0.03"]).done
+    expect(timedOut.code).toBe(2)
+    expect(timedOut.stdout.startsWith("STILL_WAITING:")).toBe(true)
+    const requestedAt = JSON.parse(await readFile(sidecar, "utf8")).requestedAt
+    await send()
+    const retried = await run(["review", doc, "--no-open", "--timeout", "0.03"]).done
+    expect(retried.code).toBe(0)
+    expect(retried.stdout).toContain("Explain why.")
+    expect(JSON.parse(await readFile(sidecar, "utf8")).requestedAt).toBe(requestedAt)
+  })
+  it("leaves pending state intact on Ctrl+C", async () => {
+    const process = run(["review", doc, "--no-open"])
+    await process.waiting
+    process.child.kill("SIGINT")
+    expect((await process.done).code).toBe(130)
+    expect(JSON.parse(await readFile(sidecar, "utf8")).status).toBe("pending")
+  })
+  it("rejects missing documents and invalid timeouts clearly", async () => {
+    expect((await run(["review", `${doc}.missing`, "--no-open"]).done).stderr).toContain("not found")
+    expect((await run(["review", doc, "--timeout", "NaN"]).done).stderr).toContain("--timeout")
+  })
+  it("does not replace malformed review files", async () => {
+    await writeFile(sidecar, "broken")
+    expect((await run(["review", doc, "--no-open"]).done).code).toBe(1)
+    expect(await readFile(sidecar, "utf8")).toBe("broken")
+  })
+})

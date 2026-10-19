@@ -97,6 +97,114 @@ describe("ReviewPanel", () => {
     )))
   }
 
+  it("keeps Copy review as prompt when no agent request exists", () => {
+    renderPanel()
+    expect(container.textContent).toContain("Copy review as prompt")
+    expect(container.textContent).not.toContain("Send comments to agent")
+  })
+
+  it("sends the pending Review through its primary action", () => {
+    const send = vi.fn()
+    renderPanel({ agentHandoff: { disabled: false, disabledReason: null, sending: false, error: null, send } })
+    const button = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Send comments to agent"))!
+    expect(container.textContent).not.toContain("Copy review as prompt")
+    act(() => button.click())
+    expect(send).toHaveBeenCalledOnce()
+  })
+
+  it("explains first-send folder access and labels the picker action before it opens", () => {
+    const send = vi.fn()
+    renderPanel({ agentHandoff: {
+      disabled: false, disabledReason: null, sending: false, error: null, send,
+      folderToChoose: "/Users/eric/project/",
+    } })
+    const button = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Choose folder and send"))!
+    expect(button).toBeDefined()
+    const explanation = container.querySelector(`#${button.getAttribute("aria-describedby")}`)
+    expect(explanation?.textContent).toContain("Markside saves your comments beside this document")
+    expect(explanation?.textContent).toContain("/Users/eric/project/")
+    expect(explanation?.textContent).toContain("remember your choice")
+    expect(send).not.toHaveBeenCalled()
+    act(() => button.click())
+    expect(send).toHaveBeenCalledOnce()
+  })
+
+  it("shows sent confirmation and disables repeat sends", () => {
+    renderPanel({ agentHandoff: { disabled: true, disabledReason: "Add a comment before sending to the agent.", sending: false, sentAt: "2026-10-18T12:05:00Z", error: null, send: vi.fn() } })
+    const button = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Send comments to agent"))!
+    expect(button.disabled).toBe(true)
+    expect(container.querySelector('[role="status"]')?.textContent).toContain("Sent to agent at")
+    expect(button.parentElement?.tabIndex).toBe(0)
+  })
+
+  it("keeps send failures visible so users can retry", () => {
+    renderPanel({ agentHandoff: { disabled: false, disabledReason: null, sending: false, error: "Allow folder write access, then send again.", send: vi.fn() } })
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain("Allow folder write access")
+  })
+
+  it("shows resolved status and the agent reply on a collapsed unanchored comment", () => {
+    renderPanel({
+      jumpableCommentIds: new Set([comment.id]),
+      agentHandoff: {
+        completed: true, disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn(),
+        results: new Map([[comment.id, { id: comment.id, quote: comment.anchor.exact, body: comment.body, line: 3, status: "resolved", reply: "Clarified the first step." }]]),
+      },
+    })
+    expect(container.textContent).toContain("Resolved")
+    expect(container.textContent).toContain("Agent reply")
+    expect(container.textContent).toContain("Clarified the first step.")
+    expect(container.textContent).not.toContain("Passage no longer found")
+    expect(container.textContent).toContain("Copy review as prompt")
+    expect(container.textContent).not.toContain("Send comments to agent")
+  })
+
+  it("keeps passage warnings on unresolved comments", () => {
+    renderPanel({
+      agentHandoff: {
+        disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn(),
+        results: new Map([[comment.id, { id: comment.id, quote: comment.anchor.exact, body: comment.body, line: 3, status: "open" }]]),
+      },
+    })
+    expect(container.textContent).toContain("Passage no longer found")
+    expect(container.textContent).not.toContain("Resolved")
+  })
+
+  it("shows Addressed with reviewer Resolve and Reopen actions", () => {
+    const changeStatus = vi.fn()
+    renderPanel({ agentHandoff: {
+      disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn(), changeStatus,
+      results: new Map([[comment.id, { id: comment.id, quote: comment.anchor.exact, body: comment.body, line: 3, status: "addressed", reply: "Clarified." }]]),
+    } })
+    expect(container.textContent).toContain("Addressed")
+    const expand = container.querySelector<HTMLButtonElement>('[aria-label="Expand Review Comment"]')!
+    act(() => expand.click())
+    expect(container.querySelector('textarea[aria-label="Review Comment"]')).toBeNull()
+    expect(container.querySelector('[aria-label="Delete Review Comment"]')).toBeNull()
+    expect(container.textContent).not.toContain("Passage no longer found")
+    const resolve = container.querySelector<HTMLButtonElement>('[aria-label="Resolve comment 1"]')!
+    act(() => resolve.click())
+    expect(changeStatus).toHaveBeenCalledWith(comment.id, "resolved")
+    const reopen = container.querySelector<HTMLButtonElement>('[aria-label="Reopen comment 1"]')!
+    act(() => reopen.click())
+    expect(changeStatus).toHaveBeenCalledWith(comment.id, "open")
+  })
+
+  it("groups resolved comments in a collapsed section with a Reopen action", () => {
+    const changeStatus = vi.fn()
+    renderPanel({ agentHandoff: {
+      completed: true, disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn(), changeStatus,
+      results: new Map([[comment.id, { id: comment.id, quote: comment.anchor.exact, body: comment.body, line: 3, status: "resolved", reply: "Clarified." }]]),
+    } })
+    const group = container.querySelector("details")!
+    expect(group).not.toBeNull()
+    expect(group.open).toBe(false)
+    expect(group.querySelector("summary")?.textContent).toContain("Resolved · 1")
+    expect(group.querySelector('[aria-label="Resolve comment 1"]')).toBeNull()
+    const reopen = group.querySelector<HTMLButtonElement>('[aria-label="Reopen comment 1"]')!
+    act(() => { group.open = true; reopen.click() })
+    expect(changeStatus).toHaveBeenCalledWith(comment.id, "open")
+  })
+
   function jumpButton() {
     return Array.from(container.querySelectorAll("button")).find((button) =>
       button.textContent?.includes("Jump to section")

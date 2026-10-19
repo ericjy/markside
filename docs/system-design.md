@@ -22,6 +22,7 @@ hooks that own the rest:
 | `use-content-reload` | Reload from disk, reload changes, and Review copy reloads |
 | `use-content-preview` | Rendering and mode changes |
 | `use-content-review-highlights` | Resolving Review Comments against the rendered preview |
+| `use-content-agent-review` | Local Review-file discovery and explicit send to a waiting agent |
 | `use-content-review` | Review Comment creation, editing, selection, and copying |
 | `use-content-review-overlay` | Review overlay open state, size, docking, and position |
 | `use-content-selection` | The selection toolbar and comment composer |
@@ -474,3 +475,34 @@ Plasmo's content-script development overlay requires a default export.
 `contents/markside.tsx` exports a null-rendering placeholder component for that
 contract; the application continues to mount through the content script's
 existing bootstrap code.
+
+## Local agent Review handoff
+
+The optional `cli/` npm package creates `<document>.review.json` beside a local
+Markdown document, opens Chrome, and waits for an explicit send. The extension
+checks for the file at document load, explicit Reload, and Review-panel open, and offers **Send
+comments to agent** for an active request. It uses the existing stored folder
+handles and read-write folder picker. Document contents are verified against
+disk before sending; only the Review file is written. When folder selection is
+needed, the panel explains why, displays the exact folder path, and labels the
+first action Choose folder and send. A matching saved or newly selected sidebar
+folder uses the usual Send comments to agent action.
+
+The version 1 contract and parser live in `cli/review-file.mjs` and are shared
+by the CLI and extension. Node uses temp-file rename; Chrome commits its staged
+writable stream on close. Watching and a one-second fallback poll exist only
+inside the waiting CLI and end on send, timeout, or interrupt. ADR-0002 still
+applies to the extension. See [the contract and prototype setup](agent-review-loop.md).
+
+Agent Review Comments have three states: Open, Addressed, and Resolved. The
+agent uses the CLI `address` command to report its work and reply; only the user
+can Resolve or Reopen in the panel. Addressed cards remain visible for checking.
+Resolved cards move into a collapsed Resolved group. Reopening returns a comment
+to Open and the request to pending, requiring an explicit send before agent work
+continues. The CLI rejects agent resolution and retains history across rounds.
+
+Results match the comment ID, original quote, and body; revising the comment
+hides a previous result. Addressed and Resolved comments hide passage warnings,
+Preview highlights, missing-passage markers, and passage hit testing, including
+after resizing. A successful explicit Reload refreshes results even when source
+text is unchanged. No timer, focus refresh, or filesystem watcher is used.

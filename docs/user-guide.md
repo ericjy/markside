@@ -23,7 +23,8 @@ Install the Beta `markside` Agent Skill globally with the open Agent Skills CLI:
 npx skills add ericjy/markside --skill markside -g
 ```
 
-The installer command requires Node.js, but the installed skill does not. It
+The installer command requires Node.js. Opening a file with the installed skill
+does not. It
 uses the operating system's native shell on macOS and Linux or PowerShell on
 Windows.
 
@@ -39,6 +40,18 @@ requires you to approve the extension installation and enable **Allow access to
 file URLs** in Markside's extension details. The skill cannot inspect which
 Chrome profile has Markside installed. It uses Chrome's normal profile and opens
 a new tab each time.
+
+For a two-way Review, use `/markside review PLAN.md`. The agent opens the file
+and waits until you click **Send comments to agent** in Review. Before the
+first send, Review explains why folder access is needed and shows the folder
+path. Click **Choose folder and send**, then select that folder.
+Later sends use the remembered folder permission. With no agent request,
+Review keeps its usual **Copy review as prompt** action.
+
+Review mode currently requires the prototype CLI installed from this repository
+and Node.js 20+. See [local agent Review setup](agent-review-loop.md). Comments
+are sent through `PLAN.md.review.json` beside the document. Add `*.review.json`
+to your project's `.gitignore` to keep them out of version control.
 
 If the command fails:
 

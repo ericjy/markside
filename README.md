@@ -95,9 +95,14 @@ different invocation syntax, such as `$markside` in Codex. See the
 [Agent Skill guide](docs/user-guide.md#open-from-an-agent) for setup and supported
 platforms.
 
+The prototype `/markside review PLAN.md` waits for Review Comments sent from
+Markside and lets the agent continue with them. It requires Node.js 20+ and the
+local CLI. See [Review loop setup](docs/agent-review-loop.md).
+
 ## Privacy and sharing
 
-Ordinary local reading, editing, and Reviews stay in your browser. Markside has
+Ordinary local reading and editing stay on your computer. Reviews stay in your
+browser unless you explicitly send them to an agent through a local Review file. Markside has
 no analytics or telemetry.
 
 Optional snapshot sharing creates a read-only copy of saved Markdown. A Link

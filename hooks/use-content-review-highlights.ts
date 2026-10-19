@@ -1,4 +1,5 @@
-import React,{ useEffect,useState } from "react"
+import React,{ useEffect,useMemo,useState } from "react"
+import type { AgentReviewComment } from "../cli/review-file.mjs"
 import {
   findInnermostCommentAt,
   hashReviewSource,
@@ -21,6 +22,7 @@ import {
 } from "~lib/review-dom"
 
 interface UseContentReviewHighlightsOptions {
+  agentResults?: ReadonlyMap<string, AgentReviewComment>
   review: ActiveReview | null
   content: string | null
   fileUrl: string
@@ -40,6 +42,7 @@ interface UseContentReviewHighlightsOptions {
 // Call after the preview hook: highlights are applied to the rendered DOM.
 export function useContentReviewHighlights({
   review,
+  agentResults,
   content,
   fileUrl,
   contentRef,
@@ -56,6 +59,10 @@ export function useContentReviewHighlights({
   const [resolvedReviewComments, setResolvedReviewComments] = useState<ResolvedReviewComment[]>([])
   const [resolvedImportedComments, setResolvedImportedComments] = useState<Map<string, ReviewComment & ResolvedAnchor>>(new Map())
   const [reviewBadgeAnchors, setReviewBadgeAnchors] = useState<ReviewBadgeAnchor[]>([])
+
+  const activeReviewComments = useMemo(() => resolvedReviewComments.filter((comment) =>
+    (agentResults?.get(comment.id)?.status ?? "open") === "open"
+  ), [resolvedReviewComments, agentResults])
 
   useEffect(() => {
     if (!review || !contentRef.current) {
@@ -86,15 +93,18 @@ export function useContentReviewHighlights({
     }
     setResolvedImportedComments(importedMap)
     if (previewVisible && previewScrollRef.current) {
-      applyReviewHighlights(index, result.comments, selectedReviewId)
+      const activeComments = result.comments.filter((comment) =>
+        (agentResults?.get(comment.id)?.status ?? "open") === "open"
+      )
+      applyReviewHighlights(index, activeComments, selectedReviewId)
       applyImportedReviewHighlights(index, Array.from(importedMap.values()), selectedImportedCommentId)
-      setReviewBadgeAnchors(computeReviewBadgeAnchors(previewScrollRef.current, index, result.comments))
+      setReviewBadgeAnchors(computeReviewBadgeAnchors(previewScrollRef.current, index, activeComments))
     } else {
       clearReviewHighlights()
       setReviewBadgeAnchors([])
     }
     return clearReviewHighlights
-  }, [content, fileUrl, previewVisible, review, reviewRenderVersion, selectedReviewId, selectedImportedCommentId, numberHeadings, changesVisible, reloadComparison])
+  }, [content, fileUrl, previewVisible, review, agentResults, reviewRenderVersion, selectedReviewId, selectedImportedCommentId, numberHeadings, changesVisible, reloadComparison])
 
   useEffect(() => {
     const preview = previewScrollRef.current
@@ -102,7 +112,7 @@ export function useContentReviewHighlights({
     const recomputeBadges = () => {
       const index = renderedTextIndexRef.current
       if (!index) return
-      setReviewBadgeAnchors(computeReviewBadgeAnchors(preview, index, resolvedReviewComments))
+      setReviewBadgeAnchors(computeReviewBadgeAnchors(preview, index, activeReviewComments))
     }
     const observer = new ResizeObserver(recomputeBadges)
     observer.observe(preview)
@@ -111,7 +121,7 @@ export function useContentReviewHighlights({
       observer.disconnect()
       window.removeEventListener("resize", recomputeBadges)
     }
-  }, [previewVisible, resolvedReviewComments])
+  }, [previewVisible, activeReviewComments])
 
   const offsetAtPoint = (clientX: number, clientY: number) => {
     const index = renderedTextIndexRef.current
@@ -120,7 +130,7 @@ export function useContentReviewHighlights({
 
   const reviewCommentIdAtPoint = (clientX: number, clientY: number) => {
     const offset = offsetAtPoint(clientX, clientY)
-    return offset === null ? null : findInnermostCommentAt(resolvedReviewComments, offset)
+    return offset === null ? null : findInnermostCommentAt(activeReviewComments, offset)
   }
 
   const importedReviewCommentIdAtPoint = (clientX: number, clientY: number) => {

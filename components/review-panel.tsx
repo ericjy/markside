@@ -1,4 +1,4 @@
-import { AlertTriangle, Check, ChevronDown, Copy, FileText, Plus, Send, Trash2 } from "lucide-react"
+import { AlertTriangle, Check, ChevronDown, Copy, FileText, FolderOpen, Plus, Send, Trash2 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
 import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
@@ -534,14 +534,22 @@ export function ReviewPanel({
             Sent to agent at {new Date(activeAgentHandoff.sentAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
           </p>
         )}
+        {activeAgentHandoff?.folderToChoose && (
+          <div id="agent-review-folder-help" className="mb-3 text-xs leading-relaxed text-muted-foreground">
+            <p>Markside saves your comments beside this document so your agent can read them. Choose its folder in the next window. Markside will remember your choice.</p>
+            <p className="mt-2 break-all font-medium text-foreground">{activeAgentHandoff.folderToChoose}</p>
+          </div>
+        )}
         {agentHandoff?.error && <p role="alert" className="mb-2 text-xs text-destructive">{agentHandoff.error}</p>}
         <div className={activeAgentHandoff ? "flex flex-col gap-2" : "flex gap-2"}>
           {activeAgentHandoff ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="flex min-w-0 flex-1" tabIndex={activeAgentHandoff.disabled ? 0 : undefined}>
-                  <Button className="h-11 flex-1" disabled={activeAgentHandoff.disabled} onClick={activeAgentHandoff.send} aria-busy={activeAgentHandoff.sending}>
-                    <Send size={14} />{activeAgentHandoff.sending ? "Sending comments…" : "Send comments to agent"}
+                  <Button className="h-11 flex-1" disabled={activeAgentHandoff.disabled} onClick={activeAgentHandoff.send} aria-busy={activeAgentHandoff.sending}
+                    aria-describedby={activeAgentHandoff.folderToChoose ? "agent-review-folder-help" : undefined}>
+                    {activeAgentHandoff.folderToChoose ? <FolderOpen size={14} /> : <Send size={14} />}
+                    {activeAgentHandoff.sending ? "Sending comments…" : activeAgentHandoff.folderToChoose ? "Choose folder and send" : "Send comments to agent"}
                   </Button>
                 </span>
               </TooltipTrigger>

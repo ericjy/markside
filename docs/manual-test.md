@@ -108,6 +108,11 @@ pull request or review response.
 - [ ] Confirm the Markdown file is unchanged by sending, the Review file has a
   matching SHA-256 of the exact disk bytes, and sent time appears in the panel.
   The button stays disabled until a comment is added or edited.
+- [ ] Start with no saved folder. Before clicking, confirm Review explains why
+  folder access is needed, shows the document's folder path, and labels the
+  action Choose folder and send. Cancel the picker and confirm comments remain.
+  Choose the folder through the sidebar and confirm the action becomes Send
+  comments to agent without opening another folder picker.
 - [ ] Start with no saved folder, cancel the folder picker, select a wrong
   folder, and deny write permission. Comments remain intact; retry with the
   correct folder. Send another Review from the same folder without selecting it

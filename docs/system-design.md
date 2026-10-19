@@ -483,7 +483,10 @@ Markdown document, opens Chrome, and waits for an explicit send. The extension
 checks for the file at document load, explicit Reload, and Review-panel open, and offers **Send
 comments to agent** for an active request. It uses the existing stored folder
 handles and read-write folder picker. Document contents are verified against
-disk before sending; only the Review file is written.
+disk before sending; only the Review file is written. When folder selection is
+needed, the panel explains why, displays the exact folder path, and labels the
+first action Choose folder and send. A matching saved or newly selected sidebar
+folder uses the usual Send comments to agent action.
 
 The version 1 contract and parser live in `cli/review-file.mjs` and are shared
 by the CLI and extension. Node uses temp-file rename; Chrome commits its staged

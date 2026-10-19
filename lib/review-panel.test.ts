@@ -112,6 +112,23 @@ describe("ReviewPanel", () => {
     expect(send).toHaveBeenCalledOnce()
   })
 
+  it("explains first-send folder access and labels the picker action before it opens", () => {
+    const send = vi.fn()
+    renderPanel({ agentHandoff: {
+      disabled: false, disabledReason: null, sending: false, error: null, send,
+      folderToChoose: "/Users/eric/project/",
+    } })
+    const button = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Choose folder and send"))!
+    expect(button).toBeDefined()
+    const explanation = container.querySelector(`#${button.getAttribute("aria-describedby")}`)
+    expect(explanation?.textContent).toContain("Markside saves your comments beside this document")
+    expect(explanation?.textContent).toContain("/Users/eric/project/")
+    expect(explanation?.textContent).toContain("remember your choice")
+    expect(send).not.toHaveBeenCalled()
+    act(() => button.click())
+    expect(send).toHaveBeenCalledOnce()
+  })
+
   it("shows sent confirmation and disables repeat sends", () => {
     renderPanel({ agentHandoff: { disabled: true, disabledReason: "Add a comment before sending to the agent.", sending: false, sentAt: "2026-10-18T12:05:00Z", error: null, send: vi.fn() } })
     const button = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Send comments to agent"))!

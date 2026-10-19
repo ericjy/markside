@@ -5,10 +5,12 @@ import { getSavePathParts } from "~lib/content-app-policy"
 import { normalizeDiskText, requestHandlePermission } from "~lib/content-file-access"
 import { getDirectoryEntryForUrl } from "~lib/db"
 import { readFileFromDisk } from "~lib/file-reload"
+import { fileFolderPath } from "~lib/url"
 import { resolveReviewPolicy, type ActiveReview, type ReviewComment } from "~lib/review"
 import { rangeFromOffsets, sourceLineForNode, type RenderedTextIndex } from "~lib/review-dom"
 
 export interface AgentReviewHandoff {
+  folderToChoose?: string
   updatingCommentId?: string | null
   changeStatus?: (id: string, status: "open" | "resolved") => void
   completed?: boolean
@@ -28,6 +30,7 @@ interface Options {
   reloadVersion?: number
   openReview: () => void
   review: ActiveReview | null
+  directory?: { handle: FileSystemDirectoryHandle; rootUrl: string } | null
   openDirectory: (mode: "readwrite") => Promise<boolean>
   diskContentRef: React.MutableRefObject<string | null>
   hasUnsavedDraftRef: React.MutableRefObject<boolean>
@@ -78,6 +81,13 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
   const file = state?.url === fileUrl ? state.file : null
   const results = useMemo(() => getAgentReviewResults(file, review), [file, review])
   if (!enabled || !file) return undefined
+  const chosenDirectory = options.directory
+  const availableDirectory = chosenDirectory && getSavePathParts(fileUrl, chosenDirectory.rootUrl)
+    ? chosenDirectory
+    : directoryRef.current
+  const folderToChoose = availableDirectory && getSavePathParts(fileUrl, availableDirectory.rootUrl)
+    ? undefined
+    : fileFolderPath(fileUrl)
   const completed = file.status === "resolved"
   const unchanged = file.status === "sent" && reviewSendFingerprint(review) === reviewSendFingerprint(file)
   const hasOpenComments = review?.comments.some(({ id }) => (results.get(id)?.status ?? "open") === "open")
@@ -90,7 +100,7 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
 
   const getReviewDirectory = async () => {
     // Request permission first, while the click's user gesture is active.
-    let entry = directoryRef.current
+    let entry = availableDirectory
     if (!entry || !getSavePathParts(fileUrl, entry.rootUrl)) {
       if (!await options.openDirectory("readwrite")) throw new DOMException("Folder selection cancelled", "AbortError")
       entry = await getDirectoryEntryForUrl(fileUrl)
@@ -190,5 +200,5 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       setSending(false)
     }
   }
-  return { completed, results, updatingCommentId, changeStatus: (id, status) => void changeStatus(id, status), disabled: sending || updatingCommentId !== null || !!disabledReason, disabledReason, sending, sentAt: file.sentAt, error, send: () => void send() }
+  return { folderToChoose, completed, results, updatingCommentId, changeStatus: (id, status) => void changeStatus(id, status), disabled: sending || updatingCommentId !== null || !!disabledReason, disabledReason, sending, sentAt: file.sentAt, error, send: () => void send() }
 }

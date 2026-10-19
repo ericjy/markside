@@ -94,8 +94,11 @@ The CLI creates the Review file before opening Chrome. The extension discovers
 it through the existing local-file read relay on load and Review-panel open.
 A pending request opens the panel once for that document. Sending uses the
 stored directory permission, or the existing folder picker in read-write mode
-when no saved directory contains the document. A wrong folder or denied
-permission leaves the request and comments intact. Successful folder selection
+when no saved directory contains the document. Before the first picker, the
+panel explains that comments are saved beside the document, displays the exact
+folder path, and labels the action Choose folder and send. Once a matching
+folder is selected, the action returns to Send comments to agent. A wrong folder
+or denied permission leaves the request and comments intact. Successful folder selection
 is remembered using Markside's existing directory catalog.
 
 The CLI writes a unique temporary sibling and renames it over the Review file.

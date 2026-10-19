@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { act } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { useContentAgentReview } from "../hooks/use-content-agent-review"
 import { createEmptyReview } from "./review"
@@ -7,9 +8,9 @@ import { renderHook, flush } from "./test-harness"
 const comment = { id: "c1", body: "Clarify", createdAt: "now", anchor: { exact: "Build feature", prefix: "", suffix: "", start: 0, end: 13, headingPath: [] } }
 const review = { ...createEmptyReview("file:///docs/PLAN.md", "hash"), comments: [comment] }
 
-function setup() {
+function setup(status = "sent") {
   let file = {
-    version: 1, doc: "PLAN.md", docHash: "a".repeat(64), requestedAt: "2026-10-19T07:00:00Z", sentAt: "2026-10-19T07:01:00Z", status: "sent",
+    version: 1, doc: "PLAN.md", docHash: "a".repeat(64), requestedAt: "2026-10-19T07:00:00Z", sentAt: "2026-10-19T07:01:00Z", status,
     comments: [{ id: "c1", quote: "Build feature", line: 3, body: "Clarify", status: "open", reply: "" }],
   }
   const sendMessage = vi.fn((_message, callback) => callback({ text: JSON.stringify(file) }))
@@ -64,6 +65,19 @@ describe("local agent Review result discovery", () => {
     expect(hook.result.current?.changeStatus).toBeTypeOf("function")
     hook.unmount()
   })
+  it("reports the folder to choose and keeps the Review intact when the picker is cancelled", async () => {
+    const { hook, options } = setup("pending")
+    await flush()
+    expect(hook.result.current?.folderToChoose).toBe("/docs/")
+    expect(options.openDirectory).not.toHaveBeenCalled()
+    await act(async () => hook.result.current?.send())
+    await flush()
+    expect(options.openDirectory).toHaveBeenCalledWith("readwrite")
+    expect(hook.result.current?.error).toBeNull()
+    expect(hook.result.current?.results?.get("c1")?.status).toBe("open")
+    hook.unmount()
+  })
+
   it("does not reread files when only the draft or comment text changes", async () => {
     const { hook, options, sendMessage } = setup()
     await flush()

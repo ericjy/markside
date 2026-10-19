@@ -447,6 +447,7 @@ export function FileRenderer({
     openReview: () => overlay.setReviewOverlayOpen(true),
     review,
     openDirectory,
+    directory: handle && rootUrl ? { handle, rootUrl } : null,
     diskContentRef,
     hasUnsavedDraftRef,
     renderedTextIndexRef,

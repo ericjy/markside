@@ -62,7 +62,7 @@ describe("agent Review file", () => {
     expect(prompt).toContain("Got 1 comment")
     expect(prompt).toContain("c1")
     expect(prompt).toContain("line 3")
-    expect(prompt).toContain("> Plan")
+    expect(prompt).toContain("> Plan\n\nClarify")
     expect(prompt).toContain("Clarify")
   })
 })

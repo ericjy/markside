@@ -76,6 +76,8 @@ export function formatReviewComments(review, includeAll = false) {
     ...comments.map((comment) => [
       `Comment ${comment.id}${comment.line === null ? " (line unavailable; verify the passage in the current document)" : ` (line ${comment.line})`}${comment.status !== "open" ? ` [${comment.status}]` : ""}`,
       comment.quote.trim().split("\n").map((line) => `> ${line}`).join("\n"),
+      // Without a blank line, Markdown reads the comment as part of the quote.
+      "",
       comment.body,
       ...(comment.reply ? [`Agent reply: ${comment.reply}`] : []),
     ].join("\n")),

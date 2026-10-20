@@ -1,3 +1,5 @@
+import { currentAgentReview } from "~lib/agent-review"
+import { getReviewItemCount } from "~lib/review"
 import type { ActiveReview } from "~lib/review"
 import {
   Download,
@@ -20,6 +22,10 @@ import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
 
 interface ContentReviewOverlayProps {
   agentHandoff?: AgentReviewHandoff
+  checkAgentSession: () => void
+  agentSessionCheckStatus: "idle" | "checking" | "not-found"
+  reviewLoading: boolean
+  reviewFolder: { path: string; choose: () => Promise<boolean> } | null
   isMdFile: boolean
   reviewOverlayRef: React.RefObject<HTMLElement>
   reviewOverlayOpen: boolean
@@ -50,7 +56,8 @@ interface ContentReviewOverlayProps {
   selectedImportedCommentId: string | null
   updateReviewNote: (note: string) => void
   updateReviewComment: (id: string, body: string) => void
-  deleteReviewCommentById: (id: string) => void
+  changeReviewCommentStatus: (id: string, status: "open" | "resolved") => void
+  deleteReviewCommentById: (id: string) => (() => void) | void
   selectReviewComment: (id: string) => void
   jumpToReviewSection: (id: string) => void
   jumpToImportedComment: (id: string) => void
@@ -71,7 +78,7 @@ export function ContentReviewOverlay({
   updateReviewOverlayDrag,
   endReviewOverlayDrag,
   moveReviewOverlayWithKeyboard,
-  reviewItemCount,
+  reviewItemCount: storedReviewItemCount,
   openImportReviewDialog,
   setReviewOverlaySize,
   nextReviewOverlaySize,
@@ -84,19 +91,26 @@ export function ContentReviewOverlay({
   reviewPersistenceError,
   copyReviewStatus,
   agentHandoff,
+  checkAgentSession,
+  agentSessionCheckStatus,
+  reviewLoading,
+  reviewFolder,
   jumpableReviewCommentIds,
   resolvedImportedComments,
   jumpableImportedCommentIds,
   selectedImportedCommentId,
   updateReviewNote,
   updateReviewComment,
-  deleteReviewCommentById,
+  changeReviewCommentStatus,  deleteReviewCommentById,
   selectReviewComment,
   jumpToReviewSection,
   jumpToImportedComment,
   copyActiveReview,
   clearReview,
 }: ContentReviewOverlayProps) {
+  const currentReview = agentHandoff?.file ? currentAgentReview(review, agentHandoff.file) : review
+  const storedCommentCount = agentHandoff?.file ? agentHandoff.file.comments.filter(({ id }) => !review?.comments.some((comment) => comment.id === id)).length : 0
+  const reviewItemCount = agentHandoff?.file ? (currentReview ? getReviewItemCount(currentReview) : storedCommentCount) : storedReviewItemCount
   return (
     <>
         {isMdFile && (
@@ -184,6 +198,7 @@ export function ContentReviewOverlay({
             <div className="flex min-h-0 flex-1 flex-col">
               <ReviewPanel
                 key={fileUrl}
+                sourceUrl={fileUrl}
                 open={reviewOverlayOpen}
                 selectionVersion={reviewSelectionVersion}
                 review={review}
@@ -192,17 +207,22 @@ export function ContentReviewOverlay({
                 persistenceError={reviewPersistenceError}
                 copyStatus={copyReviewStatus}
                 agentHandoff={agentHandoff}
+                onCheckAgentSession={checkAgentSession}
+                agentSessionCheckStatus={agentSessionCheckStatus}
+                reviewLoading={reviewLoading}
+                reviewFolder={reviewFolder}
                 jumpableCommentIds={jumpableReviewCommentIds}
                 resolvedImportedComments={resolvedImportedComments}
                 jumpableImportedCommentIds={jumpableImportedCommentIds}
                 selectedImportedCommentId={selectedImportedCommentId}
                 onNoteChange={updateReviewNote}
                 onUpdateComment={updateReviewComment}
+                onChangeCommentStatus={changeReviewCommentStatus}
                 onDeleteComment={deleteReviewCommentById}
                 onSelectComment={selectReviewComment}
                 onJumpToSection={jumpToReviewSection}
                 onJumpToImportedComment={jumpToImportedComment}
-                onCopy={() => void copyActiveReview()}
+                onCopy={() => void copyActiveReview(undefined, currentReview)}
                 onCopyComment={(id) => copyActiveReview(id)}
                 onClear={clearReview}
               />

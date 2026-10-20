@@ -42,11 +42,29 @@ Chrome profile has Markside installed. It uses Chrome's normal profile and opens
 a new tab each time.
 
 For a two-way Review, use `/markside review PLAN.md`. The agent opens the file
-and waits until you click **Send comments to agent** in Review. Before the
-first send, Review explains why folder access is needed and shows the folder
-path. Click **Choose folder and send**, then select that folder.
-Later sends use the remembered folder permission. With no agent request,
-Review keeps its usual **Copy review as prompt** action.
+and waits until you click **Send review to agent** in Review. On the
+first send from a folder, Chrome asks for access to it so your agent can receive
+the review. Review names that folder below the button; select it or a parent.
+Later sends use the remembered folder permission. **Copy review as prompt**
+is a separate button below Send, so you can paste the Review into your agent's
+chat instead. After sending, **Sent for agent to pick up** confirms that the Review file
+was saved. It does not confirm that an agent has read it or start an agent.
+If your agent isn't waiting, use Copy review as prompt. Editing feedback makes Send
+available again. With no agent request, Review keeps its usual Copy action.
+Choose **Start a review in your agent…** below the buttons to see skill installation
+instructions and a command for the open file. If Markside can't yet save feedback
+beside the file, the setup also lets you choose its folder. Paste the command into
+your agent and switch back to Chrome: Markside finds the review when you return.
+If it isn't found yet, click **Check for review** once your agent is waiting. The link is hidden while
+an agent review is active.
+
+After addressing your comments, the agent keeps waiting. Reload Markside to check
+the changes, then send more feedback or resolve the addressed comments. The agent
+finishes when you resolve all comments or ask it to stop.
+During an active agent review, the comment composer offers **Save & send review**
+to save a comment and send the whole Review in one action. Use **Save** to keep
+adding feedback first. If sending fails or you cancel folder selection, the
+comment stays saved in Review so you can retry.
 
 Review mode currently requires the prototype CLI installed from this repository
 and Node.js 20+. See [local agent Review setup](agent-review-loop.md). Comments
@@ -306,3 +324,41 @@ Sidebar widths and visibility reset on page reload. Expanded file-tree folders p
 | `Cmd+B` / `Ctrl+B` | Bold selected Markdown in Source or Split |
 | `Cmd+Option+1/2/3/4` / `Ctrl+Alt+1/2/3/4` | Apply Heading 1, 2, 3, or 4 in Source or Split |
 | `Ctrl+E` | Toggle Preview / Source |
+
+
+### Local agent review history
+
+An agent review lasts until you resolve its comments. Addressing a comment keeps
+the review open so you can check the reply or send more feedback. Starting another
+review after completion keeps the earlier comments under Resolved.
+
+Comments, their statuses, and the agent's latest replies are stored in the
+`.review.json` beside the document and are available through
+`markside comments <file>`. Reload Markside to see changes made by the agent.
+
+
+In the copy-prompt workflow, **Clear all** clears the local review, including
+comments, overall feedback, and imported review history, then closes the panel.
+
+For an agent review, **Clear drafts** removes new unsent comments and restores edited comments and
+overall feedback to their last sent version. It keeps sent feedback, replies,
+completed reviews, and imported history. It does not end the review or
+write to the sidecar. The button is hidden when there are no unsent changes.
+
+Comments in an agent review show one badge: **Draft** for unsent feedback or edits,
+**Sent** for the current text sent to the agent, **Addressed** when the agent has
+responded, and **Resolved** after you accept it. Editing sent feedback makes it a
+Draft again until you send it. These replace the Shared with agent label.
+
+In the copy-prompt workflow, comments are **Open** or **Resolved**. Copying or
+reloading does not resolve them. Use Resolve after checking the changes, or
+Reopen if more work is needed. Local resolution stays in browser storage; only
+comments already sent through the integration update their sidecar status.
+Resolved comments are excluded from copied prompts and their passage warnings
+and highlights are hidden.
+
+If you add feedback after an agent review completes, the panel shows **Start
+another review**. It opens the command dialog without changing the completed
+review. Ask the agent to start that review, then reload or reopen the panel to
+send the new feedback. Review complete is hidden while active feedback or drafts
+remain. Starting another review does not itself launch an agent.

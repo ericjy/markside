@@ -78,13 +78,35 @@ pull request or review response.
 
 ## Local agent Review loop
 
+- [ ] In an already open local file, choose Start a review in your agent… (or
+  Start another review… after completion). Copy the command from both agent tabs
+  and confirm it includes `--no-open`. Run it in the agent: no Chrome tab should
+  open. Confirm Done only closes setup. After the agent is waiting, switch back to
+  Chrome and confirm Send review to agent appears without clicking anything and
+  existing unsent comments remain available. Before running the command, click
+  Check for review and confirm it briefly shows No review yet. Run the command
+  while staying in Chrome, click Check for review, and confirm Send appears.
+  With an active review, let the agent address a comment, switch back to Chrome, and
+  confirm it shows Addressed without a reload while the document text is unchanged.
+- [ ] With no saved folder, open setup and confirm step 3 shows the document's folder.
+  Choose a wrong folder and confirm the error; choose the right folder and confirm
+  the step confirms access. Once the review is found, the panel shows Send review to agent with
+  no folder line below it. With a covering saved folder, step 3 is absent.
 - [ ] On macOS with Claude Code, install the local `cli/` package and updated
   `skills/markside` skill. Ask the agent to write a disposable `PLAN.md`, then run
   `/markside review PLAN.md`. Chrome opens Markside and the Review panel.
-- [ ] With zero comments, Send comments to agent is disabled and its tooltip
-  explains why. Add two comments, send, grant the document's folder access if
+- [ ] With zero comments, Send review to agent is disabled. The empty state explains
+  how to add a comment, without another instruction above Send or a duplicate tooltip.
+  No setup link appears while the request is active. Add two comments, send, grant the document's folder access if
   prompted, and confirm the CLI prints Got 2 comments and exits 0. The agent
   revises the plan and marks each ID addressed with a reply in the Review file.
+- [ ] With an active request, select a passage and write a comment. The composer
+  offers Save and Save & send review. Save keeps the comment local; Save & send
+  review saves it and sends the entire Review, including prior comments and the
+  overall feedback. Test the first comment on an empty Review. Cancel folder
+  selection or deny permission and confirm the saved comment remains in Review
+  for retry, with any send error visible there. Without an active request, or
+  after resolution, the composer keeps Save & copy prompt and Save.
 - [ ] Click Reload or close and reopen Review after the agent addresses comments.
   Each matching comment shows Addressed and the agent reply, including when
   collapsed. Addressed comments whose quotes changed retain the original quote
@@ -93,7 +115,7 @@ pull request or review response.
   Open comments keep their warnings and markers.
 - [ ] On an Addressed card, click Resolve. It moves into the collapsed Resolved
   group. Expand the group and click Reopen; the comment returns to Open with
-  its reply retained and Send comments to agent available. The waiting CLI must
+  its reply retained and Send review to agent available. The waiting CLI must
   not receive it until Send is clicked. Reopen an Addressed card as well.
   Deny folder write access for a status change and confirm an error appears
   without changing the card. Retry with access, then resolve all comments.
@@ -108,11 +130,11 @@ pull request or review response.
 - [ ] Confirm the Markdown file is unchanged by sending, the Review file has a
   matching SHA-256 of the exact disk bytes, and sent time appears in the panel.
   The button stays disabled until a comment is added or edited.
-- [ ] Start with no saved folder. Before clicking, confirm Review explains why
-  folder access is needed, shows the document's folder path, and labels the
-  action Choose folder and send. Cancel the picker and confirm comments remain.
-  Choose the folder through the sidebar and confirm the action becomes Send
-  comments to agent without opening another folder picker.
+- [ ] Start with no saved folder. Before clicking, confirm the action reads Send
+  review to agent and one line below names the folder Chrome will ask for, with
+  the full path on hover. Cancel the picker and confirm comments remain.
+  Choose the folder through the sidebar and confirm the line disappears and Send
+  works without opening another folder picker.
 - [ ] Start with no saved folder, cancel the folder picker, select a wrong
   folder, and deny write permission. Comments remain intact; retry with the
   correct folder. Send another Review from the same folder without selecting it
@@ -127,8 +149,81 @@ pull request or review response.
 - [ ] Interrupt the CLI and confirm the Review stays pending. Rerun to resume.
   Test a filename containing spaces, #, and Unicode.
 - [ ] Without a Review file, confirm Copy review as prompt behaves as before.
+  Copy is the primary button, disabled with zero comments. Send to your agent
+  instead… below it opens the integration dialog with the current file's command.
+- [ ] With an active agent Review, click the separate Copy review as prompt button below Send.
+  Confirm it copies the Review without sending it. After sending, confirm the primary
+  button shows Sent for agent to pick up, with no extra saved-message paragraph and an active
+  Copy button below it. Edit a comment and confirm Send returns. Clear drafts sits beside Copy when there is room and wraps without overlap in narrow panels.
+  After sending, click start the review now in "Agent not picking up the review sent?" above Sent for agent to pick up. Confirm a centered
+  dialog shows the `npx skills` install command and copies it with Copy install
+  command. Switch between the Codex and Other agents tabs; confirm the
+  review command uses `$markside` and `/markside` respectively, with
+  the current file path. Check tab keyboard navigation with arrow keys and Home/End. Copy command
+  should copy the selected command exactly, including paths with spaces. Check manual selection
+  when clipboard access fails, and close with Done or Escape. Confirm the
+  separate Copy review as prompt button remains available.
   Check malformed and unsupported-version sibling files do not enable sending.
   Open a pending request on a document already displayed by closing and opening
   Review. Confirm there is no polling or automatic document reload in Chrome.
+- [ ] After the agent addresses comments, confirm it runs `review --continue --no-open`
+  without opening another tab. Reload and send another comment; confirm the agent
+  handles it and waits again. Resolve every addressed comment and confirm the wait
+  exits with `Review resolved for ...`. Also resolve before the continuation starts
+  and confirm it exits immediately without creating another pending request.
 - [ ] Check network activity: this flow performs local file reads and writes
   only, with no HTTP requests.
+
+
+## Local Review history verification
+
+Automated checks cover the flat file contract, CLI retry/continuation against
+real temporary files, and Active/Resolved panel rendering. Native Chrome
+permissions and disk writes require manual verification.
+
+- [ ] Resolve all comments, then start a fresh review. Verify the earlier comments
+  stay under Resolved with their replies, new feedback sends normally, and the CLI
+  output lists only the new open comments.
+- [ ] Clear the browser's local Review draft and verify sent comments remain
+  readable from the sidecar and can still be resolved.
+- [ ] Use the panel Send and composer Save & send review, including first-folder
+  selection. Repeated clicks, cancelled selection, stale tabs, and denied
+  permission must not change the sidecar.
+- [ ] Run the skill in Claude Code/Codex: address comments, wait with
+  `--continue --no-open`, send again, then resolve everything. Verify no
+  additional tab opens during continuation. Resolve immediately before
+  continuation and verify it exits as completed.
+
+
+## Review drafts and simplified history
+
+- [ ] Clear the local browser draft while retaining a sent sidecar. Reopen Review:
+  recovered comments use Active/Resolved cards, with Resolved collapsed. There is
+  no Current sent feedback section or storage-source explanation.
+- [ ] With only sent feedback, Clear drafts is hidden. Add a new comment, edit a
+  sent comment, and change overall feedback. Confirm Clear drafts removes the new
+  comment and restores sent text and overall feedback, leaving the panel open.
+  Inspect the sidecar: comments, statuses, and replies must be unchanged. Imported snapshot history also remains.
+- [ ] Without a sidecar, Clear all clears the local review, including comments,
+  overall feedback, and imported history, and closes the panel after confirmation.
+  With a sidecar, Clear drafts preserves sent feedback and imported history and
+  keeps the panel open. During a send or status write, clearing is disabled.
+
+
+## Comment badges, manual resolution, and another review
+
+- [ ] Create a copy-prompt comment without an agent review. It shows Open. Copy
+  and reload: it stays Open. Resolve it: it moves into collapsed Resolved, hides
+  passage warnings/highlights, and persists after reload. Reopen it. No sidecar
+  is created or changed. Clear all still removes the local review.
+- [ ] During agent review, a new comment shows Draft; sending changes it to Sent.
+  A collapsed Sent comment has no action; expanded, it offers a quiet Withdraw that
+  resolves it in the sidecar. An agent answer changes it to Addressed, which shows
+  Resolve. Edit sent text and verify Draft returns;
+  Clear drafts restores the last sent text and status. Local resolved comments
+  are not included as new agent work or in Copy review as prompt.
+- [ ] Resolve every sent comment, then add new feedback. Review complete disappears
+  and Start another review… opens the command dialog. Confirm the sidecar remains
+  byte-for-byte unchanged until the CLI starts a fresh review. Close/reopen the
+  panel after the CLI starts: Send becomes available and completed history stays
+  intact. Continuation alone must not start another review.

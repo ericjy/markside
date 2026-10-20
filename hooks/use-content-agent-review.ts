@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { parseReviewFile, setReviewerCommentStatus, type AgentReviewComment, type AgentReviewFile } from "../cli/review-file.mjs"
-import { agentReviewUrl, getAgentReviewResults, prepareAgentReview, reviewSendFingerprint } from "~lib/agent-review"
+import { agentReviewUrl, getAgentReviewResults, getAgentReviewDisabledReason, prepareAgentReview, reviewSendFingerprint, agentReviewIdentity, currentAgentReview } from "~lib/agent-review"
 import { getSavePathParts } from "~lib/content-app-policy"
 import { normalizeDiskText, requestHandlePermission } from "~lib/content-file-access"
 import { getDirectoryEntryForUrl } from "~lib/db"
 import { readFileFromDisk } from "~lib/file-reload"
 import { fileFolderPath } from "~lib/url"
-import { resolveReviewPolicy, type ActiveReview, type ReviewComment } from "~lib/review"
+import { createEmptyReview, resolveReviewPolicy, type ActiveReview, type ReviewComment } from "~lib/review"
 import { rangeFromOffsets, sourceLineForNode, type RenderedTextIndex } from "~lib/review-dom"
 
 export interface AgentReviewHandoff {
+  file?: AgentReviewFile
+  sourceUrl?: string
   folderToChoose?: string
   updatingCommentId?: string | null
   changeStatus?: (id: string, status: "open" | "resolved") => void
@@ -18,9 +20,10 @@ export interface AgentReviewHandoff {
   disabled: boolean
   disabledReason: string | null
   sending: boolean
+  sent?: boolean
   sentAt?: string
   error: string | null
-  send: () => void
+  send: (reviewOverride?: ActiveReview) => Promise<boolean>
 }
 
 interface Options {
@@ -28,8 +31,14 @@ interface Options {
   enabled: boolean
   open: boolean
   reloadVersion?: number
+  sessionCheckVersion?: number
+  /** Silent re-read, e.g. when the user returns to the tab. Never reports a check result. */
+  discoveryVersion?: number
+  onSessionChecked?: (found: boolean) => void
+  onLoaded?: (fileUrl: string) => void
   openReview: () => void
   review: ActiveReview | null
+  updateReview?: (mutate: (current: ActiveReview | null) => ActiveReview | null) => void
   directory?: { handle: FileSystemDirectoryHandle; rootUrl: string } | null
   openDirectory: (mode: "readwrite") => Promise<boolean>
   diskContentRef: React.MutableRefObject<string | null>
@@ -38,7 +47,7 @@ interface Options {
 }
 
 export function useContentAgentReview(options: Options): AgentReviewHandoff | undefined {
-  const { fileUrl, enabled, open, review, reloadVersion } = options
+  const { fileUrl, enabled, open, review, reloadVersion, sessionCheckVersion, discoveryVersion } = options
   const [state, setState] = useState<{ url: string; file: AgentReviewFile } | null>(null)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -47,12 +56,19 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
   const optionsRef = useRef(options)
   optionsRef.current = options
   const autoOpenedRef = useRef<string | null>(null)
+  const reportedCheckRef = useRef(0)
+  const errorKeyRef = useRef("")
   const directoryRef = useRef<Awaited<ReturnType<typeof getDirectoryEntryForUrl>>>(null)
   const doc = decodeURIComponent(new URL(fileUrl).pathname.split("/").pop()!)
 
   useEffect(() => {
     let active = true
-    setError(null)
+    // A silent discovery read must not clear a send error the user hasn't seen yet.
+    const errorKey = `${fileUrl}|${enabled}|${open}|${reloadVersion}|${sessionCheckVersion}`
+    if (errorKeyRef.current !== errorKey) {
+      errorKeyRef.current = errorKey
+      setError(null)
+    }
     if (!enabled) { setState(null); return }
     const load = async () => {
       // Missing sidecars are normal. The relay reads only file:// URLs here.
@@ -62,9 +78,17 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       ])
       if (!active) return
       directoryRef.current = directory
+      optionsRef.current.onLoaded?.(fileUrl)
+      // Report each explicit check once, not again for later silent re-reads.
+      const reportCheck = (found: boolean) => {
+        if (!sessionCheckVersion || reportedCheckRef.current === sessionCheckVersion) return
+        reportedCheckRef.current = sessionCheckVersion
+        optionsRef.current.onSessionChecked?.(found)
+      }
       try {
         const file = disk?.text ? parseReviewFile(disk.text, doc) : null
         setState(file ? { url: fileUrl, file } : null)
+        reportCheck(!!file && file.status !== "resolved")
         if (file?.status === "pending" && autoOpenedRef.current !== fileUrl) {
           autoOpenedRef.current = fileUrl
           optionsRef.current.openReview()
@@ -72,14 +96,19 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       } catch {
         // An unrelated or unsupported JSON file must not change today's Review UI.
         setState(null)
+        reportCheck(false)
       }
     }
     void load()
     return () => { active = false }
-  }, [fileUrl, enabled, open, reloadVersion])
+  }, [fileUrl, enabled, open, reloadVersion, sessionCheckVersion, discoveryVersion])
 
   const file = state?.url === fileUrl ? state.file : null
   const results = useMemo(() => getAgentReviewResults(file, review), [file, review])
+  useEffect(() => {
+    if (!enabled || !file?.comments.some(({ id }) => !review?.comments.some((comment) => comment.id === id))) return
+    options.updateReview?.((current) => currentAgentReview(current ?? { ...createEmptyReview(fileUrl, ""), note: file.note ?? "" }, file))
+  }, [enabled, fileUrl, file, review, options.updateReview])
   if (!enabled || !file) return undefined
   const chosenDirectory = options.directory
   const availableDirectory = chosenDirectory && getSavePathParts(fileUrl, chosenDirectory.rootUrl)
@@ -89,14 +118,8 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
     ? undefined
     : fileFolderPath(fileUrl)
   const completed = file.status === "resolved"
-  const unchanged = file.status === "sent" && reviewSendFingerprint(review) === reviewSendFingerprint(file)
-  const hasOpenComments = review?.comments.some(({ id }) => (results.get(id)?.status ?? "open") === "open")
-  const disabledReason = completed
-    ? "This Review is resolved."
-    : !review?.comments.length
-    ? "Add a comment before sending to the agent."
-    : !hasOpenComments ? "Add or reopen a comment to send again."
-    : unchanged ? "Add or edit a comment to send again." : null
+  const unchanged = file.status === "sent" && reviewSendFingerprint(currentAgentReview(review, file)) === reviewSendFingerprint(file)
+  const disabledReason = getAgentReviewDisabledReason(file, review)
 
   const getReviewDirectory = async () => {
     // Request permission first, while the click's user gesture is active.
@@ -138,7 +161,13 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       const handle = await directory.getFileHandle(`${doc}.review.json`)
       const latest = parseReviewFile(await (await handle.getFile()).text(), doc)
       if (optionsRef.current.fileUrl !== fileUrl) return
-      if (latest.requestedAt !== file.requestedAt || !getAgentReviewResults(latest, optionsRef.current.review).has(id)) {
+      const loaded = file.comments.find((comment) => comment.id === id)
+      const currentComment = latest.comments.find((comment) => comment.id === id)
+      const local = optionsRef.current.review?.comments.find((comment) => comment.id === id)
+      if (agentReviewIdentity(latest) !== agentReviewIdentity(file) || !loaded || !currentComment ||
+          loaded.body !== currentComment.body || loaded.quote !== currentComment.quote ||
+          loaded.status !== currentComment.status || loaded.reply !== currentComment.reply ||
+          (local && (local.body !== currentComment.body || local.anchor.exact !== currentComment.quote))) {
         throw new Error("This comment changed. Reload Review before updating its status.")
       }
       await writeReview(handle, setReviewerCommentStatus(latest, id, status))
@@ -152,8 +181,9 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
     }
   }
 
-  const send = async () => {
-    if (writingRef.current || disabledReason || !review) return
+  const send = async (reviewOverride?: ActiveReview) => {
+    const reviewToSend = reviewOverride ?? review
+    if (writingRef.current || !reviewToSend || getAgentReviewDisabledReason(file, reviewToSend)) return false
     writingRef.current = true
     setSending(true)
     setError(null)
@@ -170,14 +200,18 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       }
       const sidecarHandle = await directory.getFileHandle(`${doc}.review.json`)
       const latest = parseReviewFile(await (await sidecarHandle.getFile()).text(), doc)
-      if (latest.status === "resolved" || latest.requestedAt !== file.requestedAt) {
+      if (latest.status === "resolved" || agentReviewIdentity(latest) !== agentReviewIdentity(file)) {
         throw new Error("This Review request changed. Close and reopen Review before sending.")
+      }
+      if (getAgentReviewDisabledReason(latest, reviewToSend)) {
+        setState({ url: fileUrl, file: latest })
+        return false
       }
       const digest = await crypto.subtle.digest("SHA-256", bytes)
       const docHash = Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, "0")).join("")
       const index = options.renderedTextIndexRef.current
       const resolvedComments = index
-        ? resolveReviewPolicy({ review, document: index, request: { type: "reattach" } }).comments
+        ? resolveReviewPolicy({ review: reviewToSend, document: index, request: { type: "reattach" } }).comments
         : []
       const sourceLine = (comment: ReviewComment) => {
         if (comment.anchor.removed) return null
@@ -188,17 +222,19 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
         const range = rangeFromOffsets(index, resolved.range.start, resolved.range.end)
         return range ? sourceLineForNode(range.startContainer) : null
       }
-      const sent = prepareAgentReview(latest, review, docHash, sourceLine)
-      if (!current() || options.hasUnsavedDraftRef.current) return
+      const sent = prepareAgentReview(latest, reviewToSend, docHash, sourceLine)
+      if (!current() || options.hasUnsavedDraftRef.current) return false
       await writeReview(sidecarHandle, sent)
+      return true
     } catch (error) {
       if (current() && (error as DOMException).name !== "AbortError") {
         setError(error instanceof Error ? error.message : "Could not send comments. Try again.")
       }
+      return false
     } finally {
       writingRef.current = false
       setSending(false)
     }
   }
-  return { folderToChoose, completed, results, updatingCommentId, changeStatus: (id, status) => void changeStatus(id, status), disabled: sending || updatingCommentId !== null || !!disabledReason, disabledReason, sending, sentAt: file.sentAt, error, send: () => void send() }
+  return { file, sourceUrl: fileUrl, folderToChoose, completed, results, updatingCommentId, changeStatus: (id, status) => void changeStatus(id, status), disabled: sending || updatingCommentId !== null || !!disabledReason, disabledReason, sending, sent: unchanged, sentAt: file.sentAt, error, send }
 }

@@ -12,6 +12,7 @@ import {
   MessageSquarePlus,
   Minimize2,
   Quote,
+  Send,
   Sparkles,
   ThumbsUp,
   UserRound,
@@ -19,6 +20,7 @@ import {
   type LucideIcon
 } from "lucide-react"
 import React from "react"
+import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
 import { createPortal } from "react-dom"
 import { RawEditor,type RawEditorHandle } from "~components/raw-editor"
 import { ReadabilityHeadingControl } from "~components/readability-heading-control"
@@ -103,6 +105,8 @@ interface ContentViewProps {
   setSelectionComposerBody: React.Dispatch<React.SetStateAction<string>>
   closeSelectionComposer: () => void
   saveSelectionComposerComment: () => void
+  agentHandoff?: AgentReviewHandoff
+  sendSelectionComposerComment: () => Promise<void>
   selectionPresetPickerOpen: boolean
   setSelectionPresetPickerOpen: React.Dispatch<React.SetStateAction<boolean>>
   insertSelectionComposerPreset: (instruction: string) => void
@@ -182,6 +186,8 @@ export function ContentView({
   setSelectionComposerBody,
   closeSelectionComposer,
   saveSelectionComposerComment,
+  agentHandoff,
+  sendSelectionComposerComment,
   selectionPresetPickerOpen,
   setSelectionPresetPickerOpen,
   insertSelectionComposerPreset,
@@ -221,6 +227,8 @@ export function ContentView({
   setOutlineOpen,
   setActiveHeadingId,
 }: ContentViewProps) {
+  const composerAgent = agentHandoff?.completed ? undefined : agentHandoff
+  const composerSending = !!composerAgent && (composerAgent.sending || composerAgent.updatingCommentId != null)
   return (
     <>
         <div className="flex-1 min-h-0 w-full">
@@ -419,6 +427,11 @@ export function ContentView({
                         placeholder="Add a comment"
                         className="review-input mt-2 min-h-[7.5rem] w-full resize-y rounded-md border px-3 py-2.5 text-sm leading-relaxed outline outline-2 outline-offset-1 outline-transparent placeholder:text-muted-foreground focus-visible:outline-ring"
                       />
+                      {composerAgent?.folderToChoose && (
+                        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                          To send, allow access to this document's folder when Chrome asks.
+                        </p>
+                      )}
                       <div className="mt-2 flex items-center justify-between gap-2">
                         <ReviewPresetPicker
                           open={selectionPresetPickerOpen}
@@ -436,7 +449,7 @@ export function ContentView({
                           <Button className="h-9" variant="ghost" size="sm" onClick={closeSelectionComposer}>
                             Cancel
                           </Button>
-                          <Button
+                          {!composerAgent && <Button
                             className="h-9"
                             variant="outline"
                             size="sm"
@@ -444,14 +457,23 @@ export function ContentView({
                             onClick={() => void copySelectionComposerComment()}>
                             {selectionComposerCopyState === "copied" ? <Check size={14} /> : <Copy size={14} />}{" "}
                             {selectionComposerCopyState === "copied" ? "Copied" : "Save & copy prompt"}
-                          </Button>
+                          </Button>}
                           <Button
                             className="h-9"
+                            variant={composerAgent ? "outline" : "default"}
                             size="sm"
                             disabled={!selectionComposerBody.trim() || selectionComposerCopyState === "copying"}
                             onClick={saveSelectionComposerComment}>
                             Save
                           </Button>
+                          {composerAgent && <Button
+                            className="h-9"
+                            size="sm"
+                            disabled={!selectionComposerBody.trim() || selectionComposerCopyState === "copying" || composerSending}
+                            title="Sends all current comments and overall feedback."
+                            onClick={() => void sendSelectionComposerComment()}>
+                            <Send size={14} />{composerSending ? "Sending review…" : "Save & send review"}
+                          </Button>}
                         </div>
                       </div>
                     </div>

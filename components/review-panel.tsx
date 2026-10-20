@@ -1,12 +1,16 @@
-import { AlertTriangle, Check, ChevronDown, Copy, FileText, FolderOpen, Plus, Send, Trash2 } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import * as Dialog from "@radix-ui/react-dialog"
+import { AlertTriangle, Bot, Check, ChevronDown, Copy, FileText, FolderOpen, Plus, RefreshCw, Send, Trash2 } from "lucide-react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
+import { currentAgentReview, hasReviewDrafts, getReviewCommentStatus } from "~lib/agent-review"
 import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
+import { AgentIcon } from "~components/agent-icon"
 import { ReviewPresetPicker } from "~components/review-preset-picker"
 import { Button } from "~components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "~components/ui/tooltip"
 import {
   getReviewItemCount,
+  getReviewSourcePath,
   type ActiveReview,
   type ResolvedAnchor,
   type ResolvedReviewComment,
@@ -19,12 +23,24 @@ import {
 
 // Matches the review-card-enter animation in style.css.
 const REVIEW_CARD_ENTER_MS = 900
+const folderName = (path: string) => path.split("/").filter(Boolean).pop() ?? path
+const SKILL_INSTALL_COMMAND = "npx skills add ericjy/markside --skill markside -g"
+const SKILL_INSTALL_PROMPT = "Install Markside skill from https://github.com/ericjy/markside."
+const INSTALL_METHODS = [
+  { id: "agent", label: "Ask your agent" },
+  { id: "terminal", label: "Install via terminal" },
+] as const
+const REVIEW_AGENTS = [
+  { id: "codex", label: "Codex" },
+  { id: "other", label: "Other agents" },
+] as const
 
 export type ReviewCopyStatus =
   | { kind: "success" }
   | { kind: "error"; message: string; commentId?: string }
 
 interface ReviewPanelProps {
+  sourceUrl?: string
   open: boolean
   selectionVersion: number
   review: ActiveReview | null
@@ -32,6 +48,12 @@ interface ReviewPanelProps {
   selectedId: string | null
   persistenceError: boolean
   agentHandoff?: AgentReviewHandoff
+  onCheckAgentSession?: () => void
+  agentSessionCheckStatus?: "idle" | "checking" | "not-found"
+  /** True until this document's stored Review and agent Review file have both loaded. */
+  reviewLoading?: boolean
+  /** Present while no saved folder can store this document's feedback. */
+  reviewFolder?: { path: string; choose: () => Promise<boolean> } | null
   copyStatus: ReviewCopyStatus | null
   jumpableCommentIds: ReadonlySet<string>
   resolvedImportedComments: ReadonlyMap<string, ReviewComment & ResolvedAnchor>
@@ -39,7 +61,8 @@ interface ReviewPanelProps {
   selectedImportedCommentId: string | null
   onNoteChange: (note: string) => void
   onUpdateComment: (id: string, body: string) => void
-  onDeleteComment: (id: string) => void
+  onChangeCommentStatus?: (id: string, status: "open" | "resolved") => void
+  onDeleteComment: (id: string) => (() => void) | void
   onSelectComment: (id: string) => void
   onJumpToSection: (id: string) => void
   onJumpToImportedComment: (id: string) => void
@@ -56,10 +79,11 @@ function getTextSelection(textarea: HTMLTextAreaElement): ReviewTextSelection {
 }
 
 export function ReviewPanel({
+  sourceUrl,
   open,
   selectionVersion,
-  review,
-  comments,
+  review: fullReview,
+  comments: allComments,
   selectedId,
   persistenceError,
   copyStatus,
@@ -70,7 +94,11 @@ export function ReviewPanel({
   selectedImportedCommentId,
   onNoteChange,
   onUpdateComment,
-  onDeleteComment,
+  onChangeCommentStatus,  onDeleteComment,
+  onCheckAgentSession,
+  agentSessionCheckStatus = "idle",
+  reviewLoading = false,
+  reviewFolder,
   onSelectComment,
   onJumpToSection,
   onJumpToImportedComment,
@@ -78,15 +106,48 @@ export function ReviewPanel({
   onCopyComment,
   onClear,
 }: ReviewPanelProps) {
+  const review = agentHandoff?.file ? currentAgentReview(fullReview, agentHandoff.file) : fullReview
+  const historyFile = agentHandoff?.file
+  const storedComments = useMemo(() => historyFile ? historyFile.comments.filter(({ id }) => !allComments.some((comment) => comment.id === id)) : [], [historyFile, allComments])
+  const storedIds = new Set(storedComments.map(({ id }) => id))
+  const comments = useMemo<ResolvedReviewComment[]>(() => [
+    ...allComments,
+    ...storedComments.map((comment): ResolvedReviewComment => ({
+      id: comment.id, body: comment.body, createdAt: historyFile!.sentAt ?? historyFile!.requestedAt,
+      anchor: { exact: comment.quote, prefix: "", suffix: "", start: 0, end: comment.quote.length, headingPath: [] },
+      displayNumber: 0, status: "unanchored", range: null,
+    })),
+  ].map((comment, index) => ({ ...comment, displayNumber: index + 1 })), [allComments, storedComments, historyFile])
+  const hasDrafts = hasReviewDrafts(fullReview, historyFile)
+  const needsNewReview = !!historyFile && historyFile.status === "resolved"
+  const clearLabel = historyFile ? "Clear drafts" : "Clear all"
   const [copyingCommentId, setCopyingCommentId] = useState<string | null>(null)
   const [copiedCommentId, setCopiedCommentId] = useState<string | null>(null)
   const [expandedCommentId, setExpandedCommentId] = useState<string | null>(null)
   const [openPresetTarget, setOpenPresetTarget] = useState<string | null>(null)
   const [clearArmed, setClearArmed] = useState(false)
+  const [undoDelete, setUndoDelete] = useState<(() => void) | null>(null)
   const clearButtonRef = useRef<HTMLButtonElement>(null)
+  const sendHelpRef = useRef<HTMLButtonElement>(null)
   const [editingNote, setEditingNote] = useState(false)
+  const [sendHelpOpen, setSendHelpOpen] = useState(false)
+  const [folderStatus, setFolderStatus] = useState<"idle" | "choosing" | "chosen">("idle")
+  const [showNotFound, setShowNotFound] = useState(false)
+  useEffect(() => {
+    if (agentSessionCheckStatus !== "not-found") return
+    setShowNotFound(true)
+    const timeout = setTimeout(() => setShowNotFound(false), 3_000)
+    return () => clearTimeout(timeout)
+  }, [agentSessionCheckStatus])
+  const [commandCopyStatus, setCommandCopyStatus] = useState<"idle" | "copied" | "error">("idle")
+  const [installCopyStatus, setInstallCopyStatus] = useState<"idle" | "copied" | "error">("idle")
+  const [installMethod, setInstallMethod] = useState<(typeof INSTALL_METHODS)[number]["id"]>("agent")
+  const installText = installMethod === "agent" ? SKILL_INSTALL_PROMPT : SKILL_INSTALL_COMMAND
+  const installLabel = installMethod === "agent" ? "prompt" : "command"
+  const [reviewAgent, setReviewAgent] = useState<(typeof REVIEW_AGENTS)[number]["id"]>("codex")
   const copiedCommentTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const commentsScrollRef = useRef<HTMLDivElement>(null)
+  const resolvedCommentsRef = useRef<HTMLDetailsElement>(null)
   const commentElementRefs = useRef(new Map<string, HTMLElement>())
   const commentTextareaRefs = useRef(new Map<string, HTMLTextAreaElement>())
   const commentSelectionRefs = useRef(new Map<string, ReviewTextSelection>())
@@ -113,6 +174,9 @@ export function ReviewPanel({
       const container = commentsScrollRef.current
       const comment = commentElementRefs.current.get(enteringCommentId)
       if (!container || !comment) return
+      const group = comment.closest("details")
+      if (group === resolvedCommentsRef.current) return
+      if (group) group.open = true
       const containerRect = container.getBoundingClientRect()
       const commentRect = comment.getBoundingClientRect()
       if (commentRect.top >= containerRect.top && commentRect.bottom <= containerRect.bottom) return
@@ -132,6 +196,8 @@ export function ReviewPanel({
       const container = commentsScrollRef.current
       const comment = commentElementRefs.current.get(selectedId)
       if (!container || !comment) return
+      const group = comment.closest("details")
+      if (group) group.open = true
       const containerRect = container.getBoundingClientRect()
       const commentRect = comment.getBoundingClientRect()
       container.scrollTo({
@@ -146,7 +212,22 @@ export function ReviewPanel({
     if (copiedCommentTimeoutRef.current) clearTimeout(copiedCommentTimeoutRef.current)
   }, [])
   const activeAgentHandoff = agentHandoff?.completed ? undefined : agentHandoff
-  const itemCount = review ? getReviewItemCount(review) : 0
+  const showAgentDisabledHelp = comments.length > 0 && !activeAgentHandoff?.sent && !!activeAgentHandoff?.disabledReason
+  const showAgentFolderHelp = !!activeAgentHandoff?.folderToChoose && !activeAgentHandoff.disabledReason
+  const reviewSourceUrl = sourceUrl ?? activeAgentHandoff?.sourceUrl ?? review?.sourceUrl
+  const showStartReview = needsNewReview || (!activeAgentHandoff && !!reviewSourceUrl?.startsWith("file:"))
+  const showAgentAction = !!activeAgentHandoff
+  const reviewCommand = `${reviewAgent === "codex" ? "$" : "/"}markside review ${reviewSourceUrl ? JSON.stringify(getReviewSourcePath(reviewSourceUrl)) : "<file>"} --no-open`
+  const copyHelpCommand = async (text: string, target: "install" | "review") => {
+    const setStatus = target === "install" ? setInstallCopyStatus : setCommandCopyStatus
+    try {
+      await navigator.clipboard.writeText(text)
+      setStatus("copied")
+    } catch {
+      setStatus("error")
+    }
+  }
+  const itemCount = review ? getReviewItemCount(review) : storedComments.length
   useEffect(() => {
     if (!clearArmed) return
     const cancelOutside = (event: globalThis.PointerEvent) => {
@@ -212,15 +293,65 @@ export function ReviewPanel({
     setExpandedCommentId((current) => current === id ? null : id)
   }
 
-  const resolvedComments = comments.filter((comment) => agentHandoff?.results?.get(comment.id)?.status === "resolved")
-  const currentComments = comments.filter((comment) => agentHandoff?.results?.get(comment.id)?.status !== "resolved")
+  const commentResult = (comment: ResolvedReviewComment) => agentHandoff?.results?.get(comment.id) ?? (historyFile && historyFile.comments.find((item) => item.id === comment.id && item.body === comment.body && item.quote === comment.anchor.exact))
+  const sentComment = (comment: ResolvedReviewComment) => historyFile ? historyFile.comments.find(({ id }) => id === comment.id) : agentHandoff?.results?.get(comment.id)
+  const commentStatus = (comment: ResolvedReviewComment) => getReviewCommentStatus(comment, sentComment(comment), !!agentHandoff)
+  const resolvedComments = comments.filter((comment) => commentStatus(comment) === "Resolved")
+  const currentComments = comments.filter((comment) => commentStatus(comment) !== "Resolved")
+  const copyableCount = review ? getReviewItemCount({ ...review, comments: review.comments.filter((comment) => getReviewCommentStatus(comment, historyFile ? historyFile.comments.find(({ id }) => id === comment.id) : agentHandoff?.results?.get(comment.id), !!agentHandoff) !== "Resolved") }) : storedComments.filter((comment) => comment.status !== "resolved").length
   const renderComment = (comment: ResolvedReviewComment) => {
-    const result = agentHandoff?.results?.get(comment.id)
-    const addressed = result?.status === "addressed"
-    const finished = addressed || result?.status === "resolved"
+    const result = commentResult(comment)
+    const integrationBacked = historyFile
+      ? historyFile.comments.some(({ id }) => id === comment.id)
+      : !!result
+    const status = commentStatus(comment)
+    const addressed = status === "Addressed"
+    const resolved = status === "Resolved"
+    const finished = addressed || resolved
+    const changeStatus = onChangeCommentStatus ?? agentHandoff?.changeStatus
     const selected = selectedId === comment.id
     const collapsed = expandedCommentId !== comment.id
     const detailsId = `review-comment-${comment.id}-details`
+    const editing = !collapsed && !finished && !storedIds.has(comment.id)
+    // Sent is the agent's turn: closing it early is a quiet Withdraw, shown only once expanded.
+    const canWithdraw = !!changeStatus && status === "Sent" && !collapsed
+    const canResolve = !!changeStatus && !resolved && status !== "Draft" && status !== "Sent"
+    const commentActions = (!integrationBacked && !resolved || changeStatus && finished || canWithdraw || canResolve) ? (
+      <>
+        {!integrationBacked && !resolved && <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Delete Review Comment"
+              disabled={agentHandoff?.sending || agentHandoff?.updatingCommentId != null}
+              className="h-9 w-9 text-muted-foreground hover:text-destructive"
+              onClick={() => {
+                const undo = onDeleteComment(comment.id)
+                setUndoDelete(() => undo ?? null)
+              }}><Trash2 size={14} /></Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">Delete comment</TooltipContent>
+        </Tooltip>}
+        {changeStatus && finished && <Button variant="ghost" size="sm" aria-label={`Reopen comment ${comment.displayNumber}`}
+          disabled={agentHandoff?.sending || agentHandoff?.updatingCommentId != null}
+          onClick={() => changeStatus(comment.id, "open")}>Reopen</Button>}
+        {canWithdraw && <Button variant="ghost" size="sm" aria-label={`Withdraw comment ${comment.displayNumber}`}
+          title="Close this comment without waiting for your agent"
+          className="text-muted-foreground"
+          disabled={agentHandoff?.sending || agentHandoff?.updatingCommentId != null}
+          onClick={() => changeStatus(comment.id, "resolved")}>Withdraw</Button>}
+        {/* A labeled dark Resolve only when it's the reviewer's turn: the agent says Addressed. */}
+        {canResolve && (addressed ? <Button size="sm" aria-label={`Resolve comment ${comment.displayNumber}`}
+          disabled={agentHandoff?.sending || agentHandoff?.updatingCommentId != null}
+          onClick={() => changeStatus(comment.id, "resolved")}>Resolve</Button> : <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label={`Resolve comment ${comment.displayNumber}`}
+              className="h-9 w-9 text-muted-foreground hover:text-foreground"
+              disabled={agentHandoff?.sending || agentHandoff?.updatingCommentId != null}
+              onClick={() => changeStatus(comment.id, "resolved")}><Check size={14} /></Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">Resolve comment</TooltipContent>
+        </Tooltip>)}
+      </>
+    ) : null
     return (
       <article
         ref={(element) => {
@@ -232,7 +363,7 @@ export function ReviewPanel({
         onClick={(event) => {
           if (event.target instanceof Element && event.target.closest("button, textarea, input, select, a, [role='menuitem']")) return
           toggleComment(comment.id)
-          if (collapsed) onSelectComment(comment.id)
+          if (collapsed && !storedIds.has(comment.id)) onSelectComment(comment.id)
         }}
         className={`${selected ? "review-card-selected" : "review-card"} cursor-pointer rounded-lg border px-4 py-4 shadow-sm transition-colors ${
           enteringCommentId === comment.id ? "review-card-entering" : ""
@@ -244,7 +375,7 @@ export function ReviewPanel({
           aria-controls={detailsId}
           onClick={() => {
             toggleComment(comment.id)
-            if (collapsed) onSelectComment(comment.id)
+            if (collapsed && !storedIds.has(comment.id)) onSelectComment(comment.id)
           }}
           className="flex w-full items-stretch rounded-md p-1 text-left text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:text-foreground focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50">
             <span className="flex min-w-0 flex-1 items-start">
@@ -255,15 +386,15 @@ export function ReviewPanel({
               </span>
             </span>
         </button>
-        {finished && (
-          <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-            <Check size={12} aria-hidden="true" />{addressed ? "Addressed" : "Resolved"}
+        <div className="mt-2 flex items-center gap-2">
+          <span className={`inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium ${resolved ? "text-green-700 dark:text-green-300" : "text-muted-foreground"}`}>
+            {finished && <Check size={12} aria-hidden="true" />}{status}
           </span>
-        )}
+        </div>
         {comment.anchor.removed && (
           <p className="mt-2 pl-1 text-[11px] text-muted-foreground">Comment on removed text</p>
         )}
-        {comment.status === "unanchored" && !comment.anchor.removed && !finished && (
+        {comment.status === "unanchored" && !comment.anchor.removed && !finished && !storedIds.has(comment.id) && (
           jumpableCommentIds.has(comment.id) ? (
             <button
               type="button"
@@ -282,7 +413,7 @@ export function ReviewPanel({
             </p>
           )
         )}
-        {collapsed || finished ? (
+        {collapsed || finished || storedIds.has(comment.id) ? (
           <p id={detailsId} className={`mt-2 pl-1 text-sm leading-relaxed text-foreground ${collapsed ? "line-clamp-2" : ""}`}>
             {comment.body}
           </p>
@@ -338,7 +469,7 @@ export function ReviewPanel({
                         aria-label={copiedCommentId === comment.id ? "Comment copied as prompt" : "Copy comment as prompt"}
                         disabled={copyingCommentId !== null}
                         onClick={() => void copyComment(comment.id)}
-                        className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:bg-accent hover:text-foreground focus-visible:outline-ring active:bg-accent/80 disabled:cursor-not-allowed disabled:opacity-50">
+                        className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:bg-accent hover:text-foreground focus-visible:outline-ring active:bg-accent/80 disabled:cursor-not-allowed disabled:opacity-50">
                         {copiedCommentId === comment.id ? <Check size={14} /> : <Copy size={14} />}
                       </button>
                     </TooltipTrigger>
@@ -347,38 +478,20 @@ export function ReviewPanel({
                     </TooltipContent>
                   </Tooltip>
                 )}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label="Delete Review Comment"
-                      onClick={() => onDeleteComment(comment.id)}
-                      className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:bg-destructive/10 hover:text-destructive focus-visible:outline-ring active:bg-destructive/15 disabled:cursor-not-allowed disabled:opacity-50">
-                      <Trash2 size={14} />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">Delete comment</TooltipContent>
-                </Tooltip>
+                {commentActions}
               </div>
             </div>
           </div>
         )}
         {result?.reply && (
           <div className="mt-3 border-t pt-3 pl-1">
-            <p className="text-[11px] font-medium text-muted-foreground">Agent reply</p>
-            <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{result.reply}</p>
+            <p className="flex items-center gap-1.5 text-[11px] font-medium text-blue-700 dark:text-blue-300">
+              <Bot size={13} aria-hidden="true" />Agent reply
+            </p>
+            <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground">{result.reply}</p>
           </div>
         )}
-        {finished && agentHandoff?.changeStatus && (
-          <div className="mt-3 flex justify-end gap-2">
-            <Button variant="ghost" size="sm" aria-label={`Reopen comment ${comment.displayNumber}`}
-              disabled={agentHandoff.sending || agentHandoff.updatingCommentId != null}
-              onClick={() => agentHandoff.changeStatus?.(comment.id, "open")}>Reopen</Button>
-            {addressed && <Button size="sm" aria-label={`Resolve comment ${comment.displayNumber}`}
-              disabled={agentHandoff.sending || agentHandoff.updatingCommentId != null}
-              onClick={() => agentHandoff.changeStatus?.(comment.id, "resolved")}>Resolve</Button>}
-          </div>
-        )}
+        {!editing && commentActions && <div className="mt-3 flex items-center justify-end gap-2">{commentActions}</div>}
         {copyError?.commentId === comment.id && (
           <div className="mt-3">{copyErrorNotice}</div>
         )}
@@ -398,6 +511,9 @@ export function ReviewPanel({
         </div>
       )}
 
+      {historyFile?.status === "resolved" && currentComments.length === 0 && !hasDrafts && <p className="px-4 pt-3 text-xs text-muted-foreground">
+        Review complete
+      </p>}
       <div className="px-4 pb-3 pt-5">
         {editingNote ? (
           <>
@@ -434,29 +550,35 @@ export function ReviewPanel({
       </div>
 
       <div className="mx-4 my-2 border-t" aria-hidden="true" />
-      <section className="pt-3">
-        <div className="flex w-full items-center justify-between px-4 pb-3">
-          <span className="text-sm font-semibold tracking-tight">Comments</span>
-          <span className="text-xs tabular-nums text-muted-foreground">{currentComments.length}</span>
-        </div>
-        <div>
-        {currentComments.length === 0 && (
-          <div className="px-4 pb-8 pt-2 text-xs leading-relaxed text-muted-foreground">
-            {resolvedComments.length ? "All comments resolved." : "No comments. Select text in Preview to add comment."}
-          </div>
-        )}
-        {currentComments.length > 0 && (
-          <div className="space-y-3 px-4 py-3">
-            {currentComments.map(renderComment)}
-          </div>
-        )}
-        </div>
-      </section>
-
+      {undoDelete && <div role="status" className="mx-4 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+        Comment deleted.
+        <Button variant="ghost" size="sm" onClick={() => { undoDelete(); setUndoDelete(null) }}>Undo</Button>
+      </div>}
+      {currentComments.length > 0 && (
+        <details open className="group/comments mx-4 my-3">
+          <summary className="flex cursor-pointer list-none items-center justify-between py-3 text-sm font-semibold tracking-tight outline outline-2 outline-offset-1 outline-transparent focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
+            <span className="flex items-center gap-2">
+              Active
+              <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-normal tabular-nums text-muted-foreground">{currentComments.length}</span>
+            </span>
+            <ChevronDown size={14} aria-hidden="true" className="shrink-0 -rotate-90 text-muted-foreground group-open/comments:rotate-0" />
+          </summary>
+          <div className="space-y-3 pb-3">{currentComments.map(renderComment)}</div>
+        </details>
+      )}
+      {currentComments.length === 0 && resolvedComments.length === 0 && storedComments.length === 0 && (
+        <p className="px-4 pb-8 pt-3 text-xs leading-relaxed text-muted-foreground">
+          No comments. Select text in Preview to add comment.
+        </p>
+      )}
       {resolvedComments.length > 0 && (
-        <details className="mx-4 my-3">
-          <summary className="cursor-pointer py-3 text-sm font-semibold outline outline-2 outline-offset-1 outline-transparent focus-visible:outline-ring">
-            Resolved · {resolvedComments.length}
+        <details ref={resolvedCommentsRef} className="group/comments mx-4 my-3">
+          <summary className="flex cursor-pointer list-none items-center justify-between py-3 text-sm font-semibold tracking-tight outline outline-2 outline-offset-1 outline-transparent focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
+            <span className="flex items-center gap-2">
+              Resolved
+              <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-normal tabular-nums text-muted-foreground">{resolvedComments.length}</span>
+            </span>
+            <ChevronDown size={14} aria-hidden="true" className="shrink-0 -rotate-90 text-muted-foreground group-open/comments:rotate-0" />
           </summary>
           <div className="space-y-3 pb-3">{resolvedComments.map(renderComment)}</div>
         </details>
@@ -525,45 +647,193 @@ export function ReviewPanel({
       )}
       </div>
 
-      <div className="review-chrome shrink-0 border-t px-4 py-3">
+      {/* Hidden rather than omitted so the actions don't flash Copy-first before Send. */}
+      <div className={`review-chrome shrink-0 border-t px-4 py-3 ${reviewLoading ? "invisible" : ""}`}>
         {copyError && !inlineCopyError && (
           <div className="mb-2">{copyErrorNotice}</div>
         )}
-        {activeAgentHandoff?.sentAt && (
-          <p role="status" className="mb-2 text-xs text-muted-foreground">
-            Sent to agent at {new Date(activeAgentHandoff.sentAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+        {agentHandoff?.error && <p role="alert" className="mb-2 text-xs text-destructive">{agentHandoff.error}</p>}
+        {(activeAgentHandoff || reviewSourceUrl?.startsWith("file:")) && (
+          <>
+            {showAgentDisabledHelp && (
+              <p id="agent-review-send-help" className="mb-3 text-xs leading-relaxed text-muted-foreground">
+                {activeAgentHandoff?.disabledReason}
+              </p>
+            )}
+            <Dialog.Root open={sendHelpOpen} onOpenChange={(nextOpen) => {
+              setSendHelpOpen(nextOpen)
+              setFolderStatus("idle")
+              setCommandCopyStatus("idle")
+              setInstallCopyStatus("idle")
+            }}>
+              <Dialog.Portal>
+                <Dialog.Overlay className="fixed inset-0 bg-black/50" style={{ zIndex: 100000 }} />
+                <Dialog.Content
+                  onCloseAutoFocus={(event) => {
+                    event.preventDefault()
+                    sendHelpRef.current?.focus()
+                  }}
+                  onKeyDown={(event) => event.stopPropagation()}
+                  className="fixed left-1/2 top-1/2 max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg border bg-background p-5 text-foreground shadow-xl"
+                  style={{ zIndex: 100001 }}>
+                  <Dialog.Title className="text-base font-semibold">Agent integration (Beta)</Dialog.Title>
+                  <Dialog.Description className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Ask your agent to start a review in Markside, then send your feedback back directly to the agent without copying and pasting a prompt.
+                  </Dialog.Description>
+                  <div className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <h3 className="text-sm font-medium">1. Install the skill</h3>
+                    <p className="text-xs text-muted-foreground">Skip if already installed.</p>
+                  </div>
+                  <div role="tablist" aria-label="Installation method" className="mt-2 flex border-b"
+                    onKeyDown={(event) => {
+                      const index = INSTALL_METHODS.findIndex(({ id }) => id === installMethod)
+                      const next = event.key === "ArrowRight" ? (index + 1) % INSTALL_METHODS.length
+                        : event.key === "ArrowLeft" ? (index + INSTALL_METHODS.length - 1) % INSTALL_METHODS.length
+                        : event.key === "Home" ? 0 : event.key === "End" ? INSTALL_METHODS.length - 1 : null
+                      if (next === null) return
+                      event.preventDefault()
+                      setInstallMethod(INSTALL_METHODS[next].id)
+                      setInstallCopyStatus("idle")
+                      event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next].focus()
+                    }}>
+                    {INSTALL_METHODS.map(({ id, label }) => (
+                      <button key={id} type="button" role="tab" id={`skill-install-tab-${id}`}
+                        aria-selected={installMethod === id} aria-controls="skill-install-panel" tabIndex={installMethod === id ? 0 : -1}
+                        className={`-mb-px flex flex-1 items-center justify-center border-b-2 px-2 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${installMethod === id ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                        onClick={() => { setInstallMethod(id); setInstallCopyStatus("idle") }}>{label}</button>
+                    ))}
+                  </div>
+                  <div role="tabpanel" id="skill-install-panel" aria-labelledby={`skill-install-tab-${installMethod}`}>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{installMethod === "agent" ? "Paste this into your agent's chat." : "Run this in your terminal."}</p>
+                  <div className="relative mt-2">
+                    <textarea readOnly value={installText} rows={1} wrap="off" aria-label={`Skill installation ${installLabel}`}
+                      onFocus={(event) => event.currentTarget.select()}
+                      className="block h-12 w-full resize-none overflow-x-auto whitespace-pre rounded-md border bg-muted p-3 pr-12 font-mono text-xs leading-relaxed focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="absolute right-2 top-2 h-7 w-7 text-muted-foreground" aria-label={`Copy install ${installLabel}`} onClick={() => void copyHelpCommand(installText, "install")}>
+                          {installCopyStatus === "copied" ? <Check size={14} /> : <Copy size={14} />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent style={{ zIndex: 100002 }}>{installCopyStatus === "copied" ? "Copied" : `Copy install ${installLabel}`}</TooltipContent>
+                    </Tooltip>
+                  </div>
+                  {installCopyStatus === "copied" && <span role="status" className="sr-only">Install {installLabel} copied</span>}
+                  {installCopyStatus === "error" && <p role="alert" className="mt-2 text-xs text-destructive">Couldn't copy. Select the {installLabel} above and copy it.</p>}
+                  </div>
+                  <h3 className="mt-5 text-sm font-medium">2. Start a review</h3>
+                  <div role="tablist" aria-label="Your agent" className="mt-2 flex border-b"
+                    onKeyDown={(event) => {
+                      const index = REVIEW_AGENTS.findIndex(({ id }) => id === reviewAgent)
+                      const next = event.key === "ArrowRight" ? (index + 1) % REVIEW_AGENTS.length
+                        : event.key === "ArrowLeft" ? (index + REVIEW_AGENTS.length - 1) % REVIEW_AGENTS.length
+                        : event.key === "Home" ? 0
+                        : event.key === "End" ? REVIEW_AGENTS.length - 1 : null
+                      if (next === null) return
+                      event.preventDefault()
+                      setReviewAgent(REVIEW_AGENTS[next].id)
+                      setCommandCopyStatus("idle")
+                      event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next].focus()
+                    }}>
+                    {REVIEW_AGENTS.map(({ id, label }) => (
+                      <button key={id} type="button" role="tab" id={`agent-review-tab-${id}`}
+                        aria-selected={reviewAgent === id} aria-controls="agent-review-command-panel"
+                        tabIndex={reviewAgent === id ? 0 : -1}
+                        className={`-mb-px flex flex-1 items-center justify-center gap-2 border-b-2 px-2 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${reviewAgent === id ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                        onClick={() => {
+                          setReviewAgent(id)
+                          setCommandCopyStatus("idle")
+                        }}>
+                        {id === "codex" ? <AgentIcon agent="codex" /> : (
+                          <span className="flex items-center gap-1.5" aria-hidden="true">
+                            <AgentIcon agent="claude" />
+                            <AgentIcon agent="cursor" />
+                          </span>
+                        )}
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div role="tabpanel" id="agent-review-command-panel" aria-labelledby={`agent-review-tab-${reviewAgent}`}>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">Paste this into your agent's chat. Markside finds the review when you return to this tab.</p>
+                    <div className="relative mt-4">
+                      <textarea readOnly value={reviewCommand} rows={1} aria-label="Review command for your agent"
+                        onFocus={(event) => event.currentTarget.select()}
+                        className="block min-h-12 w-full resize-none rounded-md border bg-muted p-3 pr-12 [field-sizing:content] font-mono text-xs leading-relaxed focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" />
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="absolute right-2 top-2 h-7 w-7 text-muted-foreground" aria-label="Copy review command" onClick={() => void copyHelpCommand(reviewCommand, "review")}>
+                            {commandCopyStatus === "copied" ? <Check size={14} /> : <Copy size={14} />}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent style={{ zIndex: 100002 }}>{commandCopyStatus === "copied" ? "Copied" : "Copy review command"}</TooltipContent>
+                      </Tooltip>
+                    </div>
+                    {commandCopyStatus === "copied" && <span role="status" className="sr-only">Review command copied. Ready to paste into your agent's chat.</span>}
+                    {commandCopyStatus === "error" && <p role="alert" className="mt-2 text-xs text-destructive">Couldn't copy. Select the command above and copy it.</p>}
+                  </div>
+                  {(reviewFolder || folderStatus !== "idle") && <>
+                    <h3 className="mt-5 text-sm font-medium">3. Allow folder access</h3>
+                    {reviewFolder ? <>
+                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                        So your agent can receive your review, Chrome asks once for access to{" "}
+                        <span title={reviewFolder.path} className="font-medium text-foreground">{folderName(reviewFolder.path)}</span>.
+                      </p>
+                      {folderStatus === "chosen" && <p role="alert" className="mt-2 text-xs text-destructive">That folder doesn't contain this file. Choose {folderName(reviewFolder.path)} or a folder above it.</p>}
+                      <Button variant="outline" className="mt-3" disabled={folderStatus === "choosing"} onClick={async () => {
+                        setFolderStatus("choosing")
+                        setFolderStatus(await reviewFolder.choose() ? "chosen" : "idle")
+                      }}>
+                        <FolderOpen size={14} />Choose folder
+                      </Button>
+                    </> : (
+                      <p role="status" className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground"><Check size={14} />Your agent can receive reviews for this file.</p>
+                    )}
+                  </>}
+                  <div className="mt-5 flex justify-end">
+                    <Dialog.Close asChild><Button>Done</Button></Dialog.Close>
+                  </div>
+                </Dialog.Content>
+              </Dialog.Portal>
+            </Dialog.Root>
+          </>
+        )}
+        {activeAgentHandoff?.sent && (
+          <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+            Agent not picking up the review sent? Make sure you start a review in your agent. You can{" "}
+            <button ref={sendHelpRef} type="button" onClick={() => setSendHelpOpen(true)}
+              className="underline underline-offset-2 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+              start the review now
+            </button>.
           </p>
         )}
-        {activeAgentHandoff?.folderToChoose && (
-          <div id="agent-review-folder-help" className="mb-3 text-xs leading-relaxed text-muted-foreground">
-            <p>Markside saves your comments beside this document so your agent can read them. Choose its folder in the next window. Markside will remember your choice.</p>
-            <p className="mt-2 break-all font-medium text-foreground">{activeAgentHandoff.folderToChoose}</p>
-          </div>
+        {activeAgentHandoff && (
+            <Button className="h-11 w-full whitespace-nowrap px-3 disabled:bg-primary disabled:text-primary-foreground/60 disabled:opacity-100" disabled={activeAgentHandoff.disabled} onClick={() => void activeAgentHandoff.send()} aria-busy={activeAgentHandoff.sending}
+              aria-describedby={showAgentDisabledHelp ? "agent-review-send-help" : showAgentFolderHelp ? "agent-review-folder-help" : undefined}>
+              {activeAgentHandoff.sent ? <Check size={14} /> : <Send size={14} />}
+              {activeAgentHandoff.sending ? "Sending review…" : activeAgentHandoff.sent ? "Sent for agent to pick up" : "Send review to agent"}
+            </Button>
         )}
-        {agentHandoff?.error && <p role="alert" className="mb-2 text-xs text-destructive">{agentHandoff.error}</p>}
-        <div className={activeAgentHandoff ? "flex flex-col gap-2" : "flex gap-2"}>
-          {activeAgentHandoff ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="flex min-w-0 flex-1" tabIndex={activeAgentHandoff.disabled ? 0 : undefined}>
-                  <Button className="h-11 flex-1" disabled={activeAgentHandoff.disabled} onClick={activeAgentHandoff.send} aria-busy={activeAgentHandoff.sending}
-                    aria-describedby={activeAgentHandoff.folderToChoose ? "agent-review-folder-help" : undefined}>
-                    {activeAgentHandoff.folderToChoose ? <FolderOpen size={14} /> : <Send size={14} />}
-                    {activeAgentHandoff.sending ? "Sending comments…" : activeAgentHandoff.folderToChoose ? "Choose folder and send" : "Send comments to agent"}
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              {activeAgentHandoff.disabledReason && <TooltipContent>{activeAgentHandoff.disabledReason}</TooltipContent>}
-            </Tooltip>
-          ) : <Button className="h-11 flex-1" disabled={itemCount === 0} onClick={onCopy}>
+        {showAgentFolderHelp && (
+          <p id="agent-review-folder-help" className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            Chrome will ask once for access to{" "}
+            <span title={activeAgentHandoff.folderToChoose} className="font-medium text-foreground">{folderName(activeAgentHandoff.folderToChoose!)}</span>{" "}
+            so your agent can receive your review.
+          </p>
+        )}
+        <div className={`flex flex-wrap gap-2 ${showAgentAction ? "mt-2" : ""}`}>
+          {/* Remount on a variant change so transition-colors doesn't fade the dark primary background out. */}
+          <Button key={showAgentAction ? "secondary" : "primary"} variant={showAgentAction ? "ghost" : "default"} className={`h-11 min-w-max whitespace-nowrap ${showAgentAction ? "shrink-0 px-4 text-xs text-muted-foreground hover:text-foreground" : "flex-1"}`} disabled={copyableCount === 0} onClick={onCopy}>
             {copied
               ? <Check size={14} strokeWidth={2.5} className="text-[hsl(132_60%_46%)] dark:text-[hsl(130_78%_29%)]" />
               : <Copy size={14} />} {copied ? "Review copied for this file" : "Copy review as prompt"}
-          </Button>}
-          {itemCount > 0 && (
+          </Button>
+          {(historyFile ? hasDrafts : itemCount > 0) && (
             <Button
               ref={clearButtonRef}
-              className={`${activeAgentHandoff ? "h-8 self-end" : "h-11"} px-3 ${clearArmed ? "text-red-700 hover:text-red-700 dark:text-red-300 dark:hover:text-red-300" : "text-muted-foreground"}`}
+              title={historyFile ? "Discard unsent changes. Sent feedback and previous reviews are kept." : "Clear this local review."}
+              disabled={agentHandoff?.sending || agentHandoff?.updatingCommentId != null}
+              className={`h-11 shrink-0 whitespace-nowrap px-4 ${showAgentAction ? "ml-auto text-xs" : ""} ${clearArmed ? "text-red-700 hover:text-red-700 dark:text-red-300 dark:hover:text-red-300" : "text-muted-foreground"}`}
               variant="ghost"
               onBlur={() => setClearArmed(false)}
               onClick={() => {
@@ -576,15 +846,36 @@ export function ReviewPanel({
               }}>
               <span style={{ display: "grid" }}>
                 <span aria-hidden="true" className="flex items-center gap-1.5" style={{ gridArea: "1 / 1", visibility: "hidden" }}>
-                  <Trash2 size={13} />Confirm clear
+                  <Trash2 size={14} />{clearLabel}
                 </span>
                 <span className="flex items-center justify-center gap-1.5" style={{ gridArea: "1 / 1" }}>
-                  <Trash2 size={13} />{clearArmed ? "Confirm clear" : "Clear all"}
+                  <Trash2 size={14} />{clearArmed ? "Confirm" : clearLabel}
                 </span>
               </span>
             </Button>
           )}
         </div>
+        {showStartReview && (
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs leading-relaxed text-muted-foreground">
+            <button ref={sendHelpRef} type="button" aria-haspopup="dialog" onClick={() => setSendHelpOpen(true)}
+              className="inline-flex items-center gap-1.5 text-left hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+              <Bot size={14} aria-hidden="true" className="shrink-0" />
+              {needsNewReview ? "Start another review…" : "Start a review in your agent…"}
+            </button>
+            <button type="button" disabled={agentSessionCheckStatus === "checking"} aria-busy={agentSessionCheckStatus === "checking"} onClick={onCheckAgentSession}
+              className="inline-flex items-center gap-1.5 hover:text-foreground disabled:pointer-events-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+              <RefreshCw size={14} aria-hidden="true" className={`shrink-0 ${agentSessionCheckStatus === "checking" ? "animate-spin" : ""}`} />
+              {/* Every label occupies the same cell so the width never changes and the row never rewraps. */}
+              <span className="grid text-left">
+                {["Check for review", "No review yet", "Checking…"].map((label) => (
+                  <span key={label} aria-hidden="true" className="invisible" style={{ gridArea: "1 / 1" }}>{label}</span>
+                ))}
+                <span role="status" style={{ gridArea: "1 / 1" }}>{agentSessionCheckStatus === "checking" ? "Checking…" : showNotFound ? "No review yet" : "Check for review"}</span>
+              </span>
+            </button>
+          </div>
+        )}
+        {activeAgentHandoff && copied && <p role="status" className="mt-2 text-xs text-muted-foreground">Review copied for this file</p>}
       </div>
     </div>
   )

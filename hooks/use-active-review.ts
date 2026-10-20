@@ -12,6 +12,7 @@ export function useActiveReview(sourceUrl: string, enabled: boolean) {
   const [review, setReview] = useState<ActiveReview | null>(null)
   const [reviewCounts, setReviewCounts] = useState<Record<string, number>>({})
   const [persistenceError, setPersistenceError] = useState(false)
+  const [loadedUrl, setLoadedUrl] = useState<string | null>(null)
   type ReviewMutation = (current: ActiveReview | null) => ActiveReview | null
   const reviewRef = useRef(review)
   const persistQueueRef = useRef(Promise.resolve())
@@ -40,17 +41,20 @@ export function useActiveReview(sourceUrl: string, enabled: boolean) {
     ) return
     if (!enabled) {
       setReview(null)
+      setLoadedUrl(sourceUrl)
       return
     }
     try {
       const stored = await getActiveReview(sourceUrl)
       if (sequence !== loadSequenceRef.current) return
       setReview(stored)
+      setLoadedUrl(sourceUrl)
       setPersistenceError(false)
       persistenceErrorRef.current = false
       await refreshCounts()
     } catch {
       if (sequence === loadSequenceRef.current) {
+        setLoadedUrl(sourceUrl)
         setPersistenceError(true)
         persistenceErrorRef.current = true
       }
@@ -163,6 +167,7 @@ export function useActiveReview(sourceUrl: string, enabled: boolean) {
 
   return {
     review,
+    reviewLoaded: loadedUrl === sourceUrl,
     reviewCounts,
     persistenceError,
     updateReview,

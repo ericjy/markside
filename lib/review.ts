@@ -12,6 +12,8 @@ export interface ReviewAnchor {
 }
 
 export interface ReviewComment {
+  localStatus?: "open" | "resolved"
+  reviewMode?: "local" | "agent"
   id: string
   body: string
   createdAt: string

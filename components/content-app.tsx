@@ -38,7 +38,7 @@ import { useContentSnapshots } from "~hooks/use-content-snapshots"
 import { useContentSplitPane } from "~hooks/use-content-split-pane"
 import { usePersistedDirectory } from "~hooks/use-persisted-directory"
 import { resolveUnsavedNavigationPolicy } from "~lib/auto-save"
-import { getContentFileSurfaces } from "~lib/content-app-policy"
+import { getContentFileSurfaces, getSavePathParts } from "~lib/content-app-policy"
 import { getFileHandle } from "~lib/db"
 import { classifyMarksideFileUrl } from "~lib/file-types"
 import { headingNumbers } from "~lib/heading-numbering"
@@ -155,6 +155,7 @@ export function FileRenderer({
   const diskContentRef = useRef<string | null>(initialContent)
   const {
     review,
+    reviewLoaded,
     reviewCounts,
     persistenceError: reviewPersistenceError,
     updateReview,
@@ -439,19 +440,37 @@ export function FileRenderer({
     selectMode("split")
   }
 
+  const [agentSessionCheckVersion, setAgentSessionCheckVersion] = useState(0)
+  const [agentSessionCheck, setAgentSessionCheck] = useState<{ url: string; status: "checking" | "not-found" | "idle" } | null>(null)
+  const [agentReviewLoadedUrl, setAgentReviewLoadedUrl] = useState<string | null>(null)
+  const [agentDiscoveryVersion, setAgentDiscoveryVersion] = useState(0)
+  const agentDiscoveryEnabledRef = useRef(false)
+  useEffect(() => {
+    // Users usually switch to their agent and back: to start a review, or after it
+    // replies. One read on return is not file watching: nothing runs while idle.
+    const discover = () => { if (agentDiscoveryEnabledRef.current) setAgentDiscoveryVersion((version) => version + 1) }
+    window.addEventListener("focus", discover)
+    return () => window.removeEventListener("focus", discover)
+  }, [])
   const agentHandoff = useContentAgentReview({
     fileUrl,
     enabled: isMdFile,
     open: overlay.reviewOverlayOpen,
     reloadVersion: reload.reloadVersion,
+    sessionCheckVersion: agentSessionCheckVersion,
+    discoveryVersion: agentDiscoveryVersion,
+    onSessionChecked: (found) => setAgentSessionCheck({ url: fileUrl, status: found ? "idle" : "not-found" }),
+    onLoaded: setAgentReviewLoadedUrl,
     openReview: () => overlay.setReviewOverlayOpen(true),
     review,
+    updateReview,
     openDirectory,
     directory: handle && rootUrl ? { handle, rootUrl } : null,
     diskContentRef,
     hasUnsavedDraftRef,
     renderedTextIndexRef,
   })
+  agentDiscoveryEnabledRef.current = isMdFile && fileUrl.startsWith("file:")
 
   const highlights = useContentReviewHighlights({
     review,
@@ -506,6 +525,7 @@ export function FileRenderer({
     isMdFile,
     previewVisible,
     review,
+    agentHandoff,
     updateReview,
     reviewForMutation,
     currentReviewDocument,
@@ -791,6 +811,8 @@ export function FileRenderer({
         setSelectionComposerBody={selection.setSelectionComposerBody}
         closeSelectionComposer={selection.closeSelectionComposer}
         saveSelectionComposerComment={reviewActions.saveSelectionComposerComment}
+        agentHandoff={agentHandoff}
+        sendSelectionComposerComment={reviewActions.sendSelectionComposerComment}
         selectionPresetPickerOpen={selection.selectionPresetPickerOpen}
         setSelectionPresetPickerOpen={selection.setSelectionPresetPickerOpen}
         insertSelectionComposerPreset={selection.insertSelectionComposerPreset}
@@ -832,6 +854,15 @@ export function FileRenderer({
       />
       <ContentReviewOverlay
         agentHandoff={agentHandoff}
+        agentSessionCheckStatus={agentSessionCheck?.url === fileUrl ? agentSessionCheck.status : "idle"}
+        checkAgentSession={() => {
+          setAgentSessionCheck({ url: fileUrl, status: "checking" })
+          setAgentSessionCheckVersion((version) => version + 1)
+        }}
+        reviewLoading={isMdFile && (!reviewLoaded || agentReviewLoadedUrl !== fileUrl)}
+        reviewFolder={fileUrl.startsWith("file:") && !(rootUrl && getSavePathParts(fileUrl, rootUrl))
+          ? { path: fileFolderPath(fileUrl), choose: () => openDirectory("readwrite") }
+          : null}
         isMdFile={isMdFile}
         reviewOverlayRef={overlay.reviewOverlayRef}
         reviewOverlayOpen={overlay.reviewOverlayOpen}
@@ -862,6 +893,7 @@ export function FileRenderer({
         selectedImportedCommentId={selectedImportedCommentId}
         updateReviewNote={reviewActions.updateReviewNote}
         updateReviewComment={reviewActions.updateReviewComment}
+        changeReviewCommentStatus={reviewActions.changeReviewCommentStatus}
         deleteReviewCommentById={reviewActions.deleteReviewCommentById}
         selectReviewComment={reviewActions.selectReviewComment}
         jumpToReviewSection={reviewActions.jumpToReviewSection}

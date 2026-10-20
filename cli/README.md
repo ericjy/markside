@@ -9,6 +9,7 @@ markside review PLAN.md
 markside review PLAN.md --timeout 540 --no-open
 markside comments PLAN.md
 markside address PLAN.md c1 --reply "Added the missing detail."
+markside review PLAN.md --continue --no-open
 ```
 
 `review` opens Chrome and waits up to 540 seconds. It prints an agent prompt on
@@ -19,11 +20,19 @@ stderr; comments and timeout instructions go to stdout. Other errors exit 1.
 
 The only communication channel is `PLAN.md.review.json` beside the document.
 A retry preserves the pending request, and returns an existing send immediately.
-After all comments are addressed or resolved, `review` starts a new request
-and retains their status and replies. Writes use a
+Addressing keeps the current request active. After reviewer resolution, `review`
+starts a new request; resolved comments and their replies stay in the file as
+history. Writes use a
 temporary sibling file and rename. The waiting process watches the directory
 and polls every second as a fallback. It stops when sent, interrupted, or timed
 out. There is no server or persistent background process.
+
+After addressing all received comments, the agent runs `review --continue --no-open`
+and waits for the reviewer to check the changes. This preserves the current request
+and its replies, without opening another tab. Further sends return the next open
+comments. Resolving every comment ends the loop, including when resolution happens
+before the continuation command starts. Timeout retries keep `--continue --no-open`.
+The agent repeats this loop until the reviewer resolves everything or asks it to stop.
 
 Add `*.review.json` to your project's `.gitignore` to keep local comments private.
 
@@ -37,3 +46,7 @@ report its work and reply. The user checks the result in Markside, then chooses
 Resolve or Reopen. Reopen returns a comment to Open and requires an explicit
 Send comments to agent before the agent receives it again. The former CLI
 `resolve` command is rejected; resolution belongs to the reviewer.
+
+`review` returns only open comments; `comments` lists every comment with its
+status and reply. The file keeps one flat comment list; see
+[ADR-0008](../docs/adr/0008-flat-agent-review-file.md).

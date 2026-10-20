@@ -4,7 +4,7 @@ import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
 import { spawn } from "node:child_process"
 import { once } from "node:events"
-import { parseReviewFile, setReviewerCommentStatus } from "../cli/review-file.mjs"
+import { parseReviewFile, setReviewerCommentStatus, sendReview } from "../cli/review-file.mjs"
 
 const cli = resolve("cli/markside.mjs")
 let folder: string
@@ -36,17 +36,38 @@ afterEach(async () => {
   await rm(folder, { recursive: true, force: true })
 })
 
-async function send() {
+async function send(id = "c1", body = "Explain why.") {
   const review = JSON.parse(await readFile(sidecar, "utf8"))
-  Object.assign(review, {
-    status: "sent", sentAt: new Date().toISOString(), docHash: "a".repeat(64),
-    comments: [{ id: "c1", quote: "First step.", line: 3, body: "Explain why.", status: "open" }],
+  const sent = sendReview(review, {
+    docHash: "a".repeat(64),
+    comments: [...review.comments.filter((comment: { id: string }) => comment.id !== id), { id, quote: "First step.", line: 3, body, status: "open" }],
   })
-  await writeFile(`${sidecar}.tmp`, JSON.stringify(review))
+  await writeFile(`${sidecar}.tmp`, JSON.stringify(sent))
   await rename(`${sidecar}.tmp`, sidecar)
 }
 
 describe("markside CLI with real files", () => {
+  it("keeps a sent Review across retries and starts the next Review with resolved comments kept", async () => {
+    const first = run(["review", doc, "--no-open", "--timeout", "3"])
+    await first.waiting
+    await send()
+    const received = await first.done
+    const retry = await run(["review", doc, "--continue", "--no-open"]).done
+    expect(retry.stdout).toBe(received.stdout)
+    expect((await run(["address", doc, "c1", "--reply", "Done"]).done).code).toBe(0)
+    const addressed = parseReviewFile(await readFile(sidecar, "utf8"), "plan #1.md")
+    await writeFile(sidecar, JSON.stringify(setReviewerCommentStatus(addressed, "c1", "resolved")))
+    expect((await run(["review", doc, "--continue", "--no-open"]).done).stdout).toContain("Review resolved")
+    const next = run(["review", doc, "--no-open", "--timeout", "3"])
+    await next.waiting
+    expect(parseReviewFile(await readFile(sidecar, "utf8"), "plan #1.md")).toMatchObject({ status: "pending", comments: [{ id: "c1", status: "resolved" }] })
+    await send("c2", "Follow-up in the next Review")
+    expect((await next.done).stdout).not.toContain("Comment c1")
+    const all = await run(["comments", doc]).done
+    expect(all.stdout).toContain("Agent reply: Done")
+    expect(all.stdout).toContain("Follow-up in the next Review")
+  })
+
   it("waits across atomic replacement and returns an agent prompt", async () => {
     const process = run(["review", doc, "--no-open", "--timeout", "3"])
     await process.waiting
@@ -89,6 +110,48 @@ describe("markside CLI with real files", () => {
     await writeFile(`${sidecar}.tmp`, JSON.stringify(accepted))
     await rename(`${sidecar}.tmp`, sidecar)
     expect(await waiting.done).toMatchObject({ code: 0, stdout: expect.stringContaining("Review resolved for plan #1.md") })
+  })
+
+  it("continues an addressed Review across timeout and receives the next round", async () => {
+    const first = run(["review", doc, "--no-open", "--timeout", "3"])
+    await first.waiting
+    await send()
+    await first.done
+    await run(["address", doc, "c1", "--reply", "Clarified."]).done
+    const addressed = await readFile(sidecar, "utf8")
+    const timedOut = await run(["review", doc, "--continue", "--no-open", "--timeout", "0.03"]).done
+    expect(timedOut).toMatchObject({ code: 2, stdout: expect.stringContaining("--continue --no-open") })
+    expect(await readFile(sidecar, "utf8")).toBe(addressed)
+    const waiting = run(["review", doc, "--continue", "--no-open", "--timeout", "3"])
+    await waiting.waiting
+    const reopened = setReviewerCommentStatus(parseReviewFile(addressed, "plan #1.md"), "c1", "open")
+    await writeFile(sidecar, JSON.stringify(reopened))
+    // Reopening alone is pending; the reviewer must explicitly send it.
+    await send()
+    expect(await waiting.done).toMatchObject({ code: 0, stdout: expect.stringContaining("Got 1 comment") })
+  })
+
+  it("continues until resolution and does not restart an already resolved Review", async () => {
+    const first = run(["review", doc, "--no-open", "--timeout", "3"])
+    await first.waiting
+    await send()
+    await first.done
+    await run(["address", doc, "c1"]).done
+    const waiting = run(["review", doc, "--continue", "--no-open", "--timeout", "3"])
+    await waiting.waiting
+    const accepted = setReviewerCommentStatus(parseReviewFile(await readFile(sidecar, "utf8"), "plan #1.md"), "c1", "resolved")
+    await writeFile(`${sidecar}.tmp`, JSON.stringify(accepted))
+    await rename(`${sidecar}.tmp`, sidecar)
+    expect(await waiting.done).toMatchObject({ code: 0, stdout: expect.stringContaining("Review resolved for") })
+    const resolved = await readFile(sidecar, "utf8")
+    const retry = await run(["review", doc, "--continue", "--no-open"]).done
+    expect(retry).toMatchObject({ code: 0, stdout: expect.stringContaining("Review resolved for") })
+    expect(await readFile(sidecar, "utf8")).toBe(resolved)
+  })
+
+  it("requires an existing request to continue", async () => {
+    const result = await run(["review", doc, "--continue", "--no-open"]).done
+    expect(result).toMatchObject({ code: 1, stderr: expect.stringContaining("No Review to continue") })
   })
 
   it.runIf(process.platform === "darwin")("opens Chrome with a correctly encoded file URL", async () => {

@@ -28,12 +28,17 @@ export function parseReviewFile(text, doc) {
 }
 
 export function refreshReviewFile(existing, doc, now = new Date().toISOString()) {
-  // A timeout retry must not discard a send made while the agent wasn't running.
-  if (existing?.status === "pending" || (existing?.status === "sent" && existing.comments.some(({ status }) => status === "open"))) return existing
+  // Only reviewer acceptance ends a Review. A retry must not discard a send made while the agent wasn't running.
+  if (existing && existing.status !== "resolved") return existing
   return {
     version: 1, doc, docHash: "", status: "pending", requestedAt: now,
+    ...(existing?.note ? { note: existing.note } : {}),
     comments: existing?.comments ?? [],
   }
+}
+
+export function sendReview(review, { docHash, note = "", comments }, sentAt = new Date().toISOString()) {
+  return { ...review, status: "sent", sentAt, docHash, note, comments }
 }
 
 export function addressReviewComment(review, id, reply) {
@@ -52,8 +57,8 @@ export function addressReviewComment(review, id, reply) {
 export function setReviewerCommentStatus(review, id, status) {
   const comment = review.comments.find((item) => item.id === id)
   if (!comment) throw new Error(`Review comment not found: ${id}`)
-  if (status === "resolved" ? comment.status !== "addressed" : status !== "open" || comment.status === "open") {
-    throw new Error("Resolve an addressed comment, or reopen an addressed or resolved comment.")
+  if (status === "resolved" ? comment.status === "resolved" : status !== "open" || comment.status === "open") {
+    throw new Error("Resolve an open or addressed comment, or reopen a resolved or addressed comment.")
   }
   const comments = review.comments.map((item) => item.id === id ? { ...item, status } : item)
   return {

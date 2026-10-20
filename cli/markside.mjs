@@ -27,6 +27,10 @@ async function atomicWrite(path, review) {
   }
 }
 
+// Addressed-only feedback is waiting on the reviewer, not the agent.
+const hasAgentWork = (review) =>
+  review.status === "resolved" || (review.status === "sent" && review.comments.some(({ status }) => status === "open"))
+
 function openChrome(file) {
   const url = pathToFileURL(file).href
   const windowsChrome = process.platform === "win32"
@@ -70,7 +74,7 @@ function waitForReview(path, doc, seconds, signal) {
       reading = true
       try {
         const review = await readReview(path, doc)
-        if (review?.status === "sent" || review?.status === "resolved") finish(null, review)
+        if (review && hasAgentWork(review)) finish(null, review)
       } catch (error) {
         finish(new Error(`Cannot read Review: ${error.message}`))
       } finally { reading = false }
@@ -94,10 +98,10 @@ function waitForReview(path, doc, seconds, signal) {
 async function main() {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
-    options: { timeout: { type: "string", default: "540" }, "no-open": { type: "boolean" }, reply: { type: "string" }, help: { type: "boolean" } },
+    options: { timeout: { type: "string", default: "540" }, "no-open": { type: "boolean" }, continue: { type: "boolean" }, reply: { type: "string" }, help: { type: "boolean" } },
   })
   if (values.help) {
-    console.log('markside review <file> [--timeout 540] [--no-open]\nmarkside comments <file>\nmarkside address <file> <id> [--reply "..."]')
+    console.log('markside review <file> [--timeout 540] [--no-open] [--continue]\nmarkside comments <file>\nmarkside address <file> <id> [--reply "..."]')
     return 0
   }
   const [command, input, id] = positionals
@@ -131,9 +135,10 @@ async function main() {
   process.once("SIGINT", interrupt)
   process.once("SIGTERM", interrupt)
   try {
-    const pending = refreshReviewFile(existing, doc)
+    if (values.continue && !existing) throw new Error(`No Review to continue: ${path}. Start with markside review <file>.`)
+    const pending = values.continue ? existing : refreshReviewFile(existing, doc)
     if (pending !== existing) await atomicWrite(path, pending)
-    if (pending.status === "sent") {
+    if (hasAgentWork(pending)) {
       console.log(formatReviewComments(pending))
       return 0
     }
@@ -143,7 +148,7 @@ async function main() {
     if (controller.signal.aborted) return 130
     if (sent) { console.log(formatReviewComments(sent)); return 0 }
     const quotedInput = "'" + input.replaceAll("'", "'\\''") + "'"
-    console.log(`STILL_WAITING: no review yet. Run "markside review ${quotedInput}" again to keep waiting.`)
+    console.log(`STILL_WAITING: no review yet. Run "markside review ${quotedInput}${values.continue ? " --continue" : ""}${values["no-open"] ? " --no-open" : ""}" again to keep waiting.`)
     return 2
   } finally {
     process.removeListener("SIGINT", interrupt)

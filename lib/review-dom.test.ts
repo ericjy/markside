@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { ResolvedReviewComment } from "./review"
 import {
+  anchorFromSelection,
   applyPendingReviewHighlight,
   buildRenderedTextIndex,
   clearPendingReviewHighlight,
@@ -170,6 +171,24 @@ describe("computeReviewBadgeAnchors", () => {
     })
 
     expect(computeReviewBadgeAnchors(root, index, [comment])).toEqual([])
+  })
+})
+
+describe("anchorFromSelection", () => {
+  it("drops whitespace selected around a block", () => {
+    const root = document.createElement("main")
+    root.innerHTML = "<p>Before.</p><ul><li>Assign a buddy.</li></ul><p>After.</p>"
+    document.body.replaceChildren(root)
+    const range = document.createRange()
+    range.setStart(root.querySelector("li")!.firstChild!, 0)
+    range.setEnd(root.querySelectorAll("p")[1].firstChild!, 0)
+    const selection = window.getSelection()!
+    selection.removeAllRanges()
+    selection.addRange(range)
+    const index = buildRenderedTextIndex(root)
+    const anchor = anchorFromSelection(root, selection)!.anchor
+    expect(anchor.exact).toBe("Assign a buddy.")
+    expect(index.text.slice(anchor.start, anchor.end)).toBe(anchor.exact)
   })
 })
 

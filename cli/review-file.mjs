@@ -75,7 +75,7 @@ export function formatReviewComments(review, includeAll = false) {
     ...(review.note ? [`Review note:\n${review.note}`] : []),
     ...comments.map((comment) => [
       `Comment ${comment.id}${comment.line === null ? " (line unavailable; verify the passage in the current document)" : ` (line ${comment.line})`}${comment.status !== "open" ? ` [${comment.status}]` : ""}`,
-      comment.quote.split("\n").map((line) => `> ${line}`).join("\n"),
+      comment.quote.trim().split("\n").map((line) => `> ${line}`).join("\n"),
       comment.body,
       ...(comment.reply ? [`Agent reply: ${comment.reply}`] : []),
     ].join("\n")),

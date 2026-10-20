@@ -133,12 +133,13 @@ export function anchorFromSelection(
     : range.startContainer.parentElement
   const removed = startElement?.closest<HTMLElement>("[data-reload-removed]")
   if (removed && removed.contains(range.endContainer)) {
-    const exact = range.toString()
-    if (!exact.trim() || exact.replace(/\s+/g, " ").trim().length > REVIEW_SELECTION_LIMIT) return null
+    const selected = range.toString()
+    const exact = selected.trim()
+    if (!exact || exact.replace(/\s+/g, " ").length > REVIEW_SELECTION_LIMIT) return null
     const prefix = document.createRange()
     prefix.selectNodeContents(removed)
     prefix.setEnd(range.startContainer, range.startOffset)
-    const start = Number(removed.dataset.beforeStart) + prefix.toString().length
+    const start = Number(removed.dataset.beforeStart) + prefix.toString().length + selected.length - selected.trimStart().length
     return {
       anchor: {
         removed: true,
@@ -154,9 +155,12 @@ export function anchorFromSelection(
     }
   }
   if (Array.from(root.querySelectorAll("[data-reload-removed]")).some((node) => range.intersectsNode(node))) return null
-  const start = boundaryOffset(index, range.startContainer, range.startOffset)
-  const end = boundaryOffset(index, range.endContainer, range.endOffset)
+  let start = boundaryOffset(index, range.startContainer, range.startOffset)
+  let end = boundaryOffset(index, range.endContainer, range.endOffset)
   if (start === null || end === null || end <= start) return null
+  // Triple-click and drag selections often include the line breaks after a block.
+  while (start < end && /\s/.test(index.text[start])) start++
+  while (end > start && /\s/.test(index.text[end - 1])) end--
   const exact = index.text.slice(start, end)
   const normalizedLength = exact.replace(/\s+/g, " ").trim().length
   if (normalizedLength === 0 || normalizedLength > REVIEW_SELECTION_LIMIT) return null

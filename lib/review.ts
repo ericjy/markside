@@ -265,6 +265,7 @@ function normalizeText(value: string) {
 function formatReviewComment(comment: ReviewComment) {
   const heading = comment.anchor.headingPath.join(" › ") || "Document"
   const quote = comment.anchor.exact
+    .trim()
     .split("\n")
     .map((line) => `> ${line}`)
     .join("\n")

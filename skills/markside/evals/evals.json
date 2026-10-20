@@ -51,12 +51,38 @@
     {
       "id": 5,
       "prompt": "The waiting markside CLI returned Got 2 comments for PLAN.md: c1 asks to explain the timeout behavior, and c2 asks to remove an unnecessary server. Describe how you would continue.",
-      "expected_output": "Address each comment in PLAN.md, answer any questions, and mark each ID addressed through the CLI and leave resolution to the user with a one-line reply.",
+      "expected_output": "Address each comment in PLAN.md, answer any questions, and mark each ID addressed through the CLI and leave resolution to the user with a one-line reply. Then continue waiting with review --continue --no-open until all comments are resolved or the user asks to stop.",
       "files": [],
       "expectations": [
         "Addresses both comments",
         "Runs markside address for c1 and c2 with replies after making the changes; leaves resolution to the user",
-        "Does not confuse this with the open-only success response"
+        "Does not confuse this with the open-only success response",
+        "After addressing both comments, runs markside review PLAN.md --continue --no-open and waits; retries on timeout and finishes on Review resolved"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "The agent has addressed the last open comment in a Review. The reviewer has not resolved it. Describe the next action. Later the reviewer resolves all comments before the continuation starts. Describe what the CLI should do.",
+      "expected_output": "Continue the existing Review with review --continue --no-open; do not start another Review or finish just because comments are addressed. If already resolved, report Review resolved without starting a new Review.",
+      "files": [],
+      "expectations": [
+        "Keeps waiting after addressing comments",
+        "Retries the same continuation command on timeout",
+        "Does not treat addressed or resolved comments as current work",
+        "Only the reviewer resolves comments"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "/markside review \"docs/PLAN.md\" --no-open. The installed CLI is available. This is an evaluation: do not launch a process; write exactly what you would say to the user and which command you would run, in order.",
+      "expected_output": "Tell the user once, before the waiting command, that the review has started for PLAN.md in the open tab and to add comments then click Send review to agent; then run the review command with --no-open and a 600000 ms timeout.",
+      "files": [],
+      "expectations": [
+        "Sends a short user-facing message before running the waiting command",
+        "The message names PLAN.md and says to add comments in Markside and click Send review to agent",
+        "Does not say Chrome is opening because --no-open was supplied",
+        "Runs markside review \"docs/PLAN.md\" --no-open with a 600000 ms tool timeout",
+        "Does not plan to repeat the message on STILL_WAITING retries"
       ]
     }
   ]

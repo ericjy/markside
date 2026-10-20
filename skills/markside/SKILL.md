@@ -20,7 +20,14 @@ below. Invocation authorizes opening Chrome and waiting for the user's Review.
    After npm publication, `npx markside` is also supported. If none is available,
    explain that the prototype CLI must be installed from the Markside checkout
    with `npm install --global ./cli`; do not substitute an unrelated npm package.
-2. Run `markside review <file>` and wait. Set the tool timeout to 600,000 ms.
+2. Before the first wait, tell the user in one short message that the review has
+   started, because the waiting command shows no output until it exits. Name the
+   file and say to add comments in Markside, then click **Send review to agent**.
+   Without `--no-open`, say Chrome is opening it; with `--no-open`, say it is
+   ready in the open tab. For example: `Review started for PLAN.md. Add comments
+   in Markside, then click Send review to agent. I'll wait here.` Do not repeat
+   it on `STILL_WAITING:` retries.
+   Run `markside review <file>` and wait. Set the tool timeout to 600,000 ms.
    Preserve explicit `--timeout` and `--no-open` arguments. Quote paths as single
    arguments so spaces and shell metacharacters remain literal.
 3. If stdout starts with `STILL_WAITING:`, rerun the same command. A tool that
@@ -33,12 +40,26 @@ below. Invocation authorizes opening Chrome and waiting for the user's Review.
    open and explain what needs the user's decision. Use the same CLI executable
    for review, comments, and address. Addressed means the agent has finished;
    only the user resolves a comment in Markside. Never mark it resolved yourself.
+5. After addressing the received comments, tell the user to reload Markside and
+   check the changes. Then run `markside review <file> --continue --no-open`
+   with the same CLI executable and wait again. Do not finish the task merely
+   because you addressed the comments. This preserves the current Review without
+   opening another Chrome tab. On `STILL_WAITING:`, rerun this continuation command.
+   When more comments arrive, repeat steps 4–5. Finish when the CLI reports
+   `Review resolved for ...`, or when the user explicitly asks to stop or proceed.
+   If a comment needs clarification, ask the user and wait for their answer rather
+   than repeatedly reading the same open comment.
 
 The adjacent `<file>.review.json` is the only handoff channel. Never write
 `status: "sent"` yourself or infer approval from elapsed time. Read current
-comments without waiting with `markside comments <file>`. Starting another
-Review after all comments are addressed or resolved creates a fresh pending
-request and keeps the previous comment statuses and replies. If the CLI returns
+comments without waiting with `markside comments <file>`.
+
+A Review ends only when the reviewer resolves all comments. A fresh `review` then
+starts a new one. Addressing all comments keeps the current Review active, even
+without `--continue`. `--continue` reports resolution even if accepted before the
+wait started. `review` returns only open feedback. `comments` also lists addressed
+and resolved comments with their replies; do not treat those as new work.
+If the CLI returns
 `Review resolved for ...`, the user has accepted all comments; continue the task
 without making further changes for those comments.
 

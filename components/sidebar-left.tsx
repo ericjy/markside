@@ -78,6 +78,7 @@ export function SidebarLeft({
   const [newFileName, setNewFileName] = React.useState("Untitled.md")
   const filenameInputRef = useRef<HTMLInputElement>(null)
   const [createdFileUrl, setCreatedFileUrl] = React.useState<string | null>(null)
+  const [copiedFolderPath, setCopiedFolderPath] = React.useState<string | null>(null)
 
   const createFile = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -126,6 +127,8 @@ export function SidebarLeft({
       .filter(Boolean)
     return segments.length >= 2 ? segments[segments.length - 2] : null
   })()
+
+  const folderPath = fileFolderPath(currentFileUrl)
 
   const handleFileClick = (node: FileNode) => {
     if (rootUrl && contentRef.current) {
@@ -196,15 +199,14 @@ export function SidebarLeft({
         {status === "idle" && (
           <div className="px-5 py-6">
             <div className="flex max-w-60 flex-col gap-3">
-              <FolderOpen className="h-5 w-5 text-sidebar-foreground/40" aria-hidden="true" />
               <div className="space-y-1.5">
                 <p className="text-sm font-medium leading-snug text-sidebar-foreground">
-                  {parentFolderName ? <>Select the {parentFolderName} folder</> : "Select this file's folder"}
+                  {parentFolderName ? <>Open {parentFolderName}</> : "Open this file's folder"}
                 </p>
                 <p className="text-[13px] leading-relaxed text-sidebar-foreground/75">
                   {folderError
                     ? <>You chose <strong className="font-medium text-sidebar-foreground">{folderError.picked}</strong>. Please choose <strong className="font-medium text-sidebar-foreground">{folderError.expected ?? parentFolderName}</strong>, or a parent folder.</>
-                    : "Chrome needs you to explicitly select this file's folder before Markside can show and save files in the folder."}
+                    : "Choose this folder so Markside can browse and save files in it."}
                 </p>
                 {folderError && (
                   <p className="text-[13px] leading-relaxed text-sidebar-foreground/75">
@@ -215,13 +217,14 @@ export function SidebarLeft({
               <button
                 onClick={() => {
                   // Chrome's picker can't open at a path, so copy it for the user to paste.
-                  void navigator.clipboard.writeText(fileFolderPath(currentFileUrl)).catch(() => {})
+                  void navigator.clipboard.writeText(folderPath).then(() => setCopiedFolderPath(folderPath), () => {})
                   void openDirectory()
                 }}
                 className="flex items-center justify-center gap-1.5 rounded-md bg-sidebar-primary px-3 py-2 text-[13px] font-medium text-sidebar-primary-foreground hover:opacity-90">
+                <FolderOpen className="h-3.5 w-3.5" aria-hidden="true" />
                 Choose folder
               </button>
-              <FolderPickerTip className="text-[13px] leading-relaxed text-sidebar-foreground/65" />
+              <FolderPickerTip copied={copiedFolderPath === folderPath} className="text-[13px] leading-relaxed text-sidebar-foreground/65" />
             </div>
           </div>
         )}

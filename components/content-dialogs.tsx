@@ -26,6 +26,7 @@ import {
 import {
   type ReviewRound
 } from "~lib/review"
+import { fileFolderPath } from "~lib/url"
 
 interface ContentDialogsProps {
   reviewPromptOpen: boolean
@@ -585,6 +586,7 @@ export function ContentDialogs({
       {saveFolderDialogOpen && (
         <SaveFolderDialog
           fileName={currentFileName}
+          folderPath={fileFolderPath(fileUrlRef.current)}
           folderError={folderError}
           onCancel={() => setSaveFolderDialogOpen(false)}
           onChooseFolder={() => void chooseSaveFolder()}

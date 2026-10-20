@@ -371,8 +371,6 @@ export function FileRenderer({
   }
 
   const chooseSaveFolder = async () => {
-    // Chrome's picker can't open at a path, so copy it for the user to paste.
-    void navigator.clipboard.writeText(fileFolderPath(fileUrlRef.current)).catch(() => {})
     if (!(await openDirectory("readwrite"))) return
     setSaveFolderDialogOpen(false)
     await doSave(draftRef.current, fileUrlRef.current)

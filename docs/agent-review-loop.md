@@ -24,15 +24,24 @@ can replace `markside` in every command.
 markside review PLAN.md
 markside comments PLAN.md
 markside address PLAN.md c1 --reply "Clarified the scope."
+markside review PLAN.md --continue --no-open
 ```
 
 The agent waits with a 600-second tool timeout. The CLI waits for 540 seconds by
 default, exits 2 with `STILL_WAITING:`, and the agent reruns it until the user
 sends comments or asks to stop. An existing pending request keeps its timestamp;
-a send received between invocations is returned immediately. After all comments
-are addressed or resolved, the next review creates a new pending request while
-retaining the previous comments and replies. If the user resolves every comment
+a send received between invocations is returned immediately. Addressing comments keeps the request active. Only after the user resolves
+every comment does a fresh review start a new request. Resolved comments and
+their replies stay in the file as history. If the user resolves every comment
 during a wait, the CLI exits 0 with `Review resolved for ...`.
+
+After addressing each batch, the skill tells the user to reload and check the
+changes, then runs `review --continue --no-open`. This preserves the current request
+instead of starting a new one or opening another tab. It waits past addressed
+comments, handles further sends, and reports resolution even if all comments were
+accepted before the wait restarted. The agent repeats after timeout or follow-up
+feedback and finishes only when all comments are resolved or the user asks to stop
+or proceed. Comments needing clarification stay open while the agent asks the user.
 
 ## Shared contract
 
@@ -50,6 +59,10 @@ The path is `<document path>.review.json`, for example `docs/PLAN.md.review.json
 }
 ```
 
+The file holds one flat comment list with each comment's latest state. Each Send
+replaces it with the comments being sent, so withdrawn drafts drop out and
+resolved comments stay as history. See [ADR-0008](adr/0008-flat-agent-review-file.md).
+
 On send, `status` becomes `sent`, `sentAt` is an ISO timestamp, and `docHash` is
 64 lowercase hexadecimal characters containing the SHA-256 of the document's
 exact bytes on disk. The extension refuses to send against an Unsaved Draft or
@@ -66,8 +79,8 @@ Comment status is `open`, `addressed`, or `resolved`. The agent uses
 a reply. This does not mean the user has accepted the change. The CLI rejects
 `resolve`; only the reviewer resolves a comment in Markside.
 
-Addressed cards stay in the Comments list with the reply and Resolve and Reopen
-buttons. Resolve moves a comment into a collapsed Resolved group. Reopen moves
+Addressed cards stay in the Active list with the reply and Resolve and Reopen
+buttons. Sent comments can also be resolved directly by the reviewer. Resolve moves a comment into a collapsed Resolved group. Reopen moves
 an addressed or resolved comment back to Open, preserving its reply for context.
 It makes the request pending, so the user can add feedback before explicitly
 sending it again. Resolving the final outstanding comment marks the file
@@ -91,15 +104,27 @@ supports `getFileHandle(name, { create: true })` for sibling files. A document
 handle alone does not grant sibling access.
 
 The CLI creates the Review file before opening Chrome. The extension discovers
-it through the existing local-file read relay on load and Review-panel open.
+it through the existing local-file read relay on load and Review-panel open. Returning
+focus to the tab and Check for review each read it once, which also shows the
+agent's Addressed replies; the document itself still needs a reload.
 A pending request opens the panel once for that document. Sending uses the
 stored directory permission, or the existing folder picker in read-write mode
-when no saved directory contains the document. Before the first picker, the
-panel explains that comments are saved beside the document, displays the exact
-folder path, and labels the action Choose folder and send. Once a matching
-folder is selected, the action returns to Send comments to agent. A wrong folder
+when no saved directory contains the document. Before the first picker, one
+line below Send review to agent names the folder Chrome will ask for, with the
+full path on hover. Once a matching folder is selected, the line disappears. A wrong folder
 or denied permission leaves the request and comments intact. Successful folder selection
-is remembered using Markside's existing directory catalog.
+is remembered using Markside's existing directory catalog. When the user starts
+a review from the setup dialog, the dialog offers the same folder choice as an
+optional step, so the first send needs no picker.
+
+Copy review as prompt stays available as a separate button below Send.
+After sending, Sent for agent to pick up confirms the local write, not agent receipt. The
+Copy button remains active so the user can copy if the agent is not waiting.
+Editing feedback restores Send. Sending does not start or wake an agent.
+The selection composer also offers Save & send review for an active request.
+It saves the comment and passes the updated whole Review directly to the same
+handoff, starting any folder permission request within the click. Cancellation
+or failure leaves the comment saved in the panel for retry.
 
 The CLI writes a unique temporary sibling and renames it over the Review file.
 Chrome cannot generally rename local files through `FileSystemHandle.move()`.
@@ -116,3 +141,17 @@ The prototype assumes one agent owns a document's Review at a time.
 
 Use `*.review.json` in `.gitignore` to keep comments local. There is no global
 `~/.markside` review directory.
+
+
+## Visible status and restarting
+
+Agent comments use Draft, Sent, Addressed, and Resolved badges. New local
+copy-prompt comments use Open/Resolved and persist those states in IndexedDB.
+They are not written to the sidecar merely because the user resolves them.
+Editing a sent comment produces an unsent Draft; its stored sent state remains
+unchanged until a send. Clear drafts restores that state.
+
+After completion, the panel shows a Start another review… link, which opens
+the skill command dialog. It does not reopen the completed sidecar or wake an
+agent. A normal CLI review starts the new request; continuation still reports
+the old one as resolved. Review complete is hidden while feedback is active.

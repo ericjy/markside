@@ -17,3 +17,12 @@ Before saving, Markside detects whether the file changed since it was loaded and
 - External changes are never silently applied.
 - Users control when content reloads.
 - No polling interval, filesystem watcher, or background refresh loop should be added without superseding this ADR.
+
+## Exception: agent Review discovery
+
+For a local Markdown file, Markside reads its `<document>.review.json` once when
+the tab regains focus. Users typically switch to their agent and back, to start a
+review or after the agent replies, so this is a user action, not a background loop:
+no timer runs and nothing is read while the tab is idle. It reads only the Review
+file to discover reviews and update comment statuses such as Addressed. It never
+reloads or replaces the document; the user still reloads to see the agent's edits.

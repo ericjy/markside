@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { agentReviewUrl, reviewSendFingerprint, prepareAgentReview, getAgentReviewResults } from "./agent-review"
+import { agentReviewUrl, reviewSendFingerprint, prepareAgentReview, getAgentReviewResults, getAgentReviewDisabledReason } from "./agent-review"
 import { type AgentReviewFile } from "../cli/review-file.mjs"
 import { createEmptyReview } from "./review"
 
@@ -10,6 +10,15 @@ const review = {
 }
 
 describe("agent Review handoff", () => {
+  it("allows sending newly saved feedback even when the previous Review was empty or unchanged", () => {
+    expect(getAgentReviewDisabledReason(pending, null)).toContain("Add a comment")
+    expect(getAgentReviewDisabledReason(pending, review)).toBeNull()
+    const sent = prepareAgentReview(pending, review, "hash", () => null)
+    expect(getAgentReviewDisabledReason(sent, review)).toContain("Add or edit")
+    const changed = { ...review, comments: [...review.comments, { ...review.comments[0], id: "c2", body: "New feedback" }] }
+    expect(getAgentReviewDisabledReason(sent, changed)).toBeNull()
+    expect(getAgentReviewDisabledReason({ ...sent, status: "resolved" }, changed)).toContain("resolved")
+  })
   it("creates a sibling URL without losing encoded filename characters", () => {
     expect(agentReviewUrl(review.sourceUrl)).toBe("file:///docs/plan%20%231.md.review.json")
   })

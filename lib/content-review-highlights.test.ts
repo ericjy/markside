@@ -36,6 +36,22 @@ function options(text: string) {
 }
 
 describe("resolved agent comments in Preview", () => {
+  it("keeps a draft anchored when opening a modal hides the preview's background", () => {
+    const props = options("Old wording")
+    const wrapper = document.createElement("div")
+    wrapper.append(props.contentRef.current)
+    const hook = renderHook(useContentReviewHighlights, props)
+    expect(hook.result.current.resolvedReviewComments[0].status).toBe("anchored")
+    wrapper.setAttribute("aria-hidden", "true")
+    hook.rerender({ ...props, reviewRenderVersion: 1 })
+    expect(hook.result.current.resolvedReviewComments[0].status).toBe("anchored")
+    expect(highlights.has("markside-review")).toBe(true)
+    wrapper.removeAttribute("aria-hidden")
+    hook.rerender({ ...props, reviewRenderVersion: 2 })
+    expect(hook.result.current.resolvedReviewComments[0].status).toBe("anchored")
+    hook.unmount()
+  })
+
   it.each(["addressed", "resolved"] as const)("removes missing-passage markers for %s comments and keeps them removed after resize", (status) => {
     const props = options("New wording")
     const hook = renderHook(useContentReviewHighlights, props)

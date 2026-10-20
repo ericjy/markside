@@ -61,7 +61,7 @@ export function useContentReviewHighlights({
   const [reviewBadgeAnchors, setReviewBadgeAnchors] = useState<ReviewBadgeAnchor[]>([])
 
   const activeReviewComments = useMemo(() => resolvedReviewComments.filter((comment) =>
-    (agentResults?.get(comment.id)?.status ?? "open") === "open"
+    comment.localStatus !== "resolved" && (agentResults?.get(comment.id)?.status ?? "open") === "open"
   ), [resolvedReviewComments, agentResults])
 
   useEffect(() => {
@@ -94,7 +94,7 @@ export function useContentReviewHighlights({
     setResolvedImportedComments(importedMap)
     if (previewVisible && previewScrollRef.current) {
       const activeComments = result.comments.filter((comment) =>
-        (agentResults?.get(comment.id)?.status ?? "open") === "open"
+        comment.localStatus !== "resolved" && (agentResults?.get(comment.id)?.status ?? "open") === "open"
       )
       applyReviewHighlights(index, activeComments, selectedReviewId)
       applyImportedReviewHighlights(index, Array.from(importedMap.values()), selectedImportedCommentId)

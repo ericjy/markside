@@ -480,15 +480,26 @@ existing bootstrap code.
 
 The optional `cli/` npm package creates `<document>.review.json` beside a local
 Markdown document, opens Chrome, and waits for an explicit send. The extension
-checks for the file at document load, explicit Reload, and Review-panel open, and offers **Send
-comments to agent** for an active request. It uses the existing stored folder
+checks for the file at document load, explicit Reload, Review-panel open, tab focus, and Check for review, and offers **Send review to agent** for an active request. It uses the existing stored folder
 handles and read-write folder picker. Document contents are verified against
-disk before sending; only the Review file is written. When folder selection is
-needed, the panel explains why, displays the exact folder path, and labels the
-first action Choose folder and send. A matching saved or newly selected sidebar
-folder uses the usual Send comments to agent action.
+disk before sending; only the Review file is written. The action is always
+Send review to agent. When folder selection is needed, one line below it names
+the folder Chrome will ask for, with the full path on hover. The line frames
+access as delivery to the agent: comments are already saved locally in IndexedDB.
+A matching saved or newly selected sidebar folder hides the line.
+Copy review as prompt is a quiet, borderless secondary action below the full-width
+Send button, aligned left. Clear aligns right on the same row when space allows. Once the
+current feedback is sent, the primary button shows Sent for agent to pick up and is disabled
+until feedback changes. The Copy button remains active. This confirms a local write, not agent receipt; no agent
+process is started. Editing feedback restores Send.
+For an active request, the comment composer offers Save & send review alongside
+Save. It sends the newly saved whole Review directly, including prior comments
+and overall feedback, without waiting for a React render. Folder permission is
+requested within the click. A cancelled or failed send leaves the comment saved
+in the Review panel for retry. Without an active request, the composer retains
+Save & copy prompt and Save.
 
-The version 1 contract and parser live in `cli/review-file.mjs` and are shared
+The version 1/2 contract and parser live in `cli/review-file.mjs` and are shared
 by the CLI and extension. Node uses temp-file rename; Chrome commits its staged
 writable stream on close. Watching and a one-second fallback poll exist only
 inside the waiting CLI and end on send, timeout, or interrupt. ADR-0002 still
@@ -499,10 +510,72 @@ agent uses the CLI `address` command to report its work and reply; only the user
 can Resolve or Reopen in the panel. Addressed cards remain visible for checking.
 Resolved cards move into a collapsed Resolved group. Reopening returns a comment
 to Open and the request to pending, requiring an explicit send before agent work
-continues. The CLI rejects agent resolution and retains history across rounds.
+continues. The CLI rejects agent resolution.
+
+Unsent Draft and local Open comments offer an individual Delete action with Undo.
+Drafts do not offer Resolve. Comments already recorded in the current sidecar
+cannot be deleted; Resolve and Reopen preserve their shared history. Undo restores
+the deleted comment's identity and position without replacing newer comments.
 
 Results match the comment ID, original quote, and body; revising the comment
 hides a previous result. Addressed and Resolved comments hide passage warnings,
 Preview highlights, missing-passage markers, and passage hit testing, including
 after resizing. A successful explicit Reload refreshes results even when source
-text is unchanged. No timer, focus refresh, or filesystem watcher is used.
+text is unchanged. No timer or filesystem watcher is used.
+
+
+The sidecar keeps one flat comment list with each comment's latest status and
+reply. A normal retry or continuation preserves the request. Addressing keeps the
+agent waiting; reviewer resolution ends the request. Only then does a fresh review
+start another, keeping resolved comments as history. Each send replaces the list
+with the comments being sent. See [ADR-0008](adr/0008-flat-agent-review-file.md).
+
+Comments loaded from the sidecar use the same Active and Resolved cards as local
+comments, including comments missing from browser storage. Resolved starts
+collapsed and includes comments from earlier requests.
+Sent feedback is authoritative in the sidecar; local drafts can override content
+until sending. Without a sidecar, Clear all retains the original behavior: it
+clears the local Active Review and closes the panel. With a sidecar, Clear drafts
+removes unsent additions, restores edited sent
+feedback, preserves imported history, and keeps the panel open. It never mutates
+the sidecar or ends the request.
+
+
+Comment badges separate local Open/Resolved from agent Draft/Sent/Addressed/Resolved.
+`ReviewComment.localStatus` and `reviewMode` are optional IndexedDB metadata;
+missing local status means Open. Sent state, agent responses, and acceptance of
+sent comments stay authoritative in the sidecar. Manual Resolve dispatches by
+comment ID ownership: current sent comments use the existing permission-checked
+sidecar status write; unsent local comments update IndexedDB only. Addressed feedback
+shows a primary Resolve; Open copy-prompt comments show a quiet checkmark Resolve
+icon, because nothing has acted on them yet. Sent feedback is the agent's turn: once expanded, it offers a quiet
+Withdraw that closes it without waiting for the agent; collapsed, it has no action.
+Unsent edits of a sent comment must be sent or discarded before acceptance.
+New locally resolved comments are excluded from sending and copying, retain their
+status on reload, and have no passage warnings/highlights. Reopen restores Open.
+Clear drafts retains local Open/Resolved copy-prompt comments and removes only
+integration drafts; Clear all remains the copy-prompt action.
+
+The primary button always changes Review state; setup instructions are never primary.
+A local file without an agent review makes Copy review as prompt primary, disabled
+until active feedback exists, with a Start a review in your agent… link below that
+opens the setup dialog. An active agent review makes Send primary, demotes Copy,
+and hides the link. A completed review keeps Copy primary and offers a Start
+another review with your agent… link, with or without new drafts; Clear drafts
+appears only when drafts exist. The sidecar remains resolved until the agent starts the next review.
+When no saved folder contains the document, the dialog adds a folder step that
+opens the read-write picker directly from its button, so the first send needs no
+picker. The panel's folder line remains for reviews the agent opens directly,
+which never show the dialog.
+The link opens the existing command dialog; the agent's next normal
+review command starts the new request. Review complete is displayed only with no
+active comments or unsent changes. No watcher or polling is added to discover the
+new request (see ADR-0002): explicit Reload, Review-panel reopen, a Check for agent
+review link, and returning focus to the tab each read the sidecar once.
+Commands copied from this dialog include --no-open because the file is already
+open. Done only closes the dialog. Returning to the tab reads the sidecar silently, so the
+existing tab discovers a new request or the agent's Addressed replies without
+reloading the document, and a pending request opens the panel. A silent read keeps
+any unseen send error. Check for review does the same
+on demand and briefly shows No review yet when nothing is found. Direct skill invocations still open Chrome
+unless --no-open is supplied.

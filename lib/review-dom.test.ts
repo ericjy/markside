@@ -27,6 +27,21 @@ function unanchoredComment(
   }
 }
 
+describe("Review text index with a modal open", () => {
+  it.each(["ancestor", "preview"])("ignores aria-hidden on the %s while excluding hidden document content", (target) => {
+    const wrapper = document.createElement("div")
+    const root = document.createElement("div")
+    root.innerHTML = '<p>Review this passage.<span aria-hidden="true">Hidden decoration</span></p>'
+    wrapper.append(root)
+    const before = buildRenderedTextIndex(root)
+    ;(target === "ancestor" ? wrapper : root).setAttribute("aria-hidden", "true")
+    const during = buildRenderedTextIndex(root)
+    expect(during.text).toBe("Review this passage.")
+    expect(during.text).toBe(before.text)
+    expect(during.entries.map(({ start, end }) => ({ start, end }))).toEqual(before.entries.map(({ start, end }) => ({ start, end })))
+  })
+})
+
 describe("pending review highlight", () => {
   const highlights = new Map<string, unknown>()
 

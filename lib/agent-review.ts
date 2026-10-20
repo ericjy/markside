@@ -1,3 +1,4 @@
+import { sendReview } from "../cli/review-file.mjs"
 import type { AgentReviewComment, AgentReviewFile } from "../cli/review-file.mjs"
 import type { ActiveReview, ReviewComment } from "./review"
 
@@ -7,6 +8,27 @@ export function agentReviewUrl(fileUrl: string) {
   url.search = ""
   url.pathname += ".review.json"
   return url.href
+}
+
+/** Adds sent comments missing from the browser, e.g. after site data was cleared. */
+export function currentAgentReview(review: ActiveReview | null, file: AgentReviewFile): ActiveReview | null {
+  if (!review) return null
+  let recovered = false
+  const comments = file.comments.map((comment): ReviewComment => {
+    const cached = review.comments.find(({ id }) => id === comment.id)
+    if (cached) return cached
+    recovered = true
+    return {
+      id: comment.id, body: comment.body, createdAt: file.sentAt ?? file.requestedAt,
+      anchor: { exact: comment.quote, prefix: "", suffix: "", start: 0, end: comment.quote.length, headingPath: [] },
+    }
+  })
+  comments.push(...review.comments.filter(({ id }) => !file.comments.some((comment) => comment.id === id)))
+  return { ...review, comments, ...(recovered ? { sourceHash: "" } : {}) }
+}
+
+export function agentReviewIdentity(file: AgentReviewFile) {
+  return `${file.requestedAt}:${file.sentAt ?? "pending"}`
 }
 
 export function reviewSendFingerprint(review: ActiveReview | AgentReviewFile | null) {
@@ -31,6 +53,21 @@ export function getAgentReviewResults(file: AgentReviewFile | null, review: Acti
   return results
 }
 
+export function getAgentReviewDisabledReason(file: AgentReviewFile, review: ActiveReview | null) {
+  if (file.status === "resolved") return "This Review is resolved."
+  review = currentAgentReview(review, file)
+  if (review) review = { ...review, comments: review.comments.filter((comment) => comment.localStatus !== "resolved" || file.comments.some(({ id }) => id === comment.id)) }
+  if (!review?.comments.some((comment) => comment.localStatus !== "resolved")) return "Add a comment before sending to the agent."
+  const results = getAgentReviewResults(file, review)
+  if (!review.comments.some(({ id, localStatus }) => localStatus !== "resolved" && (results.get(id)?.status ?? "open") === "open")) {
+    return "Add or reopen a comment to send again."
+  }
+  if (file.status === "sent" && reviewSendFingerprint(review) === reviewSendFingerprint(file)) {
+    return "Add or edit a comment to send again."
+  }
+  return null
+}
+
 export function prepareAgentReview(
   pending: AgentReviewFile,
   review: ActiveReview,
@@ -38,13 +75,11 @@ export function prepareAgentReview(
   sourceLine: (comment: ReviewComment) => number | null,
   sentAt = new Date().toISOString(),
 ): AgentReviewFile {
-  return {
-    ...pending,
-    status: "sent",
-    sentAt,
+  review = currentAgentReview(review, pending)!
+  return sendReview(pending, {
     docHash,
     note: review.note,
-    comments: review.comments.map((comment) => {
+    comments: review.comments.filter((comment) => comment.localStatus !== "resolved" || pending.comments.some(({ id }) => id === comment.id)).map((comment) => {
       const previous = pending.comments.find((item) =>
         item.id === comment.id && item.quote === comment.anchor.exact && item.body === comment.body
       )
@@ -57,5 +92,40 @@ export function prepareAgentReview(
         ...(previous?.reply !== undefined ? { reply: previous.reply } : {}),
       }
     }),
+  }, sentAt)
+}
+
+export function hasReviewDrafts(review: ActiveReview | null, file?: AgentReviewFile) {
+  const current = file ? currentAgentReview(review, file) : review
+  if (!current) return false
+  if (current.note !== (file?.note ?? "")) return true
+  const sent = file?.comments ?? []
+  return current.comments.some((comment) => comment.localStatus !== "resolved" && (!file || comment.reviewMode !== "local") && !sent.some((item) =>
+    item.id === comment.id && item.quote === comment.anchor.exact && item.body === comment.body
+  ))
+}
+
+export function clearReviewDrafts(review: ActiveReview | null, file?: AgentReviewFile): ActiveReview | null {
+  const current = file ? currentAgentReview(review, file) : review
+  if (!current) return null
+  const sent = file?.comments ?? []
+  let changedQuote = false
+  const comments = current.comments.flatMap((comment) => {
+    const original = sent.find(({ id }) => id === comment.id)
+    if (!original) return comment.localStatus === "resolved" || comment.reviewMode === "local" ? [comment] : []
+    changedQuote ||= original.quote !== comment.anchor.exact
+    return [{ ...comment, ...(comment.localStatus ? { localStatus: "open" as const } : {}), body: original.body, anchor: { ...comment.anchor, exact: original.quote } }]
+  })
+  return { ...current, comments, note: file?.note ?? "", ...(changedQuote ? { sourceHash: "" } : {}), updatedAt: new Date().toISOString() }
+}
+
+
+export type ReviewCommentStatus = "Open" | "Draft" | "Sent" | "Addressed" | "Resolved"
+
+export function getReviewCommentStatus(comment: ReviewComment, sent?: AgentReviewComment, agentMode = false): ReviewCommentStatus {
+  if (sent && sent.quote === comment.anchor.exact && sent.body === comment.body) {
+    return sent.status === "open" ? "Sent" : sent.status === "addressed" ? "Addressed" : "Resolved"
   }
+  if (!sent && comment.localStatus === "resolved") return "Resolved"
+  return sent || comment.reviewMode === "agent" || (agentMode && comment.reviewMode !== "local") ? "Draft" : "Open"
 }

@@ -1,4 +1,6 @@
+import { currentAgentReview, clearReviewDrafts, getReviewCommentStatus } from "~lib/agent-review"
 import React,{ useEffect,useRef } from "react"
+import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
 import { type ReviewCopyStatus } from "~components/review-panel"
 import { type ReviewCopyReload } from "~hooks/use-content-reload"
 import { type ContentReviewHighlights } from "~hooks/use-content-review-highlights"
@@ -37,6 +39,7 @@ interface UseContentReviewOptions {
   isMdFile: boolean
   previewVisible: boolean
   review: ActiveReview | null
+  agentHandoff?: AgentReviewHandoff
   updateReview: (mutate: (current: ActiveReview | null) => ActiveReview | null) => void
   reviewForMutation: (current: ActiveReview | null) => ActiveReview
   currentReviewDocument: () => RenderedTextIndex | null
@@ -64,6 +67,7 @@ export function useContentReview({
   isMdFile,
   previewVisible,
   review,
+  agentHandoff,
   updateReview,
   reviewForMutation,
   currentReviewDocument,
@@ -89,6 +93,7 @@ export function useContentReview({
   setReviewPromptReady,
   trackReviewPromptActivity,
 }: UseContentReviewOptions) {
+  const retiredCommentIds = new Set(agentHandoff?.completed ? agentHandoff.file?.comments.map(({ id }) => id) : [])
   const { closeSelectionComposer } = selection
   const copiedStatusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => () => {
@@ -99,13 +104,31 @@ export function useContentReview({
     updateReview((current) => current ? {
       ...current,
       comments: current.comments.map((comment) =>
-        comment.id === id ? { ...comment, body } : comment
+        comment.id === id ? { ...comment, body, localStatus: "open" as const } : comment
       ),
       updatedAt: new Date().toISOString(),
     } : current)
   }
 
+  const changeReviewCommentStatus = (id: string, status: "open" | "resolved") => {
+    const sent = agentHandoff?.file && agentHandoff.file.comments.find((comment) => comment.id === id)
+    if (sent) {
+      agentHandoff?.changeStatus?.(id, status)
+      return
+    }
+    updateReview((current) => current ? {
+      ...current, comments: current.comments.map((comment) => comment.id === id ? { ...comment, localStatus: status } : comment),
+      updatedAt: new Date().toISOString(),
+    } : current)
+  }
+
   const deleteReviewCommentById = (id: string) => {
+    if (agentHandoff?.file && agentHandoff.file.comments.some((comment) => comment.id === id)) return
+    const deleted = review?.comments.find((comment) => comment.id === id)
+    if (!review || !deleted) return
+    const base = review
+    const index = review.comments.indexOf(deleted)
+    const linkedResults = readabilityResultsRef.current.filter((item) => item.commentId === id)
     updateReview((current) => current ? {
       ...current,
       comments: current.comments.filter((comment) => comment.id !== id),
@@ -115,6 +138,19 @@ export function useContentReview({
     if (readabilityResultsRef.current.some((item) => item.commentId === id)) {
       saveReadabilityResults(readabilityResultsRef.current.map((item) =>
         item.commentId === id ? { ...item, commentId: undefined } : item
+      ))
+    }
+    return () => {
+      updateReview((current) => {
+        // Deleting the last item removes the stored Review, so rebuild it from before the delete.
+        const target = current ?? { ...base, comments: [] }
+        if (target.sourceUrl !== fileUrl || target.comments.some((comment) => comment.id === id)) return current
+        const comments = [...target.comments]
+        comments.splice(Math.min(index, comments.length), 0, deleted)
+        return { ...target, comments, updatedAt: new Date().toISOString() }
+      })
+      if (linkedResults.length > 0) saveReadabilityResults(readabilityResultsRef.current.map((item) =>
+        !item.commentId && linkedResults.some((linked) => linked.id === item.id) ? { ...item, commentId: id } : item
       ))
     }
   }
@@ -198,23 +234,18 @@ export function useContentReview({
   }
 
   const clearReview = () => {
-    if (!review) return
-    const documentState = currentReviewDocument()
-    if (!documentState) return
-    const summary = resolveReviewPolicy({
-      review,
-      document: documentState,
-      request: { type: "summarize" },
-    })
-    if (summary.type !== "summarize") return
-    updateReview(() => null)
+    if (agentHandoff?.sending || agentHandoff?.updatingCommentId != null) return
+    const file = agentHandoff?.file
+    const remaining = file ? clearReviewDrafts(review, file) : null
+    const keptIds = new Set(remaining?.comments.map(({ id }) => id))
+    updateReview((current) => file ? clearReviewDrafts(current, file) : null)
     closeSelectionComposer()
     setSelectedReviewId(null)
     setCopyReviewStatus(null)
-    closeReviewOverlay(true)
-    if (readabilityResultsRef.current.some((item) => item.commentId)) {
+    if (!file) closeReviewOverlay(true)
+    if (readabilityResultsRef.current.some((item) => item.commentId && !keptIds.has(item.commentId))) {
       saveReadabilityResults(readabilityResultsRef.current.map((item) =>
-        item.commentId ? { ...item, commentId: undefined } : item
+        item.commentId && !keptIds.has(item.commentId) ? { ...item, commentId: undefined } : item
       ))
     }
   }
@@ -242,7 +273,12 @@ export function useContentReview({
 
   const copyActiveReview = async (commentId?: string, reviewOverride?: ActiveReview | null) => {
     setCopyReviewStatus(null)
-    const activeReview = reviewOverride ?? review
+    const sourceReview = reviewOverride ?? review
+    const merged = agentHandoff?.file ? currentAgentReview(sourceReview, agentHandoff.file) : sourceReview
+    const activeReview = merged ? { ...merged, comments: merged.comments.filter((comment) => {
+      const sent = agentHandoff?.file && agentHandoff.file.comments.find(({ id }) => id === comment.id)
+      return getReviewCommentStatus(comment, sent || undefined, !!agentHandoff) !== "Resolved"
+    }) } : null
     if (!activeReview) return false
     if (
       commentId
@@ -344,13 +380,17 @@ export function useContentReview({
 
   const createReviewComment = (anchor: ReviewAnchor, body: string) => {
     const existing = review?.comments.find((comment) =>
-      isSameReviewAnchor(comment.anchor, anchor)
+      !retiredCommentIds.has(comment.id) && isSameReviewAnchor(comment.anchor, anchor)
     )
-    if (existing) {
+    if (existing && review) {
       updateReviewComment(existing.id, body)
       setSelectedReviewId(existing.id)
       setReviewOverlayOpen(true)
-      return { outcome: "existing" as const, commentId: existing.id, review }
+      return {
+        outcome: "existing" as const,
+        commentId: existing.id,
+        review: { ...review, comments: review.comments.map((comment) => comment.id === existing.id ? { ...comment, body, localStatus: "open" as const } : comment) },
+      }
     }
     const documentState = currentReviewDocument()
     if (!documentState) return null
@@ -363,8 +403,16 @@ export function useContentReview({
       createdAt,
       anchor,
     }
+    const creationReview = (current: ActiveReview | null) => {
+      const base = reviewForMutation(current)
+      return { ...base, comments: base.comments.filter(({ id }) => !retiredCommentIds.has(id)) }
+    }
+    const tagComment = (next: ActiveReview, original: ActiveReview | null): ActiveReview => ({ ...next, comments: [
+      ...(original?.comments.filter(({ id }) => retiredCommentIds.has(id)) ?? []),
+      ...next.comments.map((comment) => comment.id === commentId ? { ...comment, reviewMode: agentHandoff ? "agent" as const : "local" as const } : comment),
+    ] })
     const result = resolveReviewPolicy({
-      review: reviewForMutation(review),
+      review: creationReview(review),
       document: documentState,
       request,
     })
@@ -376,12 +424,12 @@ export function useContentReview({
       const isFirstComment = (review?.comments.length ?? 0) === 0
       updateReview((current) => {
         const rebased = resolveReviewPolicy({
-          review: reviewForMutation(current),
+          review: creationReview(current),
           document: documentState,
           request,
         })
         return rebased.type === "add-comment" && rebased.outcome === "added"
-          ? rebased.review
+          ? tagComment(rebased.review, current)
           : current
       })
       setSelectedReviewId(null)
@@ -391,18 +439,18 @@ export function useContentReview({
     return {
       outcome: result.outcome,
       commentId: result.outcome === "invalid" ? undefined : result.commentId,
-      review: result.outcome === "added" ? result.review : review,
+      review: result.outcome === "added" ? tagComment(result.review, review) : review,
     }
   }
 
   const findDuplicateReviewComment = (anchor: ReviewAnchor) => {
     const resolvedDuplicate = resolvedReviewComments.find((comment) =>
-      comment.status === "anchored" &&
+      !retiredCommentIds.has(comment.id) && comment.status === "anchored" &&
       comment.range.start === anchor.start &&
       comment.range.end === anchor.end
     )
     return resolvedDuplicate ?? review?.comments.find((comment) =>
-      isSameReviewAnchor(comment.anchor, anchor)
+      !retiredCommentIds.has(comment.id) && isSameReviewAnchor(comment.anchor, anchor)
     )
   }
 
@@ -426,6 +474,18 @@ export function useContentReview({
     }
     setSelectionComposerCopyState("copied")
     closeSelectionComposer()
+  }
+
+  const sendSelectionComposerComment = async () => {
+    const { selectionAction, selectionComposerBody } = selection
+    if (!agentHandoff || agentHandoff.completed || agentHandoff.sending || agentHandoff.updatingCommentId) return
+    if (!selectionAction || !selectionComposerBody.trim()) return
+    const result = createReviewComment(selectionAction.anchor, selectionComposerBody)
+    if (!result?.commentId || !result.review) return
+    // Start permission requests within this click, using the newly saved Review.
+    const sending = agentHandoff.send(result.review)
+    closeSelectionComposer()
+    await sending
   }
 
   const activateReviewSelection = () => {
@@ -469,6 +529,7 @@ export function useContentReview({
   return {
     updateReviewNote,
     updateReviewComment,
+    changeReviewCommentStatus,
     deleteReviewCommentById,
     copyActiveReview,
     selectReviewComment,
@@ -479,6 +540,7 @@ export function useContentReview({
     clearReview,
     saveSelectionComposerComment,
     copySelectionComposerComment,
+    sendSelectionComposerComment,
     activateReviewSelection,
     activateQuickComment,
     handleReviewHighlightClick,

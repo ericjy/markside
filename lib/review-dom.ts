@@ -48,9 +48,12 @@ export function buildRenderedTextIndex(
   let previousBlock: Element | null = null
   let node = walker.nextNode() as Text | null
   while (node) {
-    if (node.data && !node.parentElement?.closest(
+    const excluded = node.parentElement?.closest(
       "script,style,[aria-hidden=true],[data-reload-removed],[data-readability-ui],.code-block-header,.header-anchor,.pdf-export-title",
-    )) {
+    )
+    // Modal dialogs hide the preview's ancestors from assistive technology,
+    // but do not remove its document text from Review anchoring.
+    if (node.data && !(excluded && excluded !== root && root.contains(excluded))) {
       const block = blockFor(node, root)
       if (previousBlock && block !== previousBlock) {
         parts.push("\n")

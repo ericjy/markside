@@ -117,8 +117,11 @@ describe("ReviewPanel", () => {
     const changeStatus = vi.fn()
     renderPanel({ review: null, comments: [], agentHandoff: { file, disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn(), changeStatus } })
     expect(container.textContent).not.toContain("Current sent feedback")
-    expect(container.textContent).toContain("Active")
-    expect(container.querySelector("article")?.textContent).toContain("Addressed")
+    const addressed = container.querySelector("details")!
+    expect(addressed.querySelector("summary")?.textContent).toContain("Addressed")
+    expect(addressed.open).toBe(true)
+    expect(container.textContent).not.toContain("Active")
+    expect(addressed.querySelector("article")?.textContent).toContain("Addressed")
     expect(container.textContent).not.toContain("Round 1")
     expect(container.textContent).not.toContain("Review complete")
     expect(container.textContent).toContain("Explain this")
@@ -127,6 +130,21 @@ describe("ReviewPanel", () => {
     expect(resolve.className).toContain("bg-primary")
     act(() => resolve.click())
     expect(changeStatus).toHaveBeenCalledWith("disk-comment", "resolved")
+  })
+
+  it("collapses Addressed answers while the document shows a question card", () => {
+    const sent = sendReview(refreshReviewFile(null, "GRILL.md"), { docHash: "a".repeat(64), comments: [
+      { id: "answer-1", quote: "Q1. Where?", line: 1, body: "A", status: "open" },
+      { id: "answer-2", quote: "Q2. When?", line: 9, body: "Soon", status: "open" },
+    ] })
+    const file = addressReviewComment(sent, "answer-1", "Recorded A; Q2 asks when.")
+    renderPanel({ review: null, comments: [], interview: true, agentHandoff: { file, disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn(), changeStatus: vi.fn() } })
+    const groups = Array.from(container.querySelectorAll("details"))
+    expect(groups.map((group) => group.querySelector("summary")?.textContent)).toEqual(["Active1", "Addressed1"])
+    expect(groups[0].open).toBe(true)
+    expect(groups[0].textContent).toContain("Soon")
+    expect(groups[1].open).toBe(false)
+    expect(groups[1].textContent).toContain("Recorded A")
   })
 
   it("hides Clear drafts for sent feedback and keeps resolved sidecar comments collapsed", () => {

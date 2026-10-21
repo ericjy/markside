@@ -558,8 +558,10 @@ applies to the extension. See [the contract and prototype setup](agent-review-lo
 
 Agent Review Comments have three states: Open, Addressed, and Resolved. The
 agent uses the CLI `address` command to report its work and reply; only the user
-can Resolve or Reopen in the panel. Addressed cards remain visible for checking.
-Resolved cards move into a collapsed Resolved group. Reopening returns a comment
+can Resolve or Reopen in the panel. Addressed cards move into their own Addressed
+group, open for checking. While the document shows a question card, that group
+starts collapsed, so answered interview questions need no per-answer Resolve;
+Finish review resolves them. Resolved cards move into a collapsed Resolved group. Reopening returns a comment
 to Open and the request to pending, requiring an explicit send before agent work
 continues. The CLI rejects agent resolution.
 
@@ -582,7 +584,7 @@ because resolving is also how reviewers tidy up before more feedback. Only then 
 start another, keeping resolved comments as history. Each send replaces the list
 with the comments being sent. See [ADR-0008](adr/0008-flat-agent-review-file.md).
 
-Comments loaded from the sidecar use the same Active and Resolved cards as local
+Comments loaded from the sidecar use the same Active, Addressed, and Resolved cards as local
 comments, including comments missing from browser storage. Resolved starts
 collapsed and includes comments from earlier requests.
 Sent feedback is authoritative in the sidecar; local drafts can override content

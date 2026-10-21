@@ -30,6 +30,7 @@ interface ContentReviewOverlayProps {
   agentSessionCheckStatus: "idle" | "checking" | "not-found"
   reviewLoading: boolean
   reviewFolder: { path: string; choose: () => Promise<boolean> } | null
+  interview: boolean
   isMdFile: boolean
   reviewOverlayDocked: boolean
   reviewLayout: "floating" | "docked"
@@ -113,6 +114,7 @@ export function ContentReviewOverlay({
   agentSessionCheckStatus,
   reviewLoading,
   reviewFolder,
+  interview,
   jumpableReviewCommentIds,
   resolvedImportedComments,
   jumpableImportedCommentIds,
@@ -280,6 +282,7 @@ export function ContentReviewOverlay({
                 agentSessionCheckStatus={agentSessionCheckStatus}
                 reviewLoading={reviewLoading}
                 reviewFolder={reviewFolder}
+                interview={interview}
                 jumpableCommentIds={jumpableReviewCommentIds}
                 resolvedImportedComments={resolvedImportedComments}
                 jumpableImportedCommentIds={jumpableImportedCommentIds}

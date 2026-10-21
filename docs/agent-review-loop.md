@@ -85,8 +85,8 @@ Comment status is `open`, `addressed`, or `resolved`. The agent uses
 a reply. This does not mean the user has accepted the change. The CLI rejects
 `resolve`; only the reviewer resolves a comment in Markside.
 
-Addressed cards stay in the Active list with the reply and Resolve and Reopen
-buttons. Sent comments can also be resolved directly by the reviewer. Resolve moves a comment into a collapsed Resolved group. Reopen moves
+Addressed cards move into an Addressed group with the reply and Resolve and
+Reopen buttons. The group is open unless the document shows a question card. Sent comments can also be resolved directly by the reviewer. Resolve moves a comment into a collapsed Resolved group. Reopen moves
 an addressed or resolved comment back to Open, preserving its reply for context.
 It makes the request pending, so the user can add feedback before explicitly
 sending it again. Once every comment is Addressed or Resolved, the panel offers

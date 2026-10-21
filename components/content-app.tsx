@@ -900,6 +900,7 @@ export function FileRenderer({
           setAgentSessionCheckVersion((version) => version + 1)
         }}
         reviewLoading={isMdFile && (!reviewLoaded || agentReviewLoadedUrl !== fileUrl)}
+        interview={questionCards.length > 0}
         reviewFolder={fileUrl.startsWith("file:") && !(rootUrl && getSavePathParts(fileUrl, rootUrl))
           ? { path: fileFolderPath(fileUrl), choose: () => openDirectory("readwrite") }
           : null}

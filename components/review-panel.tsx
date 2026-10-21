@@ -56,6 +56,8 @@ interface ReviewPanelProps {
   reviewLoading?: boolean
   /** Present while no saved folder can store this document's feedback. */
   reviewFolder?: { path: string; choose: () => Promise<boolean> } | null
+  /** True while the document shows a question card; answered questions then stay out of the way. */
+  interview?: boolean
   copyStatus: ReviewCopyStatus | null
   jumpableCommentIds: ReadonlySet<string>
   resolvedImportedComments: ReadonlyMap<string, ReviewComment & ResolvedAnchor>
@@ -103,6 +105,7 @@ export function ReviewPanel({
   agentSessionCheckStatus = "idle",
   reviewLoading = false,
   reviewFolder,
+  interview = false,
   onSelectComment,
   onJumpToSection,
   onJumpToImportedComment,
@@ -175,6 +178,7 @@ export function ReviewPanel({
   const copiedCommentTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const commentsScrollRef = useRef<HTMLDivElement>(null)
   const resolvedCommentsRef = useRef<HTMLDetailsElement>(null)
+  const addressedCommentsRef = useRef<HTMLDetailsElement>(null)
   const commentElementRefs = useRef(new Map<string, HTMLElement>())
   const commentTextareaRefs = useRef(new Map<string, HTMLTextAreaElement>())
   const commentSelectionRefs = useRef(new Map<string, ReviewTextSelection>())
@@ -214,7 +218,7 @@ export function ReviewPanel({
       const comment = commentElementRefs.current.get(enteringCommentId)
       if (!container || !comment) return
       const group = comment.closest("details")
-      if (group === resolvedCommentsRef.current) return
+      if (group === resolvedCommentsRef.current || group?.open === false && group === addressedCommentsRef.current) return
       if (group) group.open = true
       const containerRect = container.getBoundingClientRect()
       const commentRect = comment.getBoundingClientRect()
@@ -340,7 +344,8 @@ export function ReviewPanel({
   const sentComment = (comment: ResolvedReviewComment) => historyFile ? historyFile.comments.find(({ id }) => id === comment.id) : agentHandoff?.results?.get(comment.id)
   const commentStatus = (comment: ResolvedReviewComment) => getReviewCommentStatus(comment, sentComment(comment), !!agentHandoff)
   const resolvedComments = comments.filter((comment) => commentStatus(comment) === "Resolved")
-  const currentComments = comments.filter((comment) => commentStatus(comment) !== "Resolved")
+  const addressedComments = comments.filter((comment) => commentStatus(comment) === "Addressed")
+  const currentComments = comments.filter((comment) => commentStatus(comment) !== "Resolved" && commentStatus(comment) !== "Addressed")
   const copyableCount = review ? getReviewItemCount({ ...review, comments: review.comments.filter((comment) => getReviewCommentStatus(comment, historyFile ? historyFile.comments.find(({ id }) => id === comment.id) : agentHandoff?.results?.get(comment.id), !!agentHandoff) !== "Resolved") }) : storedComments.filter((comment) => comment.status !== "resolved").length
   const renderComment = (comment: ResolvedReviewComment) => {
     const result = commentResult(comment)
@@ -555,7 +560,7 @@ export function ReviewPanel({
         </div>
       )}
 
-      {historyFile?.status === "resolved" && currentComments.length === 0 && !hasDrafts && <p className="px-4 pt-3 text-xs text-muted-foreground">
+      {historyFile?.status === "resolved" && currentComments.length === 0 && addressedComments.length === 0 && !hasDrafts && <p className="px-4 pt-3 text-xs text-muted-foreground">
         Review complete
       </p>}
       <div className="px-4 pb-3 pt-5">
@@ -610,10 +615,22 @@ export function ReviewPanel({
           <div className="space-y-3 pb-3">{currentComments.map(renderComment)}</div>
         </details>
       )}
-      {currentComments.length === 0 && resolvedComments.length === 0 && storedComments.length === 0 && (
+      {currentComments.length === 0 && addressedComments.length === 0 && resolvedComments.length === 0 && storedComments.length === 0 && (
         <p className="px-4 pb-8 pt-3 text-xs leading-relaxed text-muted-foreground">
           No comments. Select text in Preview to add comment.
         </p>
+      )}
+      {addressedComments.length > 0 && (
+        <details ref={addressedCommentsRef} open={!interview} className="group/comments mx-4 my-3">
+          <summary className="flex cursor-pointer list-none items-center justify-between py-3 text-sm font-semibold tracking-tight outline outline-2 outline-offset-1 outline-transparent focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
+            <span className="flex items-center gap-2">
+              Addressed
+              <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-normal tabular-nums text-muted-foreground">{addressedComments.length}</span>
+            </span>
+            <ChevronDown size={14} aria-hidden="true" className="shrink-0 -rotate-90 text-muted-foreground group-open/comments:rotate-0" />
+          </summary>
+          <div className="space-y-3 pb-3">{addressedComments.map(renderComment)}</div>
+        </details>
       )}
       {resolvedComments.length > 0 && (
         <details ref={resolvedCommentsRef} className="group/comments mx-4 my-3">

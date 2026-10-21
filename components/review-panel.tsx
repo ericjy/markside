@@ -544,7 +544,7 @@ export function ReviewPanel({
   }
 
   return (
-    <div className="review-panel-layout flex h-full min-h-0 flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <div
         ref={commentsScrollRef}
         className="min-h-0 flex-1 overflow-y-auto">
@@ -873,7 +873,7 @@ export function ReviewPanel({
             Your agent is waiting. Add more comments or finish.
           </p>
         )}
-        <div className={`review-footer-actions flex flex-wrap items-center gap-2 ${showSentStatus ? "review-footer-actions-sent" : ""} ${showAgentAction && !canFinish ? "mt-2" : ""}`}>
+        <div className={`review-footer-actions flex flex-wrap items-center gap-2 ${showAgentAction && !canFinish ? "mt-2" : ""}`}>
           {/* Secondary, so it doesn't invite ending the Review before the reviewer has added everything. */}
           {activeAgentHandoff && canFinish && addressedCount > 0 && (
             <Button variant="outline" className="h-11 whitespace-nowrap px-3 text-xs" disabled={statusWriting}
@@ -893,9 +893,9 @@ export function ReviewPanel({
               aria-busy={updateCheck === "checking"}>
               <RefreshCw size={14} aria-hidden="true" className={updateCheck === "checking" ? "animate-spin" : ""} />
               <span className="grid">
-                <span aria-hidden="true" className="invisible" style={{ gridArea: "1 / 1" }}>Check for response</span>
+                <span aria-hidden="true" className="invisible" style={{ gridArea: "1 / 1" }}>Check response</span>
                 <span aria-live="polite" style={{ gridArea: "1 / 1" }}>
-                  {updateCheck === "checking" ? "Checking…" : updateCheck === "unchanged" ? "No response yet" : updateCheck === "updated" ? "Updates found" : "Check for response"}
+                  {updateCheck === "checking" ? "Checking…" : updateCheck === "unchanged" ? "No response yet" : updateCheck === "updated" ? "Updates found" : "Check response"}
                 </span>
               </span>
             </Button>
@@ -950,17 +950,13 @@ export function ReviewPanel({
           <p role="status" className="mt-2 text-xs text-muted-foreground">Couldn’t check. Try again.</p>
         )}
         {showSentStatus && (
-          <details className="review-sent-help group mt-3 text-xs leading-relaxed text-muted-foreground">
-            <summary className="flex min-h-9 cursor-pointer list-none items-center gap-1.5 rounded-md text-left hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
-              <ChevronDown size={14} aria-hidden="true" className="shrink-0 -rotate-90 group-open:rotate-0" />
-              Agent hasn’t started?
-            </summary>
-            <p className="mt-1">If your agent isn’t waiting for this Review, start a review session first.</p>
+          <p className="mt-3 text-left text-xs leading-relaxed text-muted-foreground">
+            Agent hasn’t started?{" "}
             <button ref={sendHelpRef} type="button" aria-haspopup="dialog" onClick={() => setSendHelpOpen(true)}
-              className="mt-2 block min-h-9 w-full rounded-sm text-left underline underline-offset-2 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+              className="rounded-sm text-left underline underline-offset-2 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
               Start a review in your agent
             </button>
-          </details>
+          </p>
         )}
         {showStartReview && (
           <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs leading-relaxed text-muted-foreground">

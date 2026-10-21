@@ -528,15 +528,15 @@ A matching saved or newly selected sidebar folder hides the line.
 Copy review as prompt is a quiet, borderless secondary action below the full-width
 Send button, aligned left. Clear aligns right on the same row when space allows. Once the
 current feedback is sent, a green Review sent status and Waiting for the agent’s
-response replace the primary button until feedback changes. **Check for response**
+response replace the primary button until feedback changes. **Check response**
 reads the agent sidecar and
 document once, refreshes replies, and briefly shows No response yet or Updates
 found inside the check button. Read failures offer a retry. If the document changed, a bottom-centered document bar offers **Reload**
 using the existing Reload action and Unsaved Draft confirmation; checking never
-replaces document content. A collapsed Agent hasn’t started? disclosure offers
-setup guidance and opens the existing Start a review dialog. Copy as prompt
-remains available. Sent-state actions stack at panel widths of 400px or less,
-using a container query so docked and floating panels respond to their own width. The sent status confirms a local write, not agent receipt; no agent
+replaces document content. Inline Agent hasn’t started? guidance includes a
+Start a review in your agent link that opens the existing setup dialog. Copy as prompt
+remains available. Check response and Copy as prompt share one row at the
+360px minimum sidebar width and wrap naturally when space is insufficient. The sent status confirms a local write, not agent receipt; no agent
 process is started. Editing feedback restores Send.
 For an active request, the comment composer keeps Save & copy prompt, and its Save
 is a split button whose menu offers Save & send review; Cmd/Ctrl+Shift+Enter also

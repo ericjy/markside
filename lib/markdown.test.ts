@@ -212,12 +212,12 @@ describe("markdown renderer", () => {
     expect(root.querySelector(".question-comparison-symbol")).toBeNull()
   })
 
-  it("keeps an optional comparison collapsed and the recommendation outside it", () => {
-    const comparison = '<details>\n<summary>Compare tradeoffs</summary>\n\n| A | B |\n|---|---|\n| ✓ Supported | △ Needs work |\n\n</details>\n\n'
+  it.each([false, true])("preserves comparison open=%s and keeps the recommendation outside it", (open) => {
+    const comparison = `<details${open ? " open" : ""}>\n<summary>Compare tradeoffs</summary>\n\n| A | B |\n|---|---|\n| ✓ Supported | △ Needs work |\n\n</details>\n\n`
     const root = document.createElement("div")
     root.innerHTML = md.render(question.replace("**Recommended:", comparison + "**Recommended:"))
     const details = root.querySelector("details")!
-    expect(details.open).toBe(false)
+    expect(details.open).toBe(open)
     expect(details.querySelector("summary")?.textContent).toBe("Compare tradeoffs")
     expect(details.querySelectorAll("table .question-comparison-symbol")).toHaveLength(2)
     expect(details.contains(root.querySelector(".question-recommendation"))).toBe(false)

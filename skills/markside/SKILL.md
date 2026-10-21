@@ -87,7 +87,10 @@ questions are asked and answered.
    Leave the subject file unchanged during the interview.
 2. Lay it out as a title, one line explaining how to answer, then
    `## Current question` followed by `## Answered questions`. When continuing
-   from chat, put the questions already answered under Answered questions.
+   from chat, copy the original questions and options already answered under
+   Answered questions, including their context, tradeoffs, and recommendations.
+   Do not replace them with summaries. If the original text is unavailable,
+   label the record as a summary rather than reconstructing original wording.
 3. Write exactly one question under Current question in a `question` fence:
 
    ````markdown
@@ -99,7 +102,7 @@ questions are asked and answered.
    - **A. Keep the interview in a sibling document.** Create a separate interview file next to the plan. The plan stays focused, but there is another file to manage.
    - **B. Put the interview inside the plan.** Add the questions and answers to the plan itself. Everything stays in one file, but temporary questions interrupt the plan.
 
-   <details>
+   <details open>
    <summary>Compare tradeoffs</summary>
 
    | Criterion | A. Sibling document | B. Inside the plan |
@@ -126,9 +129,10 @@ questions are asked and answered.
      below the title. Optional comparison tables can add detail, but each
      option must be understandable without opening a disclosure.
    - When shared criteria help compare the options, add a Markdown table
-     inside `<details>` with `<summary>Compare tradeoffs</summary>`, collapsed
-     by default. Put it after the options and before the recommendation, as
-     in the example. Leave blank lines around the table so Markdown renders
+     inside `<details open>` with `<summary>Compare tradeoffs</summary>`, expanded
+     by default so it is visible before choosing. Keep it collapsible. Put it
+     after the options and before the recommendation, as in the example.
+     Leave blank lines around the table so Markdown renders
      inside the HTML disclosure. Omit the comparison for simple questions.
    - In comparison tables, use options as columns and criteria as rows. Keep
      cells short. Prefix evaluative cells with ✓ for meeting the need, △ for
@@ -148,9 +152,15 @@ questions are asked and answered.
    into the Markdown. Clicking that tile opens the composer; saving a custom
    answer marks it selected. Nothing is sent until the user sends the Review.
 5. An answer is a comment whose quote is the question heading and whose body is
-   an option letter or the user's own words. When it arrives, move the question out of its `question` fence to
-   the end of Answered questions as plain Markdown, followed by
-   `> **Your decision: A.** <one sentence>`. Write the next question under
+   an option letter or the user's own words. When it arrives, copy the entire
+   contents of the `question` fence verbatim to the end of Answered questions
+   as plain Markdown, removing only the enclosing fence. Preserve the heading,
+   context, full option titles and descriptions, comparison disclosures and
+   tables, and recommendation. Do not shorten or rewrite any of them.
+   Append `> **Your decision: A.** <one sentence>` separately, preserving any
+   additional notes from the user's answer. Before replacing Current question,
+   verify that the archived question matches the original fence contents.
+   Write the next question under
    Current question, address the comment with a one-line reply, and continue
    the Review. If the comment asks something instead of answering, answer it in
    the current question and leave it current.

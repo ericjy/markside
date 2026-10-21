@@ -1039,11 +1039,10 @@ button.readability-score-filter {
 
 .prose .markdown-alert-question > details > summary {
   gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.375rem;
-  color: hsl(var(--muted-foreground));
-  font-size: 0.875em;
-  font-weight: 500;
+  padding: 0.75rem 0;
+  color: hsl(var(--foreground));
+  font-size: 1em;
+  font-weight: 600;
 }
 
 .prose .markdown-alert-question > details {
@@ -1058,7 +1057,20 @@ button.readability-score-filter {
 }
 
 .prose .markdown-alert-question > details > summary:hover {
-  background: hsl(var(--muted) / 0.55);
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.prose .markdown-alert-question > details > :not(summary) {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.prose .markdown-alert-question > details > table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
 }
 
 .prose .markdown-alert-question table thead th {

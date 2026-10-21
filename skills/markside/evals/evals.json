@@ -94,10 +94,23 @@
         "Creates docs/PLAN.grill.md and leaves docs/PLAN.md unchanged",
         "Writes exactly one question, inside a question code fence under Current question",
         "The question has bold lettered sentence titles, practical descriptions with the main benefit and drawback, and a short **Recommended: X.** rationale",
-        "Each option is understandable without expanding a comparison; if a comparison is included, it is collapsed under Compare tradeoffs before the visible recommendation, with options as columns and criteria as rows",
+        "Each option is understandable without expanding a comparison; if a comparison is included, it is expanded by default in a collapsible details open section labeled Compare tradeoffs before the visible recommendation, with options as columns and criteria as rows",
         "Comparison cells use meaningful symbols plus text for ratings, leave neutral facts unscored, and do not include a legend or colored-circle emoji",
         "Runs markside review on docs/PLAN.grill.md with a 600000 ms tool timeout",
         "Does not act on the plan before the Review is resolved"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Continue the Markside interview in docs/PLAN.grill.md. Current question contains this question fence:\n\n```question\n### Q2. Where should diagrams live?\n\nThe plan must remain readable offline. Choose how diagrams are stored.\n\n- **A. Inline the diagram.** Keep HTML in the Markdown file. Sharing needs one file, but the source is longer.\n- **B. Use a companion file.** Link to a nearby HTML file. Editing is separate, but sharing requires both files.\n\n<details>\n<summary>Compare tradeoffs</summary>\n\n| Criterion | A. Inline | B. Companion |\n|---|---|---|\n| Files to share | One | Two |\n| Works offline | ✓ Yes | ✓ With both files |\n\n</details>\n\n**Recommended: A.** One file makes sharing easier, at the cost of longer Markdown source.\n```\n\nThe Review returned comment c2 quoting the question heading with body: A. Keep the example self-contained too. This is an evaluation: do not launch a process or edit files; show the complete Answered questions entry you would write, then describe the next actions.",
+      "expected_output": "Archive the complete original fence contents as plain Markdown without rewriting or omitting anything, append the selected answer and the user's extra note separately, then replace Current question, address c2, and continue the Review.",
+      "files": [],
+      "expectations": [
+        "Preserves the original question heading, context, both full option titles and descriptions verbatim",
+        "Preserves the full comparison disclosure, table, and recommendation verbatim",
+        "Removes only the enclosing question fence from the archived question",
+        "Appends Your decision with option A and preserves the note about keeping the example self-contained separately from the original question",
+        "Checks the archived question against the original before replacing Current question, then addresses c2 and continues the Review"
       ]
     }
   ]

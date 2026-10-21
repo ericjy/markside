@@ -74,7 +74,11 @@ blocks remain supported. The question-answer rule marks each `**A. …**` list i
 radio option, shows its letter as a key without changing the rendered text, and
 labels option X and the `**Recommended: X.**` paragraph that explains it.
 Leading ✓, △, ✕, and ? symbols in Question Card table cells receive colored
-spans without changing cell text, so copying and Review anchors stay intact. The
+spans without changing cell text, so copying and Review anchors stay intact.
+Comparison disclosures use a plain heading without a divider or enclosing box,
+keeping supporting information distinct from answer tiles. The
+interview skill writes `<details open>` so comparisons start expanded and remain
+collapsible; rendering preserves the author's chosen open state. The
 preview then wires the options: clicking one (unless the click ends a text selection or lands on a
 Review Comment), pressing Enter on it, or pressing its letter when the page has
 one Question Card creates, or changes, one ordinary Review Comment on the card's

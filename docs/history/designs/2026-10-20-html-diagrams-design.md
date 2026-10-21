@@ -2,6 +2,7 @@
 
 **Date:** 2026-10-20
 **Status:** Proposed
+**Intent:** [HTML diagrams in Markdown docs](../../intent/2026-10-20-html-diagrams/intent.md)
 
 > Proposed design. Nothing here is implemented yet. Current behavior is in `docs/system-design.md`.
 

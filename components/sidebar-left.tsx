@@ -63,14 +63,25 @@ export function SidebarLeft({
   reviewCounts
 }: SidebarLeftProps) {
   const [treeVersion, setTreeVersion] = React.useState(0)
+  const decodedCurrent = decodeURIComponent(currentFileUrl)
+  const decodedRoot = rootUrl ? decodeURIComponent(rootUrl) : null
+  const activeFilePath =
+    decodedRoot && decodedCurrent.startsWith(decodedRoot)
+      ? decodedCurrent.slice(decodedRoot.length)
+      : null
+  const activeFileFolder = activeFilePath?.includes("/")
+    ? activeFilePath.slice(0, activeFilePath.lastIndexOf("/"))
+    : null
   const { tree, expandDir, collapseDir } = useFileTree(
     handle,
     rootUrl,
     status === "granted",
     treeVersion,
+    activeFileFolder,
   )
   const contentRef = useRef<HTMLDivElement>(null)
   const scrollRestoredForUrlRef = useRef<string | null>(null)
+  const revealedFilePathRef = useRef<string | null>(null)
   const [folderInfoOpen, setFolderInfoOpen] = React.useState(false)
   const [newFileError, setNewFileError] = React.useState<string | null>(null)
   const [creatingFile, setCreatingFile] = React.useState(false)
@@ -113,12 +124,22 @@ export function SidebarLeft({
     })
   }, [tree, rootUrl])
 
-  const decodedCurrent = decodeURIComponent(currentFileUrl)
-  const decodedRoot = rootUrl ? decodeURIComponent(rootUrl) : null
-  const activeFilePath =
-    decodedRoot && decodedCurrent.startsWith(decodedRoot)
-      ? decodedCurrent.slice(decodedRoot.length)
-      : null
+  useEffect(() => {
+    const container = contentRef.current
+    if (!activeFilePath || !container) return
+    if (revealedFilePathRef.current === activeFilePath) return
+    const row = container.querySelector('[data-active="true"]')
+    if (!row) return
+    revealedFilePathRef.current = activeFilePath
+    // Scroll only the sidebar; scrollIntoView would also move the document.
+    const rowRect = row.getBoundingClientRect()
+    const containerRect = container.getBoundingClientRect()
+    if (rowRect.top < containerRect.top) {
+      container.scrollTop -= containerRect.top - rowRect.top
+    } else if (rowRect.bottom > containerRect.bottom) {
+      container.scrollTop += rowRect.bottom - containerRect.bottom
+    }
+  }, [tree, activeFilePath])
 
   // Derive the immediate parent folder name from the current file URL for the idle prompt
   const parentFolderName = (() => {

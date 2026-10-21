@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 
 import {
   getExpandedFileTreePaths,
+  revealFileTreeFolder,
   setExpandedFileTreePaths,
   updateExpandedFileTreePaths
 } from "~lib/file-tree-state"
@@ -72,6 +73,7 @@ export function useFileTree(
   rootUrl: string | null,
   canRead: boolean,
   refreshVersion = 0,
+  revealFolder: string | null = null,
 ) {
   const [tree, setTree] = useState<TreeNode[]>([])
   const expandedPathsRef = useRef<string[]>([])
@@ -88,9 +90,13 @@ export function useFileTree(
     }
 
     const loadTree = async () => {
-      const expandedPaths = rootUrl
+      const storedPaths = rootUrl
         ? await getExpandedFileTreePaths(rootUrl)
         : []
+      const expandedPaths =
+        revealFolder && !revealFolder.split("/").some((name) => SKIP.has(name))
+          ? revealFileTreeFolder(storedPaths, revealFolder)
+          : storedPaths
       const nextTree = await readDir(
         rootHandle,
         "",
@@ -99,13 +105,16 @@ export function useFileTree(
       if (!active) return
       expandedPathsRef.current = expandedPaths
       setTree(nextTree)
+      if (rootUrl && expandedPaths.length > storedPaths.length) {
+        await setExpandedFileTreePaths(rootUrl, expandedPaths)
+      }
     }
 
     void loadTree()
     return () => {
       active = false
     }
-  }, [rootHandle, rootUrl, canRead, refreshVersion])
+  }, [rootHandle, rootUrl, canRead, refreshVersion, revealFolder])
 
   const expandDir = async (node: DirNode) => {
     if (node.children !== null) return // already loaded

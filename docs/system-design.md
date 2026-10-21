@@ -113,7 +113,9 @@ and middle-click to open them in another tab. Ordinary clicks retain Markside's
 existing navigation and Unsaved Draft handling. Each path segment is URL-encoded
 so filenames containing spaces, `#`, or `?` identify the correct file.
 Expanded directory paths are stored in `chrome.storage.local`, scoped to the
-opened root URL, and rehydrated after full-page file navigation. `useFileIndex`
+opened root URL, and rehydrated after full-page file navigation. Opening a file
+expands and persists its ancestor folders, unless one is excluded, and scrolls
+the sidebar just enough to show its row. `useFileIndex`
 recursively indexes the same allowed tree when the quick file switcher opens.
 
 ## Editing and Saving

@@ -23,6 +23,16 @@ export function updateExpandedFileTreePaths(
   return [...next]
 }
 
+export function revealFileTreeFolder(
+  paths: readonly string[],
+  folder: string,
+): string[] {
+  const next = new Set(paths)
+  const names = folder.split("/")
+  names.forEach((_, index) => next.add(names.slice(0, index + 1).join("/")))
+  return [...next]
+}
+
 export async function getExpandedFileTreePaths(
   rootUrl: string,
 ): Promise<string[]> {

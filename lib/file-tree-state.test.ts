@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   getExpandedFileTreeStorageKey,
   readExpandedFileTreePaths,
+  revealFileTreeFolder,
   updateExpandedFileTreePaths,
 } from "./file-tree-state"
 
@@ -28,6 +29,14 @@ describe("updateExpandedFileTreePaths", () => {
       "src",
       false,
     )).toEqual(["src/components"])
+  })
+})
+
+describe("revealFileTreeFolder", () => {
+  it("expands the opened file's folder and every ancestor without duplicates", () => {
+    expect(revealFileTreeFolder(["docs", "src"], "src/components/ui"))
+      .toEqual(["docs", "src", "src/components", "src/components/ui"])
+    expect(revealFileTreeFolder(["src"], "src")).toEqual(["src"])
   })
 })
 

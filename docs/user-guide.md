@@ -70,9 +70,9 @@ comment stays saved in Review so you can retry.
 
 Agents can also interview you in Markside instead of chat: for example, run
 `/grill-me <topic> in Markside`. Each question appears as a card with a button
-per option, and the agent's recommendation is labelled **Recommended**. Choose
-an option, then click **Send answer**; **Other answer…** opens the comment
-composer for your own reply. The agent records your decision and writes the next
+per option, and the agent's recommendation is labelled **Recommended**.
+Choosing an option records it as your answer; choose another to change it, or
+use **Other answer…** to write your own. Then click **Send review to agent**. The agent records your decision and writes the next
 question, and Markside shows **Changed on disk** so you can reload. Click
 **Finish review** once the summary matches your understanding.
 

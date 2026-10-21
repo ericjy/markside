@@ -29,7 +29,7 @@ function render(props: Partial<ComponentProps<typeof QuestionCardActions>> = {})
   const onAnswer = vi.fn()
   root = createRoot(card.mount)
   act(() => root.render(createElement(QuestionCardActions, {
-    card, answer: null, agentReview: true, busy: false, onAnswer, onCompose: vi.fn(), ...props,
+    card, answer: null, busy: false, onAnswer, onCompose: vi.fn(), ...props,
   })))
   const button = (name: string) => Array.from(container.querySelectorAll("button"))
     .find((candidate) => candidate.textContent?.startsWith(name))!
@@ -37,13 +37,10 @@ function render(props: Partial<ComponentProps<typeof QuestionCardActions>> = {})
 }
 
 describe("question card answers", () => {
-  it("selects an option without sending until Send answer is clicked", () => {
+  it("records each selected option as the answer, with no send control of its own", () => {
     const { onAnswer, button } = render()
-    expect(button("Send answer").disabled).toBe(true)
+    expect(button("Send answer")).toBeUndefined()
     act(() => button("B. Second.").click())
-    expect(onAnswer).not.toHaveBeenCalled()
-    expect(button("B. Second.").getAttribute("aria-checked")).toBe("true")
-    act(() => button("Send answer").click())
     expect(onAnswer).toHaveBeenCalledWith("B")
   })
 
@@ -53,17 +50,13 @@ describe("question card answers", () => {
     expect(button("A. First.").getAttribute("aria-checked")).toBe("false")
   })
 
-  it("does not resend the answer the agent already has, but allows changing it", () => {
-    const { button } = render({ answer: { body: "A", status: "Sent" } })
+  it("shows the current answer as selected and changes it only for another option", () => {
+    const { onAnswer, button } = render({ answer: { body: "A", status: "Draft" } })
     expect(button("A. First.").getAttribute("aria-checked")).toBe("true")
+    expect(container.textContent).toContain("Send the Review to share it with your agent.")
     act(() => button("A. First.").click())
-    expect(button("Send answer").disabled).toBe(true)
+    expect(onAnswer).not.toHaveBeenCalled()
     act(() => button("B. Second.").click())
-    expect(button("Send answer").disabled).toBe(false)
-  })
-
-  it("saves instead of sending when no agent Review is active", () => {
-    const { button } = render({ agentReview: false })
-    expect(button("Save answer")).toBeDefined()
+    expect(onAnswer).toHaveBeenCalledWith("B")
   })
 })

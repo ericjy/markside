@@ -640,7 +640,6 @@ export function ContentView({
                     <QuestionCardActions
                       card={card}
                       answer={questionAnswer(card.target)}
-                      agentReview={!!agentHandoff}
                       busy={questionActionsBusy}
                       onAnswer={(body) => answerQuestion(card.target, body)}
                       onCompose={(point) => composeQuestionAnswer(card.target, point)}

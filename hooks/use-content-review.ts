@@ -379,13 +379,14 @@ export function useContentReview({
     }))
   }
 
-  const createReviewComment = (anchor: ReviewAnchor, body: string) => {
+  // Question card answers pass activate: false so choosing an option doesn't select its comment.
+  const createReviewComment = (anchor: ReviewAnchor, body: string, { activate = true } = {}) => {
     const existing = review?.comments.find((comment) =>
       !retiredCommentIds.has(comment.id) && isSameReviewAnchor(comment.anchor, anchor)
     )
     if (existing && review) {
       updateReviewComment(existing.id, body)
-      setSelectedReviewId(existing.id)
+      if (activate) setSelectedReviewId(existing.id)
       setReviewOverlayOpen(true)
       return {
         outcome: "existing" as const,
@@ -419,7 +420,7 @@ export function useContentReview({
     })
     if (result.type !== "add-comment") return null
     if (result.outcome === "duplicate") {
-      setSelectedReviewId(result.commentId)
+      if (activate) setSelectedReviewId(result.commentId)
       setReviewOverlayOpen(true)
     } else if (result.outcome === "added") {
       const isFirstComment = (review?.comments.length ?? 0) === 0
@@ -433,7 +434,7 @@ export function useContentReview({
           ? tagComment(rebased.review, current)
           : current
       })
-      setSelectedReviewId(null)
+      if (activate) setSelectedReviewId(null)
       setReviewOverlayOpen(true)
       if (isFirstComment) trackReviewPromptActivity("review-comment")
     }
@@ -513,13 +514,11 @@ export function useContentReview({
     !!agentHandoff.completed || agentHandoff.sending || !!agentHandoff.finishing || agentHandoff.updatingCommentId != null
   )
 
-  // A question card's answer is a Review Comment on its heading; agent Reviews send it in the same click.
+  // A question card's answer is a Review Comment on its heading, sent with the rest of the Review.
   const answerQuestion = (target: HTMLElement, body: string) => {
     if (questionActionsBusy) return
     const question = questionBlock(target)
-    const result = question && createReviewComment(question.anchor, body)
-    if (!agentHandoff || !result?.commentId || !result.review) return
-    void agentHandoff.send(result.review)
+    if (question) createReviewComment(question.anchor, body, { activate: false })
   }
 
   const composeQuestionAnswer = (target: HTMLElement, point: { x: number; y: number }) => {

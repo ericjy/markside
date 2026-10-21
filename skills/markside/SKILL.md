@@ -107,8 +107,8 @@ questions are asked and answered.
    the block as a card with one answer button per option and labels the
    Recommended option. Option letters are the answer values.
 4. Run the Review workflow above on the interview doc. Tell the user to choose
-   an option on the question card and click **Send answer**, or click
-   **Other answer…** to write their own.
+   an option on the question card, or click **Other answer…** to write their
+   own, then click **Send review to agent**.
 5. An answer is a comment whose quote is the question heading and whose body is
    an option letter or the user's own words. When it arrives, move the question out of its `[!QUESTION]` block to
    the end of Answered questions as plain Markdown, followed by

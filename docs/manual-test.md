@@ -144,18 +144,17 @@ pull request or review response.
   comment, edit it, and confirm its old reply disappears for the new wording.
 - [ ] Run `/grill-me <topic> in Markside`. The current question renders as a
   Question card with one button per option, the recommended one labelled
-  Recommended, a disabled Send answer, and Other answer…. Selecting text across
-  the card does not include the button labels. Click a non-recommended option:
-  it becomes selected and nothing is sent. Click Send answer: the Review panel
-  opens with a comment quoting the question heading, its body is the option
-  letter, and the agent receives it. The card shows Your answer and Sent, and
-  Send answer is disabled again. Choose another option and Send answer before
-  the agent replies; confirm the existing comment changes rather than a second
-  one appearing.
+  Recommended, and Other answer…, with no send button on the card. Selecting
+  text across the card does not include the button labels. Click a
+  non-recommended option: it becomes selected, the Review panel opens with a
+  Draft comment quoting the question heading whose body is the option letter,
+  and nothing is sent. Click another option and confirm the same comment
+  changes rather than a second one appearing. Click Send review to agent: the
+  agent receives the answer and the card shows Sent. Choose a different option
+  before the agent replies; the comment returns to Draft until sent again.
   Choose Other answer…, confirm the composer opens on the heading, and send a
   free-text answer. Print the document and confirm the buttons are absent. In a
-  Review with no agent, the button reads Save answer and adds a local comment
-  without sending.
+  Review with no agent, an option adds a local comment.
   Repeat a Reload after changing only a sidecar reply, without changing the
   Markdown file, and confirm the new reply appears.
 - [ ] Confirm the Markdown file is unchanged by sending, the Review file has a

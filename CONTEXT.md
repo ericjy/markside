@@ -79,9 +79,9 @@ _Avoid_: Agent-resolved comment, deleted comment
 **Question Card**:
 A `> [!QUESTION]` block in which an agent asks one interview question with
 lettered options and a recommendation. Preview shows a selectable button per
-option, with the recommended one labelled, a Send answer button, and Other
-answer… for free text. Each answer is an ordinary Review Comment on the
-question's heading; during an agent Review, Send answer also sends the Review.
+option, with the recommended one labelled, and Other answer… for free text.
+Choosing an option creates or changes an ordinary Review Comment on the
+question's heading, which the user sends with the rest of the Review.
 _Avoid_: Poll, form, quiz
 
 

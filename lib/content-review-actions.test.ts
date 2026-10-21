@@ -214,30 +214,30 @@ describe("question card answers", () => {
     return { ...result, card }
   }
 
-  it("sends the option letter as a comment on the question heading in one action", async () => {
-    const { hook, send, saved, card } = questionSetup()
-    await act(async () => hook.result.current.answerQuestion(card.target, "A"))
-    expect(send).toHaveBeenCalledOnce()
-    expect(send.mock.calls[0][0]?.comments).toMatchObject([{ body: "A", anchor: { exact: "Q3. Where?", headingPath: ["Q3. Where?"] } }])
-    expect(saved()?.comments).toHaveLength(1)
+  it("records the option letter as a comment on the question heading without sending", () => {
+    const { hook, send, saved, card, openPanel } = questionSetup()
+    act(() => hook.result.current.answerQuestion(card.target, "A"))
+    expect(saved()?.comments).toMatchObject([{ body: "A", reviewMode: "agent", anchor: { exact: "Q3. Where?", headingPath: ["Q3. Where?"] } }])
+    expect(openPanel).toHaveBeenCalledWith(true)
+    expect(send).not.toHaveBeenCalled()
     hook.unmount()
   })
 
-  it("changes an earlier answer instead of adding a second comment", async () => {
+  it("changes an earlier answer instead of adding a second comment, without selecting it", () => {
     const { hook, options, send, saved, card } = questionSetup()
-    await act(async () => hook.result.current.answerQuestion(card.target, "A"))
+    act(() => hook.result.current.answerQuestion(card.target, "A"))
     hook.rerender({ ...options, review: saved() })
-    await act(async () => hook.result.current.answerQuestion(card.target, "B"))
+    act(() => hook.result.current.answerQuestion(card.target, "B"))
     expect(saved()?.comments.map(({ body }) => body)).toEqual(["B"])
-    expect(send.mock.calls[1][0]?.comments.map(({ body }) => body)).toEqual(["B"])
+    expect(send).not.toHaveBeenCalled()
+    expect(options.setSelectedReviewId).not.toHaveBeenCalled()
     hook.unmount()
   })
 
-  it("adds a local comment without sending when no agent Review is active", () => {
-    const { hook, options, send, saved, card } = questionSetup()
+  it("adds a local comment when no agent Review is active", () => {
+    const { hook, options, saved, card } = questionSetup()
     hook.rerender({ ...options, agentHandoff: undefined })
     act(() => hook.result.current.answerQuestion(card.target, "B"))
-    expect(send).not.toHaveBeenCalled()
     expect(saved()?.comments).toMatchObject([{ body: "B", reviewMode: "local" }])
     hook.unmount()
   })

@@ -1,7 +1,7 @@
-import { MessageSquareText } from "lucide-react"
+import { Pencil } from "lucide-react"
 import { useEffect, useRef } from "react"
+import { createPortal } from "react-dom"
 
-import { Button } from "~components/ui/button"
 import type { QuestionCard } from "~lib/markdown"
 
 const SEND_KEYS = typeof navigator !== "undefined" && /Mac/.test(navigator.userAgent) ? "⌘⇧↵" : "Ctrl+Shift+Enter"
@@ -91,29 +91,36 @@ export function QuestionCardActions({ card, answer, busy, keyboard, onAnswer, on
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [card, keyboard])
 
+  const customChosen = !!chosen && !card.options.some(({ value }) => value === chosen)
   const first = card.options[0]?.value
   const last = card.options.at(-1)?.value
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2" onMouseUp={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
-      <Button
-        type="button"
-        size="sm"
-        variant="ghost"
-        disabled={busy}
-        className="-ml-2"
-        onClick={(event) => {
-          const rect = event.currentTarget.getBoundingClientRect()
-          onCompose({ x: rect.left, y: rect.bottom })
-        }}>
-        <MessageSquareText aria-hidden="true" />
-        {card.options.length ? "Other answer…" : "Answer…"}
-      </Button>
+    <>
+      {createPortal(
+        <button
+          type="button"
+          disabled={busy}
+          aria-pressed={customChosen}
+          className={`question-option question-custom-answer${customChosen ? " question-option-selected" : ""}`}
+          onMouseUp={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation()
+            const rect = event.currentTarget.getBoundingClientRect()
+            onCompose({ x: rect.left, y: rect.bottom })
+          }}>
+          <strong>
+            <span className="question-option-key"><Pencil aria-hidden="true" /></span>
+            {card.options.length ? "Write your own answer…" : "Write an answer…"}
+          </strong>
+        </button>,
+        card.composeMount,
+      )}
       {keyboard && first && (
         <p className="question-card-hint" aria-hidden="true">
           <kbd>{first}</kbd>{first !== last && <>–<kbd>{last}</kbd></>} to choose
           {onSend && <> · <kbd>{SEND_KEYS}</kbd> to send review</>}
         </p>
       )}
-    </div>
+    </>
   )
 }

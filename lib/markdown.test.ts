@@ -197,6 +197,33 @@ describe("markdown renderer", () => {
     expect(root.querySelector("code")?.textContent).toContain("```question")
   })
 
+  it("marks only leading comparison symbols in question tables without changing their text", () => {
+    const table = "| A | B | C | D |\n|---|---|---|---|\n| ✓ Supported | △ Needs work | ✕ Unsupported | ? Unverified |\n| `✓` Code | Text ✓ | One file | Two files |"
+    const root = document.createElement("div")
+    root.innerHTML = md.render("```question\n### Which?\n\n" + table + "\n```")
+    const symbols = root.querySelectorAll(".question-comparison-symbol")
+    expect(Array.from(symbols, (symbol) => [symbol.textContent, symbol.getAttribute("data-rating")])).toEqual([
+      ["✓", "good"], ["△", "tradeoff"], ["✕", "poor"], ["?", "unknown"],
+    ])
+    expect(Array.from(root.querySelectorAll("tbody tr:first-child td"), (cell) => cell.textContent)).toEqual([
+      "✓ Supported", "△ Needs work", "✕ Unsupported", "? Unverified",
+    ])
+    root.innerHTML = md.render(table)
+    expect(root.querySelector(".question-comparison-symbol")).toBeNull()
+  })
+
+  it("keeps an optional comparison collapsed and the recommendation outside it", () => {
+    const comparison = '<details>\n<summary>Compare tradeoffs</summary>\n\n| A | B |\n|---|---|\n| ✓ Supported | △ Needs work |\n\n</details>\n\n'
+    const root = document.createElement("div")
+    root.innerHTML = md.render(question.replace("**Recommended:", comparison + "**Recommended:"))
+    const details = root.querySelector("details")!
+    expect(details.open).toBe(false)
+    expect(details.querySelector("summary")?.textContent).toBe("Compare tradeoffs")
+    expect(details.querySelectorAll("table .question-comparison-symbol")).toHaveLength(2)
+    expect(details.contains(root.querySelector(".question-recommendation"))).toBe(false)
+    expect(details.nextElementSibling?.className).toBe("question-recommendation")
+  })
+
   it("marks the recommended option and keeps the recommendation in its own paragraph", () => {
     const root = document.createElement("div")
     root.innerHTML = md.render(question)
@@ -225,7 +252,7 @@ describe("markdown renderer", () => {
     expect(card.target.hasAttribute("data-question-target")).toBe(true)
     expect(card.options.map(({ value, element }) => `${value}:${element.tagName}`)).toEqual(["A:LI", "B:LI"])
     expect(card.recommended).toBe("B")
-    expect(card.mount.className).toBe("question-card-actions")
+    expect(card.mount.className).toBe("question-card-actions question-card-shortcuts")
     expect(card.mount.parentElement?.lastElementChild).toBe(card.mount)
   })
 

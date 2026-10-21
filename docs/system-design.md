@@ -72,16 +72,21 @@ answer controls. Its body is parsed as Markdown before inline parsing and headin
 IDs, with source lines mapped back to the document. Legacy `> [!QUESTION]`
 blocks remain supported. The question-answer rule marks each `**A. …**` list item as a
 radio option, shows its letter as a key without changing the rendered text, and
-labels option X and the `**Recommended: X.**` paragraph that explains it. The
+labels option X and the `**Recommended: X.**` paragraph that explains it.
+Leading ✓, △, ✕, and ? symbols in Question Card table cells receive colored
+spans without changing cell text, so copying and Review anchors stay intact. The
 preview then wires the options: clicking one (unless the click ends a text selection or lands on a
 Review Comment), pressing Enter on it, or pressing its letter when the page has
 one Question Card creates, or changes, one ordinary Review Comment on the card's
 heading with the option letter as its body. The chosen option is marked in
 place, so that comment's heading highlight is hidden. Nothing is sent from the
 card; the reviewer sends the Review, or presses Cmd/Ctrl+Shift+Enter, so a
-misclick costs nothing. The footer with Other answer… is excluded from Review
-anchoring, copying, and print. Other answer…
-opens the comment composer on the heading. The sidecar format is unchanged.
+misclick costs nothing. A separate Write your own answer… tile is mounted
+after the option list, before any comparison or recommendation. It opens the
+comment composer on the heading and is marked selected only when the saved
+answer is nonempty and does not match an option letter. Keyboard hints appear at the top right, wrapping below the Question label
+on narrow screens. Both mounts are excluded from Review anchoring, copying, and
+print. The sidecar format is unchanged.
 
 Rendered Mermaid diagrams keep zoom, pan, and reset controls in a toolbar above
 an isolated viewport. Theme changes replace only the SVG inside that viewport so its current

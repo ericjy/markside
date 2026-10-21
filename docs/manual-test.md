@@ -145,12 +145,20 @@ pull request or review response.
 - [ ] Run `/grill-me <topic> in Markside`. The current question renders as a
   Question card from a fenced `question` block. In Source, confirm the body
   has ordinary Markdown without `>` prefixes; return to Preview and confirm
-  its options are tiles with letter keys, a Recommended label
-  on the recommended option, the Recommended paragraph in its own box below
-  the options, and Other answer…, with no send
-  button. Select and copy an option's text: the copy reads "A. Title. …" and
+  its options are tiles with letter keys aligned to the titles, each bold
+  title on its own line with a smaller, softer description below, a Recommended label
+  on the recommended option. Before choosing, that tile has the same neutral
+  background, border, and letter key as the other options. The Recommended
+  paragraph has a smaller heading
+  and no thumbs-up icon in its own box below
+  the options, with no send button. Write your own answer… is a quieter tile
+  directly after the options, before Compare tradeoffs and the recommendation;
+  keyboard hints sit at the top right and wrap below the Question label on
+  narrow screens. Select and copy an option's text: the copy reads "A. Title. …" and
   the selection opens the comment toolbar without choosing the option. Click a
-  non-recommended option: it is marked and the others stay readable, the Review panel
+  non-recommended option: it has a teal border, faint tint, and checked key
+  without an outer halo; the others stay readable. Keyboard focus adds an
+  outline around the letter or pencil key, not around the tile. The Review panel
   opens with a Draft comment quoting the question heading whose body is the
   option letter, the heading has no highlight, and nothing is sent. Press
   another option's letter and confirm the same comment changes; Tab to an
@@ -158,8 +166,11 @@ pull request or review response.
   choose. Press Cmd/Ctrl+Shift+Enter: the agent receives the answer and its
   Review card shows Sent. Choose a different option before the agent replies;
   the comment returns to Draft until sent again.
-  Choose Other answer…, confirm the composer opens on the heading, and send a
-  free-text answer. Print the document and confirm the buttons are absent. In a
+  Choose Write your own answer… and confirm the composer opens on the heading
+  without selecting the tile. Save a free-text answer: its tile gains the teal
+  selected state and all lettered options are unchecked. Choose a lettered
+  option and confirm the custom tile becomes neutral again. Send a custom
+  answer. Print the document and confirm the buttons are absent. In a
   Review with no agent, an option adds a local comment.
   Repeat a Reload after changing only a sidecar reply, without changing the
   Markdown file, and confirm the new reply appears.

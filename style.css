@@ -982,9 +982,17 @@ button.readability-score-filter {
 
 /* Question Card options are the answer controls. */
 .prose .markdown-alert-question {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 1rem;
   padding: 1.1rem 1.35rem 0.9rem;
   --question-tile: hsl(0 0% 100%);
   --question-tile-border: hsl(220 13% 88%);
+}
+
+.prose .markdown-alert-question > * {
+  grid-column: 1 / -1;
+  min-width: 0;
 }
 
 .dark .prose .markdown-alert-question {
@@ -992,7 +1000,100 @@ button.readability-score-filter {
   --question-tile-border: hsl(217 15% 26%);
 }
 
+.prose .markdown-alert-question > .markdown-alert-title {
+  grid-column: 1;
+  grid-row: 1;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+.prose .markdown-alert-question > div.question-card-shortcuts {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .prose .markdown-alert-question {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .prose .markdown-alert-question > div.question-card-shortcuts {
+    grid-column: 1;
+    grid-row: 2;
+    margin-top: 0.35rem;
+  }
+
+  .prose .question-card-shortcuts .question-card-hint {
+    text-align: left;
+  }
+}
+
 /* Child selectors outrank the alert's own child spacing. */
+.prose .markdown-alert.markdown-alert-question > table,
+.prose .markdown-alert.markdown-alert-question > details {
+  margin-top: 1.25rem;
+}
+
+.prose .markdown-alert-question > details > summary {
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875em;
+  font-weight: 500;
+}
+
+.prose .markdown-alert-question > details {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.prose .markdown-alert-question > details[open] > summary {
+  border-bottom: 0;
+  background: transparent;
+}
+
+.prose .markdown-alert-question > details > summary:hover {
+  background: hsl(var(--muted) / 0.55);
+}
+
+.prose .markdown-alert-question table thead th {
+  font-weight: 700;
+}
+
+.prose .markdown-alert-question table tbody td:first-child {
+  font-weight: 600;
+}
+
+.prose .question-comparison-symbol {
+  color: hsl(var(--muted-foreground));
+  font-weight: 600;
+}
+
+.prose .question-comparison-symbol[data-rating="good"] {
+  color: var(--markdown-alert-color);
+}
+
+.prose .question-comparison-symbol[data-rating="tradeoff"] {
+  color: hsl(35 75% 35%);
+}
+
+.prose .question-comparison-symbol[data-rating="poor"] {
+  color: hsl(0 50% 44%);
+}
+
+.dark .prose .question-comparison-symbol[data-rating="tradeoff"] {
+  color: hsl(40 70% 65%);
+}
+
+.dark .prose .question-comparison-symbol[data-rating="poor"] {
+  color: hsl(0 60% 72%);
+}
+
 .prose .markdown-alert-question > ul.question-options {
   display: grid;
   gap: 0.5rem;
@@ -1008,18 +1109,55 @@ button.readability-score-filter {
   background: var(--question-tile);
   border: 1px solid var(--question-tile-border);
   border-radius: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.92em;
+  line-height: 1.6;
   transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.prose .markdown-alert-question .question-option > p {
+  margin: 0.35rem 0 0;
+}
+
+.prose .markdown-alert-question .question-option > p:first-child {
+  margin-top: 0;
+}
+
+.prose .markdown-alert-question .question-option > strong:first-child,
+.prose .markdown-alert-question .question-option > p:first-child > strong:first-child {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: hsl(var(--foreground));
+  font-size: 1.087em;
+  line-height: 1.45;
+}
+
+.prose .markdown-alert-question .question-custom-answer {
+  display: block;
+  width: 100%;
+  min-height: 2.9rem;
+  font-family: inherit;
+  text-align: left;
+}
+
+.prose .markdown-alert-question .question-custom-answer > strong:first-child {
+  margin-bottom: 0;
+  color: inherit;
+  font-weight: 500;
+}
+
+.prose .question-custom-answer:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.prose .question-custom-answer .question-option-key svg {
+  width: 1rem;
+  height: 1rem;
 }
 
 .prose .markdown-alert-question .question-option::marker {
   content: none;
-}
-
-/* Most answers take the recommendation, so it leads without looking chosen. */
-.prose .markdown-alert-question .question-option.question-option-recommended {
-  background: color-mix(in srgb, var(--markdown-alert-color) 6%, var(--question-tile));
-  border-color: color-mix(in srgb, var(--markdown-alert-color) 55%, var(--question-tile-border));
-  box-shadow: 0 1px 3px color-mix(in srgb, var(--markdown-alert-color) 15%, transparent);
 }
 
 .prose .question-card-interactive .question-option {
@@ -1030,11 +1168,12 @@ button.readability-score-filter {
   border-color: color-mix(in srgb, var(--markdown-alert-color) 45%, var(--question-tile-border));
 }
 
-.prose .question-card-interactive .question-option.question-option-recommended:hover {
-  border-color: color-mix(in srgb, var(--markdown-alert-color) 80%, var(--question-tile-border));
-}
 
 .prose .question-card-interactive .question-option:focus-visible {
+  outline: none;
+}
+
+.prose .question-card-interactive .question-option:focus-visible .question-option-key {
   outline: 2px solid var(--markdown-alert-color);
   outline-offset: 2px;
 }
@@ -1045,7 +1184,7 @@ button.readability-score-filter {
 
 .prose .question-option-key {
   position: absolute;
-  top: 0.6rem;
+  top: 0.65rem;
   left: 0.75rem;
   display: grid;
   place-items: center;
@@ -1083,10 +1222,6 @@ button.readability-score-filter {
   line-height: 1.6;
 }
 
-.prose .question-option-recommended .question-option-key {
-  border-color: color-mix(in srgb, var(--markdown-alert-color) 55%, var(--question-tile-border));
-  color: var(--markdown-alert-color);
-}
 
 .prose .markdown-alert-question > p.question-recommendation {
   margin-top: 1.5rem;
@@ -1096,29 +1231,17 @@ button.readability-score-filter {
 
 /* "Recommended: X." leads the reasoning as its own line. */
 .prose .question-recommendation > strong:first-child {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
+  display: block;
   margin-bottom: 0.2rem;
   color: var(--markdown-alert-color);
+  font-size: 0.9em;
 }
 
-.prose .question-recommendation > strong:first-child::before {
-  content: "";
-  width: 1em;
-  height: 1em;
-  flex: none;
-  background: currentColor;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10v12'/%3E%3Cpath d='M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10v12'/%3E%3Cpath d='M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z'/%3E%3C/svg%3E") center / contain no-repeat;
-}
-
-/* Solid teal means chosen: a doubled border, a ring, and a check over the letter. */
+/* Selection stays quiet; the outer outline is reserved for keyboard focus. */
 .prose .markdown-alert-question .question-option.question-option-selected {
+  background: color-mix(in srgb, var(--markdown-alert-color) 6%, var(--question-tile));
   border-color: var(--markdown-alert-color);
-  box-shadow:
-    0 0 0 1px var(--markdown-alert-color),
-    0 0 0 5px color-mix(in srgb, var(--markdown-alert-color) 18%, transparent);
+  box-shadow: none;
 }
 
 .prose .question-option-selected .question-option-key {
@@ -1141,6 +1264,7 @@ button.readability-score-filter {
 
 .prose .question-card-hint {
   margin: 0;
+  text-align: right;
   color: hsl(var(--muted-foreground));
   font-size: 0.75rem;
 }

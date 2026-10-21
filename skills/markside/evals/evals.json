@@ -93,7 +93,9 @@
       "expectations": [
         "Creates docs/PLAN.grill.md and leaves docs/PLAN.md unchanged",
         "Writes exactly one question, inside a question code fence under Current question",
-        "The question has bold lettered options and a **Recommended: X.** line with a rationale",
+        "The question has bold lettered sentence titles, practical descriptions with the main benefit and drawback, and a short **Recommended: X.** rationale",
+        "Each option is understandable without expanding a comparison; if a comparison is included, it is collapsed under Compare tradeoffs before the visible recommendation, with options as columns and criteria as rows",
+        "Comparison cells use meaningful symbols plus text for ratings, leave neutral facts unscored, and do not include a legend or colored-circle emoji",
         "Runs markside review on docs/PLAN.grill.md with a 600000 ms tool timeout",
         "Does not act on the plan before the Review is resolved"
       ]

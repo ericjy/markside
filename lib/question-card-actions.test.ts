@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { QuestionCardActions } from "../components/question-card-actions"
 import { md, mountQuestionCard, type QuestionCard } from "./markdown"
+import { buildRenderedTextIndex } from "./review-dom"
 
 ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean })
   .IS_REACT_ACT_ENVIRONMENT = true
@@ -45,6 +46,31 @@ describe("question card options", () => {
     expect(onAnswer).toHaveBeenCalledWith("B")
     expect(container.textContent).not.toContain("Send answer")
     expect(card.element.classList.contains("question-card-interactive")).toBe(true)
+  })
+
+  it("opens a custom answer from a tile after the options and marks only saved custom answers", () => {
+    const { onCompose, onAnswer } = render()
+    const tile = container.querySelector<HTMLButtonElement>(".question-custom-answer")!
+    expect(tile.closest(".question-card-actions")?.previousElementSibling?.className).toBe("question-options")
+    expect(tile.closest(".question-card-actions")?.nextElementSibling?.className).toBe("question-recommendation")
+    expect(tile.getAttribute("aria-pressed")).toBe("false")
+    act(() => tile.click())
+    expect(onCompose).toHaveBeenCalledOnce()
+    expect(onAnswer).not.toHaveBeenCalled()
+    expect(buildRenderedTextIndex(container).text).not.toContain("Write your own answer")
+    expect(tile.classList.contains("question-option-selected")).toBe(false)
+
+    render({ answer: "I want a different approach." })
+    expect(tile.getAttribute("aria-pressed")).toBe("true")
+    expect(tile.classList.contains("question-option-selected")).toBe(true)
+    expect(option("A").getAttribute("aria-checked")).toBe("false")
+    expect(option("B").getAttribute("aria-checked")).toBe("false")
+
+    render({ answer: "B" })
+    expect(tile.getAttribute("aria-pressed")).toBe("false")
+    expect(option("B").getAttribute("aria-checked")).toBe("true")
+    render({ busy: true })
+    expect(tile.disabled).toBe(true)
   })
 
   it("leaves a click to text selection or to a Review Comment under the pointer", () => {

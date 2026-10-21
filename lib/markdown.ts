@@ -262,6 +262,17 @@ function markQuestionAnswers(state: StateCore, open: number, close: number) {
   const options = new Map<string, number>()
   let recommendation: { value: string; index: number } | null = null
   for (let k = open + 1; k < close; k++) {
+    if (tokens[k].type === "inline" && tokens[k - 1].type === "td_open") {
+      const first = tokens[k].children?.[0]
+      if (first?.type === "text" && /^[✓△✕?](?:\s|$)/.test(first.content)) {
+        const symbol = first.content[0]
+        const rating = { "✓": "good", "△": "tradeoff", "✕": "poor", "?": "unknown" }[symbol]
+        const marker = new state.Token("html_inline", "", 0)
+        marker.content = `<span class="question-comparison-symbol" data-rating="${rating}">${symbol}</span>`
+        first.content = first.content.slice(1)
+        tokens[k].children!.unshift(marker)
+      }
+    }
     if (tokens[k].type !== "inline" || tokens[k - 1].type !== "paragraph_open") continue
     const recommended = QUESTION_RECOMMENDED.exec(tokens[k].content)
     if (recommended && !recommendation && tokens[k - 2].type !== "list_item_open") {
@@ -303,6 +314,7 @@ export interface QuestionCard {
   element: HTMLElement
   target: HTMLElement
   mount: HTMLElement
+  composeMount: HTMLElement
   options: { value: string; element: HTMLElement }[]
   recommended: string | null
 }
@@ -318,9 +330,14 @@ export function mountQuestionCard(card: HTMLElement): QuestionCard | null {
     element,
   }))
   const mount = card.ownerDocument.createElement("div")
-  mount.className = "question-card-actions"
+  mount.className = "question-card-actions question-card-shortcuts"
   card.append(mount)
-  return { element: card, target, mount, options, recommended: card.dataset.questionRecommended ?? null }
+  const composeMount = card.ownerDocument.createElement("div")
+  composeMount.className = "question-card-actions question-card-compose"
+  const list = options[0]?.element.closest("ul")
+  if (list) list.after(composeMount)
+  else mount.before(composeMount)
+  return { element: card, target, mount, composeMount, options, recommended: card.dataset.questionRecommended ?? null }
 }
 
 md.renderer.rules.markdown_alert_open = (tokens, idx, _options, _env, self) => {

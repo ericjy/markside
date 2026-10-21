@@ -96,10 +96,20 @@ questions are asked and answered.
 
    Context the user needs to decide.
 
-   - **A. Sibling doc.** What it means and what it costs.
-   - **B. Inside the plan.** What it means and what it costs.
+   - **A. Keep the interview in a sibling document.** Create a separate interview file next to the plan. The plan stays focused, but there is another file to manage.
+   - **B. Put the interview inside the plan.** Add the questions and answers to the plan itself. Everything stays in one file, but temporary questions interrupt the plan.
 
-   **Recommended: A.** Why, compared with each alternative.
+   <details>
+   <summary>Compare tradeoffs</summary>
+
+   | Criterion | A. Sibling document | B. Inside the plan |
+   |---|---|---|
+   | Plan stays focused | ✓ Interview stays separate | △ Questions interrupt the plan |
+   | File management | Two files | One file |
+
+   </details>
+
+   **Recommended: A.** It keeps temporary interview questions out of the plan; the extra file can be removed afterward.
    ```
    ````
 
@@ -107,16 +117,36 @@ questions are asked and answered.
    controls, so keep to it:
    - Number questions in order, and put the heading first inside the block.
    - Write the options as one top-level list. Start every item with a bold
-     capital letter, period, and short title (`**A. Title.**`), using A, B, C
+     capital letter, period, and a short sentence stating the approach
+     (`**A. Keep the interview in a sibling document.**`), using A, B, C
      in order. The letters are the answer values.
-   - Keep each option to its title and one or two short sentences, so the
-     options can be compared at a glance. Put the trade-off reasoning in the
-     recommendation.
-   - End with exactly one `**Recommended: X.**` paragraph after the list,
-     naming one listed letter. Markside labels that option.
+   - Follow each title with two short sentences: explain what happens in
+     practice, then the main benefit and drawback. Use plain language and
+     explain technical terms needed to choose. Markside puts this description
+     below the title. Optional comparison tables can add detail, but each
+     option must be understandable without opening a disclosure.
+   - When shared criteria help compare the options, add a Markdown table
+     inside `<details>` with `<summary>Compare tradeoffs</summary>`, collapsed
+     by default. Put it after the options and before the recommendation, as
+     in the example. Leave blank lines around the table so Markdown renders
+     inside the HTML disclosure. Omit the comparison for simple questions.
+   - In comparison tables, use options as columns and criteria as rows. Keep
+     cells short. Prefix evaluative cells with ✓ for meeting the need, △ for
+     a tradeoff, ✕ for not meeting the need, or ? for an unknown that needs
+     verification, followed by explanatory text. Markside colors those
+     symbols. Keep neutral facts such as file counts unscored. Do not add a
+     legend or colored-circle emoji, and do not present assumptions as facts.
+   - End with exactly one `**Recommended: X.**` paragraph outside the
+     disclosure, naming one listed letter. Give the main reason and decisive
+     tradeoff in one or two short sentences. Put detailed comparisons in the
+     table rather than a long recommendation paragraph. Markside labels the
+     recommended option separately from the user's selected answer.
 4. Run the Review workflow above on the interview doc. Tell the user to click
-   an option (or press its letter), or click **Other answer…** to write their
-   own, then click **Send review to agent**.
+   an option (or press its letter), or click **Write your own answer…** to write their
+   own, then click **Send review to agent**. Markside supplies the custom-answer
+   tile after the options and the keyboard hints at the top of the card; do not write those controls
+   into the Markdown. Clicking that tile opens the composer; saving a custom
+   answer marks it selected. Nothing is sent until the user sends the Review.
 5. An answer is a comment whose quote is the question heading and whose body is
    an option letter or the user's own words. When it arrives, move the question out of its `question` fence to
    the end of Answered questions as plain Markdown, followed by

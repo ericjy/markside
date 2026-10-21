@@ -24,8 +24,6 @@ import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
 
 interface ContentReviewOverlayProps {
   checkReviewUpdates: () => Promise<boolean>
-  documentChanged: boolean
-  reloadDocument: () => void
   reloadDocumentLoading: boolean
   agentHandoff?: AgentReviewHandoff
   checkAgentSession: () => void
@@ -79,8 +77,6 @@ interface ContentReviewOverlayProps {
 
 export function ContentReviewOverlay({
   checkReviewUpdates,
-  documentChanged,
-  reloadDocument,
   reloadDocumentLoading,
   isMdFile,
   reviewOverlayDocked,
@@ -269,8 +265,6 @@ export function ContentReviewOverlay({
             <div className="flex min-h-0 flex-1 flex-col">
               <ReviewPanel
                 onCheckUpdates={checkReviewUpdates}
-                documentChanged={documentChanged}
-                onReloadDocument={reloadDocument}
                 reloadDocumentLoading={reloadDocumentLoading}
                 key={fileUrl}
                 sourceUrl={fileUrl}

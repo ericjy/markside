@@ -2,6 +2,7 @@ import React,{ useEffect,useRef,useState } from "react"
 
 import { ContentDialogs } from "~components/content-dialogs"
 import { ContentReviewOverlay } from "~components/content-review-overlay"
+import { ContentReloadBar } from "~components/content-reload-bar"
 import { ContentToolbar } from "~components/content-toolbar"
 import { ContentView } from "~components/content-view"
 import { FilePalette } from "~components/file-palette"
@@ -720,17 +721,9 @@ export function FileRenderer({
         requestReloadFromDisk={reload.requestReloadFromDisk}
         reloadLoading={reload.reloadLoading}
         content={content}
-        reloadNoticeOpen={reload.reloadNoticeOpen}
-        hasReloadChanges={reload.hasReloadChanges}
-        reloadComparison={reload.reloadComparison}
-        changesVisible={reload.changesVisible}
-        closeSelectionComposer={selection.closeSelectionComposer}
-        setShowChanges={reload.setShowChanges}
+        diskChanged={reload.diskChanged}
         previewVisible={previewVisible}
         selectMode={selectMode}
-        dismissReloadChanges={reload.dismissReloadChanges}
-        review={review}
-        clearReview={reviewActions.clearReview}
         isMdFile={isMdFile}
         mode={mode}
         dark={dark}
@@ -856,6 +849,31 @@ export function FileRenderer({
         setOutlineOpen={setOutlineOpen}
         setActiveHeadingId={setActiveHeadingId}
       />
+      {(reload.diskChanged || reload.hasReloadChanges || reload.reloadLoading || reload.reloadNoticeOpen) && (
+        <div className="pointer-events-none absolute bottom-5 left-0 z-40 print:hidden" style={{ right: overlay.reviewOverlayDocked ? overlay.reviewDockWidth : 0 }}>
+          <div style={{ width: isSplitView ? `${split.previewPercent}%` : "100%" }}>
+            <div className="flex justify-center px-4 xl:mr-[var(--reload-outline-width)]" style={{ "--reload-outline-width": `${outlineOpen && previewVisible ? rightSidebarWidth : 0}px` } as React.CSSProperties}>
+              <ContentReloadBar
+                diskChanged={reload.diskChanged}
+                reloadLoading={reload.reloadLoading}
+                requestReloadFromDisk={reload.requestReloadFromDisk}
+                reloadNoticeOpen={reload.reloadNoticeOpen}
+                hasReloadChanges={reload.hasReloadChanges}
+                reloadComparison={reload.reloadComparison}
+                changesVisible={reload.changesVisible}
+                closeSelectionComposer={selection.closeSelectionComposer}
+                setShowChanges={reload.setShowChanges}
+                previewVisible={previewVisible}
+                selectMode={selectMode}
+                dismissReloadChanges={reload.dismissReloadChanges}
+                review={review}
+                clearReview={reviewActions.clearReview}
+                disabled={content === null || saveState === "saving"}
+              />
+            </div>
+          </div>
+        </div>
+      )}
       <ContentReviewOverlay
         checkReviewUpdates={async () => {
           const [agentChanged, documentChanged] = await Promise.all([
@@ -864,8 +882,6 @@ export function FileRenderer({
           ])
           return agentChanged || documentChanged
         }}
-        documentChanged={reload.diskChanged}
-        reloadDocument={reload.requestReloadFromDisk}
         reloadDocumentLoading={reload.reloadLoading}
         agentHandoff={agentHandoff}
         agentSessionCheckStatus={agentSessionCheck?.url === fileUrl ? agentSessionCheck.status : "idle"}

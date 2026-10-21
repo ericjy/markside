@@ -79,7 +79,7 @@ pull request or review response.
 ## Local agent Review loop
 
 - [ ] In an already open local file, choose Start a review in your agent… (or
-  Start another review… after completion). Copy the command from both agent tabs
+  Start another review after completion). Copy the command from both agent tabs
   and confirm it includes `--no-open`. Run it in the agent: no Chrome tab should
   open. Confirm Done only closes setup. After the agent is waiting, switch back to
   Chrome and confirm Send review to agent appears without clicking anything and
@@ -227,7 +227,7 @@ permissions and disk writes require manual verification.
   Clear drafts restores the last sent text and status. Local resolved comments
   are not included as new agent work or in Copy review as prompt.
 - [ ] Resolve every sent comment and finish the Review, then add new feedback. Review complete disappears
-  and Start another review… opens the command dialog. Confirm the sidecar remains
+  and Start another review opens the command dialog. Confirm the sidecar remains
   byte-for-byte unchanged until the CLI starts a fresh review. Close/reopen the
   panel after the CLI starts: Send becomes available and completed history stays
   intact. Continuation alone must not start another review.
@@ -255,7 +255,11 @@ permissions and disk writes require manual verification.
   quiet Start a review help, and Copy review as prompt.
 - Check before the agent replies: No response yet appears briefly. Have the agent
   address a comment, then check: the reply appears without reloading the document.
-- Have the agent edit the document: checking offers Reload document without
-  replacing the visible text. Reload document opens the existing change comparison.
-- Repeat with an Unsaved Draft: Reload document must ask before discarding it.
+- Have the agent edit the document: checking offers Reload in the bottom-centered document bar without
+  replacing the visible text. Reload opens the existing change comparison with Show changes and Done in the same bar.
+- Repeat with an Unsaved Draft: Reload must ask before discarding it.
 - If a check fails, verify the retry message and existing comments remain visible.
+
+- With Outline and docked Review open, verify the reload bar is centered over
+  the document, not either sidebar. Check Split too. Scroll to the last line and
+  verify it remains readable above the bar. Done dismisses the comparison bar.

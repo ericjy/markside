@@ -41,8 +41,6 @@ export type ReviewCopyStatus =
 
 interface ReviewPanelProps {
   onCheckUpdates?: () => Promise<boolean>
-  documentChanged?: boolean
-  onReloadDocument?: () => void
   reloadDocumentLoading?: boolean
   sourceUrl?: string
   open: boolean
@@ -100,8 +98,6 @@ export function ReviewPanel({
   onUpdateComment,
   onChangeCommentStatus,  onDeleteComment,
   onCheckUpdates,
-  documentChanged = false,
-  onReloadDocument,
   reloadDocumentLoading = false,
   onCheckAgentSession,
   agentSessionCheckStatus = "idle",
@@ -834,7 +830,7 @@ export function ReviewPanel({
         )}
         {canFinish && (
           <p id="agent-review-finish-help" className="mb-3 text-xs leading-relaxed text-muted-foreground">
-            All comments resolved. Add more feedback, or finish so your agent can continue.
+            All resolved. Finish to let your agent continue.
           </p>
         )}
         {activeAgentHandoff && canFinish && (
@@ -867,15 +863,6 @@ export function ReviewPanel({
             </Button>
           )
         )}
-        {activeAgentHandoff && documentChanged && (
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2">
-            <span className="text-xs text-muted-foreground">Document changed on disk</span>
-            <Button variant="outline" size="sm" onClick={onReloadDocument} disabled={reloadDocumentLoading || !onReloadDocument}>
-              <RefreshCw size={14} aria-hidden="true" className={reloadDocumentLoading ? "animate-spin" : ""} />
-              {reloadDocumentLoading ? "Reloading…" : "Reload document"}
-            </Button>
-          </div>
-        )}
         {showAgentFolderHelp && (
           <p id="agent-review-folder-help" className="mt-2 text-xs leading-relaxed text-muted-foreground">
             Chrome will ask once for access to{" "}
@@ -898,11 +885,11 @@ export function ReviewPanel({
             </Button>
           )}
           {/* Remount on a variant change so transition-colors doesn't fade the dark primary background out. */}
-          <Button key={showAgentAction ? "secondary" : "primary"} variant={showAgentAction ? "ghost" : "default"} className={`h-11 min-w-max whitespace-nowrap ${showAgentAction ? "shrink-0 px-2 text-xs text-muted-foreground hover:text-foreground" : "flex-1"}`} disabled={copyableCount === 0} onClick={onCopy}>
+          {copyableCount > 0 && <Button key={showAgentAction ? "secondary" : "primary"} variant={showAgentAction ? "ghost" : "default"} className={`h-11 min-w-max whitespace-nowrap ${showAgentAction ? "shrink-0 px-2 text-xs text-muted-foreground hover:text-foreground" : "flex-1"}`} onClick={onCopy}>
             {copied
               ? <Check size={14} strokeWidth={2.5} className="text-[hsl(132_60%_46%)] dark:text-[hsl(130_78%_29%)]" />
               : <Copy size={14} />} {copied ? "Review copied for this file" : "Copy review as prompt"}
-          </Button>
+          </Button>}
           {(historyFile ? hasDrafts : itemCount > 0) && (
             <Button
               ref={clearButtonRef}
@@ -934,14 +921,14 @@ export function ReviewPanel({
           <p role="status" className="mt-2 text-xs text-muted-foreground">Couldn’t check. Try again.</p>
         )}
         {showStartReview && (
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs leading-relaxed text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs leading-relaxed text-muted-foreground">
             <button ref={sendHelpRef} type="button" aria-haspopup="dialog" onClick={() => setSendHelpOpen(true)}
-              className="inline-flex items-center gap-1.5 text-left hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+              className="inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-left text-foreground transition-colors hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
               <Bot size={14} aria-hidden="true" className="shrink-0" />
-              {needsNewReview ? "Start another review…" : "Start a review in your agent…"}
+              {needsNewReview ? "Start another review" : "Start a review in your agent…"}
             </button>
             <button type="button" disabled={agentSessionCheckStatus === "checking"} aria-busy={agentSessionCheckStatus === "checking"} onClick={onCheckAgentSession}
-              className="inline-flex items-center gap-1.5 hover:text-foreground disabled:pointer-events-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+              className="inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
               <RefreshCw size={14} aria-hidden="true" className={`shrink-0 ${agentSessionCheckStatus === "checking" ? "animate-spin" : ""}`} />
               {/* Every label occupies the same cell so the width never changes and the row never rewraps. */}
               <span className="grid text-left">

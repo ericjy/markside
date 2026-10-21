@@ -1,9 +1,7 @@
-import type { ActiveReview } from "~lib/review"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import {
   BookOpen,
   Check,
-  ChevronDown,
   Columns2,
   Copy,
   Eye,
@@ -17,8 +15,7 @@ import {
   RefreshCw,
   Share2,
   Sun,
-  TableOfContents,
-  Trash2
+  TableOfContents
 } from "lucide-react"
 import React from "react"
 import { Button } from "~components/ui/button"
@@ -57,17 +54,9 @@ interface ContentToolbarProps {
   requestReloadFromDisk: () => void
   reloadLoading: boolean
   content: string | null
-  reloadNoticeOpen: boolean
-  hasReloadChanges: boolean
-  reloadComparison: { before: string; after: string; } | null
-  changesVisible: boolean
-  closeSelectionComposer: () => void
-  setShowChanges: React.Dispatch<React.SetStateAction<boolean>>
+  diskChanged: boolean
   previewVisible: boolean
   selectMode: (nextMode: MarkdownMode) => void
-  dismissReloadChanges: () => void
-  review: ActiveReview | null
-  clearReview: () => void
   isMdFile: boolean
   mode: MarkdownMode
   dark: boolean
@@ -115,17 +104,9 @@ export function ContentToolbar({
   requestReloadFromDisk,
   reloadLoading,
   content,
-  reloadNoticeOpen,
-  hasReloadChanges,
-  reloadComparison,
-  changesVisible,
-  closeSelectionComposer,
-  setShowChanges,
+  diskChanged,
   previewVisible,
   selectMode,
-  dismissReloadChanges,
-  review,
-  clearReview,
   isMdFile,
   mode,
   dark,
@@ -290,87 +271,12 @@ export function ContentToolbar({
             onClick={requestReloadFromDisk}
             disabled={reloadLoading || content === null || saveState === "saving"}
             className="h-8 shrink-0 gap-1.5 px-2 text-xs"
-            title="Reload current file from disk"
+            title={diskChanged ? "This file changed on disk. Reload to see the changes." : "Reload current file from disk"}
             aria-label="Reload from disk">
             <RefreshCw size={14} className={reloadLoading ? "animate-spin" : ""} />
             {reloadLoading ? "Reloading…" : "Reload"}
           </Button>
-          {reloadNoticeOpen && !hasReloadChanges && (
-            <span role="status" aria-live="polite" className="shrink-0 text-xs text-muted-foreground">
-              {reloadComparison ? "No changes on disk" : "Reloaded from disk"}
-            </span>
-          )}
-          {hasReloadChanges && (
-            <div className="flex shrink-0 items-center gap-2">
-              <label
-                className={`flex h-8 cursor-pointer items-center gap-1.5 rounded-md border px-2 text-xs font-medium transition-colors ${
-                  changesVisible
-                    ? "border-transparent bg-secondary text-secondary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                }`}
-                title="Show text added and removed since the last reload. Added text is green, removed text is struck through in red.">
-                <input
-                  type="checkbox"
-                  className="h-3.5 w-3.5 cursor-pointer"
-                  checked={changesVisible}
-                  onChange={(event) => {
-                    closeSelectionComposer()
-                    setShowChanges(event.target.checked)
-                    if (event.target.checked && !previewVisible) selectMode("preview")
-                  }}
-                />
-                Show changes
-              </label>
-              <div className="flex items-center overflow-hidden rounded-md border">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="h-7 gap-1.5 rounded-none px-2 text-xs"
-                  title="Done reviewing the changes"
-                  onClick={dismissReloadChanges}>
-                  <Check size={14} />
-                  Done
-                </Button>
-                <DropdownMenu.Root>
-                  <DropdownMenu.Trigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-6 rounded-none border-l"
-                      aria-label="Done options">
-                      <ChevronDown size={14} />
-                    </Button>
-                  </DropdownMenu.Trigger>
-                  <DropdownMenu.Portal>
-                    <DropdownMenu.Content
-                      align="end"
-                      sideOffset={8}
-                      style={{ minWidth: "13rem", zIndex: 100000 }}
-                      className="rounded-md border bg-background p-1 text-foreground shadow-md">
-                      <DropdownMenu.Item
-                        className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
-                        onSelect={dismissReloadChanges}>
-                        <Check size={14} />
-                        Done
-                      </DropdownMenu.Item>
-                      {review && (
-                        <DropdownMenu.Item
-                          className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
-                          onSelect={() => {
-                            clearReview()
-                            dismissReloadChanges()
-                          }}>
-                          <Trash2 size={14} />
-                          Done and clear comments
-                        </DropdownMenu.Item>
-                      )}
-                    </DropdownMenu.Content>
-                  </DropdownMenu.Portal>
-                </DropdownMenu.Root>
-              </div>
-            </div>
-          )}
+
           {isMdFile && (
             <div
               role="group"

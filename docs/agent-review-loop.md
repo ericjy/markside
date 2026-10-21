@@ -153,7 +153,7 @@ They are not written to the sidecar merely because the user resolves them.
 Editing a sent comment produces an unsent Draft; its stored sent state remains
 unchanged until a send. Clear drafts restores that state.
 
-After completion, the panel shows a Start another review… link, which opens
+After completion, the panel shows a Start another review link, which opens
 the skill command dialog. It does not reopen the completed sidecar or wake an
 agent. A normal CLI review starts the new request; continuation still reports
 the old one as resolved. Review complete is hidden while feedback is active.

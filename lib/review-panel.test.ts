@@ -149,7 +149,7 @@ describe("ReviewPanel", () => {
     const file = setReviewerCommentStatus(sent, comment.id, "resolved")
     const finish = vi.fn()
     renderPanel({ agentHandoff: { file, canFinish: true, finish, sent: true, disabled: true, disabledReason: "Add or reopen a comment to send again.", sending: false, error: null, send: vi.fn() } })
-    expect(container.textContent).toContain("All comments resolved")
+    expect(container.textContent).toContain("All resolved. Finish to let your agent continue.")
     expect(container.textContent).not.toContain("Send review to agent")
     expect(container.textContent).not.toContain("Agent not picking up")
     expect(container.textContent).not.toContain("Review complete")
@@ -196,7 +196,7 @@ describe("ReviewPanel", () => {
     renderPanel({ sourceUrl: review.sourceUrl, review: { ...review, comments: [draft] }, comments: [draft], agentHandoff: { file, completed: true, disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn() } })
     expect(container.textContent).toContain("Draft")
     expect(container.textContent).not.toContain("Review complete")
-    const start = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.trim() === "Start another review…")!
+    const start = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.trim() === "Start another review")!
     act(() => start.click())
     const dialog = document.querySelector('[role="dialog"]')!
     expect(dialog).not.toBeNull()
@@ -210,10 +210,10 @@ describe("ReviewPanel", () => {
     const original = structuredClone(file)
     renderPanel({ sourceUrl: review.sourceUrl, agentHandoff: { file, completed: true, disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn() } })
     const buttons = Array.from(container.querySelectorAll("button"))
-    const start = buttons.find((button) => button.textContent?.trim() === "Start another review…")!
+    const start = buttons.find((button) => button.textContent?.trim() === "Start another review")!
     const copy = buttons.find((button) => button.textContent?.trim() === "Copy review as prompt")!
     expect(start.className).not.toContain("w-full")
-    expect(copy.disabled).toBe(true)
+    expect(copy).toBeUndefined()
     expect(container.textContent).toContain("Review complete")
     expect(container.textContent).not.toContain("Clear drafts")
     expect(container.textContent).not.toContain("Start a review in your agent…")
@@ -286,13 +286,21 @@ describe("ReviewPanel", () => {
     expect(container.textContent).not.toContain("Send review to agent")
   })
 
+  it("keeps Copy available for a Review Note without comments", () => {
+    const onCopy = vi.fn()
+    renderPanel({ review: { ...review, comments: [], note: "Tighten the introduction." }, comments: [], onCopy })
+    const copy = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Copy review as prompt"))!
+    expect(copy).toBeDefined()
+    act(() => copy.click())
+    expect(onCopy).toHaveBeenCalledOnce()
+  })
+
   it("offers agent setup for an empty Review and uses the open file in the command", () => {
     renderPanel({ sourceUrl: "file:///Users/eric/My%20Plan.md", review: null, comments: [] })
     const trigger = Array.from(container.querySelectorAll("button")).find((button) => button.textContent === "Start a review in your agent…")!
     expect(trigger.className).not.toContain("w-full")
     const copyButton = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Copy review as prompt"))!
-    expect(copyButton.disabled).toBe(true)
-    expect(copyButton.className).toContain("flex-1")
+    expect(copyButton).toBeUndefined()
     act(() => trigger.click())
     const dialog = document.querySelector('[role="dialog"]')!
     expect(dialog.textContent).toContain("Agent integration (Beta)")
@@ -453,20 +461,15 @@ describe("ReviewPanel", () => {
     expect(sendButton.disabled).toBe(false)
   })
 
-  it("checks explicitly, reports no updates, and offers the protected reload action", async () => {
+  it("checks explicitly and reports no updates without a sidebar reload action", async () => {
     const onCheckUpdates = vi.fn().mockResolvedValue(false)
-    const onReloadDocument = vi.fn()
     const agentHandoff = { disabled: true, disabledReason: null, sending: false, sent: true, error: null, send: vi.fn() }
-    renderPanel({ agentHandoff, onCheckUpdates, onReloadDocument })
+    renderPanel({ agentHandoff, onCheckUpdates })
     const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check agent response"))!
     await act(async () => check.click())
     expect(onCheckUpdates).toHaveBeenCalledOnce()
     expect(check.textContent).toContain("No response yet")
-    expect(onReloadDocument).not.toHaveBeenCalled()
-    renderPanel({ agentHandoff, onCheckUpdates, onReloadDocument, documentChanged: true })
-    const reload = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Reload document"))!
-    act(() => reload.click())
-    expect(onReloadDocument).toHaveBeenCalledOnce()
+    expect(container.textContent).not.toContain("Reload document")
   })
 
   it("reports a failed update check without claiming nothing changed", async () => {
@@ -557,7 +560,7 @@ describe("ReviewPanel", () => {
     expect(container.textContent).toContain("Agent reply")
     expect(container.textContent).toContain("Clarified the first step.")
     expect(container.textContent).not.toContain("Passage no longer found")
-    expect(container.textContent).toContain("Copy review as prompt")
+    expect(container.textContent).not.toContain("Copy review as prompt")
     expect(container.textContent).not.toContain("Send review to agent")
   })
 

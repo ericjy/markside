@@ -161,8 +161,7 @@ shown as a removal followed by an addition instead of a word comparison. The
 current document is decorated with green additions and red struck-through
 removals; a removed block returns as a copy of the original element, complete
 with its list marker or table row, placed next to the neighbour it used to have.
-The document toolbar carries the controls beside Reload, so nothing shifts the
-document: a Show changes checkbox toggles clean reading, and Done closes the
+A floating bar centered at the bottom of the document area carries the controls: a Show changes checkbox toggles clean reading, and Done closes the
 comparison. Its menu repeats Done and adds Done and clear comments, which
 also clears the entire Review. A reload without a comparison to show reports
 No changes on disk, or Reloaded from disk for a file type that has no
@@ -502,8 +501,8 @@ Send button, aligned left. Clear aligns right on the same row when space allows.
 current feedback is sent, a green Review sent. Agent should pick it up shortly. status line replaces the primary
 button until feedback changes. **Check agent response** reads the agent sidecar and
 document once, refreshes replies, and briefly shows No response yet or Updates
-found inside the check button. Read failures offer a retry. If the document changed, **Reload document**
-uses the existing Reload action and Unsaved Draft confirmation; checking never
+found inside the check button. Read failures offer a retry. If the document changed, a bottom-centered document bar offers **Reload**
+using the existing Reload action and Unsaved Draft confirmation; checking never
 replaces document content. The guidance paragraph includes a Start a review link.
 Copy remains available. The sent status confirms a local write, not agent receipt; no agent
 process is started. Editing feedback restores Send.
@@ -574,12 +573,12 @@ Clear drafts retains local Open/Resolved copy-prompt comments and removes only
 integration drafts; Clear all remains the copy-prompt action.
 
 The primary button always changes Review state; setup instructions are never primary.
-A local file without an agent review makes Copy review as prompt primary, disabled
-until active feedback exists, with a Start a review in your agent… link below that
+A local file without an agent review makes Copy review as prompt primary when active feedback exists,
+hiding it when there is nothing to copy, with a Start a review in your agent… link below that
 opens the setup dialog. An active agent review makes Send primary, demotes Copy,
 and hides the link. Once every sent comment is resolved and nothing is unsent,
 Finish review replaces Send as primary and marks the sidecar resolved; new
-feedback restores Send. A completed review keeps Copy primary and offers a Start
+feedback restores Send. A completed review shows Copy only when active feedback exists and offers a Start
 another review with your agent… link, with or without new drafts; Clear drafts
 appears only when drafts exist. The sidecar remains resolved until the agent starts the next review.
 When no saved folder contains the document, the dialog adds a folder step that

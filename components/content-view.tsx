@@ -377,7 +377,7 @@ export function ContentView({
                   onClick={handleReviewHighlightClick}>
                   <div className="flex min-h-full min-w-0 items-start">
                     <div
-                      className="relative min-h-full min-w-0 flex-1 pl-20 pr-8 py-10 transition-[padding] duration-200 print:p-0">
+                      className="relative min-h-full min-w-0 flex-1 pl-20 pr-8 pt-10 pb-28 transition-[padding] duration-200 print:p-0">
                   {selectionAction && selectionComposerOpen && (
                     <div
                       style={{

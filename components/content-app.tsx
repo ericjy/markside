@@ -37,9 +37,10 @@ import { useContentShortcuts } from "~hooks/use-content-shortcuts"
 import { useContentSnapshots } from "~hooks/use-content-snapshots"
 import { useContentSplitPane } from "~hooks/use-content-split-pane"
 import { usePersistedDirectory } from "~hooks/use-persisted-directory"
+import { getPendingReviewItemCount } from "~lib/agent-review"
 import { resolveUnsavedNavigationPolicy } from "~lib/auto-save"
 import { getContentFileSurfaces, getSavePathParts } from "~lib/content-app-policy"
-import { getFileHandle } from "~lib/db"
+import { getFileHandle, indexActiveReview } from "~lib/db"
 import { classifyMarksideFileUrl } from "~lib/file-types"
 import { headingNumbers } from "~lib/heading-numbering"
 import { type Heading } from "~lib/headings"
@@ -469,6 +470,11 @@ export function FileRenderer({
     renderedTextIndexRef,
   })
   agentDiscoveryEnabledRef.current = isMdFile && fileUrl.startsWith("file:")
+  const pendingReviewItemCount = review ? getPendingReviewItemCount(review, agentHandoff?.file) : 0
+  const reviewIndexReady = isMdFile && reviewLoaded && agentReviewLoadedUrl === fileUrl
+  useEffect(() => {
+    if (reviewIndexReady) indexActiveReview(fileUrl, review?.updatedAt ?? "", pendingReviewItemCount)
+  }, [reviewIndexReady, fileUrl, review?.updatedAt, pendingReviewItemCount])
 
   const highlights = useContentReviewHighlights({
     review,

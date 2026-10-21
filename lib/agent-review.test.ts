@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { agentReviewUrl, reviewSendFingerprint, prepareAgentReview, getAgentReviewResults, getAgentReviewDisabledReason } from "./agent-review"
+import { agentReviewUrl, reviewSendFingerprint, prepareAgentReview, getAgentReviewResults, getAgentReviewDisabledReason, getPendingReviewItemCount } from "./agent-review"
 import { type AgentReviewFile } from "../cli/review-file.mjs"
 import { createEmptyReview } from "./review"
 
@@ -53,5 +53,18 @@ describe("agent Review handoff", () => {
     const sent = prepareAgentReview(pending, review, "a".repeat(64), () => null)
     expect(reviewSendFingerprint(review)).toBe(reviewSendFingerprint(sent))
     expect(reviewSendFingerprint({ ...review, comments: [{ ...review.comments[0], body: "Updated" }] })).not.toBe(reviewSendFingerprint(sent))
+  })
+})
+
+describe("pending Review item count", () => {
+  it("leaves out comments resolved locally or in the sidecar, and their note", () => {
+    expect(getPendingReviewItemCount(review)).toBe(2)
+    const resolvedLocally = { ...review, comments: [{ ...review.comments[0], localStatus: "resolved" as const }] }
+    expect(getPendingReviewItemCount(resolvedLocally)).toBe(0)
+    const sent = prepareAgentReview(pending, review, "a".repeat(64), () => null)
+    expect(getPendingReviewItemCount(review, sent)).toBe(2)
+    expect(getPendingReviewItemCount(review, { ...sent, comments: [{ ...sent.comments[0], status: "addressed" }] })).toBe(2)
+    expect(getPendingReviewItemCount(review, { ...sent, status: "resolved", comments: [{ ...sent.comments[0], status: "resolved" }] })).toBe(0)
+    expect(getPendingReviewItemCount({ ...review, comments: [] })).toBe(1)
   })
 })

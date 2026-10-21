@@ -377,11 +377,13 @@ without being deleted.
 
 Reviews live in two places and only one of them is reachable from the popover: a
 localhost Review is in extension storage, while a document Review is in the
-IndexedDB of the *page* origin the content script runs on. So each write mirrors
-a small entry — kind, key, label, item count, updated-at — into
+IndexedDB of the *page* origin the content script runs on. So each change mirrors
+a small entry — kind, key, label, pending item count, updated-at — into
 `chrome.storage.local` under `reviewIndex`. Reviewed content is never mirrored.
-`lib/db.ts` writes the document entries and `lib/localhost-review-storage.ts`
-the localhost ones; `background.ts` repaints the badge whenever that key
+Resolved comments are not pending, and a document Review whose comments are all
+resolved leaves the index. Agent comment status lives in the sidecar, so the
+content app writes document entries once both the Review and its sidecar have
+loaded; `lib/localhost-review-storage.ts` writes the localhost ones; `background.ts` repaints the badge whenever that key
 changes.
 
 A content script only runs on pages loaded after the extension was installed or

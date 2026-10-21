@@ -1,6 +1,6 @@
 import { sendReview } from "../cli/review-file.mjs"
 import type { AgentReviewComment, AgentReviewFile } from "../cli/review-file.mjs"
-import type { ActiveReview, ReviewComment } from "./review"
+import { getReviewItemCount, type ActiveReview, type ReviewComment } from "./review"
 
 export function agentReviewUrl(fileUrl: string) {
   const url = new URL(fileUrl)
@@ -128,4 +128,15 @@ export function getReviewCommentStatus(comment: ReviewComment, sent?: AgentRevie
   }
   if (!sent && comment.localStatus === "resolved") return "Resolved"
   return sent || comment.reviewMode === "agent" || (agentMode && comment.reviewMode !== "local") ? "Draft" : "Open"
+}
+
+/** Items still waiting on the reviewer or the agent; Resolved comments are history. */
+export function getPendingReviewItemCount(review: ActiveReview, file?: AgentReviewFile) {
+  const current = file ? currentAgentReview(review, file)! : review
+  const comments = current.comments.filter((comment) =>
+    getReviewCommentStatus(comment, file?.comments.find(({ id }) => id === comment.id)) !== "Resolved"
+  )
+  // A Review Note belongs to its comments, so it is not pending once they are all resolved.
+  const note = comments.length > 0 || current.comments.length === 0 ? current.note : ""
+  return getReviewItemCount({ ...current, comments, note })
 }

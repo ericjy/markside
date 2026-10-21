@@ -26,18 +26,18 @@ const REVIEWS_STORE = "reviews"
 const DIRECTORY_KEY = "current"
 export const ACTIVE_REVIEW_CHANNEL = "markside-active-reviews"
 
-// The popover cannot read this database — it belongs to the page origin — so
-// each write mirrors counts and labels into the extension-scoped Review index.
-function indexReviewChange(sourceUrl: string, review: ActiveReview | null) {
-  const itemCount = review ? getReviewItemCount(review) : 0
-  const promise = itemCount === 0
+// The popover cannot read this database — it belongs to the page origin — so the
+// content app mirrors pending counts and labels into the extension-scoped Review
+// index. Resolved comments can live in the agent's sidecar, which only it reads.
+export function indexActiveReview(sourceUrl: string, updatedAt: string, pendingCount: number) {
+  const promise = pendingCount === 0
     ? forgetReviewIndexEntry("document", sourceUrl)
     : recordReviewIndexEntry({
         kind: "document",
         key: sourceUrl,
         ...describeDocumentReview(getReviewSourcePath(sourceUrl)),
-        itemCount,
-        updatedAt: review?.updatedAt ?? new Date().toISOString(),
+        itemCount: pendingCount,
+        updatedAt,
       })
   void promise.catch(() => {
     // The Review itself is saved; a stale popover entry is not worth failing for.
@@ -231,7 +231,6 @@ export async function mutateActiveReview(
     transaction.onerror = () => reject(transaction.error)
     transaction.onabort = () => reject(transaction.error ?? new Error("Review mutation aborted"))
   })
-  indexReviewChange(sourceUrl, next)
   broadcastReviewChange(sourceUrl)
   return next
 }
@@ -246,7 +245,7 @@ export async function deleteActiveReview(sourceUrl: string): Promise<void> {
     req.onsuccess = () => resolve()
     req.onerror = () => reject(req.error)
   })
-  indexReviewChange(sourceUrl, null)
+  indexActiveReview(sourceUrl, "", 0)
   broadcastReviewChange(sourceUrl)
 }
 

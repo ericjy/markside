@@ -42,6 +42,9 @@ pull request or review response.
 - [ ] Modify a loaded file externally, then try saving an edit in Markside.
   Confirm the conflict offers Overwrite and Reload from disk. Use disposable
   files to exercise both choices.
+- [ ] Edit a loaded file externally, switch back to Chrome, and confirm Changed on
+  disk appears beside Reload without replacing the document. Reload and confirm it
+  disappears. Switch away and back with no external edit and confirm it stays hidden.
 - [ ] Reload an externally edited Markdown file and check additions/removals,
   Show changes, and Done. Verify that editing and navigation clear the comparison.
 - [ ] Try navigating with an Unsaved Draft. Check Save, Discard, and Cancel.

@@ -154,6 +154,13 @@ changes in Preview. The existing Unsaved Draft confirmation still applies.
 Reload results are discarded if the user navigated elsewhere or edited the draft
 while the read was in progress.
 
+Returning focus to the tab reads an open text file once and compares it with
+the last loaded or saved text. A difference shows Changed on disk beside Reload
+until a reload, a save that replaces that text, or file navigation. The check
+never replaces the document, and a result is discarded if the file was saved,
+reloaded, or navigated away from while the read was in progress. See
+[ADR-0002](adr/0002-no-file-watching.md).
+
 `lib/reload-changes.ts` compares the two rendered documents block by block and
 only then word by word inside a block that was rewritten, so an edit is never
 spliced across a paragraph or list item. Blocks that share too little text are
@@ -453,7 +460,7 @@ Never import those packages directly. Use the project wrappers and update the ma
 
 ### No file watching
 
-Markside does not poll the filesystem or automatically reload external changes. Users navigate to or select a file when they want to reload it. See [ADR-0002](adr/0002-no-file-watching.md).
+Markside does not poll the filesystem or automatically reload external changes. Users navigate to or select a file when they want to reload it. Returning to the tab checks the open file once and may show Changed on disk. See [ADR-0002](adr/0002-no-file-watching.md).
 
 ### Rendering safety
 

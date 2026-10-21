@@ -413,6 +413,37 @@ describe("useContentReload", () => {
     expect(refs.draftRef.current).toBe("typed during reload")
   })
 
+  it("flags a file that changed on disk when the tab regains focus", async () => {
+    vi.mocked(readFileFromDisk).mockResolvedValue({ text: "old", buffer: null, type: "", lastModified: 7 })
+    const { hook, refs, setters } = setup()
+    act(() => { window.dispatchEvent(new Event("focus")) })
+    await flush()
+    expect(hook.result.current.diskChanged).toBe(false)
+
+    vi.mocked(readFileFromDisk).mockResolvedValue({ text: "new", buffer: null, type: "", lastModified: 7 })
+    act(() => { window.dispatchEvent(new Event("focus")) })
+    await flush()
+    expect(hook.result.current.diskChanged).toBe(true)
+    expect(setters.setContent).not.toHaveBeenCalled()
+    expect(refs.diskContentRef.current).toBe("old")
+
+    await act(() => hook.result.current.handleReloadFromDisk())
+    expect(hook.result.current.diskChanged).toBe(false)
+    hook.unmount()
+  })
+
+  it("ignores a focus check that finishes after the file was saved", async () => {
+    const { hook, refs } = setup()
+    vi.mocked(readFileFromDisk).mockImplementation(async () => {
+      refs.diskContentRef.current = "saved"
+      return { text: "saved", buffer: null, type: "", lastModified: 7 }
+    })
+    act(() => { window.dispatchEvent(new Event("focus")) })
+    await flush()
+    expect(hook.result.current.diskChanged).toBe(false)
+    hook.unmount()
+  })
+
   it("clears the comparison when another file opens", async () => {
     vi.mocked(readFileFromDisk).mockResolvedValue({ text: "new", buffer: null, type: "", lastModified: 7 })
     const { hook, options } = setup()

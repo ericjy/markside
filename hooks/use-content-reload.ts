@@ -74,7 +74,7 @@ export function useContentReload({
   const [reloadComparison, setReloadComparison] = useState<{ before: string; after: string } | null>(null)
   const [showChanges, setShowChanges] = useState(false)
   const [reviewCopyReload, setReviewCopyReload] = useState<ReviewCopyReload | null>(null)
-  // The loaded disk text an update check found out of date. A save that replaces
+  // The loaded disk text a focus check found out of date. A save that replaces
   // it, or a reload, ends the notice.
   const [staleDiskContent, setStaleDiskContent] = useState<string | null>(null)
   const diskChanged = staleDiskContent !== null && staleDiskContent === diskContentRef.current
@@ -106,6 +106,14 @@ export function useContentReload({
     setStaleDiskContent(changed ? loaded : null)
     return changed
   }
+
+  useEffect(() => {
+    if (isImageFile) return
+    // One read on return, never polling. Explicit checks report their own errors.
+    const onFocus = () => { void checkDiskForUpdates().catch(() => undefined) }
+    window.addEventListener("focus", onFocus)
+    return () => window.removeEventListener("focus", onFocus)
+  }, [isImageFile])
 
   const handleReloadFromDisk = async ({ forReviewCopy = false } = {}) => {
     if (reloadLoadingRef.current) return

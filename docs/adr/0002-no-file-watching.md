@@ -26,3 +26,10 @@ review or after the agent replies, so this is a user action, not a background lo
 no timer runs and nothing is read while the tab is idle. It reads only the Review
 file to discover reviews and update comment statuses such as Addressed. It never
 reloads or replaces the document; the user still reloads to see the agent's edits.
+
+## Exception: changed-on-disk notice
+
+On the same focus event, Markside reads the open text file once and compares it
+with the last loaded or saved text. A difference shows Changed on disk beside
+Reload. The document is never replaced; the user still chooses when to reload.
+Images are not checked.

@@ -576,9 +576,14 @@ The primary button always changes Review state; setup instructions are never pri
 A local file without an agent review makes Copy review as prompt primary when active feedback exists,
 hiding it when there is nothing to copy, with a Start a review in your agent… link below that
 opens the setup dialog. An active agent review makes Send primary, demotes Copy,
-and hides the link. Once every sent comment is resolved and nothing is unsent,
-Finish review replaces Send as primary and marks the sidecar resolved; new
-feedback restores Send. A completed review shows Copy only when active feedback exists and offers a Start
+and hides the link. Once every sent comment is Addressed or Resolved and nothing
+is unsent, Send gives way to secondary buttons with no primary action, so the
+panel doesn't invite ending the Review while the reviewer may still add
+comments. A note says the reviewer can keep commenting and the agent waits until
+they finish. Resolve all, shown while Addressed comments remain, resolves them
+and keeps the Review active; Finish review marks the sidecar resolved, resolving
+any Addressed comments in the same write; and Copy shrinks to an icon so all
+three fit one row. New feedback restores Send. A completed review shows Copy only when active feedback exists and offers a Start
 another review with your agent… link, with or without new drafts; Clear drafts
 appears only when drafts exist. The sidecar remains resolved until the agent starts the next review.
 When no saved folder contains the document, the dialog adds a folder step that

@@ -126,6 +126,12 @@ pull request or review response.
   it keeps waiting and the panel offers Finish review. Add a new comment and
   confirm Send returns and the CLI receives it. Resolve everything again, click
   Finish review, and confirm the CLI exits with Review resolved for the document.
+  In another Review, leave two comments Addressed: confirm the footer shows
+  "Your agent is waiting. Add more comments or finish." above
+  Resolve all, Finish review, and an icon-only Copy review as prompt on one row
+  in the docked panel. Resolve all marks both resolved and the CLI keeps
+  waiting; Finish review then ends the Review. Repeat with Addressed comments
+  and click Finish review directly: both become resolved and the Review ends.
   Addressed and Resolved comments are read-only until reopened. Reopen a
   comment, edit it, and confirm its old reply disappears for the new wording.
   Repeat a Reload after changing only a sidecar reply, without changing the

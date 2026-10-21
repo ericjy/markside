@@ -68,12 +68,17 @@ export function setReviewerCommentStatus(review, id, status) {
   }
 }
 
+export function resolveAddressedComments(review) {
+  return { ...review, comments: review.comments.map((item) => item.status === "addressed" ? { ...item, status: "resolved" } : item) }
+}
+
 export function finishReview(review) {
   if (review.status === "resolved" || !review.sentAt || !review.comments.length ||
-      review.comments.some(({ status }) => status !== "resolved")) {
-    throw new Error("Resolve every sent comment before finishing the Review.")
+      review.comments.some(({ status }) => status === "open")) {
+    throw new Error("Wait for the agent to address every open comment before finishing the Review.")
   }
-  return { ...review, status: "resolved" }
+  // Finishing accepts the agent's remaining Addressed replies along with the Review.
+  return { ...review, status: "resolved", comments: review.comments.map((item) => ({ ...item, status: "resolved" })) }
 }
 
 export function formatReviewComments(review, includeAll = false) {

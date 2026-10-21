@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { type AgentReviewFile, parseReviewFile, refreshReviewFile, formatReviewComments, addressReviewComment, setReviewerCommentStatus, sendReview, finishReview } from "../cli/review-file.mjs"
+import { type AgentReviewFile, parseReviewFile, refreshReviewFile, formatReviewComments, addressReviewComment, setReviewerCommentStatus, sendReview, finishReview, resolveAddressedComments } from "../cli/review-file.mjs"
 
 const sent: AgentReviewFile = {
   version: 1, doc: "PLAN.md", docHash: "a".repeat(64), status: "sent",
@@ -45,8 +45,20 @@ describe("agent Review file", () => {
   it("lets the reviewer accept sent feedback without an agent acknowledgement", () => {
     expect(setReviewerCommentStatus(sent, "c1", "resolved")).toMatchObject({ status: "sent", comments: [{ status: "resolved" }] })
   })
-  it("ends a Review only when the reviewer finishes after resolving every sent comment", () => {
-    expect(() => finishReview(addressReviewComment(sent, "c1", "Done"))).toThrow()
+  it("resolves every Addressed comment without ending the Review", () => {
+    const two = sendReview(refreshReviewFile(null, "PLAN.md"), { docHash: "a".repeat(64), comments: [
+      { id: "c1", quote: "One", line: 1, body: "Fix", status: "open" },
+      { id: "c2", quote: "Two", line: 2, body: "Fix", status: "open" },
+    ] })
+    const result = resolveAddressedComments(addressReviewComment(two, "c1", "Done"))
+    expect(result.status).toBe("sent")
+    expect(result.comments.map(({ status }) => status)).toEqual(["resolved", "open"])
+    expect(result.comments[0].reply).toBe("Done")
+  })
+  it("ends a Review only when the reviewer finishes after nothing awaits the agent", () => {
+    expect(() => finishReview(sent)).toThrow()
+    // Finishing accepts the agent's Addressed replies.
+    expect(finishReview(addressReviewComment(sent, "c1", "Done"))).toMatchObject({ status: "resolved", comments: [{ status: "resolved", reply: "Done" }] })
     expect(() => finishReview({ ...sent, sentAt: undefined, status: "pending", comments: [{ ...sent.comments[0], status: "resolved" }] })).toThrow()
     const resolved = setReviewerCommentStatus(sent, "c1", "resolved")
     expect(finishReview(resolved)).toMatchObject({ status: "resolved", comments: [{ status: "resolved" }] })

@@ -72,7 +72,8 @@ _Avoid_: Accepted comment, completed review
 **Resolved Review Comment**:
 A Review Comment the user has accepted after checking the agent's response. It
 is grouped under Resolved and can be reopened by the user. Resolving every
-comment does not end the Review; the user ends it with Finish review.
+comment does not end the Review; the user ends it with Finish review, which also
+resolves any remaining Addressed comments.
 _Avoid_: Agent-resolved comment, deleted comment
 
 

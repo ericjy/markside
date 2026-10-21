@@ -144,17 +144,33 @@ describe("ReviewPanel", () => {
     expect(container.textContent).not.toContain("disk-comment")
   })
 
-  it("makes Finish review primary once every sent comment is resolved", () => {
+  it("offers Finish review as a secondary action once every sent comment is resolved", () => {
     const sent = sendReview(refreshReviewFile(null, "PLAN.md"), { docHash: "a".repeat(64), comments: [{ id: comment.id, quote: comment.anchor.exact, line: 1, body: comment.body, status: "open" }] })
     const file = setReviewerCommentStatus(sent, comment.id, "resolved")
     const finish = vi.fn()
     renderPanel({ agentHandoff: { file, canFinish: true, finish, sent: true, disabled: true, disabledReason: "Add or reopen a comment to send again.", sending: false, error: null, send: vi.fn() } })
-    expect(container.textContent).toContain("All resolved. Finish to let your agent continue.")
     expect(container.textContent).not.toContain("Send review to agent")
     expect(container.textContent).not.toContain("Agent not picking up")
     expect(container.textContent).not.toContain("Review complete")
     const button = Array.from(container.querySelectorAll("button")).find((item) => item.textContent === "Finish review")!
+    expect(button.className).toContain("border-input")
+    expect(container.textContent).toContain("Your agent is waiting. Add more comments or finish.")
     act(() => button.click())
+    expect(finish).toHaveBeenCalledOnce()
+  })
+
+  it("offers Resolve all and Finish review separately while comments are Addressed", () => {
+    const sent = sendReview(refreshReviewFile(null, "PLAN.md"), { docHash: "a".repeat(64), comments: [{ id: comment.id, quote: comment.anchor.exact, line: 1, body: comment.body, status: "open" }] })
+    const file = addressReviewComment(sent, comment.id, "Recorded")
+    const finish = vi.fn()
+    const resolveAll = vi.fn()
+    renderPanel({ agentHandoff: { file, canFinish: true, finish, resolveAll, sent: true, disabled: true, disabledReason: "Add or reopen a comment to send again.", sending: false, error: null, send: vi.fn() } })
+    const button = (name: string) => Array.from(container.querySelectorAll("button")).find((item) => item.textContent === name || item.getAttribute("aria-label") === name)!
+    expect(button("Copy review as prompt")).toBeDefined()
+    act(() => button("Resolve all").click())
+    expect(resolveAll).toHaveBeenCalledOnce()
+    expect(finish).not.toHaveBeenCalled()
+    act(() => button("Finish review").click())
     expect(finish).toHaveBeenCalledOnce()
   })
 

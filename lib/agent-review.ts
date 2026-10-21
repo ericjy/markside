@@ -105,10 +105,10 @@ export function hasReviewDrafts(review: ActiveReview | null, file?: AgentReviewF
   ))
 }
 
-/** Resolving the last comment leaves the agent waiting; the reviewer ends the Review explicitly. */
+/** Once nothing awaits the agent, the reviewer ends the Review explicitly, resolving any Addressed comments. */
 export function canFinishAgentReview(file: AgentReviewFile, review: ActiveReview | null) {
   return file.status !== "resolved" && !!file.sentAt && file.comments.length > 0 &&
-    file.comments.every(({ status }) => status === "resolved") && !hasReviewDrafts(review, file)
+    file.comments.every(({ status }) => status !== "open") && !hasReviewDrafts(review, file)
 }
 
 export function clearReviewDrafts(review: ActiveReview | null, file?: AgentReviewFile): ActiveReview | null {

@@ -60,7 +60,9 @@ an agent review is active.
 
 After addressing your comments, the agent keeps waiting. Reload Markside to check
 the changes, then send more feedback or resolve the addressed comments. The agent
-finishes when you resolve all comments or ask it to stop.
+finishes when you click **Finish review** or ask it to stop. Once the agent has
+addressed everything, **Resolve all** accepts the replies while you keep
+reviewing, and **Finish review** also accepts any that remain.
 During an active agent review, the comment composer offers **Save & send review**
 to save a comment and send the whole Review in one action. Use **Save** to keep
 adding feedback first. If sending fails or you cancel folder selection, the

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { finishReview, parseReviewFile, setReviewerCommentStatus, type AgentReviewComment, type AgentReviewFile } from "../cli/review-file.mjs"
+import { finishReview, parseReviewFile, resolveAddressedComments, setReviewerCommentStatus, type AgentReviewComment, type AgentReviewFile } from "../cli/review-file.mjs"
 import { agentReviewUrl, canFinishAgentReview, getAgentReviewResults, getAgentReviewDisabledReason, prepareAgentReview, reviewSendFingerprint, agentReviewIdentity, currentAgentReview } from "~lib/agent-review"
 import { getSavePathParts } from "~lib/content-app-policy"
 import { normalizeDiskText, requestHandlePermission } from "~lib/content-file-access"
@@ -19,6 +19,8 @@ export interface AgentReviewHandoff {
   canFinish?: boolean
   finishing?: boolean
   finish?: () => void
+  resolvingAll?: boolean
+  resolveAll?: () => void
   results?: ReadonlyMap<string, AgentReviewComment>
   disabled: boolean
   disabledReason: string | null
@@ -57,6 +59,7 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
   const [error, setError] = useState<string | null>(null)
   const [updatingCommentId, setUpdatingCommentId] = useState<string | null>(null)
   const [finishing, setFinishing] = useState(false)
+  const [resolvingAll, setResolvingAll] = useState(false)
   const writingRef = useRef(false)
   const optionsRef = useRef(options)
   optionsRef.current = options
@@ -198,6 +201,32 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
     }
   }
 
+  const resolveAll = async () => {
+    if (writingRef.current) return
+    writingRef.current = true
+    setResolvingAll(true)
+    setError(null)
+    try {
+      const { directory } = await getReviewDirectory()
+      const handle = await directory.getFileHandle(`${doc}.review.json`)
+      const latest = parseReviewFile(await (await handle.getFile()).text(), doc)
+      if (optionsRef.current.fileUrl !== fileUrl) return
+      const addressed = (review: AgentReviewFile) => JSON.stringify(review.comments.filter(({ status }) => status === "addressed"))
+      if (agentReviewIdentity(latest) !== agentReviewIdentity(file) || addressed(latest) !== addressed(file)) {
+        setState({ url: fileUrl, file: latest })
+        throw new Error("This Review changed. Check it before resolving.")
+      }
+      await writeReview(handle, resolveAddressedComments(latest))
+    } catch (error) {
+      if (optionsRef.current.fileUrl === fileUrl && (error as DOMException).name !== "AbortError") {
+        setError(error instanceof Error ? error.message : "Could not resolve the comments. Try again.")
+      }
+    } finally {
+      writingRef.current = false
+      setResolvingAll(false)
+    }
+  }
+
   const finish = async () => {
     if (writingRef.current) return
     writingRef.current = true
@@ -278,5 +307,5 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       setSending(false)
     }
   }
-  return { checkForUpdates, file, sourceUrl: fileUrl, folderToChoose, completed, canFinish, finishing, finish: () => void finish(), results, updatingCommentId, changeStatus: (id, status) => void changeStatus(id, status), disabled: sending || finishing || updatingCommentId !== null || !!disabledReason, disabledReason, sending, sent: unchanged, sentAt: file.sentAt, error, send }
+  return { checkForUpdates, file, sourceUrl: fileUrl, folderToChoose, completed, canFinish, finishing, finish: () => void finish(), resolvingAll, resolveAll: () => void resolveAll(), results, updatingCommentId, changeStatus: (id, status) => void changeStatus(id, status), disabled: sending || finishing || resolvingAll || updatingCommentId !== null || !!disabledReason, disabledReason, sending, sent: unchanged, sentAt: file.sentAt, error, send }
 }

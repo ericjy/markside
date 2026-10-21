@@ -31,8 +31,8 @@ The agent waits with a 600-second tool timeout. The CLI waits for 540 seconds by
 default, exits 2 with `STILL_WAITING:`, and the agent reruns it until the user
 sends comments or asks to stop. An existing pending request keeps its timestamp;
 a send received between invocations is returned immediately. Addressing and
-resolving comments keep the request active. Only after the user resolves every
-comment and chooses Finish review does a fresh review start a new request.
+resolving comments keep the request active. Only after no comment awaits the
+agent and the user chooses Finish review does a fresh review start a new request.
 Resolved comments and their replies stay in the file as history. If the user
 finishes during a wait, the CLI exits 0 with `Review resolved for ...`.
 
@@ -84,9 +84,10 @@ Addressed cards stay in the Active list with the reply and Resolve and Reopen
 buttons. Sent comments can also be resolved directly by the reviewer. Resolve moves a comment into a collapsed Resolved group. Reopen moves
 an addressed or resolved comment back to Open, preserving its reply for context.
 It makes the request pending, so the user can add feedback before explicitly
-sending it again. Resolving the final outstanding comment does not end the
-request: the panel offers Finish review, which marks the file `resolved`, while
-new feedback can still be sent. All status changes use the remembered folder access and a staged
+sending it again. Once every comment is Addressed or Resolved, the panel offers
+Finish review, which marks the file `resolved`, while new feedback can still be
+sent. While Addressed comments remain, Resolve all resolves them without ending
+the Review, and Finish review resolves any that remain in the same write. All status changes use the remembered folder access and a staged
 writable stream, leaving the Markdown file unchanged.
 
 The extension refreshes results on explicit Reload and when Review is reopened.

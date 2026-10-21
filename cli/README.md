@@ -13,7 +13,7 @@ markside review PLAN.md --continue --no-open
 ```
 
 `review` opens Chrome and waits up to 540 seconds. It prints an agent prompt on
-send and exits 0. If the user resolves every comment and finishes the Review while
+send and exits 0. If the user finishes the Review while
 it is waiting, it reports `Review resolved for ...` and exits 0. On timeout it prints `STILL_WAITING:` and exits 2; rerun the
 same command. Ctrl+C exits 130 and leaves the request pending. Progress goes to
 stderr; comments and timeout instructions go to stdout. Other errors exit 1.

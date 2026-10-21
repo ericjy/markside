@@ -240,6 +240,8 @@ export function ReviewPanel({
   }, [])
   const activeAgentHandoff = agentHandoff?.completed ? undefined : agentHandoff
   const canFinish = !!activeAgentHandoff?.canFinish
+  const addressedCount = activeAgentHandoff?.file?.comments.filter(({ status }) => status === "addressed").length ?? 0
+  const statusWriting = !!activeAgentHandoff && (!!activeAgentHandoff.finishing || !!activeAgentHandoff.resolvingAll || activeAgentHandoff.updatingCommentId != null)
   const showSentStatus = !!activeAgentHandoff?.sent && !activeAgentHandoff.sending && !canFinish
   const showAgentDisabledHelp = comments.length > 0 && !canFinish && !activeAgentHandoff?.sent && !!activeAgentHandoff?.disabledReason
   const showAgentFolderHelp = !!activeAgentHandoff?.folderToChoose && !activeAgentHandoff.disabledReason
@@ -828,18 +830,6 @@ export function ReviewPanel({
             </Dialog.Root>
           </>
         )}
-        {canFinish && (
-          <p id="agent-review-finish-help" className="mb-3 text-xs leading-relaxed text-muted-foreground">
-            All resolved. Finish to let your agent continue.
-          </p>
-        )}
-        {activeAgentHandoff && canFinish && (
-            <Button className="h-11 w-full whitespace-nowrap px-3" disabled={activeAgentHandoff.finishing || activeAgentHandoff.updatingCommentId != null}
-              onClick={activeAgentHandoff.finish} aria-busy={activeAgentHandoff.finishing} aria-describedby="agent-review-finish-help">
-              <Check size={14} />
-              {activeAgentHandoff.finishing ? "Finishing review…" : "Finish review"}
-            </Button>
-        )}
         {activeAgentHandoff && !canFinish && (
           activeAgentHandoff.sent && !activeAgentHandoff.sending ? (
             <div className="py-1">
@@ -870,7 +860,25 @@ export function ReviewPanel({
             so your agent can receive your review.
           </p>
         )}
-        <div className={`flex flex-wrap gap-2 ${showAgentAction ? "mt-2" : ""}`}>
+        {canFinish && (
+          <p className="mb-2 text-xs leading-relaxed text-muted-foreground">
+            Your agent is waiting. Add more comments or finish.
+          </p>
+        )}
+        <div className={`flex flex-wrap items-center gap-2 ${showAgentAction && !canFinish ? "mt-2" : ""}`}>
+          {/* Secondary, so it doesn't invite ending the Review before the reviewer has added everything. */}
+          {activeAgentHandoff && canFinish && addressedCount > 0 && (
+            <Button variant="outline" className="h-11 whitespace-nowrap px-3 text-xs" disabled={statusWriting}
+              onClick={activeAgentHandoff.resolveAll} aria-busy={activeAgentHandoff.resolvingAll}>
+              {activeAgentHandoff.resolvingAll ? "Resolving…" : "Resolve all"}
+            </Button>
+          )}
+          {activeAgentHandoff && canFinish && (
+            <Button variant="outline" className="h-11 whitespace-nowrap px-3 text-xs" disabled={statusWriting}
+              onClick={activeAgentHandoff.finish} aria-busy={activeAgentHandoff.finishing}>
+              {activeAgentHandoff.finishing ? "Finishing review…" : "Finish review"}
+            </Button>
+          )}
           {showSentStatus && (
             <Button variant="outline" size="sm" className="h-11 px-3 text-xs" onClick={() => void checkUpdates()}
               disabled={!onCheckUpdates || updateCheck === "checking" || reloadDocumentLoading}
@@ -885,7 +893,20 @@ export function ReviewPanel({
             </Button>
           )}
           {/* Remount on a variant change so transition-colors doesn't fade the dark primary background out. */}
-          {copyableCount > 0 && <Button key={showAgentAction ? "secondary" : "primary"} variant={showAgentAction ? "ghost" : "default"} className={`h-11 min-w-max whitespace-nowrap ${showAgentAction ? "shrink-0 px-2 text-xs text-muted-foreground hover:text-foreground" : "flex-1"}`} onClick={onCopy}>
+          {/* Icon-only beside Resolve all and Finish so all three fit one row in a narrow docked panel. */}
+          {copyableCount > 0 && canFinish && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 text-muted-foreground hover:text-foreground" aria-label={copied ? "Review copied for this file" : "Copy review as prompt"} onClick={onCopy}>
+                  {copied
+                    ? <Check size={14} strokeWidth={2.5} className="text-[hsl(132_60%_46%)] dark:text-[hsl(130_78%_29%)]" />
+                    : <Copy size={14} />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent style={{ zIndex: 100002 }}>{copied ? "Review copied for this file" : "Copy review as prompt"}</TooltipContent>
+            </Tooltip>
+          )}
+          {copyableCount > 0 && !canFinish && <Button key={showAgentAction ? "secondary" : "primary"} variant={showAgentAction ? "ghost" : "default"} className={`h-11 min-w-max whitespace-nowrap ${showAgentAction ? "shrink-0 px-2 text-xs text-muted-foreground hover:text-foreground" : "flex-1"}`} onClick={onCopy}>
             {copied
               ? <Check size={14} strokeWidth={2.5} className="text-[hsl(132_60%_46%)] dark:text-[hsl(130_78%_29%)]" />
               : <Copy size={14} />} {copied ? "Review copied for this file" : "Copy review as prompt"}

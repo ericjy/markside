@@ -19,9 +19,11 @@ describe("agent Review handoff", () => {
     expect(getAgentReviewDisabledReason(sent, changed)).toBeNull()
     expect(getAgentReviewDisabledReason({ ...sent, status: "resolved" }, changed)).toContain("resolved")
   })
-  it("offers Finish only once every sent comment is resolved and nothing is unsent", () => {
+  it("offers Finish only once no sent comment awaits the agent and nothing is unsent", () => {
     const sent = prepareAgentReview(pending, review, "a".repeat(64), () => 12)
     expect(canFinishAgentReview(sent, review)).toBe(false)
+    const addressed = { ...sent, comments: sent.comments.map((comment) => ({ ...comment, status: "addressed" as const })) }
+    expect(canFinishAgentReview(addressed, review)).toBe(true)
     const resolved = { ...sent, comments: sent.comments.map((comment) => ({ ...comment, status: "resolved" as const })) }
     expect(canFinishAgentReview(resolved, review)).toBe(true)
     const draft = { ...review, comments: [...review.comments, { ...review.comments[0], id: "c2", body: "More feedback" }] }

@@ -26,7 +26,8 @@ Keep version 1: one flat `comments` list holding each comment's latest `quote`,
 - Each Send replaces the list with the comments being sent. Withdrawn drafts drop
   out; resolved comments stay.
 - Only the reviewer ends a Review, by choosing Finish review once every sent
-  comment is resolved and nothing is unsent. Resolving alone keeps the agent
+  comment is Addressed or Resolved and nothing is unsent. Finishing resolves the
+  Addressed ones. Resolving alone keeps the agent
   waiting, so the reviewer can clear addressed comments and keep giving feedback.
   A fresh `review` keeps the resolved comments and note, so earlier feedback
   stays under Resolved.

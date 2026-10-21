@@ -886,6 +886,7 @@ export function FileRenderer({
                 dismissReloadChanges={reload.dismissReloadChanges}
                 review={review}
                 clearReview={reviewActions.clearReview}
+                agentReviewFile={agentHandoff?.file}
                 disabled={content === null || saveState === "saving"}
               />
             </div>

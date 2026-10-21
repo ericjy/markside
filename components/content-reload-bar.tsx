@@ -2,6 +2,8 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import { Check, ChevronDown, RefreshCw, Trash2 } from "lucide-react"
 import React from "react"
 import { Button } from "~components/ui/button"
+import type { AgentReviewFile } from "../cli/review-file.mjs"
+import { hasReviewDrafts } from "~lib/agent-review"
 import type { ActiveReview } from "~lib/review"
 import type { MarkdownMode } from "~lib/markdown-mode"
 
@@ -20,14 +22,17 @@ interface Props {
   dismissReloadChanges: () => void
   review: ActiveReview | null
   clearReview: () => void
+  agentReviewFile: AgentReviewFile | undefined
   disabled: boolean
 }
 
 export function ContentReloadBar({
   diskChanged, reloadLoading, requestReloadFromDisk, reloadNoticeOpen,
   hasReloadChanges, reloadComparison, changesVisible, closeSelectionComposer,
-  setShowChanges, previewVisible, selectMode, dismissReloadChanges, review, clearReview, disabled,
+  setShowChanges, previewVisible, selectMode, dismissReloadChanges, review, clearReview, agentReviewFile, disabled,
 }: Props) {
+  // Matches the Review panel: an agent Review clears only unsent drafts.
+  const canClear = agentReviewFile ? hasReviewDrafts(review, agentReviewFile) : !!review
   return (
     <div aria-label="Document changes" className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-3 rounded-xl border bg-background px-3 py-2 text-foreground shadow-lg">
       {diskChanged ? (
@@ -92,7 +97,7 @@ export function ContentReloadBar({
                     <Check size={14} />
                     Done
                   </DropdownMenu.Item>
-                  {review && (
+                  {canClear && (
                     <DropdownMenu.Item
                       className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
                       onSelect={() => {
@@ -100,7 +105,7 @@ export function ContentReloadBar({
                         dismissReloadChanges()
                       }}>
                       <Trash2 size={14} />
-                      Done and clear comments
+                      {agentReviewFile ? "Done and clear drafts" : "Done and clear comments"}
                     </DropdownMenu.Item>
                   )}
                 </DropdownMenu.Content>

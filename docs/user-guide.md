@@ -68,6 +68,14 @@ to save a comment and send the whole Review in one action. Use **Save** to keep
 adding feedback first. If sending fails or you cancel folder selection, the
 comment stays saved in Review so you can retry.
 
+Agents can also interview you in Markside instead of chat: for example, run
+`/grill-me <topic> in Markside`. Each question appears as a card with a button
+per option, and the agent's recommendation is labelled **Recommended**. Choose
+an option, then click **Send answer**; **Other answer…** opens the comment
+composer for your own reply. The agent records your decision and writes the next
+question, and Markside shows **Changed on disk** so you can reload. Click
+**Finish review** once the summary matches your understanding.
+
 Review mode currently requires the prototype CLI installed from this repository
 and Node.js 20+. See [local agent Review setup](agent-review-loop.md). Comments
 are sent through `PLAN.md.review.json` beside the document. Add `*.review.json`

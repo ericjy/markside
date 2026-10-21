@@ -1,6 +1,6 @@
 ---
 name: markside
-description: Open a local Markdown file in Markside using Google Chrome, or wait for its Review Comments with /markside review. Use this Beta skill when the user invokes /markside, asks to open a Markdown file specifically in Markside, or asks for Markside setup. Do not trigger merely because Markdown was created or discussed.
+description: Open a local Markdown file in Markside using Google Chrome, wait for its Review Comments with /markside review, or run one-question-at-a-time interviews (such as /grill-me) in Markside. Use this Beta skill when the user invokes /markside, asks to open a Markdown file specifically in Markside, asks to answer interview questions "in Markside", or asks for Markside setup. Do not trigger merely because Markdown was created or discussed.
 compatibility: Requires Google Chrome plus POSIX shell on macOS/Linux or PowerShell on Windows. Markside must be installed separately with file URL access enabled. Opening and setup need no Node.js. Review mode requires Node.js 20+ and the Markside CLI.
 ---
 
@@ -41,7 +41,8 @@ below. Invocation authorizes opening Chrome and waiting for the user's Review.
    for review, comments, and address. Addressed means the agent has finished;
    only the user resolves a comment in Markside. Never mark it resolved yourself.
 5. After addressing the received comments, tell the user to reload Markside and
-   check the changes. Then run `markside review <file> --continue --no-open`
+   check the changes. If they stayed in the tab, Markside shows Reload once your
+   reply lands. Then run `markside review <file> --continue --no-open`
    with the same CLI executable and wait again. Do not finish the task merely
    because you addressed the comments. This preserves the current Review without
    opening another Chrome tab. On `STILL_WAITING:`, rerun this continuation command.
@@ -70,6 +71,58 @@ step. The default is to wait in the foreground.
 These instructions apply equally to Claude Code, Codex, and Cursor. Hosts may
 spell skill invocations differently. Do not give the open-only success sentence
 for a Review request; report the received comments and resulting changes.
+
+## Ask questions in Markside
+
+Use this when the user wants another skill's one-question-at-a-time interview
+answered in Markside instead of chat: for example `/grill-me <topic> in
+Markside`, "interview me in Markside", or "continue this in Markside" partway
+through an interview. The questioning skill still decides what to ask, when to
+look facts up, and what durable docs to write. This section only decides how
+questions are asked and answered.
+
+1. Create the interview doc. When grilling an existing file such as
+   `docs/PLAN.md`, use the sibling `docs/PLAN.grill.md`. Otherwise use
+   `GRILL-<topic>.md` at the repository root, with a short kebab-case topic.
+   Leave the subject file unchanged during the interview.
+2. Lay it out as a title, one line explaining how to answer, then
+   `## Current question` followed by `## Answered questions`. When continuing
+   from chat, put the questions already answered under Answered questions.
+3. Write exactly one question under Current question as a `[!QUESTION]` block:
+
+   ```markdown
+   > [!QUESTION]
+   > ### Q3. Where does the interview doc live?
+   >
+   > Context the user needs to decide.
+   >
+   > - **A. Sibling doc.** What it means and what it costs.
+   > - **B. Inside the plan.** What it means and what it costs.
+   >
+   > **Recommended: A.** Why, compared with each alternative.
+   ```
+
+   Number questions in order and keep the heading inside the block. Start each
+   option with a bold capital letter and period, as shown; Markside renders
+   the block as a card with one answer button per option and labels the
+   Recommended option. Option letters are the answer values.
+4. Run the Review workflow above on the interview doc. Tell the user to choose
+   an option on the question card and click **Send answer**, or click
+   **Other answer…** to write their own.
+5. An answer is a comment whose quote is the question heading and whose body is
+   an option letter or the user's own words. When it arrives, move the question out of its `[!QUESTION]` block to
+   the end of Answered questions as plain Markdown, followed by
+   `> **Your decision: A.** <one sentence>`. Write the next question under
+   Current question, address the comment with a one-line reply, and continue
+   the Review. If the comment asks something instead of answering, answer it in
+   the current question and leave it current.
+6. When no questions remain, replace Current question with `## Summary`: the
+   decisions as short bullets, then ask the user to click **Finish review** if
+   it matches their understanding. Finishing is the confirmation of shared
+   understanding. Do not act on the decisions before `Review resolved`.
+7. After the Review is resolved, follow the questioning skill for durable
+   output. If it names none, offer to fold the decisions into the subject file,
+   and ask whether to keep or delete the interview doc.
 
 ## Choose the target
 

@@ -76,4 +76,12 @@ comment does not end the Review; the user ends it with Finish review, which also
 resolves any remaining Addressed comments.
 _Avoid_: Agent-resolved comment, deleted comment
 
+**Question Card**:
+A `> [!QUESTION]` block in which an agent asks one interview question with
+lettered options and a recommendation. Preview shows a selectable button per
+option, with the recommended one labelled, a Send answer button, and Other
+answer… for free text. Each answer is an ordinary Review Comment on the
+question's heading; during an agent Review, Send answer also sends the Review.
+_Avoid_: Poll, form, quiz
+
 

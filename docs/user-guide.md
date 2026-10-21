@@ -189,6 +189,7 @@ Markside renders Markdown with:
 - **Syntax highlighting** for 19 languages
 - **Mermaid diagrams** rendered inline with zoom controls, panning, and an expanded view. Ordinary dragging remains available for selecting diagram text and adding Review Comments; choose **Enter Pan Mode** to drag the canvas, hold Shift while dragging as a shortcut, or use the arrow keys. Choose **Exit Pan Mode** to return to text selection. The default view balances the available content width and browser height, scaling between 75% and 350% so compact diagrams stay readable without letting tall diagrams dominate the page. Hold Control or Command while scrolling over a diagram to zoom, use **Reset** to restore its fitted view, or choose **Expand** for a viewport-filling canvas that closes with **Close** or Escape.
 - **GitHub-style alerts** for Note, Important, Warning, Tip, and Caution callouts
+- **Question cards** for `> [!QUESTION]` blocks, with answer buttons for agent interviews
 - **Wikilinks** — `[[Page Name]]` resolves to `Page Name.md`, `.mdx`, or `.markdown` in the same directory
 - **Relative links** resolved from the current file's location
 - **Footnotes**, heading anchors, smart typography, and auto-linked URLs

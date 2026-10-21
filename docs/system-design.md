@@ -64,7 +64,18 @@ file:// Markdown page
 → Shiki enhances code blocks
 → Mermaid enhances diagram blocks
 → headings are extracted for the outline
+→ question cards receive answer controls
 ```
+
+A `> [!QUESTION]` blockquote renders as a Question Card. The markdown-it alert
+rule marks its lettered options (`**A. …**` list items) and its
+`**Recommended: X.**` line, and the preview mounts React answer controls at the
+end of the card, excluded from Review anchoring, copying, and print. Option
+buttons only select an answer, so a misclick sends nothing. Send answer creates
+an ordinary Review Comment on the card's heading with the option letter as its
+body and, during an active agent Review, sends the Review in the same click.
+Other answer… opens the comment composer on the heading. The sidecar format is
+unchanged.
 
 Rendered Mermaid diagrams keep zoom, pan, and reset controls in a toolbar above
 an isolated viewport. Theme changes replace only the SVG inside that viewport so its current

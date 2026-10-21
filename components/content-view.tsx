@@ -23,12 +23,14 @@ import React from "react"
 import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
 import { createPortal } from "react-dom"
 import { RawEditor,type RawEditorHandle } from "~components/raw-editor"
+import { QuestionCardActions } from "~components/question-card-actions"
 import { ReadabilityHeadingControl } from "~components/readability-heading-control"
 import { ReviewPresetPicker } from "~components/review-preset-picker"
 import { SidebarRight } from "~components/sidebar-right"
 import { Button } from "~components/ui/button"
 import { Tooltip,TooltipContent,TooltipTrigger } from "~components/ui/tooltip"
 import { type Heading } from "~lib/headings"
+import { type QuestionCard } from "~lib/markdown"
 import {
   MIN_SPLIT_PANE_WIDTH,
   setPaneFullWidth
@@ -123,6 +125,11 @@ interface ContentViewProps {
   readabilityControlsVisible: boolean
   previewFullWidth: boolean
   readabilityMounts: { heading: HTMLElement; mount: HTMLSpanElement; section: ReadabilitySection; }[]
+  questionCards: QuestionCard[]
+  questionAnswer: (target: HTMLElement) => React.ComponentProps<typeof QuestionCardActions>["answer"]
+  questionActionsBusy: boolean
+  answerQuestion: (target: HTMLElement, body: string) => void
+  composeQuestionAnswer: (target: HTMLElement, point: { x: number; y: number }) => void
   matchingReadabilityResult: (section: ReadabilitySection) => ResolvedReadabilityResult | null
   hasSingleH1: boolean
   readabilityConsentGranted: boolean
@@ -204,6 +211,11 @@ export function ContentView({
   readabilityControlsVisible,
   previewFullWidth,
   readabilityMounts,
+  questionCards,
+  questionAnswer,
+  questionActionsBusy,
+  answerQuestion,
+  composeQuestionAnswer,
   matchingReadabilityResult,
   hasSingleH1,
   readabilityConsentGranted,
@@ -624,6 +636,18 @@ export function ContentView({
                       `${section.sourceLine}:${section.path.join("/")}`,
                     )
                   })}
+                  {!agentHandoff?.completed && questionCards.map((card, index) => card.mount.isConnected && createPortal(
+                    <QuestionCardActions
+                      card={card}
+                      answer={questionAnswer(card.target)}
+                      agentReview={!!agentHandoff}
+                      busy={questionActionsBusy}
+                      onAnswer={(body) => answerQuestion(card.target, body)}
+                      onCompose={(point) => composeQuestionAnswer(card.target, point)}
+                    />,
+                    card.mount,
+                    `question-${index}`,
+                  ))}
                   {reviewBadgeAnchors.map((badge) => (
                     <button
                       key={badge.id}

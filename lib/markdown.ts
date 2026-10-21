@@ -165,12 +165,15 @@ md.core.ruler.push("task_list", (state) => {
   }
 })
 
-const MARKDOWN_ALERT = /^\[!(NOTE|IMPORTANT|WARNING|TIP|CAUTION)\][ \t]*(?:\n|$)/i
+const MARKDOWN_ALERT = /^\[!(NOTE|IMPORTANT|WARNING|TIP|CAUTION|QUESTION)\][ \t]*(?:\n|$)/i
+const QUESTION_OPTION = /^\*\*([A-Z])\.(?:\s|\*\*)/
+const QUESTION_RECOMMENDED = /^\*\*Recommended:\s*([A-Z])\b/i
 const MARKDOWN_ALERT_ICONS: Record<string, string> = {
   note: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
   important: '<path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M12 7v4"/><path d="M12 15h.01"/>',
   warning: '<path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
   tip: '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.65.66-1.17 1.22-1.61A6 6 0 1 0 7.69 12.4c.55.43 1.03.94 1.22 1.6"/>',
+  question: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
   caution: '<path d="M15.312 2a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586l-4.688-4.688A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2z"/><path d="M12 8v4"/><path d="M12 16h.01"/>'
 }
 
@@ -200,6 +203,8 @@ md.core.ruler.push("markdown_alerts", (state) => {
     }
 
     inline.content = inline.content.slice(match[0].length)
+    // A marker on its own line leaves no paragraph to render.
+    if (!inline.content) tokens[i + 1].hidden = tokens[i + 3].hidden = true
     const children: typeof inline.children = []
     state.md.inline.parse(inline.content, state.md, state.env, children)
     inline.children = children
@@ -212,10 +217,51 @@ md.core.ruler.push("markdown_alerts", (state) => {
       if (depth !== 0) continue
       tokens[j].type = "markdown_alert_close"
       tokens[j].tag = "div"
+      if (type === "question") markQuestionAnswers(tokens, i, j)
       break
     }
   }
 })
+
+// Question cards mark each lettered option and the recommendation so the
+// content script can offer one-click answers.
+function markQuestionAnswers(tokens: ReturnType<MarkdownIt["parse"]>, open: number, close: number) {
+  for (let k = open + 3; k < close; k++) {
+    if (tokens[k].type !== "inline" || tokens[k - 1].type !== "paragraph_open") continue
+    const recommended = QUESTION_RECOMMENDED.exec(tokens[k].content)
+    if (recommended) tokens[open].attrSet("data-question-recommended", recommended[1].toUpperCase())
+    const option = QUESTION_OPTION.exec(tokens[k].content)
+    if (option && tokens[k - 2].type === "list_item_open") tokens[k - 2].attrSet("data-question-option", option[1])
+  }
+}
+
+export interface QuestionCard {
+  target: HTMLElement
+  mount: HTMLElement
+  options: { value: string; label: string }[]
+  recommended: string | null
+}
+
+/** Adds an answer-controls mount to a rendered question card. Answers anchor to its heading. */
+export function mountQuestionCard(card: HTMLElement): QuestionCard | null {
+  const target = card.querySelector<HTMLElement>("h1,h2,h3,h4,h5,h6") ??
+    card.querySelector<HTMLElement>(":scope > p:not(.markdown-alert-title)")
+  if (!target) return null
+  const options = Array.from(card.querySelectorAll<HTMLElement>("li[data-question-option]"), (item) => ({
+    value: item.dataset.questionOption!,
+    label: item.querySelector("strong")?.textContent?.trim() ?? item.dataset.questionOption!,
+  }))
+  const recommended = card.dataset.questionRecommended ?? null
+  const mount = card.ownerDocument.createElement("div")
+  mount.className = "question-card-actions"
+  card.append(mount)
+  return {
+    target,
+    mount,
+    options,
+    recommended: options.some(({ value }) => value === recommended) ? recommended : null,
+  }
+}
 
 md.renderer.rules.markdown_alert_open = (tokens, idx, _options, _env, self) => {
   const title = md.utils.escapeHtml(tokens[idx].meta.title)

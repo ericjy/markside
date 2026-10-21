@@ -3,6 +3,7 @@ import { sendReview, refreshReviewFile, setReviewerCommentStatus } from "../cli/
 import { act } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { useContentReview } from "../hooks/use-content-review"
+import { md, mountQuestionCard } from "./markdown"
 import { createEmptyReview, type ActiveReview } from "./review"
 import { buildRenderedTextIndex } from "./review-dom"
 import { renderHook, stubChromeStorage } from "./test-harness"
@@ -14,10 +15,10 @@ const review = { ...createEmptyReview(sourceUrl, "hash"), note: "Check the scope
 
 afterEach(() => vi.unstubAllGlobals())
 
-function setup(initial: ActiveReview | null = review) {
+function setup(initial: ActiveReview | null = review, html = "<p>Alpha Beta</p>") {
   stubChromeStorage()
   const root = document.createElement("div")
-  root.innerHTML = "<p>Alpha Beta</p>"
+  root.innerHTML = html
   const index = buildRenderedTextIndex(root, "hash")
   let saved = initial
   const send = vi.fn(async (_review?: ActiveReview) => true)
@@ -39,7 +40,7 @@ function setup(initial: ActiveReview | null = review) {
       quickCommentTriggerRef: { current: null }, selectionToolbarRef: { current: null },
       setSelectionAction: vi.fn(), setSelectionComposerBody: vi.fn(), setSelectionComposerCopyState: vi.fn(),
       setSelectionPresetPickerOpen: vi.fn(), setQuickCommentMenuOpen: vi.fn(), captureReviewSelection: vi.fn(),
-      closeSelectionComposer: closeComposer, openSelectionComposer: vi.fn(), insertSelectionComposerPreset: vi.fn(),
+      closeSelectionComposer: closeComposer, openSelectionComposer: vi.fn(), openSelectionComposerAt: vi.fn(), insertSelectionComposerPreset: vi.fn(),
     },
     setSelectedReviewId: vi.fn(), setSelectedImportedCommentId: vi.fn(), setReviewSelectionVersion: vi.fn(),
     setCopyReviewStatus: vi.fn(), setReviewCopyReload: vi.fn(), setClipboardFallback: vi.fn(),
@@ -48,7 +49,7 @@ function setup(initial: ActiveReview | null = review) {
     setReviewPromptReady: vi.fn(), trackReviewPromptActivity: vi.fn(),
   }
   const hook = renderHook(useContentReview, options)
-  return { hook, options, send, closeComposer, openPanel, saved: () => saved }
+  return { hook, options, root, send, closeComposer, openPanel, saved: () => saved }
 }
 
 describe("save and send from the comment composer", () => {
@@ -201,6 +202,77 @@ describe("save and send from the comment composer", () => {
     expect(openPanel).toHaveBeenCalledWith(true)
     expect(closeComposer).toHaveBeenCalledOnce()
     expect(send).toHaveBeenCalledOnce()
+    hook.unmount()
+  })
+})
+
+describe("question card answers", () => {
+  const question = md.render("> [!QUESTION]\n> ### Q3. Where?\n>\n> - **A. Sibling.** Next to it.\n> - **B. Inside.** In the plan.\n>\n> **Recommended: A.** Stable.")
+  const questionSetup = (initial: ActiveReview | null = null) => {
+    const result = setup(initial, question)
+    const card = mountQuestionCard(result.root.querySelector<HTMLElement>(".markdown-alert-question")!)!
+    return { ...result, card }
+  }
+
+  it("sends the option letter as a comment on the question heading in one action", async () => {
+    const { hook, send, saved, card } = questionSetup()
+    await act(async () => hook.result.current.answerQuestion(card.target, "A"))
+    expect(send).toHaveBeenCalledOnce()
+    expect(send.mock.calls[0][0]?.comments).toMatchObject([{ body: "A", anchor: { exact: "Q3. Where?", headingPath: ["Q3. Where?"] } }])
+    expect(saved()?.comments).toHaveLength(1)
+    hook.unmount()
+  })
+
+  it("changes an earlier answer instead of adding a second comment", async () => {
+    const { hook, options, send, saved, card } = questionSetup()
+    await act(async () => hook.result.current.answerQuestion(card.target, "A"))
+    hook.rerender({ ...options, review: saved() })
+    await act(async () => hook.result.current.answerQuestion(card.target, "B"))
+    expect(saved()?.comments.map(({ body }) => body)).toEqual(["B"])
+    expect(send.mock.calls[1][0]?.comments.map(({ body }) => body)).toEqual(["B"])
+    hook.unmount()
+  })
+
+  it("adds a local comment without sending when no agent Review is active", () => {
+    const { hook, options, send, saved, card } = questionSetup()
+    hook.rerender({ ...options, agentHandoff: undefined })
+    act(() => hook.result.current.answerQuestion(card.target, "B"))
+    expect(send).not.toHaveBeenCalled()
+    expect(saved()?.comments).toMatchObject([{ body: "B", reviewMode: "local" }])
+    hook.unmount()
+  })
+
+  it("ignores answers while a send is in progress", () => {
+    const { hook, options, send, saved, card } = questionSetup()
+    hook.rerender({ ...options, agentHandoff: { ...options.agentHandoff!, sending: true } })
+    act(() => hook.result.current.answerQuestion(card.target, "A"))
+    expect(send).not.toHaveBeenCalled()
+    expect(saved()).toBeNull()
+    hook.unmount()
+  })
+
+  it("opens the comment composer on the question heading for a free-text answer", () => {
+    const { hook, options, card } = questionSetup()
+    act(() => hook.result.current.composeQuestionAnswer(card.target, { x: 10, y: 20 }))
+    expect(options.selection.openSelectionComposerAt).toHaveBeenCalledWith(
+      expect.objectContaining({ exact: "Q3. Where?" }),
+      expect.anything(),
+      { x: 10, y: 20 },
+    )
+    hook.unmount()
+  })
+
+  it("reports the current answer and its send status", () => {
+    const { hook, options, card } = questionSetup()
+    const block = { start: 12, end: 22 }
+    const answer = { id: "q3", body: "A", createdAt: "now", reviewMode: "agent" as const, anchor: { ...anchor, exact: "Q3. Where?", start: block.start, end: block.end } }
+    expect(hook.result.current.questionAnswer(card.target)).toBeNull()
+    hook.rerender({
+      ...options,
+      review: { ...review, comments: [answer] },
+      highlights: { ...options.highlights, resolvedReviewComments: [{ ...answer, displayNumber: 1, status: "anchored", range: { start: block.start, end: block.end } }] },
+    })
+    expect(hook.result.current.questionAnswer(card.target)).toEqual({ body: "A", status: "Draft" })
     hook.unmount()
   })
 })

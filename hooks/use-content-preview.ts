@@ -4,7 +4,7 @@ import React,{ useEffect } from "react"
 import { parseFrontmatter,renderFrontmatterHTML } from "~lib/frontmatter"
 import { applyHeadingNumbers } from "~lib/heading-numbering"
 import { resolveActiveOutlineHeading,type Heading } from "~lib/headings"
-import { addDefaultDetailsSummaries,md } from "~lib/markdown"
+import { addDefaultDetailsSummaries,md,mountQuestionCard,type QuestionCard } from "~lib/markdown"
 import {
   resolveModeTransition,
   setMarkdownMode,
@@ -43,6 +43,7 @@ interface UseContentPreviewOptions {
   cancelPreviewEnhancement: () => void
   setHeadings: React.Dispatch<React.SetStateAction<Heading[]>>
   setReadabilityMounts: React.Dispatch<React.SetStateAction<{ heading: HTMLElement; mount: HTMLSpanElement; section: ReadabilitySection; }[]>>
+  setQuestionCards: React.Dispatch<React.SetStateAction<QuestionCard[]>>
   renderedFileUrlRef: React.MutableRefObject<string | null>
   fileUrl: string
   imageReloadVersion: number
@@ -76,6 +77,7 @@ export function useContentPreview({
   cancelPreviewEnhancement,
   setHeadings,
   setReadabilityMounts,
+  setQuestionCards,
   renderedFileUrlRef,
   fileUrl,
   imageReloadVersion,
@@ -121,6 +123,7 @@ export function useContentPreview({
       contentRef.current.replaceChildren()
       setHeadings([])
       setReadabilityMounts([])
+      setQuestionCards([])
       return
     }
     const isNewFile = renderedFileUrlRef.current !== fileUrl
@@ -206,6 +209,10 @@ export function useContentPreview({
       mounts.push({ heading, mount, section })
     }
     setReadabilityMounts(mounts)
+    setQuestionCards(Array.from(contentRef.current.querySelectorAll<HTMLElement>(".markdown-alert-question"))
+      .filter((card) => !card.closest("[data-reload-removed]"))
+      .map(mountQuestionCard)
+      .filter((card): card is QuestionCard => card !== null))
 
     if (isNewFile) {
       renderedFileUrlRef.current = fileUrl

@@ -45,6 +45,7 @@ import { getFileHandle, indexActiveReview } from "~lib/db"
 import { classifyMarksideFileUrl } from "~lib/file-types"
 import { headingNumbers } from "~lib/heading-numbering"
 import { type Heading } from "~lib/headings"
+import { type QuestionCard } from "~lib/markdown"
 import {
   resolveInitialSidebarState,
   shouldSyncDraftFromContent,
@@ -86,6 +87,7 @@ export function FileRenderer({
   const [content, setContent] = useState<string | null>(initialContent)
   const [error, setError] = useState<string | null>(null)
   const [headings, setHeadings] = useState<Heading[]>([])
+  const [questionCards, setQuestionCards] = useState<QuestionCard[]>([])
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null)
   const [mode, setMode] = useState<MarkdownMode>(initialMode)
   const [previewFullWidth, setPreviewFullWidth] = useState(initialPaneWidthPreferences.previewFullWidth)
@@ -407,6 +409,7 @@ export function FileRenderer({
     cancelPreviewEnhancement,
     setHeadings,
     setReadabilityMounts: readability.setReadabilityMounts,
+    setQuestionCards,
     renderedFileUrlRef,
     fileUrl,
     imageReloadVersion,
@@ -829,6 +832,11 @@ export function FileRenderer({
         readabilityControlsVisible={readability.readabilityControlsVisible}
         previewFullWidth={previewFullWidth}
         readabilityMounts={readability.readabilityMounts}
+        questionCards={questionCards}
+        questionAnswer={reviewActions.questionAnswer}
+        questionActionsBusy={reviewActions.questionActionsBusy}
+        answerQuestion={reviewActions.answerQuestion}
+        composeQuestionAnswer={reviewActions.composeQuestionAnswer}
         matchingReadabilityResult={readability.matchingReadabilityResult}
         hasSingleH1={readability.hasSingleH1}
         readabilityConsentGranted={readability.readabilityConsentGranted}

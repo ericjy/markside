@@ -142,6 +142,20 @@ pull request or review response.
   and click Finish review directly: both become resolved and the Review ends.
   Addressed and Resolved comments are read-only until reopened. Reopen a
   comment, edit it, and confirm its old reply disappears for the new wording.
+- [ ] Run `/grill-me <topic> in Markside`. The current question renders as a
+  Question card with one button per option, the recommended one labelled
+  Recommended, a disabled Send answer, and Other answer…. Selecting text across
+  the card does not include the button labels. Click a non-recommended option:
+  it becomes selected and nothing is sent. Click Send answer: the Review panel
+  opens with a comment quoting the question heading, its body is the option
+  letter, and the agent receives it. The card shows Your answer and Sent, and
+  Send answer is disabled again. Choose another option and Send answer before
+  the agent replies; confirm the existing comment changes rather than a second
+  one appearing.
+  Choose Other answer…, confirm the composer opens on the heading, and send a
+  free-text answer. Print the document and confirm the buttons are absent. In a
+  Review with no agent, the button reads Save answer and adds a local comment
+  without sending.
   Repeat a Reload after changing only a sidecar reply, without changing the
   Markdown file, and confirm the new reply appears.
 - [ ] Confirm the Markdown file is unchanged by sending, the Review file has a

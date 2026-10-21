@@ -76,6 +76,10 @@ rendered text selected by the user. `line` is a one-based source block line from
 Markside's renderer, or `null` for unanchored or removed passages. It is a hint;
 the quote identifies the passage.
 
+A Question Card answer is an ordinary comment: `quote` is the question's
+heading and `body` is the chosen option letter, such as `B`, or the user's own
+text from Other answer….
+
 Comment status is `open`, `addressed`, or `resolved`. The agent uses
 `markside address <file> <id> --reply "..."` to mark its work Addressed and record
 a reply. This does not mean the user has accepted the change. The CLI rejects

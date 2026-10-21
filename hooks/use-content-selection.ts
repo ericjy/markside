@@ -107,6 +107,35 @@ export function useContentSelection({
     })
   }
 
+  const selectionActionAt = (
+    anchor: ReviewAnchor,
+    range: Range,
+    point: { x: number; y: number },
+    preview: HTMLElement,
+  ): SelectionAction => {
+    const box = previewBox(preview)
+    return {
+      anchor,
+      range,
+      selectionPoint: {
+        x: box.scrollLeft + point.x - box.left,
+        y: box.scrollTop + point.y - box.top,
+      },
+      sourceLine: sourceLineForNode(range.startContainer),
+      toolbarPosition: getSelectionActionPosition(point, box),
+      composerPosition: getSelectionActionPosition(point, box, SELECTION_COMPOSER_SIZE),
+    }
+  }
+
+  // Opens the comment composer for a passage chosen by a control rather than a text selection.
+  const openSelectionComposerAt = (anchor: ReviewAnchor, range: Range, point: { x: number; y: number }) => {
+    const preview = previewScrollRef.current
+    if (!preview) return
+    clearSelectionActionTimeout()
+    setSelectionAction(selectionActionAt(anchor, range, point, preview))
+    openSelectionComposer()
+  }
+
   const captureReviewSelection = (event: React.MouseEvent) => {
     const preview = previewScrollRef.current
     if (!isMdFile || !previewVisible || !contentRef.current || !preview) {
@@ -124,19 +153,12 @@ export function useContentSelection({
       closeSelectionComposer()
       return
     }
-    const box = previewBox(preview)
-    const point = { x: event.clientX, y: event.clientY }
-    const nextSelectionAction = {
-      anchor: captured.anchor,
-      range: captured.range,
-      selectionPoint: {
-        x: box.scrollLeft + point.x - box.left,
-        y: box.scrollTop + point.y - box.top,
-      },
-      sourceLine: sourceLineForNode(captured.range.startContainer),
-      toolbarPosition: getSelectionActionPosition(point, box),
-      composerPosition: getSelectionActionPosition(point, box, SELECTION_COMPOSER_SIZE),
-    }
+    const nextSelectionAction = selectionActionAt(
+      captured.anchor,
+      captured.range,
+      { x: event.clientX, y: event.clientY },
+      preview,
+    )
     setSelectionComposerOpen(false)
     setSelectionComposerBody("")
     clearSelectionActionTimeout()
@@ -226,6 +248,7 @@ export function useContentSelection({
     captureReviewSelection,
     closeSelectionComposer,
     openSelectionComposer,
+    openSelectionComposerAt,
     insertSelectionComposerPreset,
   }
 }

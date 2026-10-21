@@ -7,7 +7,7 @@ export function createRenderedClipboardPayload(
   root: HTMLElement,
 ): RenderedClipboardPayload {
   const clone = root.cloneNode(true) as HTMLElement
-  clone.querySelectorAll(".header-anchor, .code-block-header, .pdf-export-title, [data-reload-removed], [data-readability-ui]").forEach((element) => {
+  clone.querySelectorAll(".header-anchor, .code-block-header, .question-card-actions, .pdf-export-title, [data-reload-removed], [data-readability-ui]").forEach((element) => {
     element.remove()
   })
   clone.querySelectorAll(".readability-heading-label").forEach((element) => {

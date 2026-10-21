@@ -43,6 +43,14 @@ describe("Review text index with a modal open", () => {
   })
 })
 
+describe("Review text index around question cards", () => {
+  it("leaves answer controls out of the anchored text", () => {
+    const root = document.createElement("div")
+    root.innerHTML = '<div class="markdown-alert-question"><h3>Q1. Which?</h3><div class="question-card-actions"><button>Accept A</button></div></div><p>After.</p>'
+    expect(buildRenderedTextIndex(root).text).toBe("Q1. Which?\nAfter.")
+  })
+})
+
 describe("pending review highlight", () => {
   const highlights = new Map<string, unknown>()
 

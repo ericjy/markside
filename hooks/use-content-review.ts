@@ -1,4 +1,4 @@
-import { currentAgentReview, clearReviewDrafts, getReviewCommentStatus } from "~lib/agent-review"
+import { currentAgentReview, clearReviewDrafts, getReviewCommentStatus, type ReviewCommentStatus } from "~lib/agent-review"
 import React,{ useEffect,useRef } from "react"
 import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
 import { type ReviewCopyStatus } from "~components/review-panel"
@@ -15,6 +15,7 @@ import {
   type ReadabilityResult
 } from "~lib/readability"
 import {
+  anchorForTextBlock,
   findReviewHeadingFallback,
   getReviewItemCount,
   isSameReviewAnchor,
@@ -488,6 +489,61 @@ export function useContentReview({
     await sending
   }
 
+  // The heading's text without the space left by its anchor link.
+  const questionSpan = (index: RenderedTextIndex | null, target: HTMLElement) => {
+    const block = index?.blocks.find(({ element }) => element === target)
+    if (!index || !block) return null
+    let { start, end } = block
+    while (start < end && /\s/.test(index.text[start])) start++
+    while (end > start && /\s/.test(index.text[end - 1])) end--
+    return { start, end }
+  }
+
+  const questionBlock = (target: HTMLElement) => {
+    const index = currentReviewDocument()
+    const block = questionSpan(index, target)
+    if (!index || !block) return null
+    const headingPath = index.headings
+      .filter((heading) => block.start >= heading.start && block.start <= heading.end)
+      .sort((left, right) => right.path.length - left.path.length)[0]?.path ?? []
+    return { index, block, anchor: anchorForTextBlock(index.text, block, headingPath) }
+  }
+
+  const questionActionsBusy = !!agentHandoff && (
+    !!agentHandoff.completed || agentHandoff.sending || !!agentHandoff.finishing || agentHandoff.updatingCommentId != null
+  )
+
+  // A question card's answer is a Review Comment on its heading; agent Reviews send it in the same click.
+  const answerQuestion = (target: HTMLElement, body: string) => {
+    if (questionActionsBusy) return
+    const question = questionBlock(target)
+    const result = question && createReviewComment(question.anchor, body)
+    if (!agentHandoff || !result?.commentId || !result.review) return
+    void agentHandoff.send(result.review)
+  }
+
+  const composeQuestionAnswer = (target: HTMLElement, point: { x: number; y: number }) => {
+    if (questionActionsBusy) return
+    const question = questionBlock(target)
+    const range = question && rangeFromOffsets(question.index, question.block.start, question.block.end)
+    if (!question || !range) return
+    selection.openSelectionComposerAt(question.anchor, range, point)
+    setSelectedReviewId(null)
+    setSelectedImportedCommentId(null)
+  }
+
+  const questionAnswer = (target: HTMLElement): { body: string; status: Exclude<ReviewCommentStatus, "Resolved"> } | null => {
+    const block = questionSpan(renderedTextIndexRef.current, target)
+    const comment = block && resolvedReviewComments.find((candidate) =>
+      !retiredCommentIds.has(candidate.id) && candidate.status === "anchored" &&
+      candidate.range.start === block.start && candidate.range.end === block.end
+    )
+    if (!comment) return null
+    const sent = agentHandoff?.file?.comments.find(({ id }) => id === comment.id)
+    const status = getReviewCommentStatus(comment, sent, !!agentHandoff)
+    return status === "Resolved" ? null : { body: comment.body, status }
+  }
+
   const activateReviewSelection = () => {
     const { selectionAction, setSelectionAction, openSelectionComposer } = selection
     if (!selectionAction) return
@@ -544,5 +600,9 @@ export function useContentReview({
     activateReviewSelection,
     activateQuickComment,
     handleReviewHighlightClick,
+    answerQuestion,
+    composeQuestionAnswer,
+    questionAnswer,
+    questionActionsBusy,
   }
 }

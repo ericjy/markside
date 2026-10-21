@@ -1,5 +1,6 @@
+// @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
-import { md } from "./markdown"
+import { md, mountQuestionCard } from "./markdown"
 
 describe("markdown renderer", () => {
   it("adds an id attribute to H1 headings", () => {
@@ -141,11 +142,56 @@ describe("markdown renderer", () => {
   })
 
   it("leaves unsupported alert markers as ordinary blockquotes", () => {
-    const html = md.render("> [!QUESTION]\n> Is this an alert?")
+    const html = md.render("> [!DANGER]\n> Is this an alert?")
 
     expect(html).toContain("<blockquote ")
-    expect(html).toContain("[!QUESTION]")
+    expect(html).toContain("[!DANGER]")
     expect(html).not.toContain("markdown-alert")
+  })
+
+  const question = [
+    "> [!QUESTION]",
+    "> ### Q3. Where does the doc live?",
+    ">",
+    "> - **A. Sibling doc.** Next to the plan.",
+    "> - **B. Inside the plan.** One file.",
+    ">",
+    "> **Recommended: B.** It keeps one file.",
+  ].join("\n")
+
+  it("renders a question card that marks its lettered options and recommendation", () => {
+    const html = md.render(question)
+
+    expect(html).toContain('class="markdown-alert markdown-alert-question" data-question-recommended="B"')
+    expect(html).toContain('data-alert-icon="question"')
+    expect(html).toContain('<li data-question-option="A"')
+    expect(html).toContain('<li data-question-option="B"')
+    // A marker on its own line leaves no empty paragraph behind.
+    expect(html).not.toMatch(/<p[^>]*><\/p>/)
+  })
+
+  it("mounts answer controls after a question card's content and anchors them to its heading", () => {
+    const root = document.createElement("div")
+    root.innerHTML = md.render(question)
+    const card = mountQuestionCard(root.querySelector<HTMLElement>(".markdown-alert-question")!)!
+
+    expect(card.target.tagName).toBe("H3")
+    expect(card.options.map(({ value, label }) => `${value}:${label}`)).toEqual([
+      "A:A. Sibling doc.", "B:B. Inside the plan.",
+    ])
+    expect(card.recommended).toBe("B")
+    expect(card.mount.className).toBe("question-card-actions")
+    expect(card.mount.parentElement?.lastElementChild).toBe(card.mount)
+  })
+
+  it("offers only free-text answers when a question has no lettered options", () => {
+    const root = document.createElement("div")
+    root.innerHTML = md.render("> [!QUESTION]\n> What should the doc be called?\n>\n> **Recommended: A.** No options exist.")
+    const card = mountQuestionCard(root.querySelector<HTMLElement>(".markdown-alert-question")!)!
+
+    expect(card.target.textContent).toBe("What should the doc be called?")
+    expect(card.options).toEqual([])
+    expect(card.recommended).toBeNull()
   })
 
   it("attaches a header-anchor link inside each heading", () => {

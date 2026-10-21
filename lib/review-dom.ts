@@ -49,7 +49,7 @@ export function buildRenderedTextIndex(
   let node = walker.nextNode() as Text | null
   while (node) {
     const excluded = node.parentElement?.closest(
-      "script,style,[aria-hidden=true],[data-reload-removed],[data-readability-ui],.code-block-header,.header-anchor,.pdf-export-title",
+      "script,style,[aria-hidden=true],[data-reload-removed],[data-readability-ui],.question-card-actions,.code-block-header,.header-anchor,.pdf-export-title",
     )
     // Modal dialogs hide the preview's ancestors from assistive technology,
     // but do not remove its document text from Review anchoring.

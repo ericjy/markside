@@ -967,6 +967,29 @@ button.readability-score-filter {
   --markdown-alert-color: hsl(0 100% 70%);
 }
 
+.prose .markdown-alert-question {
+  --markdown-alert-color: hsl(173 80% 30%);
+}
+
+.dark .prose .markdown-alert-question {
+  --markdown-alert-color: hsl(172 66% 55%);
+}
+
+.prose .markdown-alert > .question-card-actions {
+  margin-top: 0.85rem;
+  user-select: none;
+}
+
+.prose .question-card-actions:empty {
+  display: none;
+}
+
+.prose .question-card-status {
+  margin: 0.5rem 0 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.8125rem;
+}
+
 .prose .markdown-alert-title {
   display: flex;
   align-items: center;
@@ -1704,6 +1727,7 @@ button.readability-score-filter {
   }
 
   [data-readability-ui],
+  .prose .question-card-actions,
   .prose .header-anchor,
   .prose .code-block-header {
     display: none !important;

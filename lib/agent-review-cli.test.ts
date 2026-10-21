@@ -163,6 +163,7 @@ describe("markside CLI with real files", () => {
     await chmod(launcher, 0o755)
     const result = await run(["review", doc, "--timeout", "0.03"], { ...process.env, PATH: `${folder}:${process.env.PATH}`, MARKSIDE_LAUNCH_LOG: log }).done
     expect(result.code).toBe(2)
+    expect(result.stdout).toContain('--no-open" again')
     expect(JSON.parse(await readFile(log, "utf8"))).toEqual(["-a", "Google Chrome", expect.stringContaining("plan%20%231.md")])
   })
 

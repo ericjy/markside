@@ -39,10 +39,10 @@
     {
       "id": 4,
       "prompt": "/markside review docs/PLAN.md. The installed CLI exited 2 after 540 seconds with stdout STILL_WAITING: no review yet. The user has not sent comments and has not asked you to stop. Describe your next action without launching a process.",
-      "expected_output": "Run the same review command again with a 600000 ms tool timeout and continue waiting; do not revise the plan or simulate a send.",
+      "expected_output": "Run the review command again with --no-open and a 600000 ms tool timeout and continue waiting; do not revise the plan or simulate a send.",
       "files": [],
       "expectations": [
-        "Repeats the same review command",
+        "Repeats the review command with --no-open",
         "Uses a 600000 ms tool timeout",
         "Does not continue document work before user comments arrive",
         "Does not write status sent itself"

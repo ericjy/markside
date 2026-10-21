@@ -148,7 +148,7 @@ async function main() {
     if (controller.signal.aborted) return 130
     if (sent) { console.log(formatReviewComments(sent)); return 0 }
     const quotedInput = "'" + input.replaceAll("'", "'\\''") + "'"
-    console.log(`STILL_WAITING: no review yet. Run "markside review ${quotedInput}${values.continue ? " --continue" : ""}${values["no-open"] ? " --no-open" : ""}" again to keep waiting.`)
+    console.log(`STILL_WAITING: no review yet. Run "markside review ${quotedInput}${values.continue ? " --continue" : ""} --no-open" again to keep waiting.`)
     return 2
   } finally {
     process.removeListener("SIGINT", interrupt)

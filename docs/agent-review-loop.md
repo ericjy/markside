@@ -29,7 +29,7 @@ markside review PLAN.md --continue --no-open
 ```
 
 The agent waits with a 600-second tool timeout. The CLI waits for 540 seconds by
-default, exits 2 with `STILL_WAITING:`, and the agent reruns it until the user
+default, exits 2 with `STILL_WAITING:`, and the agent reruns it with `--no-open` until the user
 sends comments or asks to stop. An existing pending request keeps its timestamp;
 a send received between invocations is returned immediately. Addressing and
 resolving comments keep the request active. Only after no comment awaits the

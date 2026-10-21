@@ -30,7 +30,10 @@ below. Invocation authorizes opening Chrome and waiting for the user's Review.
    Run `markside review <file>` and wait. Set the tool timeout to 600,000 ms.
    Preserve explicit `--timeout` and `--no-open` arguments. Quote paths as single
    arguments so spaces and shell metacharacters remain literal.
-3. If stdout starts with `STILL_WAITING:`, rerun the same command. A tool that
+3. If stdout starts with `STILL_WAITING:`, rerun the command with `--no-open`
+   added, as the printed command shows, because Chrome is already open. Keep any
+   explicit `--timeout`. Every retry, including one inside a shell loop, must
+   include `--no-open`. A tool that
    yields a running process needs to be resumed until it exits. Do not continue
    the task until comments arrive, unless the user asks to stop or proceed.
    Other failures require reporting the error, not a retry loop.

@@ -69,7 +69,10 @@ adding feedback first. If sending fails or you cancel folder selection, the
 comment stays saved in Review so you can retry.
 
 Agents can also interview you in Markside instead of chat: for example, run
-`/grill-me <topic> in Markside`. The agent writes each question in a fenced
+`/grill-me /markside <topic>`, or `/grill-me <topic> in Markside` in hosts that
+expand only one command. The agent writes the interview to a `.grill.md` file,
+beside the file being discussed or at the repository root, and asks whether to
+keep it when the interview ends. Each question is a fenced
 `question` block, which appears as a card. The recommended option is labeled,
 with the agent's reasoning below the options.
 Click an option, or press its letter, to make it your answer; choose another to

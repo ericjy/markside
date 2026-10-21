@@ -77,13 +77,15 @@ for a Review request; report the received comments and resulting changes.
 Use this when the user wants another skill's one-question-at-a-time interview
 answered in Markside instead of chat: for example `/grill-me <topic> in
 Markside`, "interview me in Markside", or "continue this in Markside" partway
-through an interview. The questioning skill still decides what to ask, when to
+through an interview. A bare `/markside` invoked together with a questioning
+skill, such as `/grill-me /markside`, also means this workflow, not opening a
+file. The questioning skill still decides what to ask, when to
 look facts up, and what durable docs to write. This section only decides how
 questions are asked and answered.
 
 1. Create the interview doc. When grilling an existing file such as
    `docs/PLAN.md`, use the sibling `docs/PLAN.grill.md`. Otherwise use
-   `GRILL-<topic>.md` at the repository root, with a short kebab-case topic.
+   `<topic>.grill.md` at the repository root, with a short kebab-case topic.
    Leave the subject file unchanged during the interview.
 2. Lay it out as a title, one line explaining how to answer, then
    `## Current question` followed by `## Answered questions`. When continuing
@@ -173,7 +175,8 @@ questions are asked and answered.
    understanding. Do not act on the decisions before `Review resolved`.
 7. After the Review is resolved, follow the questioning skill for durable
    output. If it names none, offer to fold the decisions into the subject file,
-   and ask whether to keep or delete the interview doc.
+   and ask whether to keep or delete the interview doc. When deleting it, also
+   delete its `<file>.review.json`.
 
 ## Choose the target
 

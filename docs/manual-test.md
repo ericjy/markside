@@ -145,7 +145,8 @@ pull request or review response.
   and click Finish review directly: both become resolved and the Review ends.
   Addressed and Resolved comments are read-only until reopened. Reopen a
   comment, edit it, and confirm its old reply disappears for the new wording.
-- [ ] Run `/grill-me <topic> in Markside`. The current question renders as a
+- [ ] Run `/grill-me /markside <topic>` and `/grill-me <topic> in Markside`;
+  each creates `<topic>.grill.md` at the repository root. The current question renders as a
   Question card from a fenced `question` block. In Source, confirm the body
   has ordinary Markdown without `>` prefixes; return to Preview and confirm
   its options are tiles with letter keys aligned to the titles, each bold

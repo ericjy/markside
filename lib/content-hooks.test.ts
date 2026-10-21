@@ -401,6 +401,16 @@ describe("useContentReload", () => {
     expect(hook.result.current.changesVisible).toBe(false)
   })
 
+  it("keeps the comparison in clean reading when the reloaded file asks a question", async () => {
+    const text = "```question\n### Q2. Next?\n\n- **A. Yes.**\n```"
+    vi.mocked(readFileFromDisk).mockResolvedValue({ text, buffer: null, type: "", lastModified: 7 })
+    const { hook, options } = setup()
+    await act(() => hook.result.current.handleReloadFromDisk())
+    hook.rerender(options(text))
+    expect(hook.result.current.hasReloadChanges).toBe(true)
+    expect(hook.result.current.changesVisible).toBe(false)
+  })
+
   it("keeps a draft that changed while the file was reloading", async () => {
     const { hook, refs, setters } = setup()
     vi.mocked(readFileFromDisk).mockImplementation(async () => {

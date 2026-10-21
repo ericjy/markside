@@ -2,6 +2,7 @@ import React,{ useEffect,useRef,useState } from "react"
 import { type ReviewCopyStatus } from "~components/review-panel"
 import { normalizeDiskText } from "~lib/content-file-access"
 import { readFileFromDisk } from "~lib/file-reload"
+import { hasQuestionCard } from "~lib/markdown"
 import { type MarkdownMode } from "~lib/markdown-mode"
 import { type SaveState } from "~hooks/use-content-save"
 
@@ -150,7 +151,8 @@ export function useContentReload({
         const text = file.text
         if (isMdFile && previousContent !== null) {
           setReloadComparison({ before: previousContent, after: text })
-          setShowChanges(previousContent !== text)
+          // An interview's reloads mostly add the next question; clean reading suits answering it.
+          setShowChanges(previousContent !== text && !hasQuestionCard(text))
           if (previousContent !== text && mode === "source") setMode("preview")
         }
         closeSelectionComposer()

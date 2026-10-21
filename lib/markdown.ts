@@ -310,6 +310,10 @@ function markQuestionAnswers(state: StateCore, open: number, close: number) {
   tokens[recommendation.index - 1].attrJoin("class", "question-recommendation")
 }
 
+export function hasQuestionCard(markdown: string) {
+  return md.parse(markdown, {}).some((token) => token.type === "markdown_alert_open" && token.meta.type === "question")
+}
+
 export interface QuestionCard {
   element: HTMLElement
   target: HTMLElement

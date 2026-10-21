@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
-import { md, mountQuestionCard } from "./markdown"
+import { hasQuestionCard, md, mountQuestionCard } from "./markdown"
 
 describe("markdown renderer", () => {
   it("adds an id attribute to H1 headings", () => {
@@ -170,6 +170,12 @@ describe("markdown renderer", () => {
     expect(html).toContain('<strong><span class="question-option-key">A<span class="question-option-key-dot">.</span></span> Sibling doc.</strong>')
     // A marker on its own line leaves no empty paragraph behind.
     expect(html).not.toMatch(/<p[^>]*><\/p>/)
+  })
+
+  it("detects question cards but not question code inside another fence", () => {
+    expect(hasQuestionCard(`# Plan\n\n${question}`)).toBe(true)
+    expect(hasQuestionCard("> [!QUESTION]\n> Which one?")).toBe(true)
+    expect(hasQuestionCard(`~~~markdown\n${question}\n~~~`)).toBe(false)
   })
 
   it("preserves source lines and heading anchors inside question fences", () => {

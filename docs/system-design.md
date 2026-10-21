@@ -195,7 +195,8 @@ current document is decorated with green additions and red struck-through
 removals; a removed block returns as a copy of the original element, complete
 with its list marker or table row, placed next to the neighbour it used to have.
 A floating bar centered at the bottom of the document area carries the controls: a Show changes checkbox toggles clean reading, and Done closes the
-comparison. Its menu repeats Done and adds Done and clear comments, which
+comparison. Show changes starts checked unless the reloaded document contains a
+question card, since an interview's reloads mostly add the next question. Its menu repeats Done and adds Done and clear comments, which
 also clears the entire Review. A reload without a comparison to show reports
 No changes on disk, or Reloaded from disk for a file type that has no
 comparison, beside Reload for a moment. Source-only changes, such as link

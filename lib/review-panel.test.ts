@@ -458,10 +458,10 @@ describe("ReviewPanel", () => {
     const onReloadDocument = vi.fn()
     const agentHandoff = { disabled: true, disabledReason: null, sending: false, sent: true, error: null, send: vi.fn() }
     renderPanel({ agentHandoff, onCheckUpdates, onReloadDocument })
-    const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check for updates"))!
+    const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check agent response"))!
     await act(async () => check.click())
     expect(onCheckUpdates).toHaveBeenCalledOnce()
-    expect(check.textContent).toContain("No updates yet")
+    expect(check.textContent).toContain("No response yet")
     expect(onReloadDocument).not.toHaveBeenCalled()
     renderPanel({ agentHandoff, onCheckUpdates, onReloadDocument, documentChanged: true })
     const reload = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Reload document"))!
@@ -474,10 +474,10 @@ describe("ReviewPanel", () => {
       agentHandoff: { disabled: true, disabledReason: null, sending: false, sent: true, error: null, send: vi.fn() },
       onCheckUpdates: vi.fn().mockRejectedValue(new Error("Read failed")),
     })
-    const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check for updates"))!
+    const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check agent response"))!
     await act(async () => check.click())
     expect(container.textContent).toContain("Couldn’t check. Try again.")
-    expect(container.textContent).not.toContain("No updates yet")
+    expect(container.textContent).not.toContain("No response yet")
     expect(check.disabled).toBe(false)
   })
 

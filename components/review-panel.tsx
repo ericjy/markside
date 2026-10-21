@@ -849,7 +849,7 @@ export function ReviewPanel({
             <div className="py-1">
               <p role="status" className="flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-300">
                 <Check size={16} className="shrink-0" aria-hidden="true" />
-                Review sent. Check your agent.
+                Review sent. Agent should pick it up shortly.
               </p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                 Reload page after agent addressed the review. Agent hasn’t started?{" "}
@@ -890,9 +890,9 @@ export function ReviewPanel({
               aria-busy={updateCheck === "checking"}>
               <RefreshCw size={14} aria-hidden="true" className={updateCheck === "checking" ? "animate-spin" : ""} />
               <span className="grid">
-                <span aria-hidden="true" className="invisible" style={{ gridArea: "1 / 1" }}>Check for updates</span>
+                <span aria-hidden="true" className="invisible" style={{ gridArea: "1 / 1" }}>Check agent response</span>
                 <span aria-live="polite" style={{ gridArea: "1 / 1" }}>
-                  {updateCheck === "checking" ? "Checking…" : updateCheck === "unchanged" ? "No updates yet" : updateCheck === "updated" ? "Updates found" : "Check for updates"}
+                  {updateCheck === "checking" ? "Checking…" : updateCheck === "unchanged" ? "No response yet" : updateCheck === "updated" ? "Updates found" : "Check agent response"}
                 </span>
               </span>
             </Button>

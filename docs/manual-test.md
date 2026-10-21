@@ -251,9 +251,9 @@ permissions and disk writes require manual verification.
 
 ### Review update check
 
-- Send a Review and verify the footer shows Review sent, Check for updates,
+- Send a Review and verify the footer shows Review sent, Check agent response,
   quiet Start a review help, and Copy review as prompt.
-- Check before the agent replies: No updates yet appears briefly. Have the agent
+- Check before the agent replies: No response yet appears briefly. Have the agent
   address a comment, then check: the reply appears without reloading the document.
 - Have the agent edit the document: checking offers Reload document without
   replacing the visible text. Reload document opens the existing change comparison.

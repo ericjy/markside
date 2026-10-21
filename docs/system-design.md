@@ -499,9 +499,9 @@ access as delivery to the agent: comments are already saved locally in IndexedDB
 A matching saved or newly selected sidebar folder hides the line.
 Copy review as prompt is a quiet, borderless secondary action below the full-width
 Send button, aligned left. Clear aligns right on the same row when space allows. Once the
-current feedback is sent, a green Review sent. Check your agent. status line replaces the primary
-button until feedback changes. **Check for updates** reads the agent sidecar and
-document once, refreshes replies, and briefly shows No updates yet or Updates
+current feedback is sent, a green Review sent. Agent should pick it up shortly. status line replaces the primary
+button until feedback changes. **Check agent response** reads the agent sidecar and
+document once, refreshes replies, and briefly shows No response yet or Updates
 found inside the check button. Read failures offer a retry. If the document changed, **Reload document**
 uses the existing Reload action and Unsaved Draft confirmation; checking never
 replaces document content. The guidance paragraph includes a Start a review link.

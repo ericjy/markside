@@ -178,10 +178,40 @@ const MARKDOWN_ALERT_ICONS: Record<string, string> = {
   caution: '<path d="M15.312 2a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586l-4.688-4.688A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2z"/><path d="M12 8v4"/><path d="M12 16h.01"/>'
 }
 
+// Expand before inline parsing and heading IDs, keeping the fence body's source lines.
+md.core.ruler.before("inline", "question_fences", (state) => {
+  state.tokens = state.tokens.flatMap((token) => {
+    if (token.type !== "fence" || token.info.trim().toLowerCase() !== "question") return [token]
+    const body: typeof state.tokens = []
+    state.md.block.parse(token.content, state.md, state.env, body)
+    for (const child of body) {
+      child.level += token.level + 1
+      if (child.map && token.map) {
+        child.map = [child.map[0] + token.map[0] + 1, child.map[1] + token.map[0] + 1]
+      }
+    }
+    const open = new state.Token("markdown_alert_open", "div", 1)
+    open.block = true
+    open.level = token.level
+    open.map = token.map
+    open.attrSet("class", "markdown-alert markdown-alert-question")
+    open.meta = { title: "Question", type: "question" }
+    const close = new state.Token("markdown_alert_close", "div", -1)
+    close.block = true
+    close.level = token.level
+    return [open, ...body, close]
+  })
+})
+
 md.core.ruler.push("markdown_alerts", (state) => {
   const tokens = state.tokens
 
   for (let i = 0; i < tokens.length - 2; i++) {
+    if (tokens[i].type === "markdown_alert_open" && tokens[i].meta.type === "question") {
+      const close = tokens.findIndex((token, j) => j > i && token.type === "markdown_alert_close" && token.level === tokens[i].level)
+      markQuestionAnswers(state, i, close)
+      continue
+    }
     if (
       tokens[i].type !== "blockquote_open" ||
       tokens[i + 1].type !== "paragraph_open" ||
@@ -231,7 +261,7 @@ function markQuestionAnswers(state: StateCore, open: number, close: number) {
   const { tokens } = state
   const options = new Map<string, number>()
   let recommendation: { value: string; index: number } | null = null
-  for (let k = open + 3; k < close; k++) {
+  for (let k = open + 1; k < close; k++) {
     if (tokens[k].type !== "inline" || tokens[k - 1].type !== "paragraph_open") continue
     const recommended = QUESTION_RECOMMENDED.exec(tokens[k].content)
     if (recommended && !recommendation && tokens[k - 2].type !== "list_item_open") {

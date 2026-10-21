@@ -207,7 +207,7 @@ describe("save and send from the comment composer", () => {
 })
 
 describe("question card answers", () => {
-  const question = md.render("> [!QUESTION]\n> ### Q3. Where?\n>\n> - **A. Sibling.** Next to it.\n> - **B. Inside.** In the plan.\n>\n> **Recommended: A.** Stable.")
+  const question = md.render("```question\n### Q3. Where?\n\n- **A. Sibling.** Next to it.\n- **B. Inside.** In the plan.\n\n**Recommended: A.** Stable.\n```")
   const questionSetup = (initial: ActiveReview | null = null) => {
     const result = setup(initial, question)
     const card = mountQuestionCard(result.root.querySelector<HTMLElement>(".markdown-alert-question")!)!
@@ -263,14 +263,14 @@ describe("question card answers", () => {
   })
 
   it("reports the current answer", () => {
-    const { hook, options, card } = questionSetup()
-    const block = { start: 12, end: 22 }
-    const answer = { id: "q3", body: "A", createdAt: "now", reviewMode: "agent" as const, anchor: { ...anchor, exact: "Q3. Where?", start: block.start, end: block.end } }
+    const { hook, options, card, saved } = questionSetup()
     expect(hook.result.current.questionAnswer(card.target)).toBeNull()
+    act(() => hook.result.current.answerQuestion(card.target, "A"))
+    const answer = saved()!.comments[0]
     hook.rerender({
       ...options,
-      review: { ...review, comments: [answer] },
-      highlights: { ...options.highlights, resolvedReviewComments: [{ ...answer, displayNumber: 1, status: "anchored", range: { start: block.start, end: block.end } }] },
+      review: saved(),
+      highlights: { ...options.highlights, resolvedReviewComments: [{ ...answer, displayNumber: 1, status: "anchored", range: { start: answer.anchor.start, end: answer.anchor.end } }] },
     })
     expect(hook.result.current.questionAnswer(card.target)).toBe("A")
     hook.unmount()

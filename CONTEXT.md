@@ -77,7 +77,7 @@ resolves any remaining Addressed comments.
 _Avoid_: Agent-resolved comment, deleted comment
 
 **Question Card**:
-A `> [!QUESTION]` block in which an agent asks one interview question with
+A fenced `question` block in which an agent asks one interview question with
 lettered options and a recommendation. In Preview the options themselves are
 the choices, the recommended one is labeled, and its reasoning sits in its own
 box below them, plus Other answer… for free text. Choosing an option creates or changes an

@@ -88,19 +88,20 @@ questions are asked and answered.
 2. Lay it out as a title, one line explaining how to answer, then
    `## Current question` followed by `## Answered questions`. When continuing
    from chat, put the questions already answered under Answered questions.
-3. Write exactly one question under Current question as a `[!QUESTION]` block:
+3. Write exactly one question under Current question in a `question` fence:
 
-   ```markdown
-   > [!QUESTION]
-   > ### Q3. Where does the interview doc live?
-   >
-   > Context the user needs to decide.
-   >
-   > - **A. Sibling doc.** What it means and what it costs.
-   > - **B. Inside the plan.** What it means and what it costs.
-   >
-   > **Recommended: A.** Why, compared with each alternative.
+   ````markdown
+   ```question
+   ### Q3. Where does the interview doc live?
+
+   Context the user needs to decide.
+
+   - **A. Sibling doc.** What it means and what it costs.
+   - **B. Inside the plan.** What it means and what it costs.
+
+   **Recommended: A.** Why, compared with each alternative.
    ```
+   ````
 
    Markside turns this exact shape into a card whose options are the answer
    controls, so keep to it:
@@ -117,7 +118,7 @@ questions are asked and answered.
    an option (or press its letter), or click **Other answer…** to write their
    own, then click **Send review to agent**.
 5. An answer is a comment whose quote is the question heading and whose body is
-   an option letter or the user's own words. When it arrives, move the question out of its `[!QUESTION]` block to
+   an option letter or the user's own words. When it arrives, move the question out of its `question` fence to
    the end of Answered questions as plain Markdown, followed by
    `> **Your decision: A.** <one sentence>`. Write the next question under
    Current question, address the comment with a one-line reply, and continue

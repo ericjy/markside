@@ -143,7 +143,9 @@ pull request or review response.
   Addressed and Resolved comments are read-only until reopened. Reopen a
   comment, edit it, and confirm its old reply disappears for the new wording.
 - [ ] Run `/grill-me <topic> in Markside`. The current question renders as a
-  Question card whose options are tiles with letter keys, a Recommended label
+  Question card from a fenced `question` block. In Source, confirm the body
+  has ordinary Markdown without `>` prefixes; return to Preview and confirm
+  its options are tiles with letter keys, a Recommended label
   on the recommended option, the Recommended paragraph in its own box below
   the options, and Other answer…, with no send
   button. Select and copy an option's text: the copy reads "A. Title. …" and

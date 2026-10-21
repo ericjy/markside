@@ -975,7 +975,7 @@ button.readability-score-filter {
   --markdown-alert-color: hsl(172 66% 55%);
 }
 
-.prose .markdown-alert > .question-card-actions {
+.prose .markdown-alert-question > div.question-card-actions {
   margin-top: 0.6rem;
   user-select: none;
 }

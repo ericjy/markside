@@ -16,7 +16,7 @@ let card: QuestionCard
 
 beforeEach(() => {
   container = document.createElement("div")
-  container.innerHTML = md.render("> [!QUESTION]\n> ### Q1. Which?\n>\n> - **A. First.** One.\n> - **B. Second.** Two.\n>\n> **Recommended: A.** Why.")
+  container.innerHTML = md.render("```question\n### Q1. Which?\n\n- **A. First.** One.\n- **B. Second.** Two.\n\n**Recommended: A.** Why.\n```")
   document.body.append(container)
   card = mountQuestionCard(container.querySelector<HTMLElement>(".markdown-alert-question")!)!
   root = createRoot(card.mount)

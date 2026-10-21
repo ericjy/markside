@@ -150,13 +150,14 @@ describe("markdown renderer", () => {
   })
 
   const question = [
-    "> [!QUESTION]",
-    "> ### Q3. Where does the doc live?",
-    ">",
-    "> - **A. Sibling doc.** Next to the plan.",
-    "> - **B. Inside the plan.** One file.",
-    ">",
-    "> **Recommended: B.** It keeps one file.",
+    "```question",
+    "### Q3. Where does the doc live?",
+    "",
+    "- **A. Sibling doc.** Next to the plan.",
+    "- **B. Inside the plan.** One file.",
+    "",
+    "**Recommended: B.** It keeps one file.",
+    "```",
   ].join("\n")
 
   it("renders a question card whose lettered options are choices", () => {
@@ -169,6 +170,31 @@ describe("markdown renderer", () => {
     expect(html).toContain('<strong><span class="question-option-key">A<span class="question-option-key-dot">.</span></span> Sibling doc.</strong>')
     // A marker on its own line leaves no empty paragraph behind.
     expect(html).not.toMatch(/<p[^>]*><\/p>/)
+  })
+
+  it("preserves source lines and heading anchors inside question fences", () => {
+    const root = document.createElement("div")
+    root.innerHTML = md.render("Intro\n\n" + question, { sourceLineOffset: 4 })
+
+    expect(root.querySelector("h3")?.dataset.sourceLine).toBe("8")
+    expect(root.querySelector("h3 .header-anchor")).not.toBeNull()
+    expect(root.querySelector("li")?.dataset.sourceLine).toBe("10")
+    expect(root.querySelector(".code-block")).toBeNull()
+  })
+
+  it("keeps legacy question alerts working", () => {
+    const legacy = question.split("\n").slice(1, -1).map((line) => "> " + line).join("\n")
+    const root = document.createElement("div")
+    root.innerHTML = md.render("> [!QUESTION]\n" + legacy)
+    expect(root.querySelectorAll(".question-option")).toHaveLength(2)
+    expect(root.querySelector(".question-option-recommended")?.getAttribute("data-question-option")).toBe("B")
+  })
+
+  it("leaves question examples inside other code fences literal", () => {
+    const root = document.createElement("div")
+    root.innerHTML = md.render("````markdown\n" + question + "\n````")
+    expect(root.querySelector(".markdown-alert-question")).toBeNull()
+    expect(root.querySelector("code")?.textContent).toContain("```question")
   })
 
   it("marks the recommended option and keeps the recommendation in its own paragraph", () => {
@@ -205,7 +231,7 @@ describe("markdown renderer", () => {
 
   it("offers only free-text answers when a question has no lettered options", () => {
     const root = document.createElement("div")
-    root.innerHTML = md.render("> [!QUESTION]\n> What should the doc be called?\n>\n> **Recommended: A.** No options exist.")
+    root.innerHTML = md.render("```question\nWhat should the doc be called?\n\n**Recommended: A.** No options exist.\n```")
     const card = mountQuestionCard(root.querySelector<HTMLElement>(".markdown-alert-question")!)!
 
     expect(card.target.textContent).toBe("What should the doc be called?")

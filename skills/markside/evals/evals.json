@@ -88,11 +88,11 @@
     {
       "id": 8,
       "prompt": "/grill-me docs/PLAN.md in Markside. The installed CLI is available. This is an evaluation: do not launch a process; describe the doc you would create, show the first question exactly as you would write it, and list the commands you would run.",
-      "expected_output": "Create docs/PLAN.grill.md beside the plan without editing PLAN.md, write one question under Current question in a [!QUESTION] block with lettered options and a Recommended line, then start markside review on the interview doc and wait.",
+      "expected_output": "Create docs/PLAN.grill.md beside the plan without editing PLAN.md, write one question under Current question in a question code fence with lettered options and a Recommended line, then start markside review on the interview doc and wait.",
       "files": [],
       "expectations": [
         "Creates docs/PLAN.grill.md and leaves docs/PLAN.md unchanged",
-        "Writes exactly one question, inside a > [!QUESTION] block under Current question",
+        "Writes exactly one question, inside a question code fence under Current question",
         "The question has bold lettered options and a **Recommended: X.** line with a rationale",
         "Runs markside review on docs/PLAN.grill.md with a 600000 ms tool timeout",
         "Does not act on the plan before the Review is resolved"

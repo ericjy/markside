@@ -67,8 +67,10 @@ file:// Markdown page
 → question cards receive answer controls
 ```
 
-A `> [!QUESTION]` blockquote renders as a Question Card whose options are its
-answer controls. The markdown-it alert rule marks each `**A. …**` list item as a
+A fenced `question` block renders as a Question Card whose options are its
+answer controls. Its body is parsed as Markdown before inline parsing and heading
+IDs, with source lines mapped back to the document. Legacy `> [!QUESTION]`
+blocks remain supported. The question-answer rule marks each `**A. …**` list item as a
 radio option, shows its letter as a key without changing the rendered text, and
 labels option X and the `**Recommended: X.**` paragraph that explains it. The
 preview then wires the options: clicking one (unless the click ends a text selection or lands on a

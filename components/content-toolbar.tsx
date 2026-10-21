@@ -67,7 +67,7 @@ interface ContentToolbarProps {
   closeReviewOverlay: (restoreTriggerFocus?: boolean) => void
   setReviewOverlayOpen: React.Dispatch<React.SetStateAction<boolean>>
   reviewItemCount: number
-  setOutlineOpen: React.Dispatch<React.SetStateAction<boolean>>
+  chooseOutlineOpen: (open: boolean) => void
   outlineOpen: boolean
   requestLinkSnapshot: () => void
   fileMenuTriggerRef: React.MutableRefObject<HTMLButtonElement | null>
@@ -117,7 +117,7 @@ export function ContentToolbar({
   closeReviewOverlay,
   setReviewOverlayOpen,
   reviewItemCount,
-  setOutlineOpen,
+  chooseOutlineOpen,
   outlineOpen,
   requestLinkSnapshot,
   fileMenuTriggerRef,
@@ -359,7 +359,7 @@ export function ContentToolbar({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setOutlineOpen((o) => !o)}
+            onClick={() => chooseOutlineOpen(!outlineOpen)}
             className={`h-7 w-7 ${outlineOpen ? "bg-accent" : ""}`}
             aria-label="Toggle outline"
             aria-pressed={outlineOpen}>

@@ -48,6 +48,7 @@ import { type Heading } from "~lib/headings"
 import { type QuestionCard } from "~lib/markdown"
 import {
   resolveInitialSidebarState,
+  setOutlineOpenPreference,
   shouldSyncDraftFromContent,
   type MarkdownMode,
   type PaneWidthPreferences
@@ -75,6 +76,7 @@ export function FileRenderer({
   initialSplitPercent,
   initialPaneWidthPreferences,
   initialThemePreference,
+  initialOutlineOpen,
   focusSource = false,
 }: {
   initialContent: string | null
@@ -82,6 +84,7 @@ export function FileRenderer({
   initialSplitPercent: number
   initialPaneWidthPreferences: PaneWidthPreferences
   initialThemePreference: boolean | null
+  initialOutlineOpen: boolean | null
   focusSource?: boolean
 }) {
   const [content, setContent] = useState<string | null>(initialContent)
@@ -104,10 +107,14 @@ export function FileRenderer({
   const initialSidebarState = resolveInitialSidebarState({
     mode: initialMode,
     isMarkdown: isMdFile,
-    outlineOpenByDefault: window.innerWidth >= 1280,
+    outlineOpenByDefault: initialOutlineOpen !== false && window.innerWidth >= 1280,
   })
   const [leftOpen, setLeftOpen] = useState(initialSidebarState.leftOpen)
   const [outlineOpen, setOutlineOpen] = useState(initialSidebarState.outlineOpen)
+  const chooseOutlineOpen = (open: boolean) => {
+    setOutlineOpen(open)
+    void setOutlineOpenPreference(open).catch(() => undefined)
+  }
   const { handle, rootUrl, status, openDirectory, reauthorize, folderError } = usePersistedDirectory()
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [saveFolderDialogOpen, setSaveFolderDialogOpen] = useState(false)
@@ -739,7 +746,7 @@ export function FileRenderer({
         closeReviewOverlay={overlay.closeReviewOverlay}
         setReviewOverlayOpen={overlay.setReviewOverlayOpen}
         reviewItemCount={reviewItemCount}
-        setOutlineOpen={setOutlineOpen}
+        chooseOutlineOpen={chooseOutlineOpen}
         outlineOpen={outlineOpen}
         requestLinkSnapshot={snapshots.requestLinkSnapshot}
         fileMenuTriggerRef={fileMenuTriggerRef}
@@ -857,6 +864,7 @@ export function FileRenderer({
         rightSidebarWidth={rightSidebarWidth}
         setRightSidebarWidth={setRightSidebarWidth}
         setOutlineOpen={setOutlineOpen}
+        chooseOutlineOpen={chooseOutlineOpen}
         setActiveHeadingId={setActiveHeadingId}
       />
       {(reload.diskChanged || reload.hasReloadChanges || reload.reloadLoading || reload.reloadNoticeOpen) && (

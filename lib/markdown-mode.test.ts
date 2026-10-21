@@ -12,6 +12,8 @@ import {
   MARKDOWN_MODE_STORAGE_KEY,
   MIN_SPLIT_PANE_WIDTH,
   PREVIEW_FULL_WIDTH_STORAGE_KEY,
+  getOutlineOpenPreference,
+  OUTLINE_OPEN_STORAGE_KEY,
   resolveInitialSidebarState,
   resolveModeTransition,
   setMarkdownMode,
@@ -56,6 +58,17 @@ describe("Markdown modes", () => {
       },
       wasSplitView: true,
     })
+  })
+
+  it.each([
+    [true, true],
+    [false, false],
+    [undefined, null],
+    ["hidden", null],
+  ])("restores a stored outline preference (%s) after a reload", async (stored, expected) => {
+    storageGet.mockResolvedValue({ [OUTLINE_OPEN_STORAGE_KEY]: stored })
+
+    await expect(getOutlineOpenPreference()).resolves.toBe(expected)
   })
 
   it("restores Split mode from browser storage after a reload", async () => {

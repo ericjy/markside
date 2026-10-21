@@ -292,7 +292,7 @@ Hosted Snapshots.
 | `saveState` | Idle, unsaved, saving, saved, or failed |
 | `conflict` | Whether the disk version changed externally |
 | `dark`, `previewFullWidth`, and `sourceFullWidth` | Current theme and independent pane width choices; both width choices persist in `chrome.storage.local` |
-| `leftOpen` and `outlineOpen` | Sidebar visibility |
+| `leftOpen` and `outlineOpen` | Sidebar visibility; a shown or hidden Outline choice is stored in `chrome.storage.local` and restored before the first paint, though narrow windows still start with Outline closed |
 | `sidebarWidth` and `rightSidebarWidth` | Sidebar widths |
 | `reviewOverlaySize` | Session-only compact, standard, or wide Review width; compact is the default |
 | `reviewOverlayPosition` | Per-file Review position stored in `chrome.storage.local`; restored after reload and clamped to the current document area |

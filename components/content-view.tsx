@@ -152,6 +152,7 @@ interface ContentViewProps {
   rightSidebarWidth: number
   setRightSidebarWidth: React.Dispatch<React.SetStateAction<number>>
   setOutlineOpen: React.Dispatch<React.SetStateAction<boolean>>
+  chooseOutlineOpen: (open: boolean) => void
   setActiveHeadingId: React.Dispatch<React.SetStateAction<string | null>>
 }
 
@@ -238,6 +239,7 @@ export function ContentView({
   rightSidebarWidth,
   setRightSidebarWidth,
   setOutlineOpen,
+  chooseOutlineOpen,
   setActiveHeadingId,
 }: ContentViewProps) {
   const composerAgent = agentHandoff?.completed ? undefined : agentHandoff
@@ -703,7 +705,7 @@ export function ContentView({
                       activeHeadingId={activeHeadingId}
                       width={rightSidebarWidth}
                       onResize={setRightSidebarWidth}
-                      onClose={() => setOutlineOpen(false)}
+                      onClose={() => chooseOutlineOpen(false)}
                       onHeadingClick={(id) => {
                         setActiveHeadingId(id)
                         window.location.hash = id

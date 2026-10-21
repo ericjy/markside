@@ -66,6 +66,19 @@ export async function setPaneFullWidth(
   await chrome.storage.local.set({ [key]: fullWidth })
 }
 
+export const OUTLINE_OPEN_STORAGE_KEY = "outlineOpen"
+
+// null means the user has never toggled the outline, so the window width decides.
+export async function getOutlineOpenPreference(): Promise<boolean | null> {
+  const stored = await chrome.storage.local.get(OUTLINE_OPEN_STORAGE_KEY)
+  const open = stored[OUTLINE_OPEN_STORAGE_KEY]
+  return typeof open === "boolean" ? open : null
+}
+
+export async function setOutlineOpenPreference(open: boolean): Promise<void> {
+  await chrome.storage.local.set({ [OUTLINE_OPEN_STORAGE_KEY]: open })
+}
+
 interface SidebarState {
   leftOpen: boolean
   outlineOpen: boolean

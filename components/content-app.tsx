@@ -461,6 +461,8 @@ export function FileRenderer({
     discoveryVersion: agentDiscoveryVersion,
     onSessionChecked: (found) => setAgentSessionCheck({ url: fileUrl, status: found ? "idle" : "not-found" }),
     onLoaded: setAgentReviewLoadedUrl,
+    // The agent edits the document before marking comments Addressed, so its reply means the document changed.
+    onAgentReplied: () => void reload.checkDiskForUpdates().catch(() => undefined),
     openReview: () => overlay.setReviewOverlayOpen(true),
     review,
     updateReview,

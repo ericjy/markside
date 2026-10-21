@@ -105,6 +105,35 @@ export function hasReviewDrafts(review: ActiveReview | null, file?: AgentReviewF
   ))
 }
 
+export const AGENT_REPLY_CHECK_INTERVAL_MS = 2_000
+export const AGENT_REPLY_CHECK_LIMIT_MS = 120_000
+
+/**
+ * After Send, re-reads until the agent replies or the limit passes so the reviewer
+ * waiting in the tab sees the reply. ADR-0002 allows this check because Send starts
+ * it and it ends on its own. Returns a cancel function.
+ */
+export function checkForAgentReply(
+  check: () => Promise<boolean>,
+  onReply: () => void,
+  { intervalMs = AGENT_REPLY_CHECK_INTERVAL_MS, limitMs = AGENT_REPLY_CHECK_LIMIT_MS } = {},
+) {
+  let cancelled = false
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const deadline = Date.now() + limitMs
+  const tick = async () => {
+    const replied = await check().catch(() => false)
+    if (cancelled) return
+    if (replied) onReply()
+    else if (Date.now() + intervalMs <= deadline) timer = setTimeout(tick, intervalMs)
+  }
+  timer = setTimeout(tick, intervalMs)
+  return () => {
+    cancelled = true
+    clearTimeout(timer)
+  }
+}
+
 /** Once nothing awaits the agent, the reviewer ends the Review explicitly, resolving any Addressed comments. */
 export function canFinishAgentReview(file: AgentReviewFile, review: ActiveReview | null) {
   return file.status !== "resolved" && !!file.sentAt && file.comments.length > 0 &&

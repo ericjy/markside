@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest"
-import { agentReviewUrl, reviewSendFingerprint, prepareAgentReview, getAgentReviewResults, getAgentReviewDisabledReason, getPendingReviewItemCount, canFinishAgentReview } from "./agent-review"
+import { afterEach, describe, expect, it, vi } from "vitest"
+import { agentReviewUrl, reviewSendFingerprint, prepareAgentReview, getAgentReviewResults, getAgentReviewDisabledReason, getPendingReviewItemCount, canFinishAgentReview, checkForAgentReply } from "./agent-review"
 import { type AgentReviewFile } from "../cli/review-file.mjs"
 import { createEmptyReview } from "./review"
 
@@ -79,5 +79,47 @@ describe("pending Review item count", () => {
     expect(getPendingReviewItemCount(review, { ...sent, comments: [{ ...sent.comments[0], status: "addressed" }] })).toBe(2)
     expect(getPendingReviewItemCount(review, { ...sent, status: "resolved", comments: [{ ...sent.comments[0], status: "resolved" }] })).toBe(0)
     expect(getPendingReviewItemCount({ ...review, comments: [] })).toBe(1)
+  })
+})
+
+describe("post-Send agent reply check", () => {
+  afterEach(() => vi.useRealTimers())
+
+  it("re-reads on an interval and stops at the agent's reply", async () => {
+    vi.useFakeTimers()
+    const check = vi.fn(async () => check.mock.calls.length === 3)
+    const onReply = vi.fn()
+    checkForAgentReply(check, onReply, { intervalMs: 2_000, limitMs: 60_000 })
+    expect(check).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(4_000)
+    expect(onReply).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(2_000)
+    expect(onReply).toHaveBeenCalledOnce()
+    await vi.advanceTimersByTimeAsync(10_000)
+    expect(check).toHaveBeenCalledTimes(3)
+  })
+
+  it("ends on its own at the limit, tolerating read failures", async () => {
+    vi.useFakeTimers()
+    const check = vi.fn(async () => { throw new Error("unreadable") })
+    const onReply = vi.fn()
+    checkForAgentReply(check, onReply, { intervalMs: 2_000, limitMs: 6_000 })
+    await vi.advanceTimersByTimeAsync(60_000)
+    expect(check).toHaveBeenCalledTimes(3)
+    expect(onReply).not.toHaveBeenCalled()
+  })
+
+  it("stops when cancelled, even with a read in flight", async () => {
+    vi.useFakeTimers()
+    let finishRead: (replied: boolean) => void = () => undefined
+    const check = vi.fn(() => new Promise<boolean>((resolve) => { finishRead = resolve }))
+    const onReply = vi.fn()
+    const cancel = checkForAgentReply(check, onReply, { intervalMs: 2_000, limitMs: 60_000 })
+    await vi.advanceTimersByTimeAsync(2_000)
+    cancel()
+    finishRead(true)
+    await vi.advanceTimersByTimeAsync(10_000)
+    expect(onReply).not.toHaveBeenCalled()
+    expect(check).toHaveBeenCalledOnce()
   })
 })

@@ -2,7 +2,8 @@
 
 The user sends Review Comments to a waiting coding agent through a JSON file
 beside the Markdown document. Nothing is uploaded. The extension never watches
-or polls the filesystem; only the foreground CLI waits for the response.
+the filesystem; only the foreground CLI waits for the response. The one bounded
+re-read after Send is described below.
 
 ## Prototype setup
 
@@ -110,6 +111,10 @@ The CLI creates the Review file before opening Chrome. The extension discovers
 it through the existing local-file read relay on load and Review-panel open. Returning
 focus to the tab and Check for review each read it once, which also shows the
 agent's Addressed replies; the document itself still needs a reload.
+After a successful Send, the tab re-reads the Review file every 2 seconds for up
+to 2 minutes. At the agent's first change, it shows the reply and checks the
+document once, so Changed on disk and Reload appear without the reviewer leaving
+the tab. See [ADR-0002](adr/0002-no-file-watching.md).
 A pending request opens the panel once for that document. Sending uses the
 stored directory permission, or the existing folder picker in read-write mode
 when no saved directory contains the document. Before the first picker, one

@@ -460,7 +460,7 @@ Never import those packages directly. Use the project wrappers and update the ma
 
 ### No file watching
 
-Markside does not poll the filesystem or automatically reload external changes. Users navigate to or select a file when they want to reload it. Returning to the tab checks the open file once and may show Changed on disk. See [ADR-0002](adr/0002-no-file-watching.md).
+Markside does not poll the filesystem or automatically reload external changes. Users navigate to or select a file when they want to reload it. Returning to the tab checks the open file once and may show Changed on disk. After Send review to agent, a bounded check re-reads the Review file for up to 2 minutes and checks the document once when the agent replies. See [ADR-0002](adr/0002-no-file-watching.md).
 
 ### Rendering safety
 

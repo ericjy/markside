@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { finishReview, parseReviewFile, resolveAddressedComments, setReviewerCommentStatus, type AgentReviewComment, type AgentReviewFile } from "../cli/review-file.mjs"
-import { agentReviewUrl, canFinishAgentReview, getAgentReviewResults, getAgentReviewDisabledReason, prepareAgentReview, reviewSendFingerprint, agentReviewIdentity, currentAgentReview } from "~lib/agent-review"
+import { agentReviewUrl, canFinishAgentReview, checkForAgentReply, getAgentReviewResults, getAgentReviewDisabledReason, prepareAgentReview, reviewSendFingerprint, agentReviewIdentity, currentAgentReview } from "~lib/agent-review"
 import { getSavePathParts } from "~lib/content-app-policy"
 import { normalizeDiskText, requestHandlePermission } from "~lib/content-file-access"
 import { getDirectoryEntryForUrl } from "~lib/db"
@@ -42,6 +42,8 @@ interface Options {
   discoveryVersion?: number
   onSessionChecked?: (found: boolean) => void
   onLoaded?: (fileUrl: string) => void
+  /** The agent changed the Review after a Send from this tab. */
+  onAgentReplied?: () => void
   openReview: () => void
   review: ActiveReview | null
   updateReview?: (mutate: (current: ActiveReview | null) => ActiveReview | null) => void
@@ -60,6 +62,8 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
   const [updatingCommentId, setUpdatingCommentId] = useState<string | null>(null)
   const [finishing, setFinishing] = useState(false)
   const [resolvingAll, setResolvingAll] = useState(false)
+  const [replyCheck, setReplyCheck] = useState<{ url: string; sent: number } | null>(null)
+  const checkForUpdatesRef = useRef<() => Promise<boolean>>(async () => false)
   const writingRef = useRef(false)
   const optionsRef = useRef(options)
   optionsRef.current = options
@@ -111,6 +115,11 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
     return () => { active = false }
   }, [fileUrl, enabled, open, reloadVersion, sessionCheckVersion, discoveryVersion])
 
+  useEffect(() => {
+    if (!enabled || replyCheck?.url !== fileUrl) return
+    return checkForAgentReply(() => checkForUpdatesRef.current(), () => optionsRef.current.onAgentReplied?.())
+  }, [enabled, fileUrl, replyCheck])
+
   const file = state?.url === fileUrl ? state.file : null
   const results = useMemo(() => getAgentReviewResults(file, review), [file, review])
   useEffect(() => {
@@ -140,6 +149,7 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
     setState({ url: fileUrl, file: latest })
     return changed
   }
+  checkForUpdatesRef.current = checkForUpdates
 
   const getReviewDirectory = async () => {
     // Request permission first, while the click's user gesture is active.
@@ -296,6 +306,7 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       const sent = prepareAgentReview(latest, reviewToSend, docHash, sourceLine)
       if (!current() || options.hasUnsavedDraftRef.current) return false
       await writeReview(sidecarHandle, sent)
+      if (current()) setReplyCheck({ url: fileUrl, sent: Date.now() })
       return true
     } catch (error) {
       if (current() && (error as DOMException).name !== "AbortError") {

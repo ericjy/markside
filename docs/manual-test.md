@@ -123,6 +123,11 @@ pull request or review response.
   not receive it until Send is clicked. Reopen an Addressed card as well.
   Deny folder write access for a status change and confirm an error appears
   without changing the card. Retry with access, then resolve all comments.
+- [ ] Send a review and stay in the tab. When the agent edits the document and
+  addresses the comment within 2 minutes, confirm the reply appears and Changed
+  on disk with Reload shows without switching tabs; the document is not replaced.
+  Send again and leave the agent idle for over 2 minutes; confirm DevTools shows
+  no further reads of the Review file after the limit.
 - [ ] Run the CLI resolve command and confirm it is rejected. After all comments
   are addressed, start another review and confirm it waits and retains replies
   and resolved history. Resolve every comment while the CLI waits and confirm

@@ -33,3 +33,12 @@ On the same focus event, Markside reads the open text file once and compares it
 with the last loaded or saved text. A difference shows Changed on disk beside
 Reload. The document is never replaced; the user still chooses when to reload.
 Images are not checked.
+
+## Exception: post-Send reply check
+
+After the user clicks Send review to agent, Markside re-reads the Review file
+every 2 seconds for up to 2 minutes, because a reviewer often stays in the tab
+waiting for the agent. It stops at the first change, which is the agent's reply,
+and then runs the changed-on-disk check once. Send starts the check, it ends on
+its own, and nothing runs while the tab is idle. It never reloads or replaces
+the document; the user still chooses when to reload.

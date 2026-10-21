@@ -102,7 +102,7 @@ export function nextReviewOverlaySize(size: ReviewOverlaySize): ReviewOverlaySiz
 
 export function clampReviewDockWidth(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value)
-    ? Math.max(320, Math.min(600, value))
+    ? Math.max(360, Math.min(600, value))
     : 384
 }
 

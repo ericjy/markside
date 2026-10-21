@@ -544,7 +544,7 @@ export function ReviewPanel({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="review-panel-layout flex h-full min-h-0 flex-col">
       <div
         ref={commentsScrollRef}
         className="min-h-0 flex-1 overflow-y-auto">
@@ -847,14 +847,10 @@ export function ReviewPanel({
             <div className="py-1">
               <p role="status" className="flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-300">
                 <Check size={16} className="shrink-0" aria-hidden="true" />
-                Review sent. Agent should pick it up shortly.
+                Review sent
               </p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                Reload page after agent addressed the review. Agent hasn’t started?{" "}
-                <button ref={sendHelpRef} type="button" aria-haspopup="dialog" onClick={() => setSendHelpOpen(true)}
-                  className="underline underline-offset-2 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
-                  Start a review in your agent to connect to Markside.
-                </button>
+                Waiting for the agent’s response.
               </p>
             </div>
           ) : (
@@ -877,7 +873,7 @@ export function ReviewPanel({
             Your agent is waiting. Add more comments or finish.
           </p>
         )}
-        <div className={`flex flex-wrap items-center gap-2 ${showAgentAction && !canFinish ? "mt-2" : ""}`}>
+        <div className={`review-footer-actions flex flex-wrap items-center gap-2 ${showSentStatus ? "review-footer-actions-sent" : ""} ${showAgentAction && !canFinish ? "mt-2" : ""}`}>
           {/* Secondary, so it doesn't invite ending the Review before the reviewer has added everything. */}
           {activeAgentHandoff && canFinish && addressedCount > 0 && (
             <Button variant="outline" className="h-11 whitespace-nowrap px-3 text-xs" disabled={statusWriting}
@@ -897,9 +893,9 @@ export function ReviewPanel({
               aria-busy={updateCheck === "checking"}>
               <RefreshCw size={14} aria-hidden="true" className={updateCheck === "checking" ? "animate-spin" : ""} />
               <span className="grid">
-                <span aria-hidden="true" className="invisible" style={{ gridArea: "1 / 1" }}>Check agent response</span>
+                <span aria-hidden="true" className="invisible" style={{ gridArea: "1 / 1" }}>Check for response</span>
                 <span aria-live="polite" style={{ gridArea: "1 / 1" }}>
-                  {updateCheck === "checking" ? "Checking…" : updateCheck === "unchanged" ? "No response yet" : updateCheck === "updated" ? "Updates found" : "Check agent response"}
+                  {updateCheck === "checking" ? "Checking…" : updateCheck === "unchanged" ? "No response yet" : updateCheck === "updated" ? "Updates found" : "Check for response"}
                 </span>
               </span>
             </Button>
@@ -918,10 +914,10 @@ export function ReviewPanel({
               <TooltipContent style={{ zIndex: 100002 }}>{copied ? "Review copied for this file" : "Copy review as prompt"}</TooltipContent>
             </Tooltip>
           )}
-          {copyableCount > 0 && !canFinish && <Button key={showAgentAction ? "secondary" : "primary"} variant={showAgentAction ? "ghost" : "default"} className={`h-11 min-w-max whitespace-nowrap ${showAgentAction ? "shrink-0 px-2 text-xs text-muted-foreground hover:text-foreground" : "flex-1"}`} onClick={onCopy}>
+          {copyableCount > 0 && !canFinish && <Button key={showAgentAction ? "secondary" : "primary"} variant={showAgentAction ? "ghost" : "default"} className={`h-11 min-w-max whitespace-nowrap ${showAgentAction ? "shrink-0 px-2 text-xs text-muted-foreground hover:text-foreground" : "flex-1"}`} aria-label={copied ? "Review copied for this file" : "Copy review as prompt"} onClick={onCopy}>
             {copied
               ? <Check size={14} strokeWidth={2.5} className="text-[hsl(132_60%_46%)] dark:text-[hsl(130_78%_29%)]" />
-              : <Copy size={14} />} {copied ? "Review copied for this file" : "Copy review as prompt"}
+              : <Copy size={14} />} {copied ? "Review copied for this file" : showSentStatus ? "Copy as prompt" : "Copy review as prompt"}
           </Button>}
           {(historyFile ? hasDrafts : itemCount > 0) && (
             <Button
@@ -952,6 +948,19 @@ export function ReviewPanel({
         </div>
         {showSentStatus && updateCheck === "error" && (
           <p role="status" className="mt-2 text-xs text-muted-foreground">Couldn’t check. Try again.</p>
+        )}
+        {showSentStatus && (
+          <details className="review-sent-help group mt-3 text-xs leading-relaxed text-muted-foreground">
+            <summary className="flex min-h-9 cursor-pointer list-none items-center gap-1.5 rounded-md text-left hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
+              <ChevronDown size={14} aria-hidden="true" className="shrink-0 -rotate-90 group-open:rotate-0" />
+              Agent hasn’t started?
+            </summary>
+            <p className="mt-1">If your agent isn’t waiting for this Review, start a review session first.</p>
+            <button ref={sendHelpRef} type="button" aria-haspopup="dialog" onClick={() => setSendHelpOpen(true)}
+              className="mt-2 block min-h-9 w-full rounded-sm text-left underline underline-offset-2 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+              Start a review in your agent
+            </button>
+          </details>
         )}
         {showStartReview && (
           <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs leading-relaxed text-muted-foreground">

@@ -229,7 +229,7 @@ export function ContentReviewOverlay({
                 role="separator"
                 aria-label="Resize Review sidebar"
                 aria-orientation="vertical"
-                aria-valuemin={320}
+                aria-valuemin={360}
                 aria-valuemax={600}
                 aria-valuenow={reviewDockWidth}
                 tabIndex={0}
@@ -254,7 +254,7 @@ export function ContentReviewOverlay({
                 onKeyDown={(event) => {
                   const next = event.key === "ArrowLeft" ? reviewDockWidth + 16
                     : event.key === "ArrowRight" ? reviewDockWidth - 16
-                    : event.key === "Home" ? 320 : event.key === "End" ? 600 : null
+                    : event.key === "Home" ? 360 : event.key === "End" ? 600 : null
                   if (next === null) return
                   event.preventDefault()
                   resizeReviewDock(next)

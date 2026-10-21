@@ -463,12 +463,13 @@ describe("ReviewPanel", () => {
     const sentStatus = Array.from(container.querySelectorAll('[role="status"]')).find((element) => element.textContent?.includes("Review sent"))!
     expect(sentStatus).toBeDefined()
     expect(sentStatus.closest("button")).toBeNull()
-    expect(container.textContent).toContain("Reload page after agent addressed the review.")
+    expect(sentStatus.textContent?.trim()).toBe("Review sent")
+    expect(container.textContent).toContain("Waiting for the agent’s response.")
     expect(container.textContent!.indexOf("Review sent")).toBeLessThan(container.textContent!.indexOf("Agent hasn’t started?"))
     expect(container.textContent).not.toContain("Your review is saved.")
     expect(container.textContent).not.toContain("Add or edit a comment")
     expect(container.textContent).not.toContain("Send review to agent")
-    const copyButton = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.trim() === "Copy review as prompt")!
+    const copyButton = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.trim() === "Copy as prompt")!
     act(() => copyButton.click())
     expect(onCopy).toHaveBeenCalledOnce()
     expect(send).not.toHaveBeenCalled()
@@ -481,7 +482,7 @@ describe("ReviewPanel", () => {
     const onCheckUpdates = vi.fn().mockResolvedValue(false)
     const agentHandoff = { disabled: true, disabledReason: null, sending: false, sent: true, error: null, send: vi.fn() }
     renderPanel({ agentHandoff, onCheckUpdates })
-    const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check agent response"))!
+    const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check for response"))!
     await act(async () => check.click())
     expect(onCheckUpdates).toHaveBeenCalledOnce()
     expect(check.textContent).toContain("No response yet")
@@ -493,7 +494,7 @@ describe("ReviewPanel", () => {
       agentHandoff: { disabled: true, disabledReason: null, sending: false, sent: true, error: null, send: vi.fn() },
       onCheckUpdates: vi.fn().mockRejectedValue(new Error("Read failed")),
     })
-    const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check agent response"))!
+    const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check for response"))!
     await act(async () => check.click())
     expect(container.textContent).toContain("Couldn’t check. Try again.")
     expect(container.textContent).not.toContain("No response yet")
@@ -508,7 +509,12 @@ describe("ReviewPanel", () => {
     renderPanel({ review: null, comments: [], agentHandoff: {
       sourceUrl, sent: true, disabled: true, disabledReason: "Add or edit a comment to send again.", sending: false, error: null, send: vi.fn(),
     } })
-    const help = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.trim() === "Start a review in your agent to connect to Markside.")!
+    const disclosure = Array.from(container.querySelectorAll("details")).find((item) => item.querySelector("summary")?.textContent === "Agent hasn’t started?")!
+    expect(disclosure.open).toBe(false)
+    act(() => disclosure.querySelector("summary")!.click())
+    expect(disclosure.open).toBe(true)
+    const help = disclosure.querySelector<HTMLButtonElement>("button")!
+    expect(help.textContent).toBe("Start a review in your agent")
     act(() => help.click())
     const dialog = document.querySelector('[role="dialog"]')!
     expect(dialog.textContent).toContain("Markside finds the review when you return to this tab.")

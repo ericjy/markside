@@ -295,8 +295,12 @@ permissions and disk writes require manual verification.
 
 ### Review update check
 
-- Send a Review and verify the footer shows Review sent, Check agent response,
-  quiet Start a review help, and Copy review as prompt.
+- Send a Review and verify the footer shows Review sent, Waiting for the agent’s
+  response, Check for response, and Copy as prompt. Agent hasn’t started? is
+  collapsed; expand it and use Start a review in your agent to open setup.
+- At the 360px minimum dock width, verify the sent-state buttons fill the width
+  on separate rows, all text aligns left, and nothing overflows. Repeat with a
+  floating panel and in dark mode; wider panels may put actions on one row.
 - Check before the agent replies: No response yet appears briefly. Have the agent
   address a comment, then check: the reply appears without reloading the document.
 - Have the agent edit the document: checking offers Reload in the bottom-centered document bar without

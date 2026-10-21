@@ -311,7 +311,7 @@ toolbar at the far right, reserving its width for Preview, Source, and Split.
 Outline remains independently toggleable and sits between Preview and Review
 when both are open. Review's layout and docked width persist across files in
 `chrome.storage.local` (`reviewLayout` and `reviewDockWidth`). The docked width
-starts at 384 px and can be resized from 320–600 px using its left divider or
+starts at 384 px and can be resized from 360–600 px using its left divider or
 that divider's arrow keys, Home, and End.
 
 A `ResizeObserver` measures the actual `SidebarInset`. If the chosen Review width
@@ -527,13 +527,16 @@ access as delivery to the agent: comments are already saved locally in IndexedDB
 A matching saved or newly selected sidebar folder hides the line.
 Copy review as prompt is a quiet, borderless secondary action below the full-width
 Send button, aligned left. Clear aligns right on the same row when space allows. Once the
-current feedback is sent, a green Review sent. Agent should pick it up shortly. status line replaces the primary
-button until feedback changes. **Check agent response** reads the agent sidecar and
+current feedback is sent, a green Review sent status and Waiting for the agent’s
+response replace the primary button until feedback changes. **Check for response**
+reads the agent sidecar and
 document once, refreshes replies, and briefly shows No response yet or Updates
 found inside the check button. Read failures offer a retry. If the document changed, a bottom-centered document bar offers **Reload**
 using the existing Reload action and Unsaved Draft confirmation; checking never
-replaces document content. The guidance paragraph includes a Start a review link.
-Copy remains available. The sent status confirms a local write, not agent receipt; no agent
+replaces document content. A collapsed Agent hasn’t started? disclosure offers
+setup guidance and opens the existing Start a review dialog. Copy as prompt
+remains available. Sent-state actions stack at panel widths of 400px or less,
+using a container query so docked and floating panels respond to their own width. The sent status confirms a local write, not agent receipt; no agent
 process is started. Editing feedback restores Send.
 For an active request, the comment composer keeps Save & copy prompt, and its Save
 is a split button whose menu offers Save & send review; Cmd/Ctrl+Shift+Enter also

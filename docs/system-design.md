@@ -490,7 +490,7 @@ Markside does not poll the filesystem or automatically reload external changes. 
 
 ### Rendering safety
 
-Markdown rendering disables raw HTML. DOMPurify sanitizes generated HTML and explicitly preserves the `data-wikilink` attribute used for local navigation.
+Markdown rendering allows raw HTML, such as inline SVG and `<details>`. DOMPurify sanitizes the generated HTML, stripping scripts and event handlers, and explicitly preserves the `data-wikilink` and `data-source-line` attributes used for local navigation and source mapping.
 
 ### Browser permissions
 

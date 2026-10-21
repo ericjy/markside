@@ -11,3 +11,4 @@ These designs are retained for historical intent. Unless marked otherwise, their
 - [Auto Save preference](designs/2026-07-24-auto-save-design.md)
 - [Web Preview](designs/2026-10-19-web-preview-design.md) (Proposed)
 - [Diagram engines beyond Mermaid](designs/2026-10-19-diagram-engines-design.md) (Proposed)
+- [HTML diagrams](designs/2026-10-20-html-diagrams-design.md) (Proposed)

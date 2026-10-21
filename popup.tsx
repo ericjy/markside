@@ -157,7 +157,9 @@ export default function Popup() {
         .review-name { color: var(--popup-text); font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .review-name.mono { font-family: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
         .review-count { background: var(--popup-cream-deep); border-radius: 999px; color: var(--popup-text-secondary); flex-shrink: 0; font-size: 11px; font-weight: 600; padding: 2px 8px; }
-        .review-meta { color: var(--popup-text-secondary); display: block; font-size: 11px; line-height: 1.45; margin: 4px 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .review-meta { color: var(--popup-text-secondary); display: flex; font-size: 11px; line-height: 1.45; margin: 4px 0 8px; white-space: nowrap; }
+        .review-path { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+        .review-age { flex-shrink: 0; }
 
         .open-row { align-items: center; color: var(--popup-text-secondary); display: flex; font-size: 12px; gap: 9px; padding: 5px 0; }
         .open-row b { color: var(--popup-text); font-weight: 600; }
@@ -264,10 +266,11 @@ export default function Popup() {
                       {entry.itemCount} {entry.itemCount === 1 ? "item" : "items"}
                     </span>
                   </span>
-                  <span className="review-meta" title={entry.detail}>
-                    {[entry.detail, describeReviewAge(entry.updatedAt, Date.now())]
-                      .filter(Boolean)
-                      .join(" · ")}
+                  <span className="review-meta">
+                    {entry.detail && <span className="review-path" title={entry.detail}>{entry.detail}</span>}
+                    <span className="review-age">
+                      {entry.detail ? "\u00a0· " : ""}{describeReviewAge(entry.updatedAt, Date.now())}
+                    </span>
                   </span>
                   <span className="review-open"><ExternalLink size={12} /> Open</span>
                 </button>

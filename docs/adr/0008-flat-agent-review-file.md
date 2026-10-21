@@ -25,8 +25,11 @@ Keep version 1: one flat `comments` list holding each comment's latest `quote`,
 
 - Each Send replaces the list with the comments being sent. Withdrawn drafts drop
   out; resolved comments stay.
-- Only reviewer resolution of every comment ends a Review. A fresh `review` keeps
-  the resolved comments and note, so earlier feedback stays under Resolved.
+- Only the reviewer ends a Review, by choosing Finish review once every sent
+  comment is resolved and nothing is unsent. Resolving alone keeps the agent
+  waiting, so the reviewer can clear addressed comments and keep giving feedback.
+  A fresh `review` keeps the resolved comments and note, so earlier feedback
+  stays under Resolved.
 - Retries and `review --continue` never reset the file. Addressed-only feedback
   keeps the agent waiting.
 - The reviewer may resolve Sent feedback (Withdraw) as well as Addressed feedback.
@@ -45,6 +48,8 @@ again; the agent receives the latest text.
   the previous text, the agent's `address` applies to the new text. Use one agent
   per document.
 - Writes remain atomic replacement, not cross-process transactions.
+- A reviewer who never finishes leaves the agent waiting until they tell it to
+  proceed.
 - Revisit reply threads if reviewers need to answer the agent rather than revise
   their comment. Revisit MRSF if users ask to open Markside reviews in other
   tools; an export would likely be enough.

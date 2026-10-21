@@ -62,7 +62,7 @@
     },
     {
       "id": 6,
-      "prompt": "The agent has addressed the last open comment in a Review. The reviewer has not resolved it. Describe the next action. Later the reviewer resolves all comments before the continuation starts. Describe what the CLI should do.",
+      "prompt": "The agent has addressed the last open comment in a Review. The reviewer has not resolved it. Describe the next action. Later the reviewer resolves all comments and finishes the Review before the continuation starts. Describe what the CLI should do.",
       "expected_output": "Continue the existing Review with review --continue --no-open; do not start another Review or finish just because comments are addressed. If already resolved, report Review resolved without starting a new Review.",
       "files": [],
       "expectations": [

@@ -212,7 +212,8 @@ export function ReviewPanel({
     if (copiedCommentTimeoutRef.current) clearTimeout(copiedCommentTimeoutRef.current)
   }, [])
   const activeAgentHandoff = agentHandoff?.completed ? undefined : agentHandoff
-  const showAgentDisabledHelp = comments.length > 0 && !activeAgentHandoff?.sent && !!activeAgentHandoff?.disabledReason
+  const canFinish = !!activeAgentHandoff?.canFinish
+  const showAgentDisabledHelp = comments.length > 0 && !canFinish && !activeAgentHandoff?.sent && !!activeAgentHandoff?.disabledReason
   const showAgentFolderHelp = !!activeAgentHandoff?.folderToChoose && !activeAgentHandoff.disabledReason
   const reviewSourceUrl = sourceUrl ?? activeAgentHandoff?.sourceUrl ?? review?.sourceUrl
   const showStartReview = needsNewReview || (!activeAgentHandoff && !!reviewSourceUrl?.startsWith("file:"))
@@ -798,7 +799,12 @@ export function ReviewPanel({
             </Dialog.Root>
           </>
         )}
-        {activeAgentHandoff?.sent && (
+        {canFinish && (
+          <p id="agent-review-finish-help" className="mb-3 text-xs leading-relaxed text-muted-foreground">
+            All comments resolved. Add more feedback, or finish so your agent can continue.
+          </p>
+        )}
+        {activeAgentHandoff?.sent && !canFinish && (
           <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
             Agent not picking up the review sent? Make sure you start a review in your agent. You can{" "}
             <button ref={sendHelpRef} type="button" onClick={() => setSendHelpOpen(true)}
@@ -807,7 +813,14 @@ export function ReviewPanel({
             </button>.
           </p>
         )}
-        {activeAgentHandoff && (
+        {activeAgentHandoff && canFinish && (
+            <Button className="h-11 w-full whitespace-nowrap px-3" disabled={activeAgentHandoff.finishing || activeAgentHandoff.updatingCommentId != null}
+              onClick={activeAgentHandoff.finish} aria-busy={activeAgentHandoff.finishing} aria-describedby="agent-review-finish-help">
+              <Check size={14} />
+              {activeAgentHandoff.finishing ? "Finishing review…" : "Finish review"}
+            </Button>
+        )}
+        {activeAgentHandoff && !canFinish && (
             <Button className="h-11 w-full whitespace-nowrap px-3 disabled:bg-primary disabled:text-primary-foreground/60 disabled:opacity-100" disabled={activeAgentHandoff.disabled} onClick={() => void activeAgentHandoff.send()} aria-busy={activeAgentHandoff.sending}
               aria-describedby={showAgentDisabledHelp ? "agent-review-send-help" : showAgentFolderHelp ? "agent-review-folder-help" : undefined}>
               {activeAgentHandoff.sent ? <Check size={14} /> : <Send size={14} />}

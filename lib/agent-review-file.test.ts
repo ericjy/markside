@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { type AgentReviewFile, parseReviewFile, refreshReviewFile, formatReviewComments, addressReviewComment, setReviewerCommentStatus, sendReview } from "../cli/review-file.mjs"
+import { type AgentReviewFile, parseReviewFile, refreshReviewFile, formatReviewComments, addressReviewComment, setReviewerCommentStatus, sendReview, finishReview } from "../cli/review-file.mjs"
 
 const sent: AgentReviewFile = {
   version: 1, doc: "PLAN.md", docHash: "a".repeat(64), status: "sent",
@@ -35,7 +35,7 @@ describe("agent Review file", () => {
     expect(sent.comments[0].status).toBe("open")
     expect(parseReviewFile(JSON.stringify(addressed), "PLAN.md")).toEqual(addressed)
     const resolved = setReviewerCommentStatus(addressed, "c1", "resolved")
-    expect(resolved.status).toBe("resolved")
+    expect(resolved.status).toBe("sent")
     expect(resolved.comments[0].status).toBe("resolved")
     expect(() => addressReviewComment(resolved, "c1", "Changed again")).toThrow()
     const reopened = setReviewerCommentStatus(resolved, "c1", "open")
@@ -43,7 +43,16 @@ describe("agent Review file", () => {
     expect(reopened.comments[0]).toMatchObject({ status: "open", reply: "Clarified the plan." })
   })
   it("lets the reviewer accept sent feedback without an agent acknowledgement", () => {
-    expect(setReviewerCommentStatus(sent, "c1", "resolved")).toMatchObject({ status: "resolved", comments: [{ status: "resolved" }] })
+    expect(setReviewerCommentStatus(sent, "c1", "resolved")).toMatchObject({ status: "sent", comments: [{ status: "resolved" }] })
+  })
+  it("ends a Review only when the reviewer finishes after resolving every sent comment", () => {
+    expect(() => finishReview(addressReviewComment(sent, "c1", "Done"))).toThrow()
+    expect(() => finishReview({ ...sent, sentAt: undefined, status: "pending", comments: [{ ...sent.comments[0], status: "resolved" }] })).toThrow()
+    const resolved = setReviewerCommentStatus(sent, "c1", "resolved")
+    expect(finishReview(resolved)).toMatchObject({ status: "resolved", comments: [{ status: "resolved" }] })
+    expect(() => finishReview(finishReview(resolved))).toThrow()
+    // Reopening and resolving again leaves a pending request the reviewer can still finish.
+    expect(finishReview(setReviewerCommentStatus(setReviewerCommentStatus(resolved, "c1", "open"), "c1", "resolved")).status).toBe("resolved")
   })
   it("waits for another send after addressing and retains comment history", () => {
     const addressed = addressReviewComment(sent, "c1", "Clarified.")

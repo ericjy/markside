@@ -13,14 +13,15 @@ markside review PLAN.md --continue --no-open
 ```
 
 `review` opens Chrome and waits up to 540 seconds. It prints an agent prompt on
-send and exits 0. If the user resolves every comment while it is waiting, it reports
-`Review resolved for ...` and exits 0. On timeout it prints `STILL_WAITING:` and exits 2; rerun the
+send and exits 0. If the user resolves every comment and finishes the Review while
+it is waiting, it reports `Review resolved for ...` and exits 0. On timeout it prints `STILL_WAITING:` and exits 2; rerun the
 same command. Ctrl+C exits 130 and leaves the request pending. Progress goes to
 stderr; comments and timeout instructions go to stdout. Other errors exit 1.
 
 The only communication channel is `PLAN.md.review.json` beside the document.
 A retry preserves the pending request, and returns an existing send immediately.
-Addressing keeps the current request active. After reviewer resolution, `review`
+Addressing and resolving keep the current request active. After the reviewer
+finishes the Review, `review`
 starts a new request; resolved comments and their replies stay in the file as
 history. Writes use a
 temporary sibling file and rename. The waiting process watches the directory
@@ -30,9 +31,9 @@ out. There is no server or persistent background process.
 After addressing all received comments, the agent runs `review --continue --no-open`
 and waits for the reviewer to check the changes. This preserves the current request
 and its replies, without opening another tab. Further sends return the next open
-comments. Resolving every comment ends the loop, including when resolution happens
+comments. Finishing the Review in Markside ends the loop, including when it happens
 before the continuation command starts. Timeout retries keep `--continue --no-open`.
-The agent repeats this loop until the reviewer resolves everything or asks it to stop.
+The agent repeats this loop until the reviewer finishes the Review or asks it to stop.
 
 Add `*.review.json` to your project's `.gitignore` to keep local comments private.
 

@@ -4,7 +4,7 @@ import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
 import { spawn } from "node:child_process"
 import { once } from "node:events"
-import { parseReviewFile, setReviewerCommentStatus, sendReview } from "../cli/review-file.mjs"
+import { finishReview, parseReviewFile, setReviewerCommentStatus, sendReview } from "../cli/review-file.mjs"
 
 const cli = resolve("cli/markside.mjs")
 let folder: string
@@ -56,7 +56,7 @@ describe("markside CLI with real files", () => {
     expect(retry.stdout).toBe(received.stdout)
     expect((await run(["address", doc, "c1", "--reply", "Done"]).done).code).toBe(0)
     const addressed = parseReviewFile(await readFile(sidecar, "utf8"), "plan #1.md")
-    await writeFile(sidecar, JSON.stringify(setReviewerCommentStatus(addressed, "c1", "resolved")))
+    await writeFile(sidecar, JSON.stringify(finishReview(setReviewerCommentStatus(addressed, "c1", "resolved"))))
     expect((await run(["review", doc, "--continue", "--no-open"]).done).stdout).toContain("Review resolved")
     const next = run(["review", doc, "--no-open", "--timeout", "3"])
     await next.waiting
@@ -97,17 +97,19 @@ describe("markside CLI with real files", () => {
     expect(JSON.parse(await readFile(sidecar, "utf8")).comments[0].status).toBe("addressed")
   })
 
-  it("finishes a waiting request when the reviewer accepts all addressed comments", async () => {
+  it("keeps waiting after the reviewer resolves every comment until they finish", async () => {
     const first = run(["review", doc, "--no-open", "--timeout", "3"])
     await first.waiting
     await send()
     await first.done
     await run(["address", doc, "c1", "--reply", "Clarified."]).done
-    const waiting = run(["review", doc, "--no-open", "--timeout", "3"])
-    await waiting.waiting
     const current = parseReviewFile(await readFile(sidecar, "utf8"), "plan #1.md")
     const accepted = setReviewerCommentStatus(current, "c1", "resolved")
-    await writeFile(`${sidecar}.tmp`, JSON.stringify(accepted))
+    await writeFile(sidecar, JSON.stringify(accepted))
+    expect((await run(["review", doc, "--no-open", "--timeout", "0.03"]).done).code).toBe(2)
+    const waiting = run(["review", doc, "--no-open", "--timeout", "3"])
+    await waiting.waiting
+    await writeFile(`${sidecar}.tmp`, JSON.stringify(finishReview(accepted)))
     await rename(`${sidecar}.tmp`, sidecar)
     expect(await waiting.done).toMatchObject({ code: 0, stdout: expect.stringContaining("Review resolved for plan #1.md") })
   })
@@ -139,7 +141,7 @@ describe("markside CLI with real files", () => {
     await run(["address", doc, "c1"]).done
     const waiting = run(["review", doc, "--continue", "--no-open", "--timeout", "3"])
     await waiting.waiting
-    const accepted = setReviewerCommentStatus(parseReviewFile(await readFile(sidecar, "utf8"), "plan #1.md"), "c1", "resolved")
+    const accepted = finishReview(setReviewerCommentStatus(parseReviewFile(await readFile(sidecar, "utf8"), "plan #1.md"), "c1", "resolved"))
     await writeFile(`${sidecar}.tmp`, JSON.stringify(accepted))
     await rename(`${sidecar}.tmp`, sidecar)
     expect(await waiting.done).toMatchObject({ code: 0, stdout: expect.stringContaining("Review resolved for") })

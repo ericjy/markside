@@ -27,7 +27,7 @@ async function atomicWrite(path, review) {
   }
 }
 
-// Addressed-only feedback is waiting on the reviewer, not the agent.
+// Addressed or resolved feedback waits on the reviewer until they send more or finish.
 const hasAgentWork = (review) =>
   review.status === "resolved" || (review.status === "sent" && review.comments.some(({ status }) => status === "open"))
 

@@ -54,13 +54,13 @@ The adjacent `<file>.review.json` is the only handoff channel. Never write
 `status: "sent"` yourself or infer approval from elapsed time. Read current
 comments without waiting with `markside comments <file>`.
 
-A Review ends only when the reviewer resolves all comments. A fresh `review` then
-starts a new one. Addressing all comments keeps the current Review active, even
-without `--continue`. `--continue` reports resolution even if accepted before the
-wait started. `review` returns only open feedback. `comments` also lists addressed
+A Review ends only when the reviewer resolves all comments and finishes it. A
+fresh `review` then starts a new one. Addressing or resolving all comments keeps
+the current Review active, even without `--continue`. `--continue` reports
+resolution even if the reviewer finished before the wait started. `review` returns only open feedback. `comments` also lists addressed
 and resolved comments with their replies; do not treat those as new work.
 If the CLI returns
-`Review resolved for ...`, the user has accepted all comments; continue the task
+`Review resolved for ...`, the user has accepted all comments and finished; continue the task
 without making further changes for those comments.
 
 If the user explicitly prefers to keep chatting while reviewing, the waiting

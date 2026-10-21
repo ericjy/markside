@@ -122,7 +122,9 @@ pull request or review response.
 - [ ] Run the CLI resolve command and confirm it is rejected. After all comments
   are addressed, start another review and confirm it waits and retains replies
   and resolved history. Resolve every comment while the CLI waits and confirm
-  it exits successfully with Review resolved for the document.
+  it keeps waiting and the panel offers Finish review. Add a new comment and
+  confirm Send returns and the CLI receives it. Resolve everything again, click
+  Finish review, and confirm the CLI exits with Review resolved for the document.
   Addressed and Resolved comments are read-only until reopened. Reopen a
   comment, edit it, and confirm its old reply disappears for the new wording.
   Repeat a Reload after changing only a sidecar reply, without changing the
@@ -169,8 +171,9 @@ pull request or review response.
 - [ ] After the agent addresses comments, confirm it runs `review --continue --no-open`
   without opening another tab. Reload and send another comment; confirm the agent
   handles it and waits again. Resolve every addressed comment and confirm the wait
-  exits with `Review resolved for ...`. Also resolve before the continuation starts
-  and confirm it exits immediately without creating another pending request.
+  continues; click Finish review and confirm it exits with `Review resolved for ...`.
+  Also finish before the continuation starts and confirm it exits immediately
+  without creating another pending request.
 - [ ] Check network activity: this flow performs local file reads and writes
   only, with no HTTP requests.
 
@@ -181,7 +184,7 @@ Automated checks cover the flat file contract, CLI retry/continuation against
 real temporary files, and Active/Resolved panel rendering. Native Chrome
 permissions and disk writes require manual verification.
 
-- [ ] Resolve all comments, then start a fresh review. Verify the earlier comments
+- [ ] Resolve all comments and finish the Review, then start a fresh review. Verify the earlier comments
   stay under Resolved with their replies, new feedback sends normally, and the CLI
   output lists only the new open comments.
 - [ ] Clear the browser's local Review draft and verify sent comments remain
@@ -190,8 +193,8 @@ permissions and disk writes require manual verification.
   selection. Repeated clicks, cancelled selection, stale tabs, and denied
   permission must not change the sidecar.
 - [ ] Run the skill in Claude Code/Codex: address comments, wait with
-  `--continue --no-open`, send again, then resolve everything. Verify no
-  additional tab opens during continuation. Resolve immediately before
+  `--continue --no-open`, send again, then resolve everything and finish. Verify no
+  additional tab opens during continuation. Finish immediately before
   continuation and verify it exits as completed.
 
 
@@ -222,7 +225,7 @@ permissions and disk writes require manual verification.
   Resolve. Edit sent text and verify Draft returns;
   Clear drafts restores the last sent text and status. Local resolved comments
   are not included as new agent work or in Copy review as prompt.
-- [ ] Resolve every sent comment, then add new feedback. Review complete disappears
+- [ ] Resolve every sent comment and finish the Review, then add new feedback. Review complete disappears
   and Start another review… opens the command dialog. Confirm the sidecar remains
   byte-for-byte unchanged until the CLI starts a fresh review. Close/reopen the
   panel after the CLI starts: Send becomes available and completed history stays

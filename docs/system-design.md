@@ -527,8 +527,9 @@ text is unchanged. No timer or filesystem watcher is used.
 
 
 The sidecar keeps one flat comment list with each comment's latest status and
-reply. A normal retry or continuation preserves the request. Addressing keeps the
-agent waiting; reviewer resolution ends the request. Only then does a fresh review
+reply. A normal retry or continuation preserves the request. Addressing and
+resolving keep the agent waiting; the reviewer's Finish review ends the request,
+because resolving is also how reviewers tidy up before more feedback. Only then does a fresh review
 start another, keeping resolved comments as history. Each send replaces the list
 with the comments being sent. See [ADR-0008](adr/0008-flat-agent-review-file.md).
 
@@ -562,7 +563,9 @@ The primary button always changes Review state; setup instructions are never pri
 A local file without an agent review makes Copy review as prompt primary, disabled
 until active feedback exists, with a Start a review in your agent… link below that
 opens the setup dialog. An active agent review makes Send primary, demotes Copy,
-and hides the link. A completed review keeps Copy primary and offers a Start
+and hides the link. Once every sent comment is resolved and nothing is unsent,
+Finish review replaces Send as primary and marks the sidecar resolved; new
+feedback restores Send. A completed review keeps Copy primary and offers a Start
 another review with your agent… link, with or without new drafts; Clear drafts
 appears only when drafts exist. The sidecar remains resolved until the agent starts the next review.
 When no saved folder contains the document, the dialog adds a folder step that

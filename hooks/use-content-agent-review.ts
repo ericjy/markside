@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { parseReviewFile, setReviewerCommentStatus, type AgentReviewComment, type AgentReviewFile } from "../cli/review-file.mjs"
-import { agentReviewUrl, getAgentReviewResults, getAgentReviewDisabledReason, prepareAgentReview, reviewSendFingerprint, agentReviewIdentity, currentAgentReview } from "~lib/agent-review"
+import { finishReview, parseReviewFile, setReviewerCommentStatus, type AgentReviewComment, type AgentReviewFile } from "../cli/review-file.mjs"
+import { agentReviewUrl, canFinishAgentReview, getAgentReviewResults, getAgentReviewDisabledReason, prepareAgentReview, reviewSendFingerprint, agentReviewIdentity, currentAgentReview } from "~lib/agent-review"
 import { getSavePathParts } from "~lib/content-app-policy"
 import { normalizeDiskText, requestHandlePermission } from "~lib/content-file-access"
 import { getDirectoryEntryForUrl } from "~lib/db"
@@ -16,6 +16,9 @@ export interface AgentReviewHandoff {
   updatingCommentId?: string | null
   changeStatus?: (id: string, status: "open" | "resolved") => void
   completed?: boolean
+  canFinish?: boolean
+  finishing?: boolean
+  finish?: () => void
   results?: ReadonlyMap<string, AgentReviewComment>
   disabled: boolean
   disabledReason: string | null
@@ -52,6 +55,7 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [updatingCommentId, setUpdatingCommentId] = useState<string | null>(null)
+  const [finishing, setFinishing] = useState(false)
   const writingRef = useRef(false)
   const optionsRef = useRef(options)
   optionsRef.current = options
@@ -120,6 +124,7 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
   const completed = file.status === "resolved"
   const unchanged = file.status === "sent" && reviewSendFingerprint(currentAgentReview(review, file)) === reviewSendFingerprint(file)
   const disabledReason = getAgentReviewDisabledReason(file, review)
+  const canFinish = canFinishAgentReview(file, review)
 
   const getReviewDirectory = async () => {
     // Request permission first, while the click's user gesture is active.
@@ -181,6 +186,31 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
     }
   }
 
+  const finish = async () => {
+    if (writingRef.current) return
+    writingRef.current = true
+    setFinishing(true)
+    setError(null)
+    try {
+      const { directory } = await getReviewDirectory()
+      const handle = await directory.getFileHandle(`${doc}.review.json`)
+      const latest = parseReviewFile(await (await handle.getFile()).text(), doc)
+      if (optionsRef.current.fileUrl !== fileUrl) return
+      if (agentReviewIdentity(latest) !== agentReviewIdentity(file) || !canFinishAgentReview(latest, optionsRef.current.review)) {
+        setState({ url: fileUrl, file: latest })
+        throw new Error("This Review changed. Check it before finishing.")
+      }
+      await writeReview(handle, finishReview(latest))
+    } catch (error) {
+      if (optionsRef.current.fileUrl === fileUrl && (error as DOMException).name !== "AbortError") {
+        setError(error instanceof Error ? error.message : "Could not finish the Review. Try again.")
+      }
+    } finally {
+      writingRef.current = false
+      setFinishing(false)
+    }
+  }
+
   const send = async (reviewOverride?: ActiveReview) => {
     const reviewToSend = reviewOverride ?? review
     if (writingRef.current || !reviewToSend || getAgentReviewDisabledReason(file, reviewToSend)) return false
@@ -236,5 +266,5 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       setSending(false)
     }
   }
-  return { file, sourceUrl: fileUrl, folderToChoose, completed, results, updatingCommentId, changeStatus: (id, status) => void changeStatus(id, status), disabled: sending || updatingCommentId !== null || !!disabledReason, disabledReason, sending, sent: unchanged, sentAt: file.sentAt, error, send }
+  return { file, sourceUrl: fileUrl, folderToChoose, completed, canFinish, finishing, finish: () => void finish(), results, updatingCommentId, changeStatus: (id, status) => void changeStatus(id, status), disabled: sending || finishing || updatingCommentId !== null || !!disabledReason, disabledReason, sending, sent: unchanged, sentAt: file.sentAt, error, send }
 }

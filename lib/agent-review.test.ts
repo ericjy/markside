@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { agentReviewUrl, reviewSendFingerprint, prepareAgentReview, getAgentReviewResults, getAgentReviewDisabledReason, getPendingReviewItemCount } from "./agent-review"
+import { agentReviewUrl, reviewSendFingerprint, prepareAgentReview, getAgentReviewResults, getAgentReviewDisabledReason, getPendingReviewItemCount, canFinishAgentReview } from "./agent-review"
 import { type AgentReviewFile } from "../cli/review-file.mjs"
 import { createEmptyReview } from "./review"
 
@@ -18,6 +18,17 @@ describe("agent Review handoff", () => {
     const changed = { ...review, comments: [...review.comments, { ...review.comments[0], id: "c2", body: "New feedback" }] }
     expect(getAgentReviewDisabledReason(sent, changed)).toBeNull()
     expect(getAgentReviewDisabledReason({ ...sent, status: "resolved" }, changed)).toContain("resolved")
+  })
+  it("offers Finish only once every sent comment is resolved and nothing is unsent", () => {
+    const sent = prepareAgentReview(pending, review, "a".repeat(64), () => 12)
+    expect(canFinishAgentReview(sent, review)).toBe(false)
+    const resolved = { ...sent, comments: sent.comments.map((comment) => ({ ...comment, status: "resolved" as const })) }
+    expect(canFinishAgentReview(resolved, review)).toBe(true)
+    const draft = { ...review, comments: [...review.comments, { ...review.comments[0], id: "c2", body: "More feedback" }] }
+    expect(canFinishAgentReview(resolved, draft)).toBe(false)
+    expect(canFinishAgentReview({ ...resolved, status: "resolved" }, review)).toBe(false)
+    // A fresh request carries earlier resolved comments as history but has nothing to finish.
+    expect(canFinishAgentReview({ ...resolved, status: "pending", sentAt: undefined }, review)).toBe(false)
   })
   it("creates a sibling URL without losing encoded filename characters", () => {
     expect(agentReviewUrl(review.sourceUrl)).toBe("file:///docs/plan%20%231.md.review.json")

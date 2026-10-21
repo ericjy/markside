@@ -30,17 +30,18 @@ markside review PLAN.md --continue --no-open
 The agent waits with a 600-second tool timeout. The CLI waits for 540 seconds by
 default, exits 2 with `STILL_WAITING:`, and the agent reruns it until the user
 sends comments or asks to stop. An existing pending request keeps its timestamp;
-a send received between invocations is returned immediately. Addressing comments keeps the request active. Only after the user resolves
-every comment does a fresh review start a new request. Resolved comments and
-their replies stay in the file as history. If the user resolves every comment
-during a wait, the CLI exits 0 with `Review resolved for ...`.
+a send received between invocations is returned immediately. Addressing and
+resolving comments keep the request active. Only after the user resolves every
+comment and chooses Finish review does a fresh review start a new request.
+Resolved comments and their replies stay in the file as history. If the user
+finishes during a wait, the CLI exits 0 with `Review resolved for ...`.
 
 After addressing each batch, the skill tells the user to reload and check the
 changes, then runs `review --continue --no-open`. This preserves the current request
 instead of starting a new one or opening another tab. It waits past addressed
-comments, handles further sends, and reports resolution even if all comments were
-accepted before the wait restarted. The agent repeats after timeout or follow-up
-feedback and finishes only when all comments are resolved or the user asks to stop
+and resolved comments, handles further sends, and reports resolution even if the
+user finished before the wait restarted. The agent repeats after timeout or follow-up
+feedback and finishes only when the user finishes the Review or asks to stop
 or proceed. Comments needing clarification stay open while the agent asks the user.
 
 ## Shared contract
@@ -83,8 +84,9 @@ Addressed cards stay in the Active list with the reply and Resolve and Reopen
 buttons. Sent comments can also be resolved directly by the reviewer. Resolve moves a comment into a collapsed Resolved group. Reopen moves
 an addressed or resolved comment back to Open, preserving its reply for context.
 It makes the request pending, so the user can add feedback before explicitly
-sending it again. Resolving the final outstanding comment marks the file
-`resolved`. All status changes use the remembered folder access and a staged
+sending it again. Resolving the final outstanding comment does not end the
+request: the panel offers Finish review, which marks the file `resolved`, while
+new feedback can still be sent. All status changes use the remembered folder access and a staged
 writable stream, leaving the Markdown file unchanged.
 
 The extension refreshes results on explicit Reload and when Review is reopened.

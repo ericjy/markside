@@ -63,8 +63,17 @@ export function setReviewerCommentStatus(review, id, status) {
   const comments = review.comments.map((item) => item.id === id ? { ...item, status } : item)
   return {
     ...review, comments,
-    status: status === "open" ? "pending" : comments.every((item) => item.status === "resolved") ? "resolved" : review.status,
+    // Resolving is not finishing: the reviewer may still add feedback, so only finishReview ends the request.
+    status: status === "open" ? "pending" : review.status,
   }
+}
+
+export function finishReview(review) {
+  if (review.status === "resolved" || !review.sentAt || !review.comments.length ||
+      review.comments.some(({ status }) => status !== "resolved")) {
+    throw new Error("Resolve every sent comment before finishing the Review.")
+  }
+  return { ...review, status: "resolved" }
 }
 
 export function formatReviewComments(review, includeAll = false) {

@@ -1,4 +1,4 @@
-import { refreshReviewFile, sendReview, addressReviewComment, setReviewerCommentStatus } from "../cli/review-file.mjs"
+import { refreshReviewFile, sendReview, addressReviewComment, setReviewerCommentStatus, finishReview } from "../cli/review-file.mjs"
 // @vitest-environment jsdom
 
 import { act, createElement, type ComponentProps } from "react"
@@ -103,7 +103,7 @@ describe("ReviewPanel", () => {
 
   it("keeps a finished Review's comments under Resolved when the next Review starts", () => {
     const sent = sendReview(refreshReviewFile(null, "PLAN.md"), { docHash: "a".repeat(64), comments: [{ id: comment.id, quote: comment.anchor.exact, line: 1, body: comment.body, status: "open" }] })
-    const completed = setReviewerCommentStatus(addressReviewComment(sent, comment.id, "Previous reply"), comment.id, "resolved")
+    const completed = finishReview(setReviewerCommentStatus(addressReviewComment(sent, comment.id, "Previous reply"), comment.id, "resolved"))
     const current = refreshReviewFile(completed, "PLAN.md")
     renderPanel({ agentHandoff: { file: current, disabled: true, disabledReason: "Add a comment", sending: false, error: null, send: vi.fn() } })
     const resolved = Array.from(container.querySelectorAll("details")).find((item) => item.querySelector("summary")?.textContent?.includes("Resolved"))!
@@ -131,7 +131,7 @@ describe("ReviewPanel", () => {
 
   it("hides Clear drafts for sent feedback and keeps resolved sidecar comments collapsed", () => {
     const sent = sendReview(refreshReviewFile(null, "PLAN.md"), { docHash: "a".repeat(64), comments: [{ id: "disk-comment", quote: "Plan", line: 1, body: "Explain this", status: "open" }] })
-    const file = setReviewerCommentStatus(addressReviewComment(sent, "disk-comment", "Explained"), "disk-comment", "resolved")
+    const file = finishReview(setReviewerCommentStatus(addressReviewComment(sent, "disk-comment", "Explained"), "disk-comment", "resolved"))
     renderPanel({ review: null, comments: [], agentHandoff: { file, completed: true, disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn() } })
     const resolved = Array.from(container.querySelectorAll("details")).find((item) => item.querySelector("summary")?.textContent?.includes("Resolved"))!
     expect(resolved.open).toBe(false)
@@ -142,6 +142,20 @@ describe("ReviewPanel", () => {
     expect(container.textContent).not.toContain("Clear drafts")
     expect(container.textContent).not.toContain("Current sent feedback")
     expect(container.textContent).not.toContain("disk-comment")
+  })
+
+  it("makes Finish review primary once every sent comment is resolved", () => {
+    const sent = sendReview(refreshReviewFile(null, "PLAN.md"), { docHash: "a".repeat(64), comments: [{ id: comment.id, quote: comment.anchor.exact, line: 1, body: comment.body, status: "open" }] })
+    const file = setReviewerCommentStatus(sent, comment.id, "resolved")
+    const finish = vi.fn()
+    renderPanel({ agentHandoff: { file, canFinish: true, finish, sent: true, disabled: true, disabledReason: "Add or reopen a comment to send again.", sending: false, error: null, send: vi.fn() } })
+    expect(container.textContent).toContain("All comments resolved")
+    expect(container.textContent).not.toContain("Send review to agent")
+    expect(container.textContent).not.toContain("Agent not picking up")
+    expect(container.textContent).not.toContain("Review complete")
+    const button = Array.from(container.querySelectorAll("button")).find((item) => item.textContent === "Finish review")!
+    act(() => button.click())
+    expect(finish).toHaveBeenCalledOnce()
   })
 
   it("confirms Clear all for the copy-prompt workflow", () => {
@@ -176,7 +190,7 @@ describe("ReviewPanel", () => {
 
   it("opens setup for a new review after completion without changing the completed session", () => {
     const sent = sendReview(refreshReviewFile(null, "PLAN.md"), { docHash: "a".repeat(64), comments: [{ id: comment.id, quote: comment.anchor.exact, line: 1, body: comment.body, status: "open" }] })
-    const file = setReviewerCommentStatus(sent, comment.id, "resolved")
+    const file = finishReview(setReviewerCommentStatus(sent, comment.id, "resolved"))
     const original = structuredClone(file)
     const draft = { ...comment, id: "new-draft", reviewMode: "agent" as const, body: "New feedback" }
     renderPanel({ sourceUrl: review.sourceUrl, review: { ...review, comments: [draft] }, comments: [draft], agentHandoff: { file, completed: true, disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn() } })
@@ -192,7 +206,7 @@ describe("ReviewPanel", () => {
 
   it("offers another review as a link after completion even without new drafts", () => {
     const sent = sendReview(refreshReviewFile(null, "PLAN.md"), { docHash: "a".repeat(64), comments: [{ id: comment.id, quote: comment.anchor.exact, line: 1, body: comment.body, status: "open" }] })
-    const file = setReviewerCommentStatus(sent, comment.id, "resolved")
+    const file = finishReview(setReviewerCommentStatus(sent, comment.id, "resolved"))
     const original = structuredClone(file)
     renderPanel({ sourceUrl: review.sourceUrl, agentHandoff: { file, completed: true, disabled: true, disabledReason: null, sending: false, error: null, send: vi.fn() } })
     const buttons = Array.from(container.querySelectorAll("button"))

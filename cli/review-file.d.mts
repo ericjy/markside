@@ -23,3 +23,4 @@ export function formatReviewComments(review: AgentReviewFile, includeAll?: boole
 
 export function addressReviewComment(review: AgentReviewFile, id: string, reply?: string): AgentReviewFile
 export function setReviewerCommentStatus(review: AgentReviewFile, id: string, status: "open" | "resolved"): AgentReviewFile
+export function finishReview(review: AgentReviewFile): AgentReviewFile

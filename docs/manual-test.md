@@ -53,6 +53,9 @@ pull request or review response.
 
 - [ ] Select text in Preview and Split Preview. Add a Review Comment, edit it,
   select a preset, and check that the preset search field receives focus.
+- [ ] Click each preset button above the comment field, before and after typing.
+  Confirm the text is inserted at the caret, focus stays in the field, nothing
+  shifts. On a question card, confirm the buttons are Clarify, Explain, and Example.
 - [ ] Add a Review Note, copy a comment and the full Review, and inspect the
   copied prompts. Reopen the file and confirm the Review persists.
 - [ ] Drag and resize the Review overlay. Check its position after reloading,

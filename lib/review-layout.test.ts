@@ -98,7 +98,7 @@ describe("getSelectionActionPosition", () => {
         scrollTop: 0,
       },
       SELECTION_COMPOSER_SIZE,
-    )).toEqual({ x: 322, y: 316 })
+    )).toEqual({ x: 322, y: 280 })
   })
 })
 

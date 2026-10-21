@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  COMPOSER_QUICK_PRESETS,
+  QUESTION_QUICK_PRESETS,
   QUICK_COMMENT_PRESETS,
   REVIEW_PRESET_GROUPS,
   REVIEW_PRESETS,
@@ -49,6 +51,19 @@ describe("Review Comment presets", () => {
       "simplify",
       "verify",
       "agree",
+    ])
+    expect(COMPOSER_QUICK_PRESETS.map(({ id }) => id)).toEqual([
+      "agree",
+      "tighten",
+      "specify",
+      "clarify",
+      "humanize",
+      "verify",
+    ])
+    expect(QUESTION_QUICK_PRESETS.map(({ id }) => id)).toEqual([
+      "clarify",
+      "explain",
+      "example",
     ])
     expect(REVIEW_PRESETS.find(({ id }) => id === "humanize")?.instruction).toBe(
       "Rewrite this in a natural, distinctive voice. Remove common AI-writing patterns: contrived contrasts (“It’s not X. It’s Y.”), forced punchiness, unnecessary bullet lists, and overused em dashes. Preserve the meaning and intended tone.",

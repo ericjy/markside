@@ -51,6 +51,8 @@ import {
   SELECTION_COMPOSER_SIZE
 } from "~lib/review-layout"
 import {
+  COMPOSER_QUICK_PRESETS,
+  QUESTION_QUICK_PRESETS,
   QUICK_COMMENT_PRESETS,
   type ReviewTextSelection
 } from "~lib/review-presets"
@@ -403,6 +405,25 @@ export function ContentView({
                       <div className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                         <Quote className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                         <p className="line-clamp-3">{selectionAction.anchor.exact}</p>
+                      </div>
+                      <div className="mt-2 flex gap-1.5">
+                        {(selectionAction.question ? QUESTION_QUICK_PRESETS : COMPOSER_QUICK_PRESETS).map((preset) => (
+                          <Tooltip key={preset.id}>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                aria-label={`${preset.chip}. ${preset.name}`}
+                                className="flex h-7 items-center rounded-md border px-2.5 text-xs font-medium text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:bg-accent hover:text-foreground focus-visible:outline-ring active:bg-accent/80"
+                                onMouseDown={(event) => event.preventDefault()}
+                                onClick={() => insertSelectionComposerPreset(preset.instruction)}>
+                                {preset.chip}
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" sideOffset={6} className="text-xs">
+                              {preset.name}
+                            </TooltipContent>
+                          </Tooltip>
+                        ))}
                       </div>
                       <textarea
                         ref={selectionComposerTextareaRef}

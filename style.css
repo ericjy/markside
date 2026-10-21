@@ -1256,6 +1256,10 @@ button.readability-score-filter {
   box-shadow: none;
 }
 
+.prose .markdown-alert-question .question-option.question-option-composing {
+  border-color: var(--markdown-alert-color);
+}
+
 .prose .question-option-selected .question-option-key {
   background: var(--markdown-alert-color);
   border-color: var(--markdown-alert-color);

@@ -30,7 +30,7 @@ afterEach(() => {
 
 function render(props: Partial<ComponentProps<typeof QuestionCardActions>> = {}) {
   const all: ComponentProps<typeof QuestionCardActions> = {
-    card, answer: null, busy: false, keyboard: true, onAnswer: vi.fn(), onCompose: vi.fn(), commentAt: () => false, ...props,
+    card, answer: null, busy: false, composing: false, keyboard: true, onAnswer: vi.fn(), onCompose: vi.fn(), commentAt: () => false, ...props,
   }
   act(() => root.render(createElement(QuestionCardActions, all)))
   return all
@@ -72,6 +72,18 @@ describe("question card options", () => {
     expect(option("B").getAttribute("aria-checked")).toBe("true")
     render({ busy: true })
     expect(tile.disabled).toBe(true)
+  })
+
+  it("highlights the custom answer while composing but keeps the saved option checked", () => {
+    render({ answer: "A", composing: true })
+    const tile = container.querySelector<HTMLButtonElement>(".question-custom-answer")!
+    expect(tile.classList.contains("question-option-composing")).toBe(true)
+    expect(tile.getAttribute("aria-expanded")).toBe("true")
+    expect(tile.classList.contains("question-option-selected")).toBe(false)
+    expect(option("A").getAttribute("aria-checked")).toBe("true")
+
+    render({ answer: "A", composing: false })
+    expect(tile.classList.contains("question-option-composing")).toBe(false)
   })
 
   it("leaves a click to text selection or to a Review Comment under the pointer", () => {

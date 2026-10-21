@@ -12,11 +12,13 @@ function isTypingTarget(target: EventTarget | null) {
 }
 
 // The rendered options are the answer controls: this wires them and reflects the current answer.
-export function QuestionCardActions({ card, answer, busy, keyboard, onAnswer, onCompose, onSend, commentAt }: {
+export function QuestionCardActions({ card, answer, busy, composing, keyboard, onAnswer, onCompose, onSend, commentAt }: {
   card: QuestionCard
   /** The body of the question's current answer comment. */
   answer: string | null
   busy: boolean
+  /** The composer is open on this question; the saved answer keeps its check until Save. */
+  composing: boolean
   /** Letter keys choose an option; only one card on the page may listen. */
   keyboard: boolean
   onAnswer: (body: string) => void
@@ -101,7 +103,8 @@ export function QuestionCardActions({ card, answer, busy, keyboard, onAnswer, on
           type="button"
           disabled={busy}
           aria-pressed={customChosen}
-          className={`question-option question-custom-answer${customChosen ? " question-option-selected" : ""}`}
+          aria-expanded={composing}
+          className={`question-option question-custom-answer${customChosen ? " question-option-selected" : ""}${composing ? " question-option-composing" : ""}`}
           onMouseUp={(event) => event.stopPropagation()}
           onClick={(event) => {
             event.stopPropagation()

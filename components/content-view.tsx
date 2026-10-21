@@ -665,6 +665,7 @@ export function ContentView({
                       card={card}
                       answer={questionAnswer(card.target)}
                       busy={questionActionsBusy}
+                      composing={selectionComposerOpen && !!selectionAction?.question && card.target.contains(selectionAction.range.startContainer)}
                       keyboard={answerableQuestionCards.length === 1 && answerableQuestionCards[0] === card}
                       onAnswer={(body) => answerQuestion(card.target, body)}
                       onCompose={(point) => composeQuestionAnswer(card.target, point)}

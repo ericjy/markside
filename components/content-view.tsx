@@ -98,7 +98,7 @@ interface ContentViewProps {
   handleReviewHighlightClick: (event: React.MouseEvent) => void
   reviewOverlayDocked: boolean
   reviewDockWidth: number
-  selectionAction: { anchor: ReviewAnchor; range: Range; selectionPoint: { x: number; y: number; }; toolbarPosition: { x: number; y: number; }; composerPosition: { x: number; y: number; }; sourceLine: number | null; } | null
+  selectionAction: { anchor: ReviewAnchor; range: Range; selectionPoint: { x: number; y: number; }; toolbarPosition: { x: number; y: number; }; composerPosition: { x: number; y: number; }; sourceLine: number | null; question?: true; } | null
   selectionComposerOpen: boolean
   selectionComposerTextareaRef: React.RefObject<HTMLTextAreaElement>
   selectionComposerBody: string
@@ -433,7 +433,7 @@ export function ContentView({
                             }
                           }
                         }}
-                        placeholder="Add a comment"
+                        placeholder={selectionAction.question ? "Your answer, or what’s unclear" : "Add a comment"}
                         className="review-input mt-2 min-h-[7.5rem] w-full resize-y rounded-md border px-3 py-2.5 text-sm leading-relaxed outline outline-2 outline-offset-1 outline-transparent placeholder:text-muted-foreground focus-visible:outline-ring"
                       />
                       {composerAgent?.folderToChoose && (

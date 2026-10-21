@@ -146,8 +146,8 @@ questions are asked and answered.
      table rather than a long recommendation paragraph. Markside labels the
      recommended option separately from the user's selected answer.
 4. Run the Review workflow above on the interview doc. Tell the user to click
-   an option (or press its letter), or click **Write your own answer…** to write their
-   own, then click **Send review to agent**. Markside supplies the custom-answer
+   an option (or press its letter), or click **Answer or ask a question…** to write their
+   own answer or ask about the question, then click **Send review to agent**. Markside supplies the custom-answer
    tile after the options and the keyboard hints at the top of the card; do not write those controls
    into the Markdown. Clicking that tile opens the composer; saving a custom
    answer marks it selected. Nothing is sent until the user sends the Review.
@@ -162,8 +162,11 @@ questions are asked and answered.
    verify that the archived question matches the original fence contents.
    Write the next question under
    Current question, address the comment with a one-line reply, and continue
-   the Review. If the comment asks something instead of answering, answer it in
-   the current question and leave it current.
+   the Review. If the comment asks something or says the question or options
+   are unclear, record no decision. Rewrite the unclear part of the current
+   question in place, keeping its number and heading so the answer still
+   anchors, address the comment with a one-line reply naming what changed, and
+   continue the Review.
 6. When no questions remain, replace Current question with `## Summary`: the
    decisions as short bullets, then ask the user to click **Finish review** if
    it matches their understanding. Finishing is the confirmation of shared

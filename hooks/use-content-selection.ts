@@ -24,6 +24,8 @@ export type SelectionAction = {
   toolbarPosition: { x: number; y: number }
   composerPosition: { x: number; y: number }
   sourceLine: number | null
+  /** Set when a question card opened the composer, so the prompt invites asking as well as answering. */
+  question?: true
 }
 
 interface UseContentSelectionOptions {
@@ -127,12 +129,12 @@ export function useContentSelection({
     }
   }
 
-  // Opens the comment composer for a passage chosen by a control rather than a text selection.
+  // Opens the comment composer for a question card's answer, chosen by a control rather than a text selection.
   const openSelectionComposerAt = (anchor: ReviewAnchor, range: Range, point: { x: number; y: number }) => {
     const preview = previewScrollRef.current
     if (!preview) return
     clearSelectionActionTimeout()
-    setSelectionAction(selectionActionAt(anchor, range, point, preview))
+    setSelectionAction({ ...selectionActionAt(anchor, range, point, preview), question: true })
     openSelectionComposer()
   }
 

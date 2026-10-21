@@ -496,8 +496,9 @@ Send button, aligned left. Clear aligns right on the same row when space allows.
 current feedback is sent, the primary button shows Sent for agent to pick up and is disabled
 until feedback changes. The Copy button remains active. This confirms a local write, not agent receipt; no agent
 process is started. Editing feedback restores Send.
-For an active request, the comment composer offers Save & send review alongside
-Save. It sends the newly saved whole Review directly, including prior comments
+For an active request, the comment composer keeps Save & copy prompt, and its Save
+is a split button whose menu offers Save & send review; Cmd/Ctrl+Shift+Enter also
+saves and sends. Save & send review sends the newly saved whole Review directly, including prior comments
 and overall feedback, without waiting for a React render. Folder permission is
 requested within the click. A cancelled or failed send leaves the comment saved
 in the Review panel for retry. Without an active request, the composer retains

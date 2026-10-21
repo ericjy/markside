@@ -421,7 +421,11 @@ export function ContentView({
                             closeSelectionComposer()
                           } else if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
                             event.preventDefault()
-                            saveSelectionComposerComment()
+                            if (event.shiftKey && composerAgent) {
+                              if (!composerSending) void sendSelectionComposerComment()
+                            } else {
+                              saveSelectionComposerComment()
+                            }
                           }
                         }}
                         placeholder="Add a comment"
@@ -449,7 +453,7 @@ export function ContentView({
                           <Button className="h-9" variant="ghost" size="sm" onClick={closeSelectionComposer}>
                             Cancel
                           </Button>
-                          {!composerAgent && <Button
+                          <Button
                             className="h-9"
                             variant="outline"
                             size="sm"
@@ -457,23 +461,44 @@ export function ContentView({
                             onClick={() => void copySelectionComposerComment()}>
                             {selectionComposerCopyState === "copied" ? <Check size={14} /> : <Copy size={14} />}{" "}
                             {selectionComposerCopyState === "copied" ? "Copied" : "Save & copy prompt"}
-                          </Button>}
-                          <Button
-                            className="h-9"
-                            variant={composerAgent ? "outline" : "default"}
-                            size="sm"
-                            disabled={!selectionComposerBody.trim() || selectionComposerCopyState === "copying"}
-                            onClick={saveSelectionComposerComment}>
-                            Save
                           </Button>
-                          {composerAgent && <Button
-                            className="h-9"
-                            size="sm"
-                            disabled={!selectionComposerBody.trim() || selectionComposerCopyState === "copying" || composerSending}
-                            title="Sends all current comments and overall feedback."
-                            onClick={() => void sendSelectionComposerComment()}>
-                            <Send size={14} />{composerSending ? "Sending review…" : "Save & send review"}
-                          </Button>}
+                          <div className="flex items-center">
+                            <Button
+                              className={composerAgent ? "h-9 rounded-r-none" : "h-9"}
+                              size="sm"
+                              disabled={!selectionComposerBody.trim() || selectionComposerCopyState === "copying"}
+                              onClick={saveSelectionComposerComment}>
+                              Save
+                            </Button>
+                            {composerAgent && (
+                              <DropdownMenu.Root>
+                                <DropdownMenu.Trigger asChild>
+                                  <Button
+                                    className="h-9 w-8 rounded-l-none border-l border-primary-foreground/20 px-0"
+                                    size="sm"
+                                    aria-label="More save options"
+                                    disabled={!selectionComposerBody.trim() || selectionComposerCopyState === "copying" || composerSending}>
+                                    <ChevronDown size={14} />
+                                  </Button>
+                                </DropdownMenu.Trigger>
+                                <DropdownMenu.Portal>
+                                  <DropdownMenu.Content
+                                    align="end"
+                                    sideOffset={4}
+                                    collisionPadding={12}
+                                    style={{ zIndex: 100000 }}
+                                    className="min-w-[12rem] rounded-lg border bg-background p-1.5 text-foreground shadow-md">
+                                    <DropdownMenu.Item
+                                      onSelect={() => void sendSelectionComposerComment()}
+                                      className="flex cursor-pointer select-none flex-col rounded-md px-2 py-2 text-sm leading-5 outline-none data-[highlighted]:bg-[hsl(var(--review-card-hover))]">
+                                      <span className="flex items-center gap-2 font-medium"><Send size={14} aria-hidden="true" />Save & send review</span>
+                                      <span className="pl-[22px] text-xs text-muted-foreground">Sends all comments and overall feedback</span>
+                                    </DropdownMenu.Item>
+                                  </DropdownMenu.Content>
+                                </DropdownMenu.Portal>
+                              </DropdownMenu.Root>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>

@@ -101,8 +101,9 @@ pull request or review response.
   prompted, and confirm the CLI prints Got 2 comments and exits 0. The agent
   revises the plan and marks each ID addressed with a reply in the Review file.
 - [ ] With an active request, select a passage and write a comment. The composer
-  offers Save and Save & send review. Save keeps the comment local; Save & send
-  review saves it and sends the entire Review, including prior comments and the
+  offers Save & copy prompt and a Save split button whose menu has Save & send
+  review; Cmd/Ctrl+Shift+Enter also saves and sends. Save keeps the comment
+  local; Save & send review saves it and sends the entire Review, including prior comments and the
   overall feedback. Test the first comment on an empty Review. Cancel folder
   selection or deny permission and confirm the saved comment remains in Review
   for retry, with any send error visible there. Without an active request, or

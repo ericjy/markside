@@ -19,6 +19,18 @@ describe("agent Review handoff", () => {
     expect(getAgentReviewDisabledReason(sent, changed)).toBeNull()
     expect(getAgentReviewDisabledReason({ ...sent, status: "resolved" }, changed)).toContain("resolved")
   })
+  it("sends and finishes a Review that contains only overall feedback", () => {
+    const noteOnly = { ...review, comments: [] }
+    expect(getAgentReviewDisabledReason(pending, noteOnly)).toBeNull()
+    expect(getAgentReviewDisabledReason(pending, { ...noteOnly, note: "  " })).toContain("Add a comment or overall feedback")
+    const sent = prepareAgentReview(pending, noteOnly, "a".repeat(64), () => null)
+    expect(getAgentReviewDisabledReason(sent, noteOnly)).toContain("Add or edit")
+    expect(canFinishAgentReview(sent, noteOnly)).toBe(false)
+    const addressed = { ...sent, noteStatus: "addressed" as const, noteReply: "Thanks." }
+    expect(getAgentReviewDisabledReason(addressed, noteOnly)).toContain("Add or reopen")
+    expect(getAgentReviewDisabledReason(addressed, { ...noteOnly, note: "Also check scope." })).toBeNull()
+    expect(canFinishAgentReview(addressed, noteOnly)).toBe(true)
+  })
   it("offers Finish only once no sent comment awaits the agent and nothing is unsent", () => {
     const sent = prepareAgentReview(pending, review, "a".repeat(64), () => 12)
     expect(canFinishAgentReview(sent, review)).toBe(false)

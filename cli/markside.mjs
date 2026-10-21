@@ -6,7 +6,7 @@ import { pathToFileURL } from "node:url"
 import { randomUUID } from "node:crypto"
 import { spawn } from "node:child_process"
 import { parseArgs } from "node:util"
-import { parseReviewFile, addressReviewComment, refreshReviewFile, formatReviewComments } from "./review-file.mjs"
+import { parseReviewFile, addressReviewComment, refreshReviewFile, formatReviewComments, hasOpenAgentWork } from "./review-file.mjs"
 
 async function readReview(path, doc) {
   try {
@@ -29,7 +29,7 @@ async function atomicWrite(path, review) {
 
 // Addressed or resolved feedback waits on the reviewer until they send more or finish.
 const hasAgentWork = (review) =>
-  review.status === "resolved" || (review.status === "sent" && review.comments.some(({ status }) => status === "open"))
+  review.status === "resolved" || (review.status === "sent" && hasOpenAgentWork(review))
 
 function openChrome(file) {
   const url = pathToFileURL(file).href

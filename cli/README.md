@@ -20,7 +20,8 @@ stderr; comments and timeout instructions go to stdout. Other errors exit 1.
 
 The only communication channel is `PLAN.md.review.json` beside the document.
 A retry preserves the pending request, and returns an existing send immediately.
-Addressing and resolving keep the current request active. After the reviewer
+Addressing and resolving keep the current request active. A Review may contain
+only overall feedback; the agent answers it with `markside address PLAN.md note --reply "..."`. After the reviewer
 finishes the Review, `review`
 starts a new request; resolved comments and their replies stay in the file as
 history. Writes use a

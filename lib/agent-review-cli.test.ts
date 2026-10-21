@@ -178,6 +178,16 @@ describe("markside CLI with real files", () => {
     expect(retried.stdout).toContain("Explain why.")
     expect(JSON.parse(await readFile(sidecar, "utf8")).requestedAt).toBe(requestedAt)
   })
+  it("returns a note-only Review and waits again once the agent addresses the note", async () => {
+    expect((await run(["review", doc, "--no-open", "--timeout", "0.03"]).done).code).toBe(2)
+    const review = JSON.parse(await readFile(sidecar, "utf8"))
+    await writeFile(sidecar, JSON.stringify(sendReview(review, { docHash: "a".repeat(64), note: "Looks good", comments: [] })))
+    const received = await run(["review", doc, "--no-open", "--timeout", "0.03"]).done
+    expect(received).toMatchObject({ code: 0, stdout: expect.stringContaining("Review note (ID note):\nLooks good") })
+    expect((await run(["address", doc, "note", "--reply", "Thanks."]).done).code).toBe(0)
+    expect(JSON.parse(await readFile(sidecar, "utf8"))).toMatchObject({ noteStatus: "addressed", noteReply: "Thanks." })
+    expect((await run(["review", doc, "--continue", "--no-open", "--timeout", "0.03"]).done).code).toBe(2)
+  })
   it("leaves pending state intact on Ctrl+C", async () => {
     const process = run(["review", doc, "--no-open"])
     await process.waiting

@@ -10,6 +10,8 @@ export function parseReviewFile(text, doc) {
       (value.sentAt !== undefined && !isoTime(value.sentAt)) ||
       (value.status === "sent" && (!isoTime(value.sentAt) || !hash(value.docHash))) ||
       (value.note !== undefined && typeof value.note !== "string") ||
+      (value.noteStatus !== undefined && !["open", "addressed"].includes(value.noteStatus)) ||
+      (value.noteReply !== undefined && typeof value.noteReply !== "string") ||
       !Array.isArray(value.comments)) {
     throw new Error(`Invalid version 1 Review file for ${doc}`)
   }
@@ -37,11 +39,28 @@ export function refreshReviewFile(existing, doc, now = new Date().toISOString())
   }
 }
 
+export const NOTE_ID = "note"
+
 export function sendReview(review, { docHash, note = "", comments }, sentAt = new Date().toISOString()) {
-  return { ...review, status: "sent", sentAt, docHash, note, comments }
+  const { noteStatus, noteReply, ...rest } = review
+  const kept = { ...(noteStatus ? { noteStatus } : {}), ...(noteReply !== undefined ? { noteReply } : {}) }
+  const reopened = note !== (review.note ?? "") || noteStatus === "open"
+  // A Review Note sent with open comments is answered through them. Sent alone, a new
+  // or edited note awaits the agent's own reply; an unchanged one keeps its state.
+  const noteState = !note.trim() ? {}
+    : comments.some(({ status }) => status === "open") ? (reopened ? {} : kept)
+    : reopened ? { noteStatus: "open" } : kept
+  return { ...rest, status: "sent", sentAt, docHash, note, ...noteState, comments }
 }
 
+export const hasOpenAgentWork = (review) =>
+  review.noteStatus === "open" || review.comments.some(({ status }) => status === "open")
+
 export function addressReviewComment(review, id, reply) {
+  if (id === NOTE_ID && review.noteStatus) {
+    if (review.status === "pending") throw new Error("Wait for the user to send the Review before addressing comments")
+    return { ...review, noteStatus: "addressed", ...(reply !== undefined ? { noteReply: reply } : {}) }
+  }
   const comment = review.comments.find((item) => item.id === id)
   if (!comment) throw new Error(`Review comment not found: ${id}`)
   if (review.status === "pending") throw new Error("Wait for the user to send the Review before addressing comments")
@@ -73,8 +92,8 @@ export function resolveAddressedComments(review) {
 }
 
 export function finishReview(review) {
-  if (review.status === "resolved" || !review.sentAt || !review.comments.length ||
-      review.comments.some(({ status }) => status === "open")) {
+  if (review.status === "resolved" || !review.sentAt ||
+      !(review.comments.length || review.noteStatus) || hasOpenAgentWork(review)) {
     throw new Error("Wait for the agent to address every open comment before finishing the Review.")
   }
   // Finishing accepts the agent's remaining Addressed replies along with the Review.
@@ -84,9 +103,13 @@ export function finishReview(review) {
 export function formatReviewComments(review, includeAll = false) {
   if (!includeAll && review.status === "resolved") return `Review resolved for ${review.doc}. No open comments.`
   const comments = review.comments.filter(({ status }) => includeAll || status === "open")
+  const showNote = !!review.note && (includeAll || review.noteStatus !== "addressed")
+  const noteLabel = review.noteStatus
+    ? `Review note (ID ${NOTE_ID})${review.noteStatus !== "open" ? ` [${review.noteStatus}]` : ""}`
+    : "Review note"
   return [
-    `Got ${comments.length} comment${comments.length === 1 ? "" : "s"} for ${review.doc}`,
-    ...(review.note ? [`Review note:\n${review.note}`] : []),
+    `Got ${comments.length} comment${comments.length === 1 ? "" : "s"}${showNote && review.noteStatus === "open" ? " and the Review note" : ""} for ${review.doc}`,
+    ...(showNote ? [[`${noteLabel}:`, review.note, ...(review.noteReply ? [`Agent reply: ${review.noteReply}`] : [])].join("\n")] : []),
     ...comments.map((comment) => [
       `Comment ${comment.id}${comment.line === null ? " (line unavailable; verify the passage in the current document)" : ` (line ${comment.line})`}${comment.status !== "open" ? ` [${comment.status}]` : ""}`,
       comment.quote.trim().split("\n").map((line) => `> ${line}`).join("\n"),

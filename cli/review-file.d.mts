@@ -14,8 +14,12 @@ export interface AgentReviewFile {
   requestedAt: string
   sentAt?: string
   note?: string
+  noteStatus?: "open" | "addressed"
+  noteReply?: string
   comments: AgentReviewComment[]
 }
+export const NOTE_ID: "note"
+export function hasOpenAgentWork(review: AgentReviewFile): boolean
 export function parseReviewFile(text: string, doc: string): AgentReviewFile
 export function refreshReviewFile(existing: AgentReviewFile | null, doc: string, now?: string): AgentReviewFile
 export function sendReview(review: AgentReviewFile, feedback: { docHash: string; note?: string; comments: AgentReviewComment[] }, sentAt?: string): AgentReviewFile

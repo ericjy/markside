@@ -39,7 +39,8 @@ below. Invocation authorizes opening Chrome and waiting for the user's Review.
    Other failures require reporting the error, not a retry loop.
 4. When comments arrive, address every comment by ID, make the requested changes,
    and answer questions. Then run `markside address <file> <id> --reply "..."`
-   for each addressed comment with a one-line reply. Leave unaddressed comments
+   for each addressed comment with a one-line reply. A Review note labeled
+   `(ID note)` awaits its own reply: address it with the ID `note`. Leave unaddressed comments
    open and explain what needs the user's decision. Use the same CLI executable
    for review, comments, and address. Addressed means the agent has finished;
    only the user resolves a comment in Markside. Never mark it resolved yourself.

@@ -587,6 +587,15 @@ export function ReviewPanel({
               className="line-clamp-3 block w-full rounded-md px-1 py-1 text-left text-sm leading-relaxed outline outline-2 outline-offset-1 outline-transparent hover:bg-accent focus-visible:outline-ring">
               {review.note}
             </button>
+            {historyFile?.noteReply && historyFile.note === review.note && (
+              <div className="review-agent-reply mt-3 rounded-r-md border-l-2 px-3 py-3">
+                <p className="review-agent-reply-label flex items-center gap-2 text-[11px] font-semibold tracking-[0.02em]">
+                  <MessageSquareText size={14} strokeWidth={1.75} className="shrink-0" aria-hidden="true" />
+                  Agent reply
+                </p>
+                <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-[1.65]">{historyFile.noteReply}</p>
+              </div>
+            )}
           </>
         ) : (
           <button

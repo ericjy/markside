@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { type AgentReviewFile, parseReviewFile, refreshReviewFile, formatReviewComments, addressReviewComment, setReviewerCommentStatus, sendReview, finishReview, resolveAddressedComments } from "../cli/review-file.mjs"
+import { type AgentReviewFile, parseReviewFile, refreshReviewFile, formatReviewComments, addressReviewComment, setReviewerCommentStatus, sendReview, finishReview, resolveAddressedComments, hasOpenAgentWork } from "../cli/review-file.mjs"
 
 const sent: AgentReviewFile = {
   version: 1, doc: "PLAN.md", docHash: "a".repeat(64), status: "sent",
@@ -77,6 +77,29 @@ describe("agent Review file", () => {
     const addressed = addressReviewComment(sent, "c1", "Clarified.")
     expect(formatReviewComments(addressed, true)).toContain("[addressed]")
     expect(formatReviewComments(addressed)).not.toContain("Comment c1")
+  })
+  it("treats a new or edited Review Note as agent work the agent addresses by its ID", () => {
+    const noteOnly = sendReview(refreshReviewFile(null, "PLAN.md"), { docHash: sent.docHash, note: "Looks good", comments: [] })
+    expect(noteOnly).toMatchObject({ noteStatus: "open" })
+    expect(hasOpenAgentWork(noteOnly)).toBe(true)
+    expect(formatReviewComments(noteOnly)).toContain("Got 0 comments and the Review note")
+    expect(formatReviewComments(noteOnly)).toContain("Review note (ID note):\nLooks good")
+    expect(() => finishReview(noteOnly)).toThrow()
+    const addressed = addressReviewComment(noteOnly, "note", "Thanks.")
+    expect(parseReviewFile(JSON.stringify(addressed), "PLAN.md")).toEqual(addressed)
+    expect(addressed).toMatchObject({ noteStatus: "addressed", noteReply: "Thanks." })
+    expect(hasOpenAgentWork(addressed)).toBe(false)
+    expect(formatReviewComments(addressed)).not.toContain("Looks good")
+    expect(formatReviewComments(addressed, true)).toContain("[addressed]")
+    expect(finishReview(addressed).status).toBe("resolved")
+    // Sending the same note again keeps its reply; editing it awaits the agent again.
+    expect(sendReview(addressed, { docHash: sent.docHash, note: "Looks good", comments: [] })).toMatchObject({ noteStatus: "addressed", noteReply: "Thanks." })
+    const edited = sendReview(addressed, { docHash: sent.docHash, note: "Looks great", comments: [] })
+    expect(edited.noteStatus).toBe("open")
+    expect(edited.noteReply).toBeUndefined()
+    expect(sendReview(addressed, { docHash: sent.docHash, note: "", comments: sent.comments }).noteStatus).toBeUndefined()
+    expect(sendReview(refreshReviewFile(null, "PLAN.md"), { docHash: sent.docHash, note: "Looks good", comments: sent.comments }).noteStatus).toBeUndefined()
+    expect(() => parseReviewFile(JSON.stringify({ ...noteOnly, noteStatus: "resolved" }), "PLAN.md")).toThrow()
   })
   it("prints comment IDs, quotes, lines and bodies for the agent", () => {
     const prompt = formatReviewComments(sent)

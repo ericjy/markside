@@ -69,7 +69,11 @@ On send, `status` becomes `sent`, `sentAt` is an ISO timestamp, and `docHash` is
 64 lowercase hexadecimal characters containing the SHA-256 of the document's
 exact bytes on disk. The extension refuses to send against an Unsaved Draft or
 a document that changed since loading. The optional `note` field carries the
-Review Note so existing overall guidance is not lost.
+Review Note so existing overall guidance is not lost. A Review may contain only a
+note. When a new or edited note is sent without open comments, `noteStatus` is
+`open` until the agent runs `markside address <file> note`, which sets it to
+`addressed` and stores `noteReply`. A note sent with open comments is answered
+through those comments.
 
 Each comment has `id`, `quote`, `line`, `body`, and `status`. `quote` is the exact
 rendered text selected by the user. `line` is a one-based source block line from

@@ -23,6 +23,11 @@ Keep version 1: one flat `comments` list holding each comment's latest `quote`,
 `line`, `body`, `status`, and `reply`, plus the file's `status`, `requestedAt`,
 `sentAt`, `docHash`, and `note`.
 
+- A Review may send only a `note`. A note sent without open comments carries
+  `noteStatus` (`open`, then `addressed`) and an optional `noteReply`; the agent
+  addresses it with the ID `note`. A note sent with open comments is answered
+  through them and has no status of its own.
+
 - Each Send replaces the list with the comments being sent. Withdrawn drafts drop
   out; resolved comments stay.
 - Only the reviewer ends a Review, by choosing Finish review once every sent

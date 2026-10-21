@@ -1,4 +1,4 @@
-import { sendReview } from "../cli/review-file.mjs"
+import { hasOpenAgentWork, sendReview } from "../cli/review-file.mjs"
 import type { AgentReviewComment, AgentReviewFile } from "../cli/review-file.mjs"
 import { getReviewItemCount, type ActiveReview, type ReviewComment } from "./review"
 
@@ -57,9 +57,13 @@ export function getAgentReviewDisabledReason(file: AgentReviewFile, review: Acti
   if (file.status === "resolved") return "This Review is resolved."
   review = currentAgentReview(review, file)
   if (review) review = { ...review, comments: review.comments.filter((comment) => comment.localStatus !== "resolved" || file.comments.some(({ id }) => id === comment.id)) }
-  if (!review?.comments.some((comment) => comment.localStatus !== "resolved")) return "Add a comment before sending to the agent."
+  const hasNote = !!review?.note.trim()
+  if (!review || (!hasNote && !review.comments.some((comment) => comment.localStatus !== "resolved"))) {
+    return "Add a comment or overall feedback before sending to the agent."
+  }
   const results = getAgentReviewResults(file, review)
-  if (!review.comments.some(({ id, localStatus }) => localStatus !== "resolved" && (results.get(id)?.status ?? "open") === "open")) {
+  const openNote = hasNote && (review.note !== (file.note ?? "") || file.noteStatus === "open")
+  if (!openNote && !review.comments.some(({ id, localStatus }) => localStatus !== "resolved" && (results.get(id)?.status ?? "open") === "open")) {
     return "Add or reopen a comment to send again."
   }
   if (file.status === "sent" && reviewSendFingerprint(review) === reviewSendFingerprint(file)) {
@@ -136,8 +140,8 @@ export function checkForAgentReply(
 
 /** Once nothing awaits the agent, the reviewer ends the Review explicitly, resolving any Addressed comments. */
 export function canFinishAgentReview(file: AgentReviewFile, review: ActiveReview | null) {
-  return file.status !== "resolved" && !!file.sentAt && file.comments.length > 0 &&
-    file.comments.every(({ status }) => status !== "open") && !hasReviewDrafts(review, file)
+  return file.status !== "resolved" && !!file.sentAt && (file.comments.length > 0 || !!file.noteStatus) &&
+    !hasOpenAgentWork(file) && !hasReviewDrafts(review, file)
 }
 
 export function clearReviewDrafts(review: ActiveReview | null, file?: AgentReviewFile): ActiveReview | null {

@@ -429,6 +429,12 @@ content app writes document entries once both the Review and its sidecar have
 loaded; `lib/localhost-review-storage.ts` writes the localhost ones; `background.ts` repaints the badge whenever that key
 changes.
 
+A file moved or deleted outside Markside leaves its entry behind. The popover
+fetches each document entry's file URL when it opens, and again on Open, and
+marks one it cannot read as moved or deleted instead of navigating to Chrome's
+file-not-found page. Dismiss drops only the index entry; the Review stays in
+IndexedDB and returns to the index if the file is opened at that path again.
+
 A content script only runs on pages loaded after the extension was installed or
 reloaded, so the tab in front of the user may have none. Rather than telling them
 to reload the page, the popover injects the script with `chrome.scripting` — the

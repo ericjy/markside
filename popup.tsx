@@ -8,6 +8,7 @@ import {
   MapPin,
   Settings,
   Star,
+  X,
 } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 
@@ -27,7 +28,7 @@ import {
   sortReviewIndex,
   type ReviewIndexEntry,
 } from "~lib/review-index"
-import { readReviewIndex } from "~lib/review-index-storage"
+import { forgetReviewIndexEntry, readReviewIndex } from "~lib/review-index-storage"
 import {
   CHROME_WEB_STORE_REVIEW_URL,
   stopAutomaticReviewPrompts,
@@ -42,6 +43,15 @@ const openFileRows = [
   { icon: Bot, action: "Ask your agent", target: "to open it in Chrome" },
 ]
 
+async function fileExists(url: string) {
+  try {
+    await fetch(url)
+    return true
+  } catch {
+    return false
+  }
+}
+
 export default function Popup() {
   const [hasFileAccess, setHasFileAccess] = useState<boolean | null>(null)
   const [localhostOrigin, setLocalhostOrigin] = useState<string | null>(null)
@@ -50,10 +60,17 @@ export default function Popup() {
   const [panelOpen, setPanelOpen] = useState(false)
   const [tabLabel, setTabLabel] = useState<string | null>(null)
   const [entries, setEntries] = useState<ReviewIndexEntry[] | null>(null)
+  const [missingKeys, setMissingKeys] = useState<ReadonlySet<string>>(new Set())
 
   const loadEntries = useCallback(async () => {
     const stored = await readReviewIndex().catch(() => [])
-    setEntries(sortReviewIndex(LOCALHOST_REVIEW_ENABLED ? stored : documentReviewEntries(stored)))
+    const visible = sortReviewIndex(LOCALHOST_REVIEW_ENABLED ? stored : documentReviewEntries(stored))
+    setEntries(visible)
+    // A file moved or deleted outside Markside keeps its index entry, and
+    // opening it would land on Chrome's file-not-found page.
+    const documents = visible.filter((entry) => entry.kind === "document")
+    const found = await Promise.all(documents.map((entry) => fileExists(entry.key)))
+    setMissingKeys(new Set(documents.filter((_, index) => !found[index]).map((entry) => entry.key)))
   }, [])
 
   useEffect(() => {
@@ -99,9 +116,20 @@ export default function Popup() {
 
   const openReview = async (entry: ReviewIndexEntry) => {
     if (entry.kind === "localhost") await setLocalhostReviewPanelOpen(entry.key, true)
-    else await requestOpenReview(entry.key)
+    else {
+      if (!(await fileExists(entry.key))) {
+        setMissingKeys((current) => new Set(current).add(entry.key))
+        return
+      }
+      await requestOpenReview(entry.key)
+    }
     await chrome.tabs.create({ url: entry.key })
     window.close()
+  }
+
+  const dismissReview = async (entry: ReviewIndexEntry) => {
+    await forgetReviewIndexEntry(entry.kind, entry.key)
+    setEntries((current) => current?.filter((candidate) => candidate !== entry) ?? null)
   }
 
   const pending = entries ?? []
@@ -160,6 +188,13 @@ export default function Popup() {
         .review-meta { color: var(--popup-text-secondary); display: flex; font-size: 11px; line-height: 1.45; margin: 4px 0 8px; white-space: nowrap; }
         .review-path { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
         .review-age { flex-shrink: 0; }
+        .review-card.missing { cursor: default; }
+        .review-card.missing:hover { background: #fff; border-color: var(--popup-border); }
+        .review-card.missing .review-name { color: var(--popup-text-secondary); }
+        .review-missing { align-items: center; color: #b42318; display: flex; font-size: 11px; font-weight: 600; justify-content: space-between; }
+        .review-dismiss { align-items: center; background: transparent; border: 0; color: var(--popup-text-secondary); cursor: pointer; display: inline-flex; font-size: 11px; font-weight: 600; gap: 4px; padding: 0; }
+        .review-dismiss:hover { color: var(--popup-text); }
+        .review-dismiss:focus-visible { border-radius: 4px; outline: 3px solid var(--popup-matcha); outline-offset: 1px; }
 
         .open-row { align-items: center; color: var(--popup-text-secondary); display: flex; font-size: 12px; gap: 9px; padding: 5px 0; }
         .open-row b { color: var(--popup-text); font-weight: 600; }
@@ -250,7 +285,28 @@ export default function Popup() {
                 </div>
               )}
 
-              {pending.map((entry) => (
+              {pending.map((entry) => missingKeys.has(entry.key) ? (
+                <div className="review-card missing" key={`${entry.kind}-${entry.key}`}>
+                  <span className="review-head">
+                    <span className="review-name" title={entry.key}>{entry.label}</span>
+                    <span className="review-count">
+                      {entry.itemCount} {entry.itemCount === 1 ? "item" : "items"}
+                    </span>
+                  </span>
+                  <span className="review-meta">
+                    {entry.detail && <span className="review-path" title={entry.detail}>{entry.detail}</span>}
+                  </span>
+                  <span className="review-missing">
+                    File moved or deleted
+                    <button
+                      className="review-dismiss"
+                      aria-label={`Dismiss the Review for ${entry.label}`}
+                      onClick={() => void dismissReview(entry)}>
+                      <X size={12} /> Dismiss
+                    </button>
+                  </span>
+                </div>
+              ) : (
                 <button
                   className="review-card"
                   key={`${entry.kind}-${entry.key}`}

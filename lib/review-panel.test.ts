@@ -721,6 +721,25 @@ describe("ReviewPanel", () => {
     vi.useRealTimers()
   })
 
+  it("announces a comment whose text changed outside the panel, but not while typing in it", () => {
+    vi.useFakeTimers()
+    const onUpdateComment = vi.fn()
+    renderPanel({ selectedId: comment.id, onUpdateComment })
+    renderPanel({ selectedId: comment.id, onUpdateComment, comments: [{ ...comment, body: "B" }] })
+    expect(container.querySelector(".review-card-entering")?.textContent).toContain("B")
+    act(() => vi.advanceTimersByTime(1_000))
+
+    const textarea = container.querySelector<HTMLTextAreaElement>("article textarea")!
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!.call(textarea, "Typed")
+      textarea.dispatchEvent(new Event("input", { bubbles: true }))
+    })
+    expect(onUpdateComment).toHaveBeenCalledWith(comment.id, "Typed")
+    renderPanel({ selectedId: comment.id, onUpdateComment, comments: [{ ...comment, body: "Typed" }] })
+    expect(container.querySelector(".review-card-entering")).toBeNull()
+    vi.useRealTimers()
+  })
+
   it("shows a failed comment copy on that comment", async () => {
     const onCopyComment = vi.fn(async () => false)
     renderPanel({ selectedId: comment.id, onCopyComment })

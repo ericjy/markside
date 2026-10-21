@@ -178,17 +178,29 @@ export function ReviewPanel({
   const commentElementRefs = useRef(new Map<string, HTMLElement>())
   const commentTextareaRefs = useRef(new Map<string, HTMLTextAreaElement>())
   const commentSelectionRefs = useRef(new Map<string, ReviewTextSelection>())
-  const seenCommentIds = useRef<Set<string> | null>(null)
+  const seenCommentBodies = useRef<Map<string, string> | null>(null)
+  // Typing in a card changes its body on every keystroke; only outside changes announce themselves.
+  const panelEditRef = useRef<{ id: string; body: string } | null>(null)
+  const updateComment = (id: string, body: string) => {
+    panelEditRef.current = { id, body }
+    onUpdateComment(id, body)
+  }
   const enteringTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [enteringCommentId, setEnteringCommentId] = useState<string | null>(null)
   useEffect(() => {
-    const ids = new Set(comments.map(({ id }) => id))
-    const seen = seenCommentIds.current
-    seenCommentIds.current = ids
+    const seen = seenCommentBodies.current
+    seenCommentBodies.current = new Map(comments.map(({ id, body }) => [id, body]))
     if (!seen) return
     const arrived = comments.filter(({ id }) => !seen.has(id))
-    if (arrived.length !== 1) return
-    setEnteringCommentId(arrived[0].id)
+    const changed = comments.filter(({ id, body }) => seen.has(id) && seen.get(id) !== body &&
+      !(panelEditRef.current?.id === id && panelEditRef.current.body === body))
+    const announced = arrived.length === 1 ? arrived[0] : arrived.length === 0 && changed.length === 1 ? changed[0] : null
+    if (!announced) return
+    // Restart the animation when the same card changes again before it ends.
+    if (announced.id === enteringCommentId) {
+      commentElementRefs.current.get(announced.id)?.getAnimations?.().forEach((animation) => { animation.currentTime = 0 })
+    }
+    setEnteringCommentId(announced.id)
     if (enteringTimeoutRef.current) clearTimeout(enteringTimeoutRef.current)
     enteringTimeoutRef.current = setTimeout(() => {
       enteringTimeoutRef.current = null
@@ -307,7 +319,7 @@ export function ReviewPanel({
     }
     const result = insertReviewPreset(comment.body, instruction, selection)
     commentSelectionRefs.current.set(comment.id, result.selection)
-    onUpdateComment(comment.id, result.value)
+    updateComment(comment.id, result.value)
     restoreSelection(commentTextareaRefs.current.get(comment.id), result.selection)
   }
   const copyComment = async (id: string) => {
@@ -474,7 +486,7 @@ export function ReviewPanel({
                   comment.id,
                   getTextSelection(event.currentTarget),
                 )
-                onUpdateComment(comment.id, event.currentTarget.value)
+                updateComment(comment.id, event.currentTarget.value)
               }}
               className="review-input mt-3 min-h-16 max-h-40 w-full resize-y rounded-md border px-3 py-2.5 text-sm leading-relaxed outline outline-2 outline-offset-1 outline-transparent [field-sizing:content] placeholder:text-muted-foreground focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50"
             />

@@ -1,5 +1,5 @@
 import * as Dialog from "@radix-ui/react-dialog"
-import { AlertTriangle, Bot, Check, ChevronDown, Copy, FileText, FolderOpen, Plus, RefreshCw, Send, Trash2 } from "lucide-react"
+import { AlertTriangle, Bot, Check, ChevronDown, Copy, FileText, FolderOpen, MessageSquareText, Plus, RefreshCw, Send, Trash2 } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { currentAgentReview, hasReviewDrafts, getReviewCommentStatus } from "~lib/agent-review"
@@ -40,6 +40,10 @@ export type ReviewCopyStatus =
   | { kind: "error"; message: string; commentId?: string }
 
 interface ReviewPanelProps {
+  onCheckUpdates?: () => Promise<boolean>
+  documentChanged?: boolean
+  onReloadDocument?: () => void
+  reloadDocumentLoading?: boolean
   sourceUrl?: string
   open: boolean
   selectionVersion: number
@@ -95,6 +99,10 @@ export function ReviewPanel({
   onNoteChange,
   onUpdateComment,
   onChangeCommentStatus,  onDeleteComment,
+  onCheckUpdates,
+  documentChanged = false,
+  onReloadDocument,
+  reloadDocumentLoading = false,
   onCheckAgentSession,
   agentSessionCheckStatus = "idle",
   reviewLoading = false,
@@ -128,6 +136,29 @@ export function ReviewPanel({
   const [clearArmed, setClearArmed] = useState(false)
   const [undoDelete, setUndoDelete] = useState<(() => void) | null>(null)
   const clearButtonRef = useRef<HTMLButtonElement>(null)
+  const [updateCheck, setUpdateCheck] = useState<"idle" | "checking" | "updated" | "unchanged" | "error">("idle")
+  const updateCheckVersion = useRef(0)
+  useEffect(() => {
+    updateCheckVersion.current += 1
+    setUpdateCheck("idle")
+    return () => { updateCheckVersion.current += 1 }
+  }, [sourceUrl])
+  useEffect(() => {
+    if (updateCheck !== "unchanged" && updateCheck !== "updated") return
+    const timeout = setTimeout(() => setUpdateCheck("idle"), 3000)
+    return () => clearTimeout(timeout)
+  }, [updateCheck])
+  const checkUpdates = async () => {
+    if (!onCheckUpdates || updateCheck === "checking") return
+    const version = ++updateCheckVersion.current
+    setUpdateCheck("checking")
+    try {
+      const changed = await onCheckUpdates()
+      if (version === updateCheckVersion.current) setUpdateCheck(changed ? "updated" : "unchanged")
+    } catch {
+      if (version === updateCheckVersion.current) setUpdateCheck("error")
+    }
+  }
   const sendHelpRef = useRef<HTMLButtonElement>(null)
   const [editingNote, setEditingNote] = useState(false)
   const [sendHelpOpen, setSendHelpOpen] = useState(false)
@@ -213,6 +244,7 @@ export function ReviewPanel({
   }, [])
   const activeAgentHandoff = agentHandoff?.completed ? undefined : agentHandoff
   const canFinish = !!activeAgentHandoff?.canFinish
+  const showSentStatus = !!activeAgentHandoff?.sent && !activeAgentHandoff.sending && !canFinish
   const showAgentDisabledHelp = comments.length > 0 && !canFinish && !activeAgentHandoff?.sent && !!activeAgentHandoff?.disabledReason
   const showAgentFolderHelp = !!activeAgentHandoff?.folderToChoose && !activeAgentHandoff.disabledReason
   const reviewSourceUrl = sourceUrl ?? activeAgentHandoff?.sourceUrl ?? review?.sourceUrl
@@ -485,11 +517,12 @@ export function ReviewPanel({
           </div>
         )}
         {result?.reply && (
-          <div className="mt-3 border-t pt-3 pl-1">
-            <p className="flex items-center gap-1.5 text-[11px] font-medium text-blue-700 dark:text-blue-300">
-              <Bot size={13} aria-hidden="true" />Agent reply
+          <div className="review-agent-reply mt-4 rounded-r-md border-l-2 px-3 py-3">
+            <p className="review-agent-reply-label flex items-center gap-2 text-[11px] font-semibold tracking-[0.02em]">
+              <MessageSquareText size={14} strokeWidth={1.75} className="shrink-0" aria-hidden="true" />
+              Agent reply
             </p>
-            <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground">{result.reply}</p>
+            <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-[1.65]">{result.reply}</p>
           </div>
         )}
         {!editing && commentActions && <div className="mt-3 flex items-center justify-end gap-2">{commentActions}</div>}
@@ -804,15 +837,6 @@ export function ReviewPanel({
             All comments resolved. Add more feedback, or finish so your agent can continue.
           </p>
         )}
-        {activeAgentHandoff?.sent && !canFinish && (
-          <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
-            Agent not picking up the review sent? Make sure you start a review in your agent. You can{" "}
-            <button ref={sendHelpRef} type="button" onClick={() => setSendHelpOpen(true)}
-              className="underline underline-offset-2 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
-              start the review now
-            </button>.
-          </p>
-        )}
         {activeAgentHandoff && canFinish && (
             <Button className="h-11 w-full whitespace-nowrap px-3" disabled={activeAgentHandoff.finishing || activeAgentHandoff.updatingCommentId != null}
               onClick={activeAgentHandoff.finish} aria-busy={activeAgentHandoff.finishing} aria-describedby="agent-review-finish-help">
@@ -821,11 +845,36 @@ export function ReviewPanel({
             </Button>
         )}
         {activeAgentHandoff && !canFinish && (
+          activeAgentHandoff.sent && !activeAgentHandoff.sending ? (
+            <div className="py-1">
+              <p role="status" className="flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-300">
+                <Check size={16} className="shrink-0" aria-hidden="true" />
+                Review sent. Check your agent.
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Reload page after agent addressed the review. Agent hasn’t started?{" "}
+                <button ref={sendHelpRef} type="button" aria-haspopup="dialog" onClick={() => setSendHelpOpen(true)}
+                  className="underline underline-offset-2 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+                  Start a review in your agent to connect to Markside.
+                </button>
+              </p>
+            </div>
+          ) : (
             <Button className="h-11 w-full whitespace-nowrap px-3 disabled:bg-primary disabled:text-primary-foreground/60 disabled:opacity-100" disabled={activeAgentHandoff.disabled} onClick={() => void activeAgentHandoff.send()} aria-busy={activeAgentHandoff.sending}
               aria-describedby={showAgentDisabledHelp ? "agent-review-send-help" : showAgentFolderHelp ? "agent-review-folder-help" : undefined}>
-              {activeAgentHandoff.sent ? <Check size={14} /> : <Send size={14} />}
-              {activeAgentHandoff.sending ? "Sending review…" : activeAgentHandoff.sent ? "Sent for agent to pick up" : "Send review to agent"}
+              <Send size={14} />
+              {activeAgentHandoff.sending ? "Sending review…" : "Send review to agent"}
             </Button>
+          )
+        )}
+        {activeAgentHandoff && documentChanged && (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2">
+            <span className="text-xs text-muted-foreground">Document changed on disk</span>
+            <Button variant="outline" size="sm" onClick={onReloadDocument} disabled={reloadDocumentLoading || !onReloadDocument}>
+              <RefreshCw size={14} aria-hidden="true" className={reloadDocumentLoading ? "animate-spin" : ""} />
+              {reloadDocumentLoading ? "Reloading…" : "Reload document"}
+            </Button>
+          </div>
         )}
         {showAgentFolderHelp && (
           <p id="agent-review-folder-help" className="mt-2 text-xs leading-relaxed text-muted-foreground">
@@ -835,8 +884,21 @@ export function ReviewPanel({
           </p>
         )}
         <div className={`flex flex-wrap gap-2 ${showAgentAction ? "mt-2" : ""}`}>
+          {showSentStatus && (
+            <Button variant="outline" size="sm" className="h-11 px-3 text-xs" onClick={() => void checkUpdates()}
+              disabled={!onCheckUpdates || updateCheck === "checking" || reloadDocumentLoading}
+              aria-busy={updateCheck === "checking"}>
+              <RefreshCw size={14} aria-hidden="true" className={updateCheck === "checking" ? "animate-spin" : ""} />
+              <span className="grid">
+                <span aria-hidden="true" className="invisible" style={{ gridArea: "1 / 1" }}>Check for updates</span>
+                <span aria-live="polite" style={{ gridArea: "1 / 1" }}>
+                  {updateCheck === "checking" ? "Checking…" : updateCheck === "unchanged" ? "No updates yet" : updateCheck === "updated" ? "Updates found" : "Check for updates"}
+                </span>
+              </span>
+            </Button>
+          )}
           {/* Remount on a variant change so transition-colors doesn't fade the dark primary background out. */}
-          <Button key={showAgentAction ? "secondary" : "primary"} variant={showAgentAction ? "ghost" : "default"} className={`h-11 min-w-max whitespace-nowrap ${showAgentAction ? "shrink-0 px-4 text-xs text-muted-foreground hover:text-foreground" : "flex-1"}`} disabled={copyableCount === 0} onClick={onCopy}>
+          <Button key={showAgentAction ? "secondary" : "primary"} variant={showAgentAction ? "ghost" : "default"} className={`h-11 min-w-max whitespace-nowrap ${showAgentAction ? "shrink-0 px-2 text-xs text-muted-foreground hover:text-foreground" : "flex-1"}`} disabled={copyableCount === 0} onClick={onCopy}>
             {copied
               ? <Check size={14} strokeWidth={2.5} className="text-[hsl(132_60%_46%)] dark:text-[hsl(130_78%_29%)]" />
               : <Copy size={14} />} {copied ? "Review copied for this file" : "Copy review as prompt"}
@@ -868,6 +930,9 @@ export function ReviewPanel({
             </Button>
           )}
         </div>
+        {showSentStatus && updateCheck === "error" && (
+          <p role="status" className="mt-2 text-xs text-muted-foreground">Couldn’t check. Try again.</p>
+        )}
         {showStartReview && (
           <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs leading-relaxed text-muted-foreground">
             <button ref={sendHelpRef} type="button" aria-haspopup="dialog" onClick={() => setSendHelpOpen(true)}

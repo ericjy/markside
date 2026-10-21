@@ -277,15 +277,21 @@ again, which checks the file and uses the refreshed text anchors.
 Reload failures stay in the dialog for retry; an Unsaved Draft still blocks
 copying and is never discarded by this action.
 
-Review opens as a compact overlay. In Preview mode, a `ResizeObserver` measures
-the actual `SidebarInset` after the file tree or Outline changes width. Review
-docks beside the document only when reserving its selected width and gutter
-leaves at least 896 px for the document. Otherwise it floats over the document
-without shrinking the reading area. Split mode always uses the floating layout.
-The header can be dragged within `SidebarInset`, or moved with the grip's arrow
-keys. Moving Review turns off the reserved document space until the file changes.
-The position is saved per file after a drag or keyboard move and survives reload.
-It remains within the inset when the panel or window is resized.
+Review opens as a compact floating overlay by default. Its header offers **Dock
+Review right** and **Float Review**. Docked Review fills the height below the
+toolbar at the far right, reserving its width for Preview, Source, and Split.
+Outline remains independently toggleable and sits between Preview and Review
+when both are open. Review's layout and docked width persist across files in
+`chrome.storage.local` (`reviewLayout` and `reviewDockWidth`). The docked width
+starts at 384 px and can be resized from 320–600 px using its left divider or
+that divider's arrow keys, Home, and End.
+
+A `ResizeObserver` measures the actual `SidebarInset`. If the chosen Review width
+and visible desktop Outline would leave less than 640 px for the document,
+Review temporarily floats without changing the saved docking preference. The
+floating header can be dragged within `SidebarInset`, or moved with the grip's
+arrow keys. Floating positions are saved per file and clamped to the inset.
+Docking preserves the floating position for a later return to Float.
 
 Refs mirror values used by keyboard handlers and scheduled work so those callbacks do not read stale React closures.
 
@@ -493,8 +499,13 @@ access as delivery to the agent: comments are already saved locally in IndexedDB
 A matching saved or newly selected sidebar folder hides the line.
 Copy review as prompt is a quiet, borderless secondary action below the full-width
 Send button, aligned left. Clear aligns right on the same row when space allows. Once the
-current feedback is sent, the primary button shows Sent for agent to pick up and is disabled
-until feedback changes. The Copy button remains active. This confirms a local write, not agent receipt; no agent
+current feedback is sent, a green Review sent. Check your agent. status line replaces the primary
+button until feedback changes. **Check for updates** reads the agent sidecar and
+document once, refreshes replies, and briefly shows No updates yet or Updates
+found inside the check button. Read failures offer a retry. If the document changed, **Reload document**
+uses the existing Reload action and Unsaved Draft confirmation; checking never
+replaces document content. The guidance paragraph includes a Start a review link.
+Copy remains available. The sent status confirms a local write, not agent receipt; no agent
 process is started. Editing feedback restores Send.
 For an active request, the comment composer keeps Save & copy prompt, and its Save
 is a split button whose menu offers Save & send review; Cmd/Ctrl+Shift+Enter also

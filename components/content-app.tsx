@@ -806,7 +806,7 @@ export function FileRenderer({
         importedReviewCommentIdAtPoint={highlights.importedReviewCommentIdAtPoint}
         handleReviewHighlightClick={reviewActions.handleReviewHighlightClick}
         reviewOverlayDocked={overlay.reviewOverlayDocked}
-        reviewOverlaySize={overlay.reviewOverlaySize}
+        reviewDockWidth={overlay.reviewDockWidth}
         selectionAction={selection.selectionAction}
         selectionComposerOpen={selection.selectionComposerOpen}
         selectionComposerTextareaRef={selection.selectionComposerTextareaRef}
@@ -857,6 +857,16 @@ export function FileRenderer({
         setActiveHeadingId={setActiveHeadingId}
       />
       <ContentReviewOverlay
+        checkReviewUpdates={async () => {
+          const [agentChanged, documentChanged] = await Promise.all([
+            agentHandoff?.checkForUpdates?.() ?? Promise.resolve(false),
+            reload.checkDiskForUpdates(),
+          ])
+          return agentChanged || documentChanged
+        }}
+        documentChanged={reload.diskChanged}
+        reloadDocument={reload.requestReloadFromDisk}
+        reloadDocumentLoading={reload.reloadLoading}
         agentHandoff={agentHandoff}
         agentSessionCheckStatus={agentSessionCheck?.url === fileUrl ? agentSessionCheck.status : "idle"}
         checkAgentSession={() => {
@@ -868,6 +878,12 @@ export function FileRenderer({
           ? { path: fileFolderPath(fileUrl), choose: () => openDirectory("readwrite") }
           : null}
         isMdFile={isMdFile}
+        reviewOverlayDocked={overlay.reviewOverlayDocked}
+        reviewLayout={overlay.reviewLayout}
+        toggleReviewDock={overlay.toggleReviewDock}
+        reviewDockWidth={overlay.reviewDockWidth}
+        resizeReviewDock={overlay.resizeReviewDock}
+        saveReviewDockWidth={overlay.saveReviewDockWidth}
         reviewOverlayRef={overlay.reviewOverlayRef}
         reviewOverlayOpen={overlay.reviewOverlayOpen}
         reviewOverlaySize={overlay.reviewOverlaySize}

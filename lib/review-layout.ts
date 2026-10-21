@@ -8,8 +8,6 @@ export const REVIEW_OVERLAY_WIDTHS = {
 
 export type ReviewOverlaySize = keyof typeof REVIEW_OVERLAY_WIDTHS
 
-const REVIEW_OVERLAY_GUTTER = 40
-const MIN_REVIEW_DOCUMENT_WIDTH = 896
 const SELECTION_ACTION_WIDTH = 220
 const SELECTION_ACTION_HEIGHT = 48
 const SELECTION_COMPOSER_WIDTH = 470
@@ -98,17 +96,16 @@ export function getReviewBadgeOffset(point: Point, container: ScrollContainerBox
   }
 }
 
-export function getReviewOverlayReservedWidth(size: ReviewOverlaySize) {
-  return REVIEW_OVERLAY_WIDTHS[size] + REVIEW_OVERLAY_GUTTER
-}
-
-export function shouldDockReviewOverlay(
-  availableWidth: number,
-  size: ReviewOverlaySize,
-) {
-  return availableWidth >= getReviewOverlayReservedWidth(size) + MIN_REVIEW_DOCUMENT_WIDTH
-}
-
 export function nextReviewOverlaySize(size: ReviewOverlaySize): ReviewOverlaySize {
   return size === "compact" ? "standard" : size === "standard" ? "wide" : "compact"
+}
+
+export function clampReviewDockWidth(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.max(320, Math.min(600, value))
+    : 384
+}
+
+export function canDockReview(availableWidth: number, panelWidth: number): boolean {
+  return availableWidth - panelWidth >= 640
 }

@@ -141,20 +141,41 @@ describe("useContentReviewOverlay", () => {
     expect(storage.data).not.toHaveProperty(`${REVIEW_OVERLAY_OPEN_KEY_PREFIX}file:///docs/a.ts`)
   })
 
-  it("docks beside the document only when there is room and Split is off", async () => {
-    stubChromeStorage()
+  it("floats by default and remembers explicit docking and width across files", async () => {
+    const storage = stubChromeStorage()
     const wide = renderHook(useContentReviewOverlay, options())
     await flush()
     act(() => wide.result.current.setReviewOverlayOpen(true))
-    expect(wide.result.current.reviewOverlayDocked).toBe(true)
-    wide.rerender(options({ isSplitView: true }))
     expect(wide.result.current.reviewOverlayDocked).toBe(false)
+    act(() => wide.result.current.toggleReviewDock())
+    act(() => wide.result.current.resizeReviewDock(460))
+    act(() => wide.result.current.saveReviewDockWidth(460))
+    await flush()
+    expect(wide.result.current.reviewOverlayDocked).toBe(true)
+    expect(storage.data.reviewLayout).toBe("docked")
+    expect(storage.data.reviewDockWidth).toBe(460)
+    wide.rerender(options({ fileUrl: FILE_B, isSplitView: true, outlineOpen: true }))
+    await flush()
+    act(() => wide.result.current.setReviewOverlayOpen(true))
+    expect(wide.result.current.reviewOverlayDocked).toBe(true)
+    expect(wide.result.current.reviewDockWidth).toBe(460)
     wide.unmount()
 
+    const restored = renderHook(useContentReviewOverlay, options())
+    await flush()
+    act(() => restored.result.current.setReviewOverlayOpen(true))
+    expect(restored.result.current.reviewOverlayDocked).toBe(true)
+    expect(restored.result.current.reviewDockWidth).toBe(460)
+  })
+
+  it("temporarily floats in narrow layouts without clearing the docking preference", async () => {
+    const storage = stubChromeStorage({ reviewLayout: "docked", reviewDockWidth: 448 })
     const narrow = renderHook(useContentReviewOverlay, options({ sidebarInsetRef: refTo(elementWithWidth(900)) }))
     await flush()
     act(() => narrow.result.current.setReviewOverlayOpen(true))
     expect(narrow.result.current.reviewOverlayDocked).toBe(false)
+    expect(narrow.result.current.reviewLayout).toBe("docked")
+    expect(storage.data.reviewLayout).toBe("docked")
   })
 
   it("returns focus to the Review button when closed from the keyboard", async () => {

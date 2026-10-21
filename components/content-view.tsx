@@ -46,7 +46,6 @@ import {
   type ReviewBadgeAnchor
 } from "~lib/review-dom"
 import {
-  getReviewOverlayReservedWidth,
   SELECTION_COMPOSER_SIZE
 } from "~lib/review-layout"
 import {
@@ -96,7 +95,7 @@ interface ContentViewProps {
   importedReviewCommentIdAtPoint: (clientX: number, clientY: number) => string | null
   handleReviewHighlightClick: (event: React.MouseEvent) => void
   reviewOverlayDocked: boolean
-  reviewOverlaySize: "compact" | "standard" | "wide"
+  reviewDockWidth: number
   selectionAction: { anchor: ReviewAnchor; range: Range; selectionPoint: { x: number; y: number; }; toolbarPosition: { x: number; y: number; }; composerPosition: { x: number; y: number; }; sourceLine: number | null; } | null
   selectionComposerOpen: boolean
   selectionComposerTextareaRef: React.RefObject<HTMLTextAreaElement>
@@ -177,7 +176,7 @@ export function ContentView({
   importedReviewCommentIdAtPoint,
   handleReviewHighlightClick,
   reviewOverlayDocked,
-  reviewOverlaySize,
+  reviewDockWidth,
   selectionAction,
   selectionComposerOpen,
   selectionComposerTextareaRef,
@@ -231,7 +230,7 @@ export function ContentView({
   const composerSending = !!composerAgent && (composerAgent.sending || composerAgent.updatingCommentId != null)
   return (
     <>
-        <div className="flex-1 min-h-0 w-full">
+        <div className="flex-1 min-h-0 print:!mr-0" style={{ marginRight: reviewOverlayDocked ? reviewDockWidth : 0 }}>
           {isImageFile && (
             <div className="h-full overflow-y-auto px-8 py-10">
               <div className="flex h-full items-center justify-center">
@@ -378,13 +377,6 @@ export function ContentView({
                   onClick={handleReviewHighlightClick}>
                   <div className="flex min-h-full min-w-0 items-start">
                     <div
-                      style={
-                        reviewOverlayDocked
-                          ? {
-                              paddingRight: `${getReviewOverlayReservedWidth(reviewOverlaySize)}px`,
-                            }
-                          : undefined
-                      }
                       className="relative min-h-full min-w-0 flex-1 pl-20 pr-8 py-10 transition-[padding] duration-200 print:p-0">
                   {selectionAction && selectionComposerOpen && (
                     <div

@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest"
 
 import {
   clampReviewOverlayPosition,
+  clampReviewDockWidth,
+  canDockReview,
   getReviewBadgeOffset,
   getSelectionActionPosition,
-  getReviewOverlayReservedWidth,
   nextReviewOverlaySize,
   resolveReviewOverlayPosition,
-  shouldDockReviewOverlay,
   SELECTION_COMPOSER_SIZE,
 } from "./review-layout"
 
@@ -130,38 +130,26 @@ describe("getReviewBadgeOffset", () => {
   })
 })
 
-describe("shouldDockReviewOverlay", () => {
-  it.each([
-    { size: "compact" as const, reservedWidth: 424 },
-    { size: "standard" as const, reservedWidth: 488 },
-    { size: "wide" as const, reservedWidth: 552 },
-  ])("reserves the $size Review width and its gutter", ({ size, reservedWidth }) => {
-    expect(getReviewOverlayReservedWidth(size)).toBe(reservedWidth)
-  })
-
-  it.each([
-    { size: "compact" as const, minimumWidth: 1_320 },
-    { size: "standard" as const, minimumWidth: 1_384 },
-    { size: "wide" as const, minimumWidth: 1_448 },
-  ])("docks $size only when 896px remains for the document", ({ size, minimumWidth }) => {
-    expect(shouldDockReviewOverlay(minimumWidth, size)).toBe(true)
-    expect(shouldDockReviewOverlay(minimumWidth - 1, size)).toBe(false)
-  })
-
-  it("can float a wider Review while docking a compact Review in the same space", () => {
-    expect(shouldDockReviewOverlay(1_350, "compact")).toBe(true)
-    expect(shouldDockReviewOverlay(1_350, "standard")).toBe(false)
-  })
-
-  it("floats before the available width has been measured", () => {
-    expect(shouldDockReviewOverlay(0, "compact")).toBe(false)
-  })
-})
-
 describe("nextReviewOverlaySize", () => {
   it("cycles compact, standard, wide", () => {
     expect(nextReviewOverlaySize("compact")).toBe("standard")
     expect(nextReviewOverlaySize("standard")).toBe("wide")
     expect(nextReviewOverlaySize("wide")).toBe("compact")
+  })
+})
+
+describe("explicit Review docking", () => {
+  it("keeps a usable document area beside the selected panel width", () => {
+    expect(canDockReview(1024, 384)).toBe(true)
+    expect(canDockReview(1023, 384)).toBe(false)
+    expect(canDockReview(1024, 448)).toBe(false)
+  })
+  it("bounds persisted widths and ignores invalid values", () => {
+    expect(clampReviewDockWidth(undefined)).toBe(384)
+    expect(clampReviewDockWidth(NaN)).toBe(384)
+    expect(clampReviewDockWidth("448")).toBe(384)
+    expect(clampReviewDockWidth(200)).toBe(320)
+    expect(clampReviewDockWidth(900)).toBe(600)
+    expect(clampReviewDockWidth(448)).toBe(448)
   })
 })

@@ -4,11 +4,15 @@ import {
   DEFAULT_REVIEW_OVERLAY_SIZE,
   nextReviewOverlaySize,
   resolveReviewOverlayPosition,
-  shouldDockReviewOverlay,
+  clampReviewDockWidth,
+  canDockReview,
   type ReviewOverlaySize
 } from "~lib/review-layout"
 
 export const REVIEW_OVERLAY_POSITION_KEY_PREFIX = "reviewOverlayPosition:"
+export const REVIEW_LAYOUT_KEY = "reviewLayout"
+export const REVIEW_DOCK_WIDTH_KEY = "reviewDockWidth"
+
 export const REVIEW_OVERLAY_OPEN_KEY_PREFIX = "reviewOverlayOpen:"
 
 type Point = { x: number; y: number }
@@ -25,11 +29,35 @@ interface UseContentReviewOverlayOptions {
 export function useContentReviewOverlay({
   fileUrl,
   isMdFile,
-  isSplitView,
   outlineOpen,
   rightSidebarWidth,
   sidebarInsetRef,
 }: UseContentReviewOverlayOptions) {
+  const [reviewLayout, setReviewLayout] = useState<"floating" | "docked">("floating")
+  const [reviewDockWidth, setReviewDockWidth] = useState(384)
+  const preferenceChanged = useRef(false)
+  useEffect(() => {
+    let active = true
+    void chrome.storage.local.get([REVIEW_LAYOUT_KEY, REVIEW_DOCK_WIDTH_KEY]).then((stored) => {
+      if (!active || preferenceChanged.current) return
+      setReviewLayout(stored[REVIEW_LAYOUT_KEY] === "docked" ? "docked" : "floating")
+      setReviewDockWidth(clampReviewDockWidth(stored[REVIEW_DOCK_WIDTH_KEY]))
+    }).catch(() => undefined)
+    return () => { active = false }
+  }, [])
+  const toggleReviewDock = () => {
+    preferenceChanged.current = true
+    const next = reviewLayout === "docked" ? "floating" : "docked"
+    setReviewLayout(next)
+    void chrome.storage.local.set({ [REVIEW_LAYOUT_KEY]: next }).catch(() => undefined)
+  }
+  const resizeReviewDock = (width: number) => {
+    preferenceChanged.current = true
+    setReviewDockWidth(clampDockResize(width))
+  }
+  const saveReviewDockWidth = (width: number) => {
+    void chrome.storage.local.set({ [REVIEW_DOCK_WIDTH_KEY]: clampDockResize(width) }).catch(() => undefined)
+  }
   const [reviewOverlayOpen, setReviewOverlayOpen] = useState(false)
   const [restoredFile, setRestoredFile] = useState<string | null>(null)
   const [reviewOverlaySize, setReviewOverlaySize] = useState<ReviewOverlaySize>(
@@ -103,8 +131,20 @@ export function useContentReviewOverlay({
     return () => observer.disconnect()
   }, [])
 
+  const clampDockResize = (width: number) => clampReviewDockWidth(Math.min(
+    width,
+    layoutWidth - (outlineOpen && window.innerWidth >= 1280 ? rightSidebarWidth : 0) - 640,
+  ))
+
+  const reviewOverlayDocked = isMdFile && reviewOverlayOpen && reviewLayout === "docked" &&
+    canDockReview(
+      layoutWidth - (outlineOpen && window.innerWidth >= 1280 ? rightSidebarWidth : 0),
+      reviewDockWidth,
+    )
+
+
   useLayoutEffect(() => {
-    if (!reviewOverlayOpen || !reviewOverlayMoved) return
+    if (!reviewOverlayOpen || !reviewOverlayMoved || reviewOverlayDocked) return
     const inset = sidebarInsetRef.current
     const overlay = reviewOverlayRef.current
     if (!inset || !overlay) return
@@ -129,7 +169,7 @@ export function useContentReviewOverlay({
       observer.disconnect()
       window.removeEventListener("resize", keepInBounds)
     }
-  }, [reviewOverlayOpen, reviewOverlayMoved])
+  }, [reviewOverlayOpen, reviewOverlayMoved, reviewOverlayDocked])
 
   const closeReviewOverlay = (restoreTriggerFocus = false) => {
     dragRef.current = null
@@ -140,13 +180,6 @@ export function useContentReviewOverlay({
     }
   }
 
-  const reviewOverlayDocked = reviewOverlayOpen &&
-    !reviewOverlayMoved &&
-    !isSplitView &&
-    shouldDockReviewOverlay(
-      layoutWidth - (outlineOpen && window.innerWidth >= 1280 ? rightSidebarWidth : 0),
-      reviewOverlaySize,
-    )
 
   const moveReviewOverlay = (x: number, y: number) => {
     const inset = sidebarInsetRef.current
@@ -241,6 +274,11 @@ export function useContentReviewOverlay({
   }
 
   return {
+    reviewLayout,
+    toggleReviewDock,
+    reviewDockWidth,
+    resizeReviewDock,
+    saveReviewDockWidth,
     reviewOverlayOpen,
     setReviewOverlayOpen,
     closeReviewOverlay,

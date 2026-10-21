@@ -33,6 +33,28 @@ function setup(status: AgentReviewFile["status"] = "sent") {
 afterEach(() => vi.unstubAllGlobals())
 
 describe("local agent Review result discovery", () => {
+  it("checks for updates on demand and loads replies without reloading the document", async () => {
+    const { hook, address } = setup()
+    await flush()
+    let changed: boolean | undefined
+    await act(async () => { changed = await hook.result.current?.checkForUpdates?.() })
+    expect(changed).toBe(false)
+    address()
+    await act(async () => { changed = await hook.result.current?.checkForUpdates?.() })
+    expect(changed).toBe(true)
+    expect(hook.result.current?.results?.get("c1")?.reply).toBe("Changed to Create the feature.")
+    hook.unmount()
+  })
+
+  it("preserves existing replies when an explicit update check cannot parse the sidecar", async () => {
+    const { hook, sendMessage } = setup()
+    await flush()
+    sendMessage.mockImplementation((_message, callback) => callback({ text: "invalid" }))
+    await expect(hook.result.current?.checkForUpdates?.()).rejects.toThrow()
+    expect(hook.result.current?.file?.comments).toHaveLength(1)
+    hook.unmount()
+  })
+
   it("re-reads silently for discovery and reports each explicit check once", async () => {
     const { hook, options, sendMessage } = setup("pending")
     await flush()

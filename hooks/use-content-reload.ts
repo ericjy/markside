@@ -1,5 +1,6 @@
 import React,{ useEffect,useRef,useState } from "react"
 import { type ReviewCopyStatus } from "~components/review-panel"
+import { normalizeDiskText } from "~lib/content-file-access"
 import { readFileFromDisk } from "~lib/file-reload"
 import { type MarkdownMode } from "~lib/markdown-mode"
 import { type SaveState } from "~hooks/use-content-save"
@@ -73,6 +74,10 @@ export function useContentReload({
   const [reloadComparison, setReloadComparison] = useState<{ before: string; after: string } | null>(null)
   const [showChanges, setShowChanges] = useState(false)
   const [reviewCopyReload, setReviewCopyReload] = useState<ReviewCopyReload | null>(null)
+  // The loaded disk text an update check found out of date. A save that replaces
+  // it, or a reload, ends the notice.
+  const [staleDiskContent, setStaleDiskContent] = useState<string | null>(null)
+  const diskChanged = staleDiskContent !== null && staleDiskContent === diskContentRef.current
   const hasReloadChanges = !!reloadComparison && reloadComparison.before !== reloadComparison.after
   const changesVisible = showChanges && hasReloadChanges && content === reloadComparison?.after
 
@@ -86,9 +91,21 @@ export function useContentReload({
     setReviewCopyReload(null)
     setReloadComparison(null)
     setShowChanges(false)
+    setStaleDiskContent(null)
   }, [fileUrl, isMdFile])
 
   useEffect(() => clearReloadNotice, [])
+
+  const checkDiskForUpdates = async () => {
+    const url = fileUrlRef.current
+    const loaded = diskContentRef.current
+    if (isImageFile || loaded === null || reloadLoadingRef.current) return false
+    const { text } = await readFileFromDisk(fileHandleRef.current, url, false)
+    if (fileUrlRef.current !== url || diskContentRef.current !== loaded) return false
+    const changed = normalizeDiskText(text) !== normalizeDiskText(loaded)
+    setStaleDiskContent(changed ? loaded : null)
+    return changed
+  }
 
   const handleReloadFromDisk = async ({ forReviewCopy = false } = {}) => {
     if (reloadLoadingRef.current) return
@@ -136,6 +153,7 @@ export function useContentReload({
         draftRef.current = text
       }
       setReloadVersion((version) => version + 1)
+      setStaleDiskContent(null)
       setSaveState("idle")
       setConflict(false)
       hasUnsavedDraftRef.current = false
@@ -203,6 +221,8 @@ export function useContentReload({
     reloadConfirmOpen,
     setReloadConfirmOpen,
     reloadNoticeOpen,
+    diskChanged,
+    checkDiskForUpdates,
     reloadLoading,
     reloadVersion,
     reloadTriggerRef,

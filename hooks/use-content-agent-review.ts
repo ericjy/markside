@@ -24,6 +24,7 @@ export interface AgentReviewHandoff {
   disabledReason: string | null
   sending: boolean
   sent?: boolean
+  checkForUpdates?: () => Promise<boolean>
   sentAt?: string
   error: string | null
   send: (reviewOverride?: ActiveReview) => Promise<boolean>
@@ -125,6 +126,17 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
   const unchanged = file.status === "sent" && reviewSendFingerprint(currentAgentReview(review, file)) === reviewSendFingerprint(file)
   const disabledReason = getAgentReviewDisabledReason(file, review)
   const canFinish = canFinishAgentReview(file, review)
+
+  const checkForUpdates = async () => {
+    if (writingRef.current) return false
+    const disk = await readFileFromDisk(null, agentReviewUrl(fileUrl), false)
+    if (disk.text === null) throw new Error("Could not read the agent review.")
+    const latest = parseReviewFile(disk.text, doc)
+    if (optionsRef.current.fileUrl !== fileUrl || writingRef.current) return false
+    const changed = JSON.stringify(latest) !== JSON.stringify(file)
+    setState({ url: fileUrl, file: latest })
+    return changed
+  }
 
   const getReviewDirectory = async () => {
     // Request permission first, while the click's user gesture is active.
@@ -266,5 +278,5 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       setSending(false)
     }
   }
-  return { file, sourceUrl: fileUrl, folderToChoose, completed, canFinish, finishing, finish: () => void finish(), results, updatingCommentId, changeStatus: (id, status) => void changeStatus(id, status), disabled: sending || finishing || updatingCommentId !== null || !!disabledReason, disabledReason, sending, sent: unchanged, sentAt: file.sentAt, error, send }
+  return { checkForUpdates, file, sourceUrl: fileUrl, folderToChoose, completed, canFinish, finishing, finish: () => void finish(), results, updatingCommentId, changeStatus: (id, status) => void changeStatus(id, status), disabled: sending || finishing || updatingCommentId !== null || !!disabledReason, disabledReason, sending, sent: unchanged, sentAt: file.sentAt, error, send }
 }

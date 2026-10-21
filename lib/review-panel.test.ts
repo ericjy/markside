@@ -436,8 +436,11 @@ describe("ReviewPanel", () => {
     const onCopy = vi.fn()
     const send = vi.fn()
     renderPanel({ onCopy, agentHandoff: { disabled: true, disabledReason: "Add or edit a comment to send again.", sending: false, sent: true, sentAt: "2026-10-18T12:05:00Z", error: null, send } })
-    const readyButton = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Sent for agent to pick up"))!
-    expect(readyButton.disabled).toBe(true)
+    const sentStatus = Array.from(container.querySelectorAll('[role="status"]')).find((element) => element.textContent?.includes("Review sent"))!
+    expect(sentStatus).toBeDefined()
+    expect(sentStatus.closest("button")).toBeNull()
+    expect(container.textContent).toContain("Reload page after agent addressed the review.")
+    expect(container.textContent!.indexOf("Review sent")).toBeLessThan(container.textContent!.indexOf("Agent hasn’t started?"))
     expect(container.textContent).not.toContain("Your review is saved.")
     expect(container.textContent).not.toContain("Add or edit a comment")
     expect(container.textContent).not.toContain("Send review to agent")
@@ -450,6 +453,34 @@ describe("ReviewPanel", () => {
     expect(sendButton.disabled).toBe(false)
   })
 
+  it("checks explicitly, reports no updates, and offers the protected reload action", async () => {
+    const onCheckUpdates = vi.fn().mockResolvedValue(false)
+    const onReloadDocument = vi.fn()
+    const agentHandoff = { disabled: true, disabledReason: null, sending: false, sent: true, error: null, send: vi.fn() }
+    renderPanel({ agentHandoff, onCheckUpdates, onReloadDocument })
+    const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check for updates"))!
+    await act(async () => check.click())
+    expect(onCheckUpdates).toHaveBeenCalledOnce()
+    expect(check.textContent).toContain("No updates yet")
+    expect(onReloadDocument).not.toHaveBeenCalled()
+    renderPanel({ agentHandoff, onCheckUpdates, onReloadDocument, documentChanged: true })
+    const reload = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Reload document"))!
+    act(() => reload.click())
+    expect(onReloadDocument).toHaveBeenCalledOnce()
+  })
+
+  it("reports a failed update check without claiming nothing changed", async () => {
+    renderPanel({
+      agentHandoff: { disabled: true, disabledReason: null, sending: false, sent: true, error: null, send: vi.fn() },
+      onCheckUpdates: vi.fn().mockRejectedValue(new Error("Read failed")),
+    })
+    const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check for updates"))!
+    await act(async () => check.click())
+    expect(container.textContent).toContain("Couldn’t check. Try again.")
+    expect(container.textContent).not.toContain("No updates yet")
+    expect(check.disabled).toBe(false)
+  })
+
   it("opens a command dialog for the current file and supports copying or manual selection", async () => {
     const sourceUrl = "file:///Users/eric/Markside%20Samples/PLAN.md"
     const command = '$markside review "/Users/eric/Markside Samples/PLAN.md" --no-open'
@@ -458,7 +489,7 @@ describe("ReviewPanel", () => {
     renderPanel({ review: null, comments: [], agentHandoff: {
       sourceUrl, sent: true, disabled: true, disabledReason: "Add or edit a comment to send again.", sending: false, error: null, send: vi.fn(),
     } })
-    const help = Array.from(container.querySelectorAll("button")).find((button) => button.textContent === "start the review now")!
+    const help = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.trim() === "Start a review in your agent to connect to Markside.")!
     act(() => help.click())
     const dialog = document.querySelector('[role="dialog"]')!
     expect(dialog.textContent).toContain("Markside finds the review when you return to this tab.")

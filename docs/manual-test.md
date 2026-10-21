@@ -231,3 +231,31 @@ permissions and disk writes require manual verification.
   byte-for-byte unchanged until the CLI starts a fresh review. Close/reopen the
   panel after the CLI starts: Send becomes available and completed history stays
   intact. Continuation alone must not start another review.
+
+### Docked Review
+
+- Open Review on a Markdown file. With no saved layout preference it floats;
+  choose **Dock Review right** and verify it fills the space below the toolbar.
+- Toggle Outline and Review independently: either, both, and neither. With both
+  open on a wide window, verify document → Outline → Review ordering.
+- Resize Review with its left divider and with arrow keys, Home, and End while
+  the divider has keyboard focus. Verify comments scroll and footer stays visible.
+- Reload and navigate to another Markdown file; open Review and verify the dock
+  preference and width remain. Switch to Float and verify that choice persists.
+- Check Preview, Source, and Split. Review must reserve space for the whole
+  content area. Check selecting passages, jumping to comments, and Split resizing.
+- Narrow the window until Review floats, then widen it: Review docks again.
+  Opening Outline must also leave enough document space or float Review.
+- Float, move the panel, dock, then float again: verify the floating position
+  remains usable. Close Review and verify its reserved space disappears.
+
+### Review update check
+
+- Send a Review and verify the footer shows Review sent, Check for updates,
+  quiet Start a review help, and Copy review as prompt.
+- Check before the agent replies: No updates yet appears briefly. Have the agent
+  address a comment, then check: the reply appears without reloading the document.
+- Have the agent edit the document: checking offers Reload document without
+  replacing the visible text. Reload document opens the existing change comparison.
+- Repeat with an Unsaved Draft: Reload document must ask before discarding it.
+- If a check fails, verify the retry message and existing comments remain visible.

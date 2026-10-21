@@ -67,13 +67,18 @@ file:// Markdown page
 → question cards receive answer controls
 ```
 
-A `> [!QUESTION]` blockquote renders as a Question Card. The markdown-it alert
-rule marks its lettered options (`**A. …**` list items) and its
-`**Recommended: X.**` line, and the preview mounts React answer controls at the
-end of the card, excluded from Review anchoring, copying, and print. Choosing
-an option creates, or changes, one ordinary Review Comment on the card's heading
-with the option letter as its body. Nothing is sent from the card; the reviewer
-sends it with Send review to agent, so a misclick costs nothing. Other answer…
+A `> [!QUESTION]` blockquote renders as a Question Card whose options are its
+answer controls. The markdown-it alert rule marks each `**A. …**` list item as a
+radio option, shows its letter as a key without changing the rendered text, and
+labels option X and the `**Recommended: X.**` paragraph that explains it. The
+preview then wires the options: clicking one (unless the click ends a text selection or lands on a
+Review Comment), pressing Enter on it, or pressing its letter when the page has
+one Question Card creates, or changes, one ordinary Review Comment on the card's
+heading with the option letter as its body. The chosen option is marked in
+place, so that comment's heading highlight is hidden. Nothing is sent from the
+card; the reviewer sends the Review, or presses Cmd/Ctrl+Shift+Enter, so a
+misclick costs nothing. The footer with Other answer… is excluded from Review
+anchoring, copying, and print. Other answer…
 opens the comment composer on the heading. The sidecar format is unchanged.
 
 Rendered Mermaid diagrams keep zoom, pan, and reset controls in a toolbar above

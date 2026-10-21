@@ -1,63 +1,117 @@
 import { MessageSquareText } from "lucide-react"
+import { useEffect, useRef } from "react"
 
 import { Button } from "~components/ui/button"
-import type { ReviewCommentStatus } from "~lib/agent-review"
 import type { QuestionCard } from "~lib/markdown"
 
-const ANSWER_STATUS: Record<Exclude<ReviewCommentStatus, "Resolved">, string> = {
-  Open: "Saved as a Review Comment.",
-  Draft: "Send the Review to share it with your agent.",
-  Sent: "Sent. Waiting for the agent.",
-  Addressed: "The agent replied.",
+const SEND_KEYS = typeof navigator !== "undefined" && /Mac/.test(navigator.userAgent) ? "⌘⇧↵" : "Ctrl+Shift+Enter"
+
+function isTypingTarget(target: EventTarget | null) {
+  return target instanceof Element &&
+    !!target.closest("input, textarea, select, [contenteditable=''], [contenteditable='true'], [role='dialog']")
 }
 
-export function QuestionCardActions({ card, answer, busy, onAnswer, onCompose }: {
+// The rendered options are the answer controls: this wires them and reflects the current answer.
+export function QuestionCardActions({ card, answer, busy, keyboard, onAnswer, onCompose, onSend, commentAt }: {
   card: QuestionCard
-  answer: { body: string; status: Exclude<ReviewCommentStatus, "Resolved"> } | null
+  /** The body of the question's current answer comment. */
+  answer: string | null
   busy: boolean
+  /** Letter keys choose an option; only one card on the page may listen. */
+  keyboard: boolean
   onAnswer: (body: string) => void
   onCompose: (point: { x: number; y: number }) => void
+  /** Sends the whole Review; absent without an active agent Review. */
+  onSend?: () => void
+  /** A Review Comment under the pointer takes the click instead of the option. */
+  commentAt: (x: number, y: number) => boolean
 }) {
-  const chosen = answer?.body.trim()
+  const chosen = answer?.trim() ?? null
+  const latest = useRef({ chosen, busy, onAnswer, onSend, commentAt })
+  latest.current = { chosen, busy, onAnswer, onSend, commentAt }
+  const choose = (value: string) => {
+    const { chosen, busy, onAnswer } = latest.current
+    if (!busy && chosen !== value) onAnswer(value)
+  }
+
+  useEffect(() => {
+    card.element.classList.add("question-card-interactive")
+    const removers = card.options.map(({ value, element }) => {
+      const onClick = (event: MouseEvent) => {
+        // Dragging selects option text to comment on it; a link keeps its own click.
+        if (!window.getSelection()?.isCollapsed || (event.target as Element).closest("a")) return
+        if (latest.current.commentAt(event.clientX, event.clientY)) return
+        choose(value)
+      }
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key !== "Enter" && event.key !== " ") return
+        if (event.metaKey || event.ctrlKey) return
+        event.preventDefault()
+        choose(value)
+      }
+      element.addEventListener("click", onClick)
+      element.addEventListener("keydown", onKeyDown)
+      return () => {
+        element.removeEventListener("click", onClick)
+        element.removeEventListener("keydown", onKeyDown)
+      }
+    })
+    return () => {
+      card.element.classList.remove("question-card-interactive")
+      removers.forEach((remove) => remove())
+    }
+  }, [card])
+
+  useEffect(() => {
+    for (const { value, element } of card.options) {
+      element.classList.toggle("question-option-selected", value === chosen)
+      element.setAttribute("aria-checked", String(value === chosen))
+      element.setAttribute("aria-disabled", String(busy))
+    }
+  }, [card, chosen, busy])
+
+  useEffect(() => {
+    if (!keyboard) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.altKey || isTypingTarget(event.target)) return
+      if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && event.shiftKey) {
+        if (!latest.current.onSend) return
+        event.preventDefault()
+        latest.current.onSend()
+        return
+      }
+      if (event.metaKey || event.ctrlKey || event.shiftKey) return
+      const option = card.options.find(({ value }) => value === event.key.toUpperCase())
+      if (!option) return
+      event.preventDefault()
+      option.element.focus({ preventScroll: true })
+      choose(option.value)
+    }
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [card, keyboard])
+
+  const first = card.options[0]?.value
+  const last = card.options.at(-1)?.value
   return (
-    <div onMouseUp={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
-      <div className="flex flex-col items-start gap-2">
-        {card.options.length > 0 && (
-          // A grid as wide as its widest option, so every option has the same width.
-          <div role="radiogroup" aria-label="Answer options" className="grid w-fit max-w-full gap-2">
-            {card.options.map(({ value, label }) => (
-              <Button
-                key={value}
-                type="button"
-                size="sm"
-                role="radio"
-                aria-checked={chosen === value}
-                variant={chosen === value ? "default" : "outline"}
-                disabled={busy}
-                className="h-auto min-h-9 w-full justify-start whitespace-normal py-1.5 text-left"
-                onClick={() => { if (chosen !== value) onAnswer(value) }}>
-                {label}
-                {value === card.recommended && <span className="ml-auto pl-2 text-xs font-normal opacity-70">Recommended</span>}
-              </Button>
-            ))}
-          </div>
-        )}
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          disabled={busy}
-          onClick={(event) => {
-            const rect = event.currentTarget.getBoundingClientRect()
-            onCompose({ x: rect.left, y: rect.bottom })
-          }}>
-          <MessageSquareText aria-hidden="true" />
-          {card.options.length ? "Other answer…" : "Answer…"}
-        </Button>
-      </div>
-      {answer && (
-        <p className="question-card-status" role="status">
-          Your answer: <strong>{answer.body.length > 80 ? `${answer.body.slice(0, 80)}…` : answer.body}</strong>. {ANSWER_STATUS[answer.status]}
+    <div className="flex flex-wrap items-center justify-between gap-2" onMouseUp={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        disabled={busy}
+        className="-ml-2"
+        onClick={(event) => {
+          const rect = event.currentTarget.getBoundingClientRect()
+          onCompose({ x: rect.left, y: rect.bottom })
+        }}>
+        <MessageSquareText aria-hidden="true" />
+        {card.options.length ? "Other answer…" : "Answer…"}
+      </Button>
+      {keyboard && first && (
+        <p className="question-card-hint" aria-hidden="true">
+          <kbd>{first}</kbd>{first !== last && <>–<kbd>{last}</kbd></>} to choose
+          {onSend && <> · <kbd>{SEND_KEYS}</kbd> to send review</>}
         </p>
       )}
     </div>

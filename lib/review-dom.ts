@@ -327,6 +327,13 @@ export function computeReviewBadgeAnchors(
   return anchors
 }
 
+/** A Question Card answer shows on its chosen option, so its whole-heading anchor needs no highlight. */
+export function isQuestionAnswerRange(index: RenderedTextIndex, range: { start: number; end: number }) {
+  const block = index.blocks.find(({ start, end }) => range.start >= start && range.end <= end)
+  return !!block?.element.hasAttribute("data-question-target") &&
+    index.text.slice(block.start, block.end).trim() === index.text.slice(range.start, range.end).trim()
+}
+
 export function sourceLineForNode(node: Node): number | null {
   const element = node.nodeType === Node.ELEMENT_NODE
     ? node as Element

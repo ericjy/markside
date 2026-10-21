@@ -143,15 +143,19 @@ pull request or review response.
   Addressed and Resolved comments are read-only until reopened. Reopen a
   comment, edit it, and confirm its old reply disappears for the new wording.
 - [ ] Run `/grill-me <topic> in Markside`. The current question renders as a
-  Question card with one button per option, the recommended one labelled
-  Recommended, and Other answer…, with no send button on the card. Selecting
-  text across the card does not include the button labels. Click a
-  non-recommended option: it becomes selected, the Review panel opens with a
-  Draft comment quoting the question heading whose body is the option letter,
-  and nothing is sent. Click another option and confirm the same comment
-  changes rather than a second one appearing. Click Send review to agent: the
-  agent receives the answer and the card shows Sent. Choose a different option
-  before the agent replies; the comment returns to Draft until sent again.
+  Question card whose options are tiles with letter keys, a Recommended label
+  on the recommended option, the Recommended paragraph in its own box below
+  the options, and Other answer…, with no send
+  button. Select and copy an option's text: the copy reads "A. Title. …" and
+  the selection opens the comment toolbar without choosing the option. Click a
+  non-recommended option: it is marked and the others stay readable, the Review panel
+  opens with a Draft comment quoting the question heading whose body is the
+  option letter, the heading has no highlight, and nothing is sent. Press
+  another option's letter and confirm the same comment changes; Tab to an
+  option and press Enter. Typing a letter in the composer or Source must not
+  choose. Press Cmd/Ctrl+Shift+Enter: the agent receives the answer and its
+  Review card shows Sent. Choose a different option before the agent replies;
+  the comment returns to Draft until sent again.
   Choose Other answer…, confirm the composer opens on the heading, and send a
   free-text answer. Print the document and confirm the buttons are absent. In a
   Review with no agent, an option adds a local comment.

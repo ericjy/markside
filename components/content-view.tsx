@@ -240,6 +240,7 @@ export function ContentView({
 }: ContentViewProps) {
   const composerAgent = agentHandoff?.completed ? undefined : agentHandoff
   const composerSending = !!composerAgent && (composerAgent.sending || composerAgent.updatingCommentId != null)
+  const answerableQuestionCards = questionCards.filter(({ options }) => options.length > 0)
   return (
     <>
         <div className="flex-1 min-h-0 print:!mr-0" style={{ marginRight: reviewOverlayDocked ? reviewDockWidth : 0 }}>
@@ -641,8 +642,11 @@ export function ContentView({
                       card={card}
                       answer={questionAnswer(card.target)}
                       busy={questionActionsBusy}
+                      keyboard={answerableQuestionCards.length === 1 && answerableQuestionCards[0] === card}
                       onAnswer={(body) => answerQuestion(card.target, body)}
                       onCompose={(point) => composeQuestionAnswer(card.target, point)}
+                      onSend={composerAgent ? () => void composerAgent.send() : undefined}
+                      commentAt={(x, y) => !!(reviewCommentIdAtPoint(x, y) ?? importedReviewCommentIdAtPoint(x, y))}
                     />,
                     card.mount,
                     `question-${index}`,

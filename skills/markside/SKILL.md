@@ -102,12 +102,19 @@ questions are asked and answered.
    > **Recommended: A.** Why, compared with each alternative.
    ```
 
-   Number questions in order and keep the heading inside the block. Start each
-   option with a bold capital letter and period, as shown; Markside renders
-   the block as a card with one answer button per option and labels the
-   Recommended option. Option letters are the answer values.
-4. Run the Review workflow above on the interview doc. Tell the user to choose
-   an option on the question card, or click **Other answer…** to write their
+   Markside turns this exact shape into a card whose options are the answer
+   controls, so keep to it:
+   - Number questions in order, and put the heading first inside the block.
+   - Write the options as one top-level list. Start every item with a bold
+     capital letter, period, and short title (`**A. Title.**`), using A, B, C
+     in order. The letters are the answer values.
+   - Keep each option to its title and one or two short sentences, so the
+     options can be compared at a glance. Put the trade-off reasoning in the
+     recommendation.
+   - End with exactly one `**Recommended: X.**` paragraph after the list,
+     naming one listed letter. Markside labels that option.
+4. Run the Review workflow above on the interview doc. Tell the user to click
+   an option (or press its letter), or click **Other answer…** to write their
    own, then click **Send review to agent**.
 5. An answer is a comment whose quote is the question heading and whose body is
    an option letter or the user's own words. When it arrives, move the question out of its `[!QUESTION]` block to

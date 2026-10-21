@@ -159,15 +159,35 @@ describe("markdown renderer", () => {
     "> **Recommended: B.** It keeps one file.",
   ].join("\n")
 
-  it("renders a question card that marks its lettered options and recommendation", () => {
+  it("renders a question card whose lettered options are choices", () => {
     const html = md.render(question)
 
     expect(html).toContain('class="markdown-alert markdown-alert-question" data-question-recommended="B"')
     expect(html).toContain('data-alert-icon="question"')
-    expect(html).toContain('<li data-question-option="A"')
-    expect(html).toContain('<li data-question-option="B"')
+    expect(html).toContain('<ul class="question-options" role="radiogroup"')
+    expect(html).toContain('<li data-question-option="A" class="question-option" role="radio" aria-checked="false" tabindex="0"')
+    expect(html).toContain('<strong><span class="question-option-key">A<span class="question-option-key-dot">.</span></span> Sibling doc.</strong>')
     // A marker on its own line leaves no empty paragraph behind.
     expect(html).not.toMatch(/<p[^>]*><\/p>/)
+  })
+
+  it("marks the recommended option and keeps the recommendation in its own paragraph", () => {
+    const root = document.createElement("div")
+    root.innerHTML = md.render(question)
+    const recommended = root.querySelector('li[data-question-option="B"]')!
+
+    expect(recommended.className).toBe("question-option question-option-recommended")
+    expect(recommended.querySelector(".question-recommendation")).toBeNull()
+    expect(root.querySelector(".markdown-alert-question > p.question-recommendation")?.textContent).toBe("Recommended: B. It keeps one file.")
+    expect(root.textContent).toContain("A. Sibling doc. Next to the plan.")
+  })
+
+  it("leaves a recommendation in place when no option has its letter", () => {
+    const root = document.createElement("div")
+    root.innerHTML = md.render(question.replace("Recommended: B", "Recommended: D"))
+
+    expect(root.querySelector(".question-option-recommended")).toBeNull()
+    expect(root.querySelector(".markdown-alert-question > p:last-child")?.textContent).toContain("Recommended: D.")
   })
 
   it("mounts answer controls after a question card's content and anchors them to its heading", () => {
@@ -176,9 +196,8 @@ describe("markdown renderer", () => {
     const card = mountQuestionCard(root.querySelector<HTMLElement>(".markdown-alert-question")!)!
 
     expect(card.target.tagName).toBe("H3")
-    expect(card.options.map(({ value, label }) => `${value}:${label}`)).toEqual([
-      "A:A. Sibling doc.", "B:B. Inside the plan.",
-    ])
+    expect(card.target.hasAttribute("data-question-target")).toBe(true)
+    expect(card.options.map(({ value, element }) => `${value}:${element.tagName}`)).toEqual(["A:LI", "B:LI"])
     expect(card.recommended).toBe("B")
     expect(card.mount.className).toBe("question-card-actions")
     expect(card.mount.parentElement?.lastElementChild).toBe(card.mount)

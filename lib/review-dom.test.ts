@@ -10,6 +10,7 @@ import {
   clearPendingReviewHighlight,
   clearReviewHighlights,
   computeReviewBadgeAnchors,
+  isQuestionAnswerRange,
   scrollReviewHeadingIntoView,
   sourceLineForNode,
 } from "./review-dom"
@@ -48,6 +49,17 @@ describe("Review text index around question cards", () => {
     const root = document.createElement("div")
     root.innerHTML = '<div class="markdown-alert-question"><h3>Q1. Which?</h3><div class="question-card-actions"><button>Accept A</button></div></div><p>After.</p>'
     expect(buildRenderedTextIndex(root).text).toBe("Q1. Which?\nAfter.")
+  })
+})
+
+describe("Question Card answer ranges", () => {
+  it("recognizes a comment on a whole question heading, not part of it", () => {
+    const root = document.createElement("div")
+    root.innerHTML = '<h3 data-question-target>Q1. Which? </h3><p>Q1. Which?</p>'
+    const index = buildRenderedTextIndex(root)
+    expect(isQuestionAnswerRange(index, { start: 0, end: 10 })).toBe(true)
+    expect(isQuestionAnswerRange(index, { start: 0, end: 3 })).toBe(false)
+    expect(isQuestionAnswerRange(index, { start: 12, end: 22 })).toBe(false)
   })
 })
 

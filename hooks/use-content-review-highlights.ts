@@ -16,6 +16,7 @@ import {
   buildRenderedTextIndex,
   clearReviewHighlights,
   computeReviewBadgeAnchors,
+  isQuestionAnswerRange,
   renderedOffsetAtPoint,
   type RenderedTextIndex,
   type ReviewBadgeAnchor
@@ -94,7 +95,8 @@ export function useContentReviewHighlights({
     setResolvedImportedComments(importedMap)
     if (previewVisible && previewScrollRef.current) {
       const activeComments = result.comments.filter((comment) =>
-        comment.localStatus !== "resolved" && (agentResults?.get(comment.id)?.status ?? "open") === "open"
+        comment.localStatus !== "resolved" && (agentResults?.get(comment.id)?.status ?? "open") === "open" &&
+        !(comment.status === "anchored" && isQuestionAnswerRange(index, comment.range))
       )
       applyReviewHighlights(index, activeComments, selectedReviewId)
       applyImportedReviewHighlights(index, Array.from(importedMap.values()), selectedImportedCommentId)

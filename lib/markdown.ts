@@ -1,4 +1,5 @@
 import MarkdownIt from "markdown-it"
+import type StateCore from "markdown-it/lib/rules_core/state_core.mjs"
 import anchor from "markdown-it-anchor"
 import footnote from "markdown-it-footnote"
 import katex from "katex"
@@ -217,28 +218,62 @@ md.core.ruler.push("markdown_alerts", (state) => {
       if (depth !== 0) continue
       tokens[j].type = "markdown_alert_close"
       tokens[j].tag = "div"
-      if (type === "question") markQuestionAnswers(tokens, i, j)
+      if (type === "question") markQuestionAnswers(state, i, j)
       break
     }
   }
 })
 
-// Question cards mark each lettered option and the recommendation so the
-// content script can offer one-click answers.
-function markQuestionAnswers(tokens: ReturnType<MarkdownIt["parse"]>, open: number, close: number) {
+// Question cards turn each lettered option into a choice and mark the
+// recommended one, so the content script can make the options themselves the
+// answer controls.
+function markQuestionAnswers(state: StateCore, open: number, close: number) {
+  const { tokens } = state
+  const options = new Map<string, number>()
+  let recommendation: { value: string; index: number } | null = null
   for (let k = open + 3; k < close; k++) {
     if (tokens[k].type !== "inline" || tokens[k - 1].type !== "paragraph_open") continue
     const recommended = QUESTION_RECOMMENDED.exec(tokens[k].content)
-    if (recommended) tokens[open].attrSet("data-question-recommended", recommended[1].toUpperCase())
+    if (recommended && !recommendation && tokens[k - 2].type !== "list_item_open") {
+      recommendation = { value: recommended[1].toUpperCase(), index: k }
+    }
     const option = QUESTION_OPTION.exec(tokens[k].content)
-    if (option && tokens[k - 2].type === "list_item_open") tokens[k - 2].attrSet("data-question-option", option[1])
+    if (!option || tokens[k - 2].type !== "list_item_open" || options.has(option[1])) continue
+    const item = tokens[k - 2]
+    item.attrSet("data-question-option", option[1])
+    item.attrJoin("class", "question-option")
+    item.attrSet("role", "radio")
+    item.attrSet("aria-checked", "false")
+    item.attrSet("tabindex", "0")
+    for (let list = k - 3; list > open; list--) {
+      if (tokens[list].type !== "bullet_list_open" || tokens[list].level !== item.level - 1) continue
+      tokens[list].attrSet("class", "question-options")
+      tokens[list].attrSet("role", "radiogroup")
+      break
+    }
+    // Show the letter as a key without changing the option's text.
+    const children = tokens[k].children!
+    const strong = children.findIndex((child) => child.type !== "text" || child.content)
+    const letter = children[strong + 1]
+    if (children[strong]?.type === "strong_open" && letter?.type === "text" && letter.content.startsWith(`${option[1]}.`)) {
+      const key = new state.Token("html_inline", "", 0)
+      key.content = `<span class="question-option-key">${option[1]}<span class="question-option-key-dot">.</span></span>`
+      letter.content = letter.content.slice(2)
+      children.splice(strong + 1, 0, key)
+    }
+    options.set(option[1], k - 2)
   }
+  if (!recommendation || !options.has(recommendation.value)) return
+  tokens[open].attrSet("data-question-recommended", recommendation.value)
+  tokens[options.get(recommendation.value)!].attrJoin("class", "question-option-recommended")
+  tokens[recommendation.index - 1].attrJoin("class", "question-recommendation")
 }
 
 export interface QuestionCard {
+  element: HTMLElement
   target: HTMLElement
   mount: HTMLElement
-  options: { value: string; label: string }[]
+  options: { value: string; element: HTMLElement }[]
   recommended: string | null
 }
 
@@ -247,20 +282,15 @@ export function mountQuestionCard(card: HTMLElement): QuestionCard | null {
   const target = card.querySelector<HTMLElement>("h1,h2,h3,h4,h5,h6") ??
     card.querySelector<HTMLElement>(":scope > p:not(.markdown-alert-title)")
   if (!target) return null
-  const options = Array.from(card.querySelectorAll<HTMLElement>("li[data-question-option]"), (item) => ({
-    value: item.dataset.questionOption!,
-    label: item.querySelector("strong")?.textContent?.trim() ?? item.dataset.questionOption!,
+  target.dataset.questionTarget = ""
+  const options = Array.from(card.querySelectorAll<HTMLElement>("li[data-question-option]"), (element) => ({
+    value: element.dataset.questionOption!,
+    element,
   }))
-  const recommended = card.dataset.questionRecommended ?? null
   const mount = card.ownerDocument.createElement("div")
   mount.className = "question-card-actions"
   card.append(mount)
-  return {
-    target,
-    mount,
-    options,
-    recommended: options.some(({ value }) => value === recommended) ? recommended : null,
-  }
+  return { element: card, target, mount, options, recommended: card.dataset.questionRecommended ?? null }
 }
 
 md.renderer.rules.markdown_alert_open = (tokens, idx, _options, _env, self) => {

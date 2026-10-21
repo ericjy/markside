@@ -976,18 +976,193 @@ button.readability-score-filter {
 }
 
 .prose .markdown-alert > .question-card-actions {
-  margin-top: 0.85rem;
+  margin-top: 0.6rem;
   user-select: none;
+}
+
+/* Question Card options are the answer controls. */
+.prose .markdown-alert-question {
+  padding: 1.1rem 1.35rem 0.9rem;
+  --question-tile: hsl(0 0% 100%);
+  --question-tile-border: hsl(220 13% 88%);
+}
+
+.dark .prose .markdown-alert-question {
+  --question-tile: hsl(222 18% 13%);
+  --question-tile-border: hsl(217 15% 26%);
+}
+
+/* Child selectors outrank the alert's own child spacing. */
+.prose .markdown-alert-question > ul.question-options {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.prose .markdown-alert-question .question-option {
+  position: relative;
+  margin: 0;
+  padding: 0.65rem 0.85rem 0.65rem 3rem;
+  background: var(--question-tile);
+  border: 1px solid var(--question-tile-border);
+  border-radius: 0.625rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.prose .markdown-alert-question .question-option::marker {
+  content: none;
+}
+
+/* Most answers take the recommendation, so it leads without looking chosen. */
+.prose .markdown-alert-question .question-option.question-option-recommended {
+  background: color-mix(in srgb, var(--markdown-alert-color) 6%, var(--question-tile));
+  border-color: color-mix(in srgb, var(--markdown-alert-color) 55%, var(--question-tile-border));
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--markdown-alert-color) 15%, transparent);
+}
+
+.prose .question-card-interactive .question-option {
+  cursor: pointer;
+}
+
+.prose .question-card-interactive .question-option:hover {
+  border-color: color-mix(in srgb, var(--markdown-alert-color) 45%, var(--question-tile-border));
+}
+
+.prose .question-card-interactive .question-option.question-option-recommended:hover {
+  border-color: color-mix(in srgb, var(--markdown-alert-color) 80%, var(--question-tile-border));
+}
+
+.prose .question-card-interactive .question-option:focus-visible {
+  outline: 2px solid var(--markdown-alert-color);
+  outline-offset: 2px;
+}
+
+.prose .question-card-interactive .question-option[aria-disabled="true"] {
+  cursor: progress;
+}
+
+.prose .question-option-key {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.75rem;
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1px solid var(--question-tile-border);
+  border-radius: 0.4rem;
+  font-size: 0.8em;
+  font-weight: 700;
+  color: hsl(var(--muted-foreground));
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+/* The period stays in the text for anchoring and copying, but not on the key. */
+.prose .question-option-key-dot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+/* A label, not text, so anchors and copies match the source. It floats into
+   the corner opposite the key, clear of the option's text. */
+.prose .markdown-alert-question .question-option-recommended::before {
+  content: "Recommended";
+  float: right;
+  margin: 0.15rem 0 0.25rem 0.75rem;
+  padding: 0 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--markdown-alert-color) 60%, transparent);
+  border-radius: 999px;
+  color: var(--markdown-alert-color);
+  font-size: 0.75em;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.prose .question-option-recommended .question-option-key {
+  border-color: color-mix(in srgb, var(--markdown-alert-color) 55%, var(--question-tile-border));
+  color: var(--markdown-alert-color);
+}
+
+.prose .markdown-alert-question > p.question-recommendation {
+  margin-top: 1.5rem;
+  padding: 0.1rem 0 0.1rem 1rem;
+  border-left: 3px solid var(--markdown-alert-color);
+}
+
+/* "Recommended: X." leads the reasoning as its own line. */
+.prose .question-recommendation > strong:first-child {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.2rem;
+  color: var(--markdown-alert-color);
+}
+
+.prose .question-recommendation > strong:first-child::before {
+  content: "";
+  width: 1em;
+  height: 1em;
+  flex: none;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10v12'/%3E%3Cpath d='M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10v12'/%3E%3Cpath d='M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Solid teal means chosen: a doubled border, a ring, and a check over the letter. */
+.prose .markdown-alert-question .question-option.question-option-selected {
+  border-color: var(--markdown-alert-color);
+  box-shadow:
+    0 0 0 1px var(--markdown-alert-color),
+    0 0 0 5px color-mix(in srgb, var(--markdown-alert-color) 18%, transparent);
+}
+
+.prose .question-option-selected .question-option-key {
+  background: var(--markdown-alert-color);
+  border-color: var(--markdown-alert-color);
+  color: transparent;
+}
+
+.prose .question-option-selected .question-option-key::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 0.95rem;
+  height: 0.95rem;
+  background: var(--question-tile);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.prose .question-card-hint {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+}
+
+.prose .question-card-hint kbd {
+  padding: 0 0.3rem;
+  border: 1px solid hsl(var(--border));
+  border-bottom-width: 2px;
+  border-radius: 0.25rem;
+  font-family: inherit;
+  font-size: 0.95em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prose .markdown-alert-question .question-option,
+  .prose .question-option-key {
+    transition: none;
+  }
 }
 
 .prose .question-card-actions:empty {
   display: none;
-}
-
-.prose .question-card-status {
-  margin: 0.5rem 0 0;
-  color: hsl(var(--muted-foreground));
-  font-size: 0.8125rem;
 }
 
 .prose .markdown-alert-title {

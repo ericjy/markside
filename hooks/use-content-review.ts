@@ -1,4 +1,4 @@
-import { currentAgentReview, clearReviewDrafts, getReviewCommentStatus, type ReviewCommentStatus } from "~lib/agent-review"
+import { currentAgentReview, clearReviewDrafts, getReviewCommentStatus } from "~lib/agent-review"
 import React,{ useEffect,useRef } from "react"
 import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
 import { type ReviewCopyStatus } from "~components/review-panel"
@@ -531,7 +531,7 @@ export function useContentReview({
     setSelectedImportedCommentId(null)
   }
 
-  const questionAnswer = (target: HTMLElement): { body: string; status: Exclude<ReviewCommentStatus, "Resolved"> } | null => {
+  const questionAnswer = (target: HTMLElement) => {
     const block = questionSpan(renderedTextIndexRef.current, target)
     const comment = block && resolvedReviewComments.find((candidate) =>
       !retiredCommentIds.has(candidate.id) && candidate.status === "anchored" &&
@@ -539,8 +539,7 @@ export function useContentReview({
     )
     if (!comment) return null
     const sent = agentHandoff?.file?.comments.find(({ id }) => id === comment.id)
-    const status = getReviewCommentStatus(comment, sent, !!agentHandoff)
-    return status === "Resolved" ? null : { body: comment.body, status }
+    return getReviewCommentStatus(comment, sent, !!agentHandoff) === "Resolved" ? null : comment.body
   }
 
   const activateReviewSelection = () => {

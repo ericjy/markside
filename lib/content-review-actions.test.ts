@@ -262,7 +262,7 @@ describe("question card answers", () => {
     hook.unmount()
   })
 
-  it("reports the current answer and its send status", () => {
+  it("reports the current answer", () => {
     const { hook, options, card } = questionSetup()
     const block = { start: 12, end: 22 }
     const answer = { id: "q3", body: "A", createdAt: "now", reviewMode: "agent" as const, anchor: { ...anchor, exact: "Q3. Where?", start: block.start, end: block.end } }
@@ -272,7 +272,7 @@ describe("question card answers", () => {
       review: { ...review, comments: [answer] },
       highlights: { ...options.highlights, resolvedReviewComments: [{ ...answer, displayNumber: 1, status: "anchored", range: { start: block.start, end: block.end } }] },
     })
-    expect(hook.result.current.questionAnswer(card.target)).toEqual({ body: "A", status: "Draft" })
+    expect(hook.result.current.questionAnswer(card.target)).toBe("A")
     hook.unmount()
   })
 })

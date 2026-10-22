@@ -1854,6 +1854,29 @@ button.readability-score-filter {
   padding: 0 0 0.5rem;
 }
 
+/* In a Question Card a diagram only explains the choice; keep Expand alone. */
+.markdown-alert-question .mermaid-block:not(.is-expanded) .mermaid-navigation-controls,
+.markdown-alert-question .mermaid-block:not(.is-expanded) .mermaid-zoom-controls {
+  display: none;
+}
+
+.markdown-alert-question .mermaid-block:not(.is-expanded) .mermaid-toolbar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  min-height: 0;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+/* Expand would cover the diagram's corner, so it appears only on hover or focus. */
+.markdown-alert-question .mermaid-block:not(.is-expanded):hover .mermaid-toolbar,
+.markdown-alert-question .mermaid-block:not(.is-expanded):focus-within .mermaid-toolbar {
+  opacity: 1;
+}
+
 .mermaid-error {
   margin: 1.25em 0;
   padding: 0.75rem 1rem;

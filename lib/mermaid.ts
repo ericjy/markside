@@ -61,11 +61,15 @@ function readDefaultScale(wrapper: HTMLElement): number {
   )
 }
 
-function init(dark: boolean): void {
+function inQuestionCard(element: HTMLElement): boolean {
+  return element.closest(".markdown-alert-question") !== null
+}
+
+function init(dark: boolean, question = false): void {
   mermaid.initialize({
     startOnLoad: false,
     securityLevel: "strict",
-    theme: dark ? "dark" : "default",
+    theme: dark ? "dark" : question ? "neutral" : "default",
     suppressErrorRendering: true
   })
 }
@@ -134,9 +138,14 @@ function fitViewportToDefaultScale(wrapper: HTMLElement): void {
   const availableHeight = expanded
     ? viewport.getBoundingClientRect().height * 0.9
     : Math.min(window.innerHeight * DEFAULT_HEIGHT_RATIO, MAX_DEFAULT_HEIGHT)
+  // The SVG shrinks inside its flex box, so its viewBox gives the size Mermaid
+  // drew it at. A Question Card diagram only explains the choice, so it stops there.
+  const intrinsicWidth = diagram.querySelector("svg")?.viewBox.baseVal?.width ?? 0
   const maximumScale = expanded
     ? MAX_EXPANDED_DEFAULT_SCALE
-    : MAX_DEFAULT_SCALE
+    : inQuestionCard(wrapper) && intrinsicWidth > 0 && naturalRect.width > 0
+      ? intrinsicWidth / naturalRect.width
+      : MAX_DEFAULT_SCALE
   const minimumScale = expanded ? MIN_SCALE : MIN_DEFAULT_SCALE
 
   let defaultScale = FALLBACK_DEFAULT_SCALE
@@ -473,10 +482,9 @@ export async function renderMermaidBlocks(
   )
   if (!blocks.length) return
 
-  init(dark)
-
   for (const codeEl of blocks) {
     const pre = codeEl.parentElement!
+    init(dark, inQuestionCard(pre))
     const code = (codeEl.textContent ?? "").trim()
     const id = `mermaid-${++idCounter}`
     const sourceLine = pre.dataset.sourceLine
@@ -509,11 +517,10 @@ export async function rerenderMermaidBlocks(
   )
   if (!wrappers.length) return
 
-  init(dark)
-
   for (const wrapper of wrappers) {
     const code = (wrapper.dataset.mermaidSrc ?? "").trim()
     if (!code) continue
+    init(dark, inQuestionCard(wrapper))
     const id = `mermaid-${++idCounter}`
     try {
       const { svg } = await mermaid.render(id, code)

@@ -37,6 +37,13 @@ describe("renderMermaidBlocks", () => {
     )
   })
 
+  it("uses the neutral theme inside a Question Card", async () => {
+    const div = document.createElement("div")
+    div.innerHTML = '<div class="markdown-alert-question"><pre><code class="language-mermaid">graph TD; A-->B</code></pre></div><pre><code class="language-mermaid">graph TD; C-->D</code></pre>'
+    await renderMermaidBlocks(div, false)
+    expect(mockInit.mock.calls.map(([config]) => config.theme)).toEqual(["neutral", "default"])
+  })
+
   it("initializes mermaid with dark theme when dark is true", async () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"

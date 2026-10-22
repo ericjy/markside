@@ -1000,7 +1000,8 @@ export function ReviewPanel({
           </p>
         )}
         {showStartReview && (
-          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs leading-relaxed text-muted-foreground">
+          // -mx-2 aligns the buttons' icons with the actions above and leaves room for both on one row in the compact panel.
+          <div className="-mx-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs leading-relaxed text-muted-foreground">
             <button ref={sendHelpRef} type="button" aria-haspopup="dialog" onClick={() => setSendHelpOpen(true)}
               className="inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-left text-foreground transition-colors hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
               <Bot size={14} aria-hidden="true" className="shrink-0" />

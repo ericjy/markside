@@ -58,7 +58,7 @@ describe("question card options", () => {
     expect(onCompose).toHaveBeenCalledOnce()
     expect(onAnswer).not.toHaveBeenCalled()
     expect(tile.querySelector("strong")?.textContent).toBe("Something else…")
-    expect(tile.querySelector(".question-custom-answer-hint")?.textContent).toBe("Write your answer, or ask to clarify, skip, delegate the rest, or stop")
+    expect(tile.querySelector(".question-custom-answer-hint")?.textContent).toBe("Write your answer, or ask to clarify, skip, or delegate the rest")
     expect(buildRenderedTextIndex(container).text).not.toContain("Something else")
     expect(tile.classList.contains("question-option-selected")).toBe(false)
 

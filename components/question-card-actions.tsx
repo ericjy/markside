@@ -259,7 +259,7 @@ export function QuestionCardActions({ card, answer, busy, composing, keyboard, s
           </strong>
           {customChosen
             ? <span className="question-custom-answer-text">{chosen}</span>
-            : <span className="question-custom-answer-hint">Write your answer, or ask to clarify, skip, delegate the rest, or stop</span>}
+            : <span className="question-custom-answer-hint">Write your answer, or ask to clarify, skip, or delegate the rest</span>}
         </button>,
         card.composeMount,
       )}

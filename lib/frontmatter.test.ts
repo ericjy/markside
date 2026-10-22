@@ -93,6 +93,24 @@ describe("renderFrontmatterHTML", () => {
     expect(renderFrontmatterHTML(data)).not.toContain("<li>")
   })
 
+  it("links relative file paths and Markdown filenames", () => {
+    const html = renderFrontmatterHTML({
+      interview: "grill.md",
+      guidelines: ["../../visual-design.md", "./notes.txt"],
+      site: "example.com",
+      source: "https://example.com/plan.md",
+      version: "1.6.0",
+      title: "Read plan.md first",
+    })
+    expect(html).toContain('<a href="grill.md">grill.md</a>')
+    expect(html).toContain('<li><a href="../../visual-design.md">../../visual-design.md</a></li>')
+    expect(html).toContain('<li><a href="./notes.txt">./notes.txt</a></li>')
+    expect(html).not.toContain('href="example.com"')
+    expect(html).not.toContain('href="https:')
+    expect(html).not.toContain('href="1.6.0"')
+    expect(html).not.toContain("href=\"Read")
+  })
+
   it("returns empty string for empty data", () => {
     expect(renderFrontmatterHTML({})).toBe("")
   })

@@ -56,11 +56,17 @@ export function parseFrontmatter(content: string): ParsedFrontmatter {
   return { data, body }
 }
 
+// Relative paths such as `../../guide.md` and bare Markdown filenames such as
+// `grill.md` link to the file; other values, including `example.com`, stay text.
+const LOCAL_FILE_PATH = /^(?:\.{1,2}\/[^\s:]*|[^\s/:][^\s:]*\.(?:md|mdx|markdown))$/
+
 export function renderFrontmatterHTML(data: Record<string, FrontmatterValue>): string {
   if (!Object.keys(data).length) return ""
   const rows = Object.entries(data)
     .map(([k, v]) => {
-      const renderText = (value: string) => escHtml(value).replace(/\n/g, "<br>")
+      const renderText = (value: string) => LOCAL_FILE_PATH.test(value)
+        ? `<a href="${escHtml(value).replace(/"/g, "&quot;")}">${escHtml(value)}</a>`
+        : escHtml(value).replace(/\n/g, "<br>")
       const valHTML = Array.isArray(v)
         ? v.length ? `<ul class="fm-list">${v.map((item) => `<li>${renderText(item)}</li>`).join("")}</ul>` : ""
         : renderText(v)

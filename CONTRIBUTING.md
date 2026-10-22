@@ -78,9 +78,10 @@ Use these labels when triaging issues:
 
 ## Change records
 
-Keep technical specs in `docs/changes/YYYY-MM-DD-topic/spec.md`, related
-interviews in `grill.md`, and archived Reviews in `grill.review.json` in the same
-directory. See the [change index](docs/changes/README.md).
+Keep each change in `docs/changes/YYYY-MM-DD-topic/`: its interview in
+`grill.md`, the problem and intended outcome in `intent.md`, the design in
+`spec.md`, and archived Reviews in `grill.review.json` and `spec.review.json`.
+See the [change workflow and index](docs/changes/README.md).
 
 These records preserve design intent. Current behavior belongs in
 `docs/system-design.md`, and durable architectural decisions belong in `docs/adr/`.

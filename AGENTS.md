@@ -91,5 +91,8 @@ business notes outside the repository. Design specs and interview records in
 `docs/changes/` provide historical context; current behavior is documented in
 `docs/system-design.md` and the ADRs.
 
+For a new feature or behavior change, follow the workflow in
+`docs/changes/README.md`: interview, then intent, then spec.
+
 The repository uses a single-context domain layout: `CONTEXT.md` contains the
 glossary, and `docs/adr/` contains durable architectural decisions.

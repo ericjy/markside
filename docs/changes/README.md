@@ -8,6 +8,43 @@ Each change lives in `docs/changes/YYYY-MM-DD-topic/`:
 - `intent.md` preserves the original problem and intended outcome, when one exists.
 - `spec.review.json` preserves a completed Review of the specification, when one exists.
 
+Compared with common documents:
+
+| File | Closest familiar document | Difference |
+|---|---|---|
+| `grill.md` | Meeting notes or a decision log | Keeps every option, recommendation, and answer |
+| `intent.md` | A one-page problem brief | Records why a change is wanted; GitHub issues track the work |
+| `spec.md` | A PRD and design doc in one | Has no market context or rollout plan; links each requirement to its decision |
+
+## Workflow
+
+Use this flow for a new feature or behavior change. Small fixes that change no
+decided behavior go straight to code.
+
+1. **Interview → `grill.md`.** Start by asking what prompted the change: the
+   problem, who has it, and any evidence. Then ask the design questions. Run it
+   in Markside to answer with Question Cards.
+2. **`grill.md` → `intent.md`.** Write the problem, proposed outcome, affected
+   users and systems, constraints, and open questions in the requester's words.
+   Use only what the interview established, and list anything missing as an
+   open question.
+3. **`intent.md` and `grill.md` → `spec.md`.** Write numbered requirements in a
+   table whose **Decided by** column links each one to its interview question,
+   such as `grill.md#q5-what-stays-on-screen-in-the-mode`. Add the design, a
+   table showing how each intent constraint is met, the intent's open questions
+   answered or carried forward, and areas of concern with owners. Keep the
+   reasons in `grill.md` rather than repeating them.
+4. **Optional Review.** Review `spec.md` in Markside before committing.
+5. **Commit.** Commit `intent.md` and `spec.md` together with their interview.
+   Markside saves Reviews as `<file>.review.json`; rename them to
+   `grill.review.json` and `spec.review.json` without changing their contents.
+   Add the spec to the index below with its status.
+6. **Implement.** When the change ships, set the spec's status to `implemented`
+   and record current behavior in the user guide, system design, and
+   `CONTEXT.md`.
+
+## Frontmatter
+
 `spec.md` and `intent.md` start with YAML frontmatter before the title.
 `intent`, `interview`, and `design` name files in the same folder; omit each
 one when its file does not exist.
@@ -32,6 +69,8 @@ interview: grill.md
 design: spec.md
 ---
 ```
+
+## Index
 
 Review JSON files are archived unchanged, including their original document names.
 Interview records also retain historical paths and decisions. Current behavior is

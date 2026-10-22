@@ -1,7 +1,9 @@
-# Onboarding Flow Design
+---
+date: 2026-04-18
+status: implemented
+---
 
-**Date:** 2026-04-18  
-**Status:** Implemented
+# Onboarding Flow Design
 
 > Historical design. See `docs/system-design.md` and `docs/user-guide.md` for current behavior.
 

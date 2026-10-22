@@ -1,8 +1,10 @@
-# Interviews in Markside
+---
+date: 2026-10-20
+status: historical
+interview: grill.md
+---
 
-**Date:** 2026-10-20
-**Status:** Historical interview design
-**Interview:** [Full questions and decisions](grill.md)
+# Interviews in Markside
 
 This records the original interview design. Its syntax, controls, and lifecycle
 have since evolved. Current behavior is documented in

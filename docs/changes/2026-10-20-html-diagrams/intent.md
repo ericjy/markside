@@ -1,9 +1,12 @@
-# Intent: HTML diagrams in Markdown docs
+---
+date: 2026-10-20
+status: draft
+author: Eric Yang
+interview: grill.md
+design: spec.md
+---
 
-**Author:** Eric Yang. **Status:** draft
-**Date:** 2026-10-20
-**Grill:** [grill.md](grill.md)
-**Design:** [HTML diagrams](spec.md)
+# Intent: HTML diagrams in Markdown docs
 
 ## Problem
 

@@ -1,7 +1,9 @@
-# Markside Sidebar Redesign
+---
+date: 2026-04-11
+status: implemented
+---
 
-**Date:** 2026-04-11
-**Status:** Implemented
+# Markside Sidebar Redesign
 
 > Historical design. See `docs/system-design.md` and `docs/user-guide.md` for current behavior.
 

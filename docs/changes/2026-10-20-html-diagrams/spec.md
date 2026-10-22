@@ -1,8 +1,10 @@
-# HTML Diagrams
+---
+date: 2026-10-20
+status: proposed
+intent: intent.md
+---
 
-**Date:** 2026-10-20
-**Status:** Proposed
-**Intent:** [HTML diagrams in Markdown docs](intent.md)
+# HTML Diagrams
 
 > Proposed design. Nothing here is implemented yet. Current behavior is in `docs/system-design.md`.
 

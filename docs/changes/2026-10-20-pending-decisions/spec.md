@@ -1,8 +1,10 @@
-# Pending decisions after 1.6.0
+---
+date: 2026-10-20
+status: historical
+interview: grill.md
+---
 
-**Date:** 2026-10-20
-**Status:** Historical interview decisions
-**Interview:** [Full questions and decisions](grill.md)
+# Pending decisions after 1.6.0
 
 These are the decisions recorded at the time of the interview, not a report of
 their current implementation or release status.

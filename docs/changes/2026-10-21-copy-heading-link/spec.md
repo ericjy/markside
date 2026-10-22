@@ -1,8 +1,10 @@
-# Copy a link to a heading
+---
+date: 2026-10-21
+status: confirmed
+interview: grill.md
+---
 
-**Date:** 2026-10-21
-**Status:** Confirmed design
-**Interview:** [Full questions and decisions](grill.md)
+# Copy a link to a heading
 
 ## Behavior
 

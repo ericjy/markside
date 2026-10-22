@@ -1,8 +1,10 @@
-# Narrow Preview page width
+---
+date: 2026-10-21
+status: implemented
+interview: grill.md
+---
 
-**Date:** 2026-10-21
-**Status:** Implemented.
-**Interview:** [Full questions and decisions](grill.md)
+# Narrow Preview page width
 
 ## Behavior
 

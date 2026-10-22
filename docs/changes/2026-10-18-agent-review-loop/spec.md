@@ -1,9 +1,12 @@
+---
+date: 2026-10-18
+status: implemented
+---
+
 # Local agent Review loop
 
-**Date:** 2026-10-18
-**Status:** Implemented. Historical design and prototype setup.
-
-Current behavior is documented in [the user guide](../../user-guide.md),
+This is a historical design and prototype setup. Current behavior is
+documented in [the user guide](../../user-guide.md),
 [system design](../../system-design.md), and
 [the Markside skill](../../../skills/markside/SKILL.md).
 

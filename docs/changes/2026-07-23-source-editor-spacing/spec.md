@@ -1,6 +1,9 @@
-# Source Editor Top Spacing
+---
+date: 2026-07-23
+status: implemented
+---
 
-**Status:** Implemented
+# Source Editor Top Spacing
 
 > Historical design. See `docs/system-design.md` and `docs/user-guide.md` for current behavior.
 

@@ -1,6 +1,9 @@
-# File Palette Design
+---
+date: 2026-04-18
+status: implemented
+---
 
-**Status:** Implemented
+# File Palette Design
 
 > Historical design. See `docs/system-design.md` and `docs/user-guide.md` for current behavior.
 

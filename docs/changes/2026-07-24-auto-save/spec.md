@@ -1,6 +1,9 @@
-# Auto Save Preference Design
+---
+date: 2026-07-24
+status: implemented
+---
 
-**Status:** Implemented
+# Auto Save Preference Design
 
 > Historical design. See `docs/system-design.md` and `docs/user-guide.md` for current behavior.
 

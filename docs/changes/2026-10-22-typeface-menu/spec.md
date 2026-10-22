@@ -1,7 +1,9 @@
-# Typeface in the file menu
+---
+date: 2026-10-22
+status: implemented
+---
 
-**Date:** 2026-10-22
-**Status:** Implemented.
+# Typeface in the file menu
 
 Move Typeface from Options to a submenu in the file actions menu, alongside
 Page width. Show the current choice on the parent row. The submenu contains

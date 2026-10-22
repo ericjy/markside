@@ -1,6 +1,9 @@
-# Split View Design
+---
+date: 2026-07-23
+status: implemented
+---
 
-**Status:** Implemented
+# Split View Design
 
 > Historical design. See `docs/system-design.md` and `docs/user-guide.md` for current behavior.
 

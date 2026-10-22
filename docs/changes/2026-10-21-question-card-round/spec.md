@@ -1,8 +1,10 @@
-# Question Card rounds
+---
+date: 2026-10-21
+status: historical
+interview: grill.md
+---
 
-**Date:** 2026-10-21
-**Status:** Historical interview design
-**Interview:** [Full questions and decisions](grill.md)
+# Question Card rounds
 
 This specification summarizes the original interview. Later changes to interview
 rules are documented in [the Markside skill](../../../skills/markside/SKILL.md)

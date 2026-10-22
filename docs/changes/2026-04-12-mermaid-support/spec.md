@@ -1,6 +1,9 @@
-# Mermaid Diagram Support — Design Spec
+---
+date: 2026-04-12
+status: implemented
+---
 
-**Status:** Implemented
+# Mermaid Diagram Support — Design Spec
 
 > Historical design. See `docs/system-design.md` and `docs/user-guide.md` for current behavior.
 

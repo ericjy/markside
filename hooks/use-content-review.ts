@@ -167,6 +167,11 @@ export function useContentReview({
     return watchOpenReviewRequest(fileUrl, () => setReviewOverlayOpen(true))
   }, [fileUrl, isMdFile])
 
+  const clearReviewSelection = () => {
+    setSelectedReviewId(null)
+    setSelectedImportedCommentId(null)
+  }
+
   const selectReviewComment = (id: string) => {
     setSelectedReviewId(id)
     setSelectedImportedCommentId(null)
@@ -575,6 +580,7 @@ export function useContentReview({
     }
     const importedCommentId = importedReviewCommentIdAtPoint(event.clientX, event.clientY)
     if (importedCommentId) jumpToImportedComment(importedCommentId)
+    else clearReviewSelection()
   }
 
   return {
@@ -584,6 +590,7 @@ export function useContentReview({
     deleteReviewCommentById,
     copyActiveReview,
     selectReviewComment,
+    clearReviewSelection,
     jumpToReviewSection,
     jumpToImportedComment,
     jumpableReviewCommentIds,

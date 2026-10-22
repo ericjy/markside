@@ -973,6 +973,7 @@ export function FileRenderer({
         changeReviewCommentStatus={reviewActions.changeReviewCommentStatus}
         deleteReviewCommentById={reviewActions.deleteReviewCommentById}
         selectReviewComment={reviewActions.selectReviewComment}
+        clearReviewSelection={reviewActions.clearReviewSelection}
         jumpToReviewSection={reviewActions.jumpToReviewSection}
         jumpToImportedComment={reviewActions.jumpToImportedComment}
         copyActiveReview={reviewActions.copyActiveReview}

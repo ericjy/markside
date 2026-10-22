@@ -212,6 +212,15 @@ describe("ReviewPanel", () => {
     expect(labels()).toContain("Finish review")
   })
 
+  it("deselects the comment when empty space in the list is clicked", () => {
+    const onClearSelection = vi.fn()
+    renderPanel({ selectedId: comment.id, onClearSelection })
+    act(() => container.querySelector("article")!.click())
+    expect(onClearSelection).not.toHaveBeenCalled()
+    act(() => container.querySelector<HTMLElement>(".overflow-y-auto")!.click())
+    expect(onClearSelection).toHaveBeenCalledOnce()
+  })
+
   it("confirms Clear all for the copy-prompt workflow", () => {
     const onClear = vi.fn()
     renderPanel({ onClear })

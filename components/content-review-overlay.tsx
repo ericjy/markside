@@ -72,6 +72,7 @@ interface ContentReviewOverlayProps {
   changeReviewCommentStatus: (id: string, status: "open" | "resolved") => void
   deleteReviewCommentById: (id: string) => (() => void) | void
   selectReviewComment: (id: string) => void
+  clearReviewSelection: () => void
   jumpToReviewSection: (id: string) => void
   jumpToImportedComment: (id: string) => void
   copyActiveReview: (commentId?: string, reviewOverride?: ActiveReview | null) => Promise<boolean>
@@ -127,6 +128,7 @@ export function ContentReviewOverlay({
   updateReviewComment,
   changeReviewCommentStatus,  deleteReviewCommentById,
   selectReviewComment,
+  clearReviewSelection,
   jumpToReviewSection,
   jumpToImportedComment,
   copyActiveReview,
@@ -298,6 +300,7 @@ export function ContentReviewOverlay({
                 onChangeCommentStatus={changeReviewCommentStatus}
                 onDeleteComment={deleteReviewCommentById}
                 onSelectComment={selectReviewComment}
+                onClearSelection={clearReviewSelection}
                 onJumpToSection={jumpToReviewSection}
                 onJumpToImportedComment={jumpToImportedComment}
                 onCopy={() => void copyActiveReview(undefined, currentReview)}

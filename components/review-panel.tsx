@@ -72,6 +72,8 @@ interface ReviewPanelProps {
   onChangeCommentStatus?: (id: string, status: "open" | "resolved") => void
   onDeleteComment: (id: string) => (() => void) | void
   onSelectComment: (id: string) => void
+  /** Clicking empty space in the comment list deselects the selected comment. */
+  onClearSelection?: () => void
   onJumpToSection: (id: string) => void
   onJumpToImportedComment: (id: string) => void
   onCopy: () => void
@@ -113,6 +115,7 @@ export function ReviewPanel({
   diskChanged = false,
   questionsOpen = false,
   onSelectComment,
+  onClearSelection,
   onJumpToSection,
   onJumpToImportedComment,
   onCopy,
@@ -560,6 +563,10 @@ export function ReviewPanel({
     <div className="flex h-full min-h-0 flex-col">
       <div
         ref={commentsScrollRef}
+        onClick={(event) => {
+          if (event.target instanceof Element && event.target.closest("article, button, textarea, input, select, a, summary, [role='menuitem']")) return
+          onClearSelection?.()
+        }}
         className="min-h-0 flex-1 overflow-y-auto">
       {persistenceError && (
         <div role="alert" className="border-b bg-amber-500/10 px-4 py-3 text-xs text-amber-800 dark:text-amber-200">

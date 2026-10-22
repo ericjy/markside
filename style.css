@@ -1041,14 +1041,20 @@ button.readability-score-filter {
   gap: 0.5rem;
   padding: 0.75rem 0;
   color: hsl(var(--foreground));
-  font-size: 1em;
+  font-size: 0.9em;
   font-weight: 600;
 }
 
 .prose .markdown-alert-question > details {
+  /* Indent the content to the summary text: its 0.9em chevron plus the gap. */
+  padding-left: calc(0.9em + 0.5rem);
   border: 0;
   border-radius: 0;
   background: transparent;
+}
+
+.prose .markdown-alert-question > details > summary {
+  margin-left: calc(-1em - 0.5rem);
 }
 
 .prose .markdown-alert-question > details[open] > summary {
@@ -1259,6 +1265,7 @@ button.readability-score-filter {
   margin-bottom: 0.2rem;
   color: var(--markdown-alert-color);
   font-size: 0.9em;
+  font-weight: 600;
 }
 
 /* Selection stays quiet; the outer outline is reserved for keyboard focus. */

@@ -23,7 +23,7 @@ import React from "react"
 import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
 import { createPortal } from "react-dom"
 import { RawEditor,type RawEditorHandle } from "~components/raw-editor"
-import { nextQuestionCard, QuestionCardActions, type QuestionCardStatus } from "~components/question-card-actions"
+import { followQuestionCard, nextQuestionCard, QuestionCardActions, type QuestionCardStatus } from "~components/question-card-actions"
 import { ReadabilityHeadingControl } from "~components/readability-heading-control"
 import { ReviewPresetPicker } from "~components/review-preset-picker"
 import { SidebarRight } from "~components/sidebar-right"
@@ -253,6 +253,38 @@ export function ContentView({
   const activeQuestionCard = answerableQuestionCards.find((card) => card.element === activeQuestionElement)
     ?? answerableQuestionCards.find((card) => !questionAnswered(card))
     ?? answerableQuestionCards[0]
+  const questionFollow = React.useRef({ cards: answerableQuestionCards, active: activeQuestionCard })
+  questionFollow.current = { cards: answerableQuestionCards, active: activeQuestionCard }
+  // Moving to the next card scrolls smoothly; the active card follows the reader only once that scroll ends.
+  const questionAdvanceUntil = React.useRef(0)
+  const followsQuestionScroll = answerableQuestionCards.length > 1
+  React.useEffect(() => {
+    const scroller = previewScrollRef.current
+    if (!scroller || !followsQuestionScroll) return
+    let frame = 0
+    const follow = () => {
+      frame = 0
+      const { cards, active } = questionFollow.current
+      if (!active || performance.now() < questionAdvanceUntil.current) return
+      const view = scroller.getBoundingClientRect()
+      const next = followQuestionCard(cards, active, (card) => card.element.getBoundingClientRect(), view)
+      if (next !== active) setActiveQuestionElement(next.element)
+    }
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(follow)
+    }
+    const onScrollEnd = () => {
+      questionAdvanceUntil.current = 0
+      onScroll()
+    }
+    scroller.addEventListener("scroll", onScroll, { passive: true })
+    scroller.addEventListener("scrollend", onScrollEnd)
+    return () => {
+      cancelAnimationFrame(frame)
+      scroller.removeEventListener("scroll", onScroll)
+      scroller.removeEventListener("scrollend", onScrollEnd)
+    }
+  }, [previewScrollRef, followsQuestionScroll])
   // The last card closes the round: it offers Send once everything is answered, then waits for the agent.
   const questionStatus: QuestionCardStatus | undefined = !composerAgent ? undefined
     : composerAgent.sending ? "sending"
@@ -690,7 +722,14 @@ export function ContentView({
                       onAdvance={answerableQuestionCards.length > 1 ? () => {
                         const next = nextQuestionCard(answerableQuestionCards, card, questionAnswered)
                         setActiveQuestionElement((next ?? card).element)
-                        next?.element.scrollIntoView({ block: "nearest" })
+                        const scroller = previewScrollRef.current
+                        if (!next || !scroller) return
+                        const view = scroller.getBoundingClientRect()
+                        const box = next.element.getBoundingClientRect()
+                        if (box.top >= view.top && box.bottom <= view.bottom) return
+                        const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                        if (smooth) questionAdvanceUntil.current = performance.now() + 1000
+                        next.element.scrollIntoView({ block: "nearest", behavior: smooth ? "smooth" : "auto" })
                       } : undefined}
                       commentAt={(x, y) => !!(reviewCommentIdAtPoint(x, y) ?? importedReviewCommentIdAtPoint(x, y))}
                     />,

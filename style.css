@@ -994,6 +994,7 @@ button.readability-score-filter {
     0 0 0 1px color-mix(in srgb, var(--markdown-alert-color) 16%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--markdown-alert-color) 14%, transparent);
   box-shadow: var(--question-glass-rim);
+  transition: border-color 150ms ease-out;
   --question-tile: hsl(0 0% 100%);
   --question-tile-border: hsl(220 13% 88%);
 }
@@ -1280,9 +1281,13 @@ button.readability-score-filter {
   cursor: pointer;
 }
 
-/* In a round of cards, the one letter keys answer. */
+/* In a round of cards, the one letter keys answer: its bezel deepens, keeping its size. */
 .prose .markdown-alert-question.question-card-active {
-  box-shadow: var(--question-glass-rim), 0 0 0 1.5px color-mix(in srgb, var(--markdown-alert-color) 45%, transparent);
+  border-color: color-mix(in srgb, var(--markdown-alert-color) 45%, transparent);
+}
+
+.dark .prose .markdown-alert-question.question-card-active {
+  border-color: color-mix(in srgb, var(--markdown-alert-color) 25%, transparent);
 }
 
 .prose .question-card-interactive .question-option:hover {
@@ -1316,7 +1321,13 @@ button.readability-score-filter {
   font-size: 0.8em;
   font-weight: 700;
   color: hsl(var(--muted-foreground));
-  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, opacity 150ms ease-out;
+}
+
+/* In a round, letter keys answer only the active card, so other cards' keys recede. */
+.prose:has(.question-card-active) .question-card-interactive:not(.question-card-active)
+  .question-option:not(.question-option-selected, :hover, :focus-visible) .question-option-key {
+  opacity: 0.4;
 }
 
 /* The period stays in the text for anchoring and copying, but not on the key. */
@@ -1400,6 +1411,13 @@ button.readability-score-filter {
   text-align: right;
   color: hsl(var(--muted-foreground));
   font-size: 0.75rem;
+  transition: opacity 150ms ease-out, visibility 150ms;
+}
+
+/* Inactive cards keep the hint's space so activity moving never reflows them. */
+.prose .question-card-hint-idle {
+  opacity: 0;
+  visibility: hidden;
 }
 
 .prose .question-card-hint kbd {
@@ -1538,6 +1556,7 @@ button.readability-score-filter {
     animation: none;
   }
 
+  .prose .markdown-alert-question,
   .prose .markdown-alert-question .question-option,
   .prose .question-option-key {
     transition: none;
@@ -2317,8 +2336,13 @@ button.readability-score-filter {
     text-decoration-thickness: 0.75pt;
   }
 
-  .prose .markdown-alert-question.question-card-active {
-    box-shadow: none;
+  .prose .markdown-alert-question.question-card-active,
+  .dark .prose .markdown-alert-question.question-card-active {
+    border-color: color-mix(in srgb, var(--markdown-alert-color) 7%, transparent);
+  }
+
+  .prose .question-option-key {
+    opacity: 1 !important;
   }
 
   [data-readability-ui],

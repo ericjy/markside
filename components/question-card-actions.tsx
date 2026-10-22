@@ -69,6 +69,33 @@ function QuestionCardFooter({ status, onSend, onCheck }: {
   )
 }
 
+type Span = { top: number; bottom: number }
+
+export function isQuestionCardVisible(box: Span, view: Span) {
+  return box.bottom >= view.top && box.top <= view.bottom
+}
+
+/**
+ * The card letter keys should answer as the reader scrolls. The active card stays while it is
+ * fully visible or crosses a reading line a third of the way down; otherwise the card on that
+ * line takes over, else the visible card nearest it.
+ */
+export function followQuestionCard<T>(cards: readonly T[], active: T, rect: (card: T) => Span, view: Span) {
+  const line = view.top + (view.bottom - view.top) / 3
+  const distance = (box: Span) => box.top > line ? box.top - line : box.bottom < line ? line - box.bottom : 0
+  const box = rect(active)
+  if (distance(box) === 0 || (box.top >= view.top && box.bottom <= view.bottom)) return active
+  let nearest = active
+  let nearestDistance = Infinity
+  for (const card of cards) {
+    const box = rect(card)
+    if (!isQuestionCardVisible(box, view) || distance(box) >= nearestDistance) continue
+    nearest = card
+    nearestDistance = distance(box)
+  }
+  return nearest
+}
+
 /** The first unanswered card after `from`, wrapping around; undefined when every other card is answered. */
 export function nextQuestionCard<T>(cards: readonly T[], from: T, answered: (card: T) => boolean) {
   const index = cards.indexOf(from)
@@ -185,6 +212,10 @@ export function QuestionCardActions({ card, answer, busy, composing, keyboard, s
         return
       }
       if (event.metaKey || event.ctrlKey || event.shiftKey) return
+      // Never answer a card the reader cannot see.
+      const scroller = card.element.closest("[data-markside-preview]")
+      const view = scroller?.getBoundingClientRect() ?? { top: 0, bottom: window.innerHeight }
+      if (!isQuestionCardVisible(card.element.getBoundingClientRect(), view)) return
       const option = card.options.find(({ value }) => value === event.key.toUpperCase())
       if (!option && event.key.toUpperCase() === TYPE_KEY && tile.current) {
         event.preventDefault()
@@ -233,8 +264,8 @@ export function QuestionCardActions({ card, answer, busy, composing, keyboard, s
         card.composeMount,
       )}
       {status && createPortal(<QuestionCardFooter status={status} onSend={onSend} onCheck={onCheck} />, card.footerMount)}
-      {keyboard && letters.length > 0 && (
-        <p className="question-card-hint" aria-hidden="true">
+      {letters.length > 0 && (
+        <p className={keyboard ? "question-card-hint" : "question-card-hint question-card-hint-idle"} aria-hidden="true">
           Press {letters.length > 4
             ? <><kbd>{letters[0]}</kbd> to <kbd>{letters.at(-1)}</kbd></>
             : letters.map((letter, index) => <span key={letter}>{index > 0 && " "}<kbd>{letter}</kbd></span>)} to choose

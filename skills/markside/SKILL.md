@@ -174,7 +174,7 @@ section only decides how questions are asked and answered.
 4. Run the Review workflow above on the interview doc. Tell the user to click
    an option (or press its letter), or click **Something else…** (or press T) to answer in their own words, ask,
    skip, or stop, then click **Send review to agent**. When several cards are shown, add that
-   letters answer the outlined card and then move to the next unanswered one,
+   letters answer the highlighted card and then move to the next unanswered one,
    and that they can send before answering every card. Markside supplies the custom-answer
    tile after the options and the keyboard hints at the top of the card; do not write those controls
    into the Markdown. Clicking that tile opens the composer; saving a custom

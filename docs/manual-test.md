@@ -187,15 +187,19 @@ pull request or review response.
   Repeat a Reload after changing only a sidecar reply, without changing the
   Markdown file, and confirm the new reply appears.
 - [ ] In an interview round with three cards under Current questions, confirm
-  the first card has a faint outline and the only keyboard hint. Press a
-  letter: the first card is answered and the outline moves to the second;
-  when the next card is below the fold, it scrolls into view, otherwise the
-  page stays still. Click into the third card and press a letter: it answers
-  the third card. Answer the remaining card, press another letter, and confirm
-  it changes the outlined card's answer. Cmd/Ctrl+Shift+Enter sends all three
+  the first card has a deeper teal border, the only visible keyboard hint, and the only
+  full-strength letter keys; hovering another card's option restores its key. Press a
+  letter: the first card is answered and the border and hint move to the second without reflowing either card;
+  when the next card is not fully visible, it scrolls smoothly into view
+  (instantly with reduced motion), otherwise the page stays still. Scroll
+  until the highlighted card leaves the upper third of the preview: the border
+  moves to the card there, and a letter answers that card. Scroll so no card
+  is visible and press a letter: nothing is answered. Click into the third
+  card and press a letter: it answers the third card. Answer the remaining card, press another letter, and confirm
+  it changes the highlighted card's answer. Cmd/Ctrl+Shift+Enter sends all three
   answers as separate comments. Send a round with one card unanswered and
   confirm that card stays after the agent's reply. Print the document and
-  confirm the outline is absent.
+  confirm no card's border is deepened.
 - [ ] Confirm the Markdown file is unchanged by sending, the Review file has a
   matching SHA-256 of the exact disk bytes, and sent time appears in the panel.
   The button stays disabled until a comment is added or edited.

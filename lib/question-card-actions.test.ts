@@ -4,7 +4,7 @@ import { act, createElement, type ComponentProps } from "react"
 import { createRoot, type Root } from "react-dom/client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { nextQuestionCard, QuestionCardActions } from "../components/question-card-actions"
+import { followQuestionCard, nextQuestionCard, QuestionCardActions } from "../components/question-card-actions"
 import { md, mountQuestionCard, type QuestionCard } from "./markdown"
 import { buildRenderedTextIndex } from "./review-dom"
 
@@ -149,9 +149,9 @@ describe("question card options", () => {
 
   it("does not listen for letter keys when another card owns the keyboard", () => {
     const { onAnswer } = render({ keyboard: false })
+    expect(container.querySelector(".question-card-hint")?.classList.contains("question-card-hint-idle")).toBe(true)
     key({ key: "b" })
     expect(onAnswer).not.toHaveBeenCalled()
-    expect(container.textContent).not.toContain("to choose")
   })
 
   it("in a round, outlines the active card and moves on after a letter answer", () => {
@@ -229,5 +229,36 @@ describe("question card comparison and footer", () => {
   it("shows no footer without a status", () => {
     render({ answer: "A" })
     expect(card.footerMount.childElementCount).toBe(0)
+  })
+})
+
+describe("following the reader's question card", () => {
+  // A 900px viewport whose reading line sits at 300.
+  const view = { top: 0, bottom: 900 }
+  const boxes: Record<string, { top: number; bottom: number }> = {
+    Q1: { top: -700, bottom: -50 },
+    Q2: { top: -200, bottom: 250 },
+    Q3: { top: 280, bottom: 820 },
+    Q4: { top: 860, bottom: 1500 },
+  }
+  const follow = (active: string, cards = ["Q1", "Q2", "Q3", "Q4"]) => followQuestionCard(cards, active, (card) => boxes[card], view)
+
+  it("keeps a card that crosses the reading line or is fully visible", () => {
+    expect(follow("Q3")).toBe("Q3")
+    expect(follow("Q3", ["Q3", "Q4"])).toBe("Q3")
+  })
+
+  it("moves to the card on the reading line once the active card leaves it", () => {
+    expect(follow("Q1")).toBe("Q3")
+    expect(follow("Q2")).toBe("Q3")
+    expect(follow("Q4")).toBe("Q3")
+  })
+
+  it("falls back to the visible card nearest the line", () => {
+    expect(follow("Q1", ["Q1", "Q2", "Q4"])).toBe("Q2")
+  })
+
+  it("keeps the active card when no other card is visible", () => {
+    expect(follow("Q1", ["Q1"])).toBe("Q1")
   })
 })

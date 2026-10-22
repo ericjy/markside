@@ -85,10 +85,16 @@ preview then wires the options: clicking one (unless the click ends a text selec
 Review Comment), pressing Enter on it, or pressing its letter while its card is
 active creates, or changes, one ordinary Review Comment on the card's
 heading with the option letter as its body. One card at a time is active: the
-card last clicked or focused into, otherwise the first unanswered one. When a
-round shows several answerable cards, the active card is outlined, and a letter
-answer moves activity to the next unanswered card, scrolling it into view only
-when it is off screen. The chosen option is marked in
+card last clicked or focused into, otherwise the first unanswered one. Letter
+keys do nothing while the active card is off screen. When a
+round shows several answerable cards, the active card's border deepens, only it shows its keyboard hint (the
+others keep the hint's space hidden, so nothing reflows), and other
+cards' unchosen letter keys are muted until hovered or focused; scrolling
+moves activity once the active card neither is fully visible nor crosses a
+line a third of the way down the preview, to the card on that line, else the
+visible card nearest it. A letter answer moves activity to the next unanswered
+card, smoothly scrolling it fully into view when it is not, instantly under
+reduced motion. The chosen option is marked in
 place, so that comment's heading highlight is hidden. Choosing never sends;
 the reviewer sends the Review, or presses Cmd/Ctrl+Shift+Enter anywhere
 outside a text field, so a misclick costs nothing. During an agent Review a bar

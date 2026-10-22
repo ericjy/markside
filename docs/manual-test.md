@@ -23,6 +23,12 @@ pull request or review response.
   Preview. Check headings, code highlighting, diagrams, math, links, and images.
 - [ ] Switch between Preview, Source, and Split. An edit survives mode changes;
   Split updates its rendered pane while typing.
+- [ ] Check the word count and reading time in Preview's top-right margin,
+  including Split. They follow unsaved edits in Split, scroll away with the
+  document, and stay clear of text, Outline, and docked Review at narrow widths.
+  Source-only mode, non-Markdown files, and PDF exports show no label. Empty
+  Markdown shows `0 words · 0 min read`; 199, 200, and 201 source words show
+  `<1 min read`, `1 min read`, and `2 min read` respectively.
 - [ ] Resize the Split divider with the pointer and keyboard. Reload and check
   that the saved divider and mode return. Test independent pane width controls.
 - [ ] Check the outline, heading navigation, light/dark themes, and narrow windows.

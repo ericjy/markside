@@ -39,6 +39,12 @@ Hooks whose effects read the rendered preview are called after
 `lib/content-hooks.test.ts` guards that order. `content-toolbar`,
 `content-view`, `content-dialogs`, and `content-review-overlay` render the UI.
 
+`content-view` shows document statistics outside the rendered Markdown, in
+Preview's existing top-right margin. `lib/document-stats.ts` counts raw
+whitespace-separated source chunks and estimates reading time at 200 words per
+minute. Split counts the current draft rather than the delayed rendered content.
+The label scrolls with Preview and is hidden in Source-only mode and print.
+
 The content script is the product's primary surface. It matches local Markdown
 and the supported source-text extensions and special filenames defined in
 `lib/file-types.ts`. Selecting another supported text file with a known absolute

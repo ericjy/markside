@@ -209,6 +209,13 @@ Expanded folders remain expanded when you navigate between files.
 
 ## Preview
 
+The top-right margin shows the word count and estimated reading time. The count
+includes every whitespace-separated chunk of Markdown source, including syntax,
+code, and frontmatter. Reading time uses 200 words per minute, rounds up, and
+shows `<1 min read` below 200 words or `0 min read` for an empty file. The label
+scrolls with the document and also appears in Split, where it follows unsaved
+edits. It is hidden in Source-only mode and PDF exports.
+
 Markside renders Markdown with:
 
 - **YAML frontmatter** shown as a summary table above the document

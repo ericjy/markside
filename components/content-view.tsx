@@ -30,6 +30,7 @@ import { SidebarRight } from "~components/sidebar-right"
 import { Button } from "~components/ui/button"
 import { Tooltip,TooltipContent,TooltipTrigger } from "~components/ui/tooltip"
 import { type Heading } from "~lib/headings"
+import { formatDocumentStats } from "~lib/document-stats"
 import { type QuestionCard } from "~lib/markdown"
 import {
   MIN_SPLIT_PANE_WIDTH,
@@ -244,6 +245,13 @@ export function ContentView({
   chooseOutlineOpen,
   setActiveHeadingId,
 }: ContentViewProps) {
+  const statsSource = previewVisible && content !== null && !error
+    ? sourceVisible ? draft : content
+    : null
+  const documentStats = React.useMemo(
+    () => statsSource === null ? null : formatDocumentStats(statsSource),
+    [statsSource],
+  )
   const composerAgent = agentHandoff?.completed ? undefined : agentHandoff
   const composerSending = !!composerAgent && (composerAgent.sending || composerAgent.updatingCommentId != null)
   const answerableQuestionCards = questionCards.filter(({ options }) => options.length > 0)
@@ -441,6 +449,11 @@ export function ContentView({
                   <div className="flex min-h-full min-w-0 items-start">
                     <div
                       className="relative min-h-full min-w-0 flex-1 pl-20 pr-8 pt-10 pb-28 transition-[padding] duration-200 print:p-0">
+                  {documentStats && (
+                    <div className="pointer-events-none absolute right-8 top-3 select-none whitespace-nowrap text-xs tabular-nums text-muted-foreground print:hidden">
+                      {documentStats}
+                    </div>
+                  )}
                   {selectionAction && selectionComposerOpen && (
                     <div
                       style={{

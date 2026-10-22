@@ -231,8 +231,9 @@ current document is decorated with green additions and red struck-through
 removals; a removed block returns as a copy of the original element, complete
 with its list marker or table row, placed next to the neighbour it used to have.
 A floating bar centered at the bottom of the document area carries the controls: a Show changes checkbox toggles clean reading, and Done closes the
-comparison. Show changes starts checked unless the reloaded document contains a
-question card, since an interview's reloads mostly add the next questions. Its menu repeats Done and adds Done and clear comments, which
+comparison. Show changes starts checked unless the document contains a
+question card before or after the reload, since an interview's reloads mostly
+move questions around, including the one that replaces them with its summary. Its menu repeats Done and adds Done and clear comments, which
 also clears the entire Review. During an agent Review it reads Done and clear
 drafts and, like the panel's Clear drafts, removes only unsent changes and
 appears only when there are some. A reload without a comparison to show reports

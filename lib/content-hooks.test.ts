@@ -411,6 +411,17 @@ describe("useContentReload", () => {
     expect(hook.result.current.changesVisible).toBe(false)
   })
 
+  it("keeps clean reading when an interview's last questions give way to its summary", async () => {
+    const text = "## Before you finish\n\nClick **Finish review** if this matches your understanding."
+    vi.mocked(readFileFromDisk).mockResolvedValue({ text, buffer: null, type: "", lastModified: 7 })
+    const { hook, refs, options } = setup()
+    refs.diskContentRef.current = "```question\n### Q2. Next?\n\n- **A. Yes.**\n```"
+    await act(() => hook.result.current.handleReloadFromDisk())
+    hook.rerender(options(text))
+    expect(hook.result.current.hasReloadChanges).toBe(true)
+    expect(hook.result.current.changesVisible).toBe(false)
+  })
+
   it("keeps a draft that changed while the file was reloading", async () => {
     const { hook, refs, setters } = setup()
     vi.mocked(readFileFromDisk).mockImplementation(async () => {

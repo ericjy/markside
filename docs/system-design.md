@@ -89,12 +89,13 @@ answer moves activity to the next unanswered card, scrolling it into view only
 when it is off screen. The chosen option is marked in
 place, so that comment's heading highlight is hidden. Nothing is sent from the
 card; the reviewer sends the Review, or presses Cmd/Ctrl+Shift+Enter anywhere
-outside a text field, so a misclick costs nothing. A separate Answer in your own words, ask, skip, or stop… tile is mounted
+outside a text field, so a misclick costs nothing. A separate Something else… tile, with a muted hint line listing what it can do, is mounted
 after the option list, before any comparison or recommendation. It opens the
 comment composer on the heading, whose quick presets are Clarify, Example, Skip,
-Fewer questions, and Stop. The interview presets are not in the general preset
-catalog. The tile is marked selected, with the saved text clamped to two lines
-below its label, only when the saved answer is nonempty and does not match an
+Fewer, Delegate, and Stop. The interview presets are not in the general preset
+catalog. Clarify on a card asks the agent to rewrite the question and allows a
+diagram, table, or example, since the rewrite stays in the interview doc. The tile is marked selected, with the saved text clamped to two lines
+in place of the hint, only when the saved answer is nonempty and does not match an
 option letter. Keyboard hints appear at the top right, wrapping below the Question label
 on narrow screens. Both mounts are excluded from Review anchoring, copying, and
 print. The sidecar format is unchanged.

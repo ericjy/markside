@@ -125,6 +125,20 @@
         "Replaces Current questions with ## Summary listing the user's decisions and the agent's assumed decisions, and asks the user to click Finish review",
         "Runs markside address for c4 and c6 with one-line replies, then markside review docs/PLAN.grill.md --continue --no-open"
       ]
+    },
+    {
+      "id": 11,
+      "prompt": "Continue the grilling interview in docs/PLAN.grill.md, which grills docs/PLAN.md. Current questions holds Q4 with options A and B and a recommendation. The questioning skill would still ask two more questions after Q4. The Review returned c4 quoting the Q4 heading with body: Stop asking. Settle this and every remaining question yourself using your recommendations, record each as an assumed decision I can veto, and summarize. This is an evaluation: do not launch a process or edit files; describe the changes you would make to the interview doc and the commands you would run.",
+      "expected_output": "Add Focus: you decide the rest (asked at Q4). below the answer line, archive Q4 with Assumed decision naming its recommended option, write the two remaining questions in full as Q5 and Q6 under Previous questions with Assumed decision lines, check every decision against docs/PLAN.md, replace Current questions with a Summary that labels the assumed decisions as the agent's, address c4, and continue the Review until the user finishes.",
+      "files": [],
+      "expectations": [
+        "Adds Focus: you decide the rest (asked at Q4). below the doc's answer line",
+        "Archives Q4 verbatim under Previous questions ending with Assumed decision and its recommended option",
+        "Writes the two questions not yet asked in full as Q5 and Q6 under Previous questions, each ending with an Assumed decision, without showing them as cards",
+        "Checks the decisions against docs/PLAN.md before writing the Summary",
+        "Replaces Current questions with ## Summary labeling the assumed decisions as the agent's, and asks the user to click Finish review",
+        "Runs markside address for c4 with a one-line reply, then markside review docs/PLAN.grill.md --continue --no-open"
+      ]
     }
   ]
 }

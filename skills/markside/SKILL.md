@@ -93,7 +93,8 @@ section only decides how questions are asked and answered.
 2. Lay it out as a title, one line explaining how to answer, then
    `## Current questions` and `## Previous questions`.
    The answer line says the user can pick an option or use the tile to answer
-   in their own words, ask, skip, ask for fewer questions, or stop, that
+   in their own words, ask, skip, ask for fewer questions, let you decide the
+   rest, or stop, that
    they may answer any or all cards before sending, and that commenting on an
    assumed decision under Previous questions asks it again. Previous questions
    holds every settled question, answered, deferred, or assumed, in the order
@@ -148,6 +149,13 @@ section only decides how questions are asked and answered.
      explain technical terms needed to choose. Markside puts this description
      below the title. Optional comparison tables can add detail, but each
      option must be understandable without opening a disclosure.
+   - Use the user's words and the project's existing terms. Do not coin labels
+     for options, components, or ideas; describe them instead. When referring
+     to an earlier question, restate what it decided, such as
+     `Q3 (the interview doc lives beside the plan)`, never a bare `Q3`.
+   - When the choice is visual or structural, such as a layout, flow, or
+     state change, add a small Mermaid diagram to the context. Fence it with
+     `~~~mermaid`, because a backtick fence would close the question fence.
    - When shared criteria help compare the options, add a Markdown table
      inside `<details open>` with `<summary>Compare tradeoffs</summary>`, expanded
      by default so it is visible before choosing. Keep it collapsible. Put it
@@ -166,8 +174,8 @@ section only decides how questions are asked and answered.
      table rather than a long recommendation paragraph. Markside labels the
      recommended option separately from the user's selected answer.
 4. Run the Review workflow above on the interview doc. Tell the user to click
-   an option (or press its letter), or click **Answer in your own words, ask, skip, or stop…**,
-   then click **Send review to agent**. When several cards are shown, add that
+   an option (or press its letter), or click **Something else…** to answer in their own words, ask,
+   skip, or stop, then click **Send review to agent**. When several cards are shown, add that
    letters answer the outlined card and then move to the next unanswered one,
    and that they can send before answering every card. Markside supplies the custom-answer
    tile after the options and the keyboard hints at the top of the card; do not write those controls
@@ -189,11 +197,12 @@ section only decides how questions are asked and answered.
    Address each comment with a one-line reply, and continue
    the Review. If a comment asks something or says the question or options
    are unclear, record no decision. Rewrite the unclear part of that
-   question in place, keeping its number and heading so the answer still
+   question in place, adding a diagram, table, or example where it helps, keeping its number and heading so the answer still
    anchors, address the comment with a one-line reply naming what changed, and
    continue the Review. If it asks to skip or defer the question, archive it as
-   above with `> **Deferred.**` instead of a decision. Fewer questions and
-   Stop apply to the whole interview, whichever card carries them. If a comment asks
+   above with `> **Deferred.**` instead of a decision. Requests for
+   fewer questions, to decide the rest, or to stop apply to the whole
+   interview, whichever card carries them. If a comment asks
    for fewer questions, add `Focus: fewer questions (asked at Q<n>).` below
    the doc's answer line and keep to it for the rest of the interview: ask only
    decisions that are costly to reverse or where reasonable people would
@@ -203,18 +212,26 @@ section only decides how questions are asked and answered.
    `> **Assumed decision: X.**` naming its recommended option. If a comment
    on an assumed decision vetoes or questions it, remove it from Previous
    questions and ask it again with the next questions as a card, keeping its
-   number and heading. If a comment asks to stop, archive the other answers
+   number and heading. If a comment asks you to decide the rest, add
+   `Focus: you decide the rest (asked at Q<n>).` below the answer line,
+   archive the other answers sent with it, then settle every unanswered card
+   and every question the questioning skill would still ask as assumed
+   decisions in Previous questions, and go to step 6. If a comment asks to
+   stop, archive the other answers
    sent with it, archive each remaining unanswered card with
    `> **Assumed decision: X.**` naming its recommended option, and go to step 6.
-6. When no questions remain or the user asks to stop, replace Current questions with `## Summary`: the
+6. When no questions remain or the user asks to stop, check every decision
+   against the subject file and any spec or design doc the interview relies
+   on. Ask about each contradiction as a new card before summarizing. Then
+   replace Current questions with `## Summary`: the
    user's decisions as short bullets, followed by the assumed decisions as
    short bullets labeled as yours, then ask the user to click **Finish review** if
    it matches their understanding. Finishing is the confirmation of shared
    understanding. Do not act on the decisions before `Review resolved`.
 7. After the Review is resolved, follow the questioning skill for durable
-   output. If it names none, offer to fold the decisions into the subject file,
-   and ask whether to keep or delete the interview doc. When deleting it, also
-   delete its `<file>.review.json`.
+   output. If it names none, offer to fold the decisions into the subject file.
+   Keep the interview doc as the record of how each decision was made; delete
+   it, and its `<file>.review.json`, only when the user asks.
 
 ## Choose the target
 

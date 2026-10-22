@@ -1153,7 +1153,6 @@ button.readability-score-filter {
 }
 
 .prose .markdown-alert-question .question-custom-answer > strong:first-child {
-  margin-bottom: 0;
   color: inherit;
   font-weight: 500;
 }

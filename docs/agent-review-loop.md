@@ -82,7 +82,7 @@ the quote identifies the passage.
 
 A Question Card answer is an ordinary comment: `quote` is the question's
 heading and `body` is the chosen option letter, such as `B`, or the user's own
-text from Answer in your own words, ask, skip, or stop…, which may instead ask about the question.
+text from the Something else… tile, which may instead ask about the question.
 An interview round shows several cards, so one Send may carry several answers,
 one comment per answered card; unanswered cards simply have no comment.
 

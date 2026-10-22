@@ -204,9 +204,15 @@ const INTERVIEW_PRESETS = [
   },
   {
     id: "fewer",
-    chip: "Fewer questions",
+    chip: "Fewer",
     name: "Ask only high-value questions",
     instruction: "Ask fewer questions from now on: only decisions that are costly to reverse or where reasonable people would disagree. Settle the rest yourself as assumed decisions I can veto. If this question doesn't meet that bar, settle it too.",
+  },
+  {
+    id: "delegate",
+    chip: "Delegate",
+    name: "Use your recommendations for the rest",
+    instruction: "Stop asking. Settle this and every remaining question yourself using your recommendations, record each as an assumed decision I can veto, and summarize.",
   },
   {
     id: "stop",
@@ -216,8 +222,15 @@ const INTERVIEW_PRESETS = [
   },
 ] as const satisfies readonly Omit<ReviewPreset, "group" | "aliases">[]
 
+const presetById = (id: string) => REVIEW_PRESETS.find((preset) => preset.id === id)!
+
+// A card's rewrite stays in the interview doc, so Clarify there may add a diagram or table.
 export const QUESTION_QUICK_PRESETS = [
-  ...["clarify", "example"].map((id) => REVIEW_PRESETS.find((preset) => preset.id === id)!),
+  {
+    ...presetById("clarify"),
+    instruction: "This question or its options are unclear to me. Rewrite them in plain language. If the choice is visual or structural, add a small diagram, table, or example.",
+  },
+  presetById("example"),
   ...INTERVIEW_PRESETS,
 ]
 

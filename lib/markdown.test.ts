@@ -205,6 +205,17 @@ describe("markdown renderer", () => {
     expect(root.querySelectorAll("ul.question-options")).toHaveLength(1)
   })
 
+  it("keeps a tilde mermaid fence inside a question a mermaid block", () => {
+    const root = document.createElement("div")
+    root.innerHTML = md.render(question.replace(
+      "### Q3. Where does the doc live?\n",
+      "### Q3. Where does the doc live?\n\n~~~mermaid\ngraph LR\n  A --> B\n~~~\n",
+    ))
+    const card = root.querySelector(".markdown-alert-question")!
+    expect(card.querySelector("code.language-mermaid")?.textContent).toContain("A --> B")
+    expect(card.querySelectorAll("li.question-option")).toHaveLength(2)
+  })
+
   it("keeps legacy question alerts working", () => {
     const legacy = question.split("\n").slice(1, -1).map((line) => "> " + line).join("\n")
     const root = document.createElement("div")

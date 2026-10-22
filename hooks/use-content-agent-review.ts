@@ -44,7 +44,6 @@ interface Options {
   onLoaded?: (fileUrl: string) => void
   /** The agent changed the Review after a Send from this tab. */
   onAgentReplied?: () => void
-  openReview: () => void
   review: ActiveReview | null
   updateReview?: (mutate: (current: ActiveReview | null) => ActiveReview | null) => void
   directory?: { handle: FileSystemDirectoryHandle; rootUrl: string } | null
@@ -67,7 +66,6 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
   const writingRef = useRef(false)
   const optionsRef = useRef(options)
   optionsRef.current = options
-  const autoOpenedRef = useRef<string | null>(null)
   const reportedCheckRef = useRef(0)
   const errorKeyRef = useRef("")
   const directoryRef = useRef<Awaited<ReturnType<typeof getDirectoryEntryForUrl>>>(null)
@@ -101,10 +99,6 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
         const file = disk?.text ? parseReviewFile(disk.text, doc) : null
         setState(file ? { url: fileUrl, file } : null)
         reportCheck(!!file && file.status !== "resolved")
-        if (file?.status === "pending" && autoOpenedRef.current !== fileUrl) {
-          autoOpenedRef.current = fileUrl
-          optionsRef.current.openReview()
-        }
       } catch {
         // An unrelated or unsupported JSON file must not change today's Review UI.
         setState(null)

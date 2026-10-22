@@ -92,6 +92,7 @@ interface ContentViewProps {
   updateSplitFromClientX: (clientX: number) => void
   storeSplitPercent: () => void
   adjustSplitBy: (delta: number) => void
+  reviewFinishBar?: React.ReactNode
   previewScrollRef: React.RefObject<HTMLDivElement>
   previewVisible: boolean
   previewFollowPausedRef: React.MutableRefObject<boolean>
@@ -180,6 +181,7 @@ export function ContentView({
   updateSplitFromClientX,
   storeSplitPercent,
   adjustSplitBy,
+  reviewFinishBar,
   previewScrollRef,
   previewVisible,
   previewFollowPausedRef,
@@ -446,6 +448,7 @@ export function ContentView({
                     event.currentTarget.style.cursor = ""
                   }}
                   onClick={handleReviewHighlightClick}>
+                  {reviewFinishBar}
                   <div className="flex min-h-full min-w-0 items-start">
                     <div
                       className="relative min-h-full min-w-0 flex-1 pl-20 pr-8 pt-10 pb-28 transition-[padding] duration-200 print:p-0">

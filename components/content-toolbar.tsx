@@ -67,6 +67,7 @@ interface ContentToolbarProps {
   closeReviewOverlay: (restoreTriggerFocus?: boolean) => void
   setReviewOverlayOpen: React.Dispatch<React.SetStateAction<boolean>>
   reviewItemCount: number
+  reviewNotice?: { kind: "reply" | "error"; message: string }
   chooseOutlineOpen: (open: boolean) => void
   outlineOpen: boolean
   requestLinkSnapshot: () => void
@@ -117,6 +118,7 @@ export function ContentToolbar({
   closeReviewOverlay,
   setReviewOverlayOpen,
   reviewItemCount,
+  reviewNotice,
   chooseOutlineOpen,
   outlineOpen,
   requestLinkSnapshot,
@@ -339,21 +341,22 @@ export function ContentToolbar({
                 }
               }}
               className={`relative h-7 w-7 ${reviewOverlayOpen ? "bg-accent" : ""}`}
-              aria-label={reviewItemCount > 0
+              aria-label={reviewNotice ? `Toggle Review, ${reviewNotice.message}` : reviewItemCount > 0
                 ? `Toggle Review, ${reviewItemCount} ${reviewItemCount === 1 ? "item" : "items"}`
                 : "Toggle Review"}
               aria-pressed={reviewOverlayOpen}
               aria-expanded={reviewOverlayOpen}
               aria-controls="markside-review-overlay"
-              title="Review">
+              title={reviewNotice ? `Review: ${reviewNotice.message}` : "Review"}>
               <MessageSquare size={16} />
-              {reviewItemCount > 0 && (
+              {(reviewItemCount > 0 || reviewNotice) && (
                 <span
                   aria-hidden="true"
-                  className="absolute -right-1.5 -top-1.5 min-w-4 rounded-full bg-foreground px-1 text-center text-[9px] font-semibold leading-4 text-background tabular-nums">
-                  {reviewItemCount > 99 ? "99+" : reviewItemCount}
+                  className={`absolute -right-1.5 -top-1.5 min-w-4 rounded-full px-1 text-center text-[9px] font-semibold leading-4 tabular-nums ${reviewNotice?.kind === "error" ? "bg-destructive text-destructive-foreground" : reviewNotice?.kind === "reply" ? "bg-emerald-700 text-white dark:bg-emerald-400 dark:text-emerald-950" : "bg-foreground text-background"}`}>
+                  {reviewNotice?.kind === "error" ? "!" : reviewItemCount > 99 ? "99+" : reviewItemCount || "•"}
                 </span>
               )}
+              {!reviewOverlayOpen && <span role="status" className="sr-only">{reviewNotice?.message}</span>}
             </Button>
           )}
           <Button

@@ -124,6 +124,18 @@ option letter. Keyboard hints appear at the top right, wrapping below the Questi
 on narrow screens. These mounts are excluded from Review anchoring, copying, and
 print. The sidecar format is unchanged.
 
+Choosing or changing an answer, saving a Review Comment, sending a Review, and
+discovering an agent request or reply preserve whether the Review panel is open.
+The Review toolbar entry retains its pending-item count; Addressed replies give
+the badge a green treatment and a reply-count label, while an agent Review error
+shows an error badge and its message. These are pending-review indicators, not
+unread tracking. Opening Review or selecting a passage's comment explicitly
+opens the panel; its existing per-document open preference still restores on load.
+With the panel closed, a sticky bar at the top of Preview offers Finish review once
+the same finish conditions as the panel allow it. It stays hidden while the
+document has changed on disk or a question is unanswered, keeps the action
+visible beside the agent-waiting status, and displays finish failures in place for retry.
+
 Rendered Mermaid diagrams keep zoom, pan, and reset controls in a toolbar above
 an isolated viewport. Theme changes replace only the SVG inside that viewport so its current
 view remains stable. Expanded view temporarily moves the diagram to a
@@ -689,7 +701,7 @@ review link, and returning focus to the tab each read the sidecar once.
 Commands copied from this dialog include --no-open because the file is already
 open. Done only closes the dialog. Returning to the tab reads the sidecar silently, so the
 existing tab discovers a new request or the agent's Addressed replies without
-reloading the document, and a pending request opens the panel. A silent read keeps
+reloading the document or changing whether the panel is open. A silent read keeps
 any unseen send error. Check for review does the same
 on demand and briefly shows No review yet when nothing is found. Direct skill invocations still open Chrome
 unless --no-open is supplied.

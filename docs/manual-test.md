@@ -106,7 +106,8 @@ pull request or review response.
   no folder line below it. With a covering saved folder, step 3 is absent.
 - [ ] On macOS with Claude Code, install the local `cli/` package and updated
   `skills/markside` skill. Ask the agent to write a disposable `PLAN.md`, then run
-  `/markside review PLAN.md`. Chrome opens Markside and the Review panel.
+  `/markside review PLAN.md`. Chrome opens Markside; the Review panel retains its
+  saved open/closed preference. Click Review to open it if needed.
 - [ ] With zero comments, Send review to agent is disabled. The empty state explains
   how to add a comment, without another instruction above Send or a duplicate tooltip.
   No setup link appears while the request is active. Add two comments, send, grant the document's folder access if
@@ -174,7 +175,7 @@ pull request or review response.
   non-recommended option: it has a teal border, faint tint, and checked key
   without an outer halo; the others stay readable. Keyboard focus adds an
   outline around the letter or pencil key, not around the tile. The Review panel
-  opens with a Draft comment quoting the question heading whose body is the
+  keeps its current open/closed state. Opening it shows a Draft comment quoting the question heading whose body is the
   option letter, the heading has no highlight, and nothing is sent. Press
   another option's letter and confirm the same comment changes; Tab to an
   option and press Enter. Typing a letter in the composer or Source must not
@@ -259,6 +260,29 @@ pull request or review response.
 - [ ] Check network activity: this flow performs local file reads and writes
   only, with no HTTP requests.
 
+
+## Review panel visibility
+
+- [ ] Close Review, choose a Question Card option, then change the answer. The
+  panel stays closed, the selected answer updates, and the Review count updates.
+  Save a Something else… answer and confirm the same behavior. Repeat with the
+  panel open and confirm it stays open.
+- [ ] Outside Question Cards, save a new passage comment and update an existing
+  one with Review closed. Both stay saved without opening the panel. Save & send
+  also leaves it closed. Click a passage's comment highlight or the Review entry
+  and confirm the panel opens intentionally.
+- [ ] Close Review before an agent request is discovered or a reply arrives.
+  Return to the tab or Reload; it stays closed. Addressed replies turn the Review
+  badge green; its tooltip names the number of replies to review. Open Review,
+  check and resolve the replies, and confirm the badge returns to normal.
+- [ ] Cause a send failure with Review closed. The saved comment remains and the
+  Review entry shows an error badge with the error in its tooltip. Open Review
+  for the error details and retry. Reload the document with Review closed, then
+  with it open, and confirm the saved layout choice restores in both cases.
+- [ ] Once the agent has addressed everything, close Review. Confirm the top
+  Preview bar says Your agent is waiting and offers Finish review; it stays hidden until you Reload changed
+  content and answer remaining questions. Finish there and confirm the CLI exits
+  and the bar disappears. With Review open, only its panel offers Finish review.
 
 ## Local Review history verification
 

@@ -145,11 +145,27 @@ describe("save and send from the comment composer", () => {
   })
 
   it("keeps ordinary Save local so the user can collect more comments", () => {
-    const { hook, send, saved, closeComposer } = setup()
+    const { hook, send, saved, closeComposer, openPanel } = setup()
     act(() => hook.result.current.saveSelectionComposerComment())
     expect(saved()?.comments).toHaveLength(2)
     expect(send).not.toHaveBeenCalled()
     expect(closeComposer).toHaveBeenCalledOnce()
+    expect(openPanel).not.toHaveBeenCalled()
+    hook.unmount()
+  })
+
+  it("updates an existing comment without changing panel visibility", () => {
+    const { hook, saved, openPanel } = setup({ ...review, comments: [{ ...prior, anchor }] })
+    act(() => hook.result.current.saveSelectionComposerComment())
+    expect(saved()?.comments).toMatchObject([{ id: prior.id, body: "Clarify Beta" }])
+    expect(openPanel).not.toHaveBeenCalled()
+    hook.unmount()
+  })
+
+  it("opens the panel when the user explicitly selects a comment", () => {
+    const { hook, openPanel } = setup()
+    act(() => hook.result.current.selectReviewComment(prior.id))
+    expect(openPanel).toHaveBeenCalledWith(true)
     hook.unmount()
   })
 
@@ -199,7 +215,7 @@ describe("save and send from the comment composer", () => {
     send.mockResolvedValue(false)
     await act(async () => hook.result.current.sendSelectionComposerComment())
     expect(saved()?.comments).toHaveLength(2)
-    expect(openPanel).toHaveBeenCalledWith(true)
+    expect(openPanel).not.toHaveBeenCalled()
     expect(closeComposer).toHaveBeenCalledOnce()
     expect(send).toHaveBeenCalledOnce()
     hook.unmount()
@@ -218,19 +234,20 @@ describe("question card answers", () => {
     const { hook, send, saved, card, openPanel } = questionSetup()
     act(() => hook.result.current.answerQuestion(card.target, "A"))
     expect(saved()?.comments).toMatchObject([{ body: "A", reviewMode: "agent", anchor: { exact: "Q3. Where?", headingPath: ["Q3. Where?"] } }])
-    expect(openPanel).toHaveBeenCalledWith(true)
+    expect(openPanel).not.toHaveBeenCalled()
     expect(send).not.toHaveBeenCalled()
     hook.unmount()
   })
 
   it("changes an earlier answer instead of adding a second comment, without selecting it", () => {
-    const { hook, options, send, saved, card } = questionSetup()
+    const { hook, options, send, saved, card, openPanel } = questionSetup()
     act(() => hook.result.current.answerQuestion(card.target, "A"))
     hook.rerender({ ...options, review: saved() })
     act(() => hook.result.current.answerQuestion(card.target, "B"))
     expect(saved()?.comments.map(({ body }) => body)).toEqual(["B"])
     expect(send).not.toHaveBeenCalled()
     expect(options.setSelectedReviewId).not.toHaveBeenCalled()
+    expect(openPanel).not.toHaveBeenCalled()
     hook.unmount()
   })
 

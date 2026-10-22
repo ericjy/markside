@@ -387,7 +387,6 @@ export function useContentReview({
     if (existing && review) {
       updateReviewComment(existing.id, body)
       if (activate) setSelectedReviewId(existing.id)
-      setReviewOverlayOpen(true)
       return {
         outcome: "existing" as const,
         commentId: existing.id,
@@ -421,7 +420,6 @@ export function useContentReview({
     if (result.type !== "add-comment") return null
     if (result.outcome === "duplicate") {
       if (activate) setSelectedReviewId(result.commentId)
-      setReviewOverlayOpen(true)
     } else if (result.outcome === "added") {
       const isFirstComment = (review?.comments.length ?? 0) === 0
       updateReview((current) => {
@@ -435,7 +433,6 @@ export function useContentReview({
           : current
       })
       if (activate) setSelectedReviewId(null)
-      setReviewOverlayOpen(true)
       if (isFirstComment) trackReviewPromptActivity("review-comment")
     }
     return {

@@ -18,7 +18,7 @@ function setup(status: AgentReviewFile["status"] = "sent") {
   vi.stubGlobal("chrome", { runtime: { sendMessage } })
   const options: Parameters<typeof useContentAgentReview>[0] = {
     fileUrl: review.sourceUrl, enabled: true, open: true, reloadVersion: 0,
-    openReview: vi.fn(), review, openDirectory: vi.fn(async () => false),
+    review, openDirectory: vi.fn(async () => false),
     diskContentRef: { current: "Build feature" }, hasUnsavedDraftRef: { current: false }, renderedTextIndexRef: { current: null },
   }
   const hook = renderHook(useContentAgentReview, options)
@@ -42,6 +42,18 @@ describe("local agent Review result discovery", () => {
     address()
     await act(async () => { changed = await hook.result.current?.checkForUpdates?.() })
     expect(changed).toBe(true)
+    expect(hook.result.current?.results?.get("c1")?.reply).toBe("Changed to Create the feature.")
+    hook.unmount()
+  })
+
+  it("discovers a pending Review and its replies while the panel stays closed", async () => {
+    const { hook, options, address } = setup("pending")
+    hook.rerender({ ...options, open: false })
+    await flush()
+    expect(hook.result.current?.file?.status).toBe("pending")
+    address()
+    hook.rerender({ ...options, open: false, discoveryVersion: 1 })
+    await flush()
     expect(hook.result.current?.results?.get("c1")?.reply).toBe("Changed to Create the feature.")
     hook.unmount()
   })

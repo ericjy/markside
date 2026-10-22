@@ -2,6 +2,7 @@ import React,{ useEffect,useRef,useState } from "react"
 
 import { ContentDialogs } from "~components/content-dialogs"
 import { ContentReviewOverlay } from "~components/content-review-overlay"
+import { ContentReviewFinishBar } from "~components/content-review-finish-bar"
 import { ContentReloadBar } from "~components/content-reload-bar"
 import { ContentToolbar } from "~components/content-toolbar"
 import { ContentView } from "~components/content-view"
@@ -473,7 +474,6 @@ export function FileRenderer({
     onLoaded: setAgentReviewLoadedUrl,
     // The agent edits the document before marking comments Addressed, so its reply means the document changed.
     onAgentReplied: () => void reload.checkDiskForUpdates().catch(() => undefined),
-    openReview: () => overlay.setReviewOverlayOpen(true),
     review,
     updateReview,
     openDirectory,
@@ -491,6 +491,13 @@ export function FileRenderer({
     return agentChanged || documentChanged
   }
   const pendingReviewItemCount = review ? getPendingReviewItemCount(review, agentHandoff?.file) : 0
+  const addressedReviewCount = [...(agentHandoff?.results?.values() ?? [])].filter(({ status }) => status === "addressed").length
+    + (agentHandoff?.file?.noteStatus === "addressed" && !agentHandoff.completed ? 1 : 0)
+  const reviewNotice = agentHandoff?.error
+    ? { kind: "error" as const, message: agentHandoff.error }
+    : addressedReviewCount > 0
+      ? { kind: "reply" as const, message: `${addressedReviewCount} ${addressedReviewCount === 1 ? "reply" : "replies"} to review` }
+      : undefined
   const reviewIndexReady = isMdFile && reviewLoaded && agentReviewLoadedUrl === fileUrl
   useEffect(() => {
     if (reviewIndexReady) indexActiveReview(fileUrl, review?.updatedAt ?? "", pendingReviewItemCount)
@@ -753,6 +760,7 @@ export function FileRenderer({
         closeReviewOverlay={overlay.closeReviewOverlay}
         setReviewOverlayOpen={overlay.setReviewOverlayOpen}
         reviewItemCount={pendingReviewItemCount}
+        reviewNotice={reviewNotice}
         chooseOutlineOpen={chooseOutlineOpen}
         outlineOpen={outlineOpen}
         requestLinkSnapshot={snapshots.requestLinkSnapshot}
@@ -828,6 +836,15 @@ export function FileRenderer({
         setSelectionComposerBody={selection.setSelectionComposerBody}
         closeSelectionComposer={selection.closeSelectionComposer}
         saveSelectionComposerComment={reviewActions.saveSelectionComposerComment}
+        reviewFinishBar={
+          <ContentReviewFinishBar
+            agentHandoff={agentHandoff}
+            panelOpen={overlay.reviewOverlayOpen}
+            diskChanged={reload.diskChanged}
+            questionsOpen={questionCards.some((card) => card.options.length > 0 && !reviewActions.questionAnswer(card.target)?.trim())}
+            disabled={content === null || saveState === "saving"}
+          />
+        }
         agentHandoff={agentHandoff}
         sendSelectionComposerComment={reviewActions.sendSelectionComposerComment}
         selectionPresetPickerOpen={selection.selectionPresetPickerOpen}

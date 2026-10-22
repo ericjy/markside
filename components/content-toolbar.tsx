@@ -25,7 +25,8 @@ import {
 } from "~components/ui/sidebar"
 import { Tooltip,TooltipContent,TooltipProvider,TooltipTrigger } from "~components/ui/tooltip"
 import {
-  setPaneFullWidth,
+  setPreviewWidthPreference,
+  type PreviewWidth,
   type MarkdownMode
 } from "~lib/markdown-mode"
 import { READABILITY_CHECK_ENABLED } from "~lib/readability-service"
@@ -73,8 +74,8 @@ interface ContentToolbarProps {
   requestLinkSnapshot: () => void
   fileMenuTriggerRef: React.MutableRefObject<HTMLButtonElement | null>
   fileMenuPointerInteractionRef: React.MutableRefObject<boolean>
-  previewFullWidth: boolean
-  setPreviewFullWidth: React.Dispatch<React.SetStateAction<boolean>>
+  previewWidth: PreviewWidth
+  setPreviewWidth: React.Dispatch<React.SetStateAction<PreviewWidth>>
   numberHeadings: boolean
   setNumberHeadings: React.Dispatch<React.SetStateAction<boolean>>
   readabilityControlsVisible: boolean
@@ -124,8 +125,8 @@ export function ContentToolbar({
   requestLinkSnapshot,
   fileMenuTriggerRef,
   fileMenuPointerInteractionRef,
-  previewFullWidth,
-  setPreviewFullWidth,
+  previewWidth,
+  setPreviewWidth,
   numberHeadings,
   setNumberHeadings,
   readabilityControlsVisible,
@@ -409,18 +410,33 @@ export function ContentToolbar({
                 style={{ minWidth: "11rem", zIndex: 100000 }}
                 className="rounded-md border bg-background p-1 text-foreground shadow-md">
                 {isMdFile && previewVisible && (
-                  <DropdownMenu.CheckboxItem checked={previewFullWidth}
-                    onCheckedChange={(checked) => {
-                      setPreviewFullWidth(checked)
-                      void setPaneFullWidth("preview", checked).catch(() => undefined)
-                    }}
-                    className="group flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent">
-                    <MoveHorizontal size={14} className="w-3.5 shrink-0" />
-                    Full width
-                    <span className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border border-muted-foreground/50 transition-colors group-data-[state=checked]:border-foreground group-data-[state=checked]:bg-foreground group-data-[state=checked]:text-background">
-                      <DropdownMenu.ItemIndicator><Check size={11} strokeWidth={3} /></DropdownMenu.ItemIndicator>
-                    </span>
-                  </DropdownMenu.CheckboxItem>
+                  <>
+                    <DropdownMenu.Label className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                      <MoveHorizontal size={14} className="w-3.5 shrink-0" />
+                      Page width
+                    </DropdownMenu.Label>
+                    <DropdownMenu.RadioGroup value={previewWidth} aria-label="Page width"
+                      onValueChange={(value) => {
+                        const width = value as PreviewWidth
+                        setPreviewWidth(width)
+                        void setPreviewWidthPreference(width).catch(() => undefined)
+                      }}>
+                      {([
+                        ["narrow", "Narrow"],
+                        ["standard", "Standard"],
+                        ["full", "Full width"],
+                      ] as const).map(([width, label]) => (
+                        <DropdownMenu.RadioItem key={width} value={width}
+                          className="flex cursor-pointer select-none items-center gap-2 rounded-sm py-1.5 pl-7 pr-2 text-sm outline-none focus:bg-accent">
+                          {label}
+                          <span className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center">
+                            <DropdownMenu.ItemIndicator><Check size={13} strokeWidth={2.5} /></DropdownMenu.ItemIndicator>
+                          </span>
+                        </DropdownMenu.RadioItem>
+                      ))}
+                    </DropdownMenu.RadioGroup>
+                    <DropdownMenu.Separator className="my-1 h-px bg-border" />
+                  </>
                 )}
                 {isMdFile && previewVisible && (
                   <DropdownMenu.CheckboxItem checked={numberHeadings}

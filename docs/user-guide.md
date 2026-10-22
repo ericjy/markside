@@ -211,6 +211,12 @@ Expanded folders remain expanded when you navigate between files.
 
 ## Preview
 
+Choose **Page width** in the file actions (`…`) menu: **Narrow** for a shorter
+reading line, **Standard** for the existing column width, or **Full width** to
+use the available space. Markside remembers the choice across files and restarts.
+It also applies to the Preview pane in Split. Source width and PDF Export keep
+their independent settings and layout.
+
 The top-right margin shows the word count and estimated reading time. The count
 includes every whitespace-separated chunk of Markdown source, including syntax,
 code, and frontmatter. Reading time uses 200 words per minute, rounds up, and

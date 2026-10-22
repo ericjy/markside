@@ -29,41 +29,44 @@ export async function setSplitPercent(percent: number): Promise<void> {
 }
 
 export const PREVIEW_FULL_WIDTH_STORAGE_KEY = "previewFullWidth"
+export const PREVIEW_WIDTH_STORAGE_KEY = "previewWidth"
 export const SOURCE_FULL_WIDTH_STORAGE_KEY = "sourceFullWidth"
 
+export type PreviewWidth = "narrow" | "standard" | "full"
+
 export type PaneWidthPreferences = {
-  previewFullWidth: boolean
+  previewWidth: PreviewWidth
   sourceFullWidth: boolean
 }
 
 export const DEFAULT_PANE_WIDTH_PREFERENCES: PaneWidthPreferences = {
-  previewFullWidth: false,
+  previewWidth: "standard",
   sourceFullWidth: true,
 }
 
 export async function getPaneWidthPreferences(): Promise<PaneWidthPreferences> {
   const stored = await chrome.storage.local.get([
+    PREVIEW_WIDTH_STORAGE_KEY,
     PREVIEW_FULL_WIDTH_STORAGE_KEY,
     SOURCE_FULL_WIDTH_STORAGE_KEY,
   ])
+  const width = stored[PREVIEW_WIDTH_STORAGE_KEY]
   return {
-    previewFullWidth: typeof stored[PREVIEW_FULL_WIDTH_STORAGE_KEY] === "boolean"
-      ? stored[PREVIEW_FULL_WIDTH_STORAGE_KEY]
-      : DEFAULT_PANE_WIDTH_PREFERENCES.previewFullWidth,
+    previewWidth: width === "narrow" || width === "standard" || width === "full"
+      ? width
+      : stored[PREVIEW_FULL_WIDTH_STORAGE_KEY] === true ? "full" : "standard",
     sourceFullWidth: typeof stored[SOURCE_FULL_WIDTH_STORAGE_KEY] === "boolean"
       ? stored[SOURCE_FULL_WIDTH_STORAGE_KEY]
       : DEFAULT_PANE_WIDTH_PREFERENCES.sourceFullWidth,
   }
 }
 
-export async function setPaneFullWidth(
-  pane: "preview" | "source",
-  fullWidth: boolean,
-): Promise<void> {
-  const key = pane === "preview"
-    ? PREVIEW_FULL_WIDTH_STORAGE_KEY
-    : SOURCE_FULL_WIDTH_STORAGE_KEY
-  await chrome.storage.local.set({ [key]: fullWidth })
+export async function setPreviewWidthPreference(width: PreviewWidth): Promise<void> {
+  await chrome.storage.local.set({ [PREVIEW_WIDTH_STORAGE_KEY]: width })
+}
+
+export async function setSourceFullWidthPreference(fullWidth: boolean): Promise<void> {
+  await chrome.storage.local.set({ [SOURCE_FULL_WIDTH_STORAGE_KEY]: fullWidth })
 }
 
 export const OUTLINE_OPEN_STORAGE_KEY = "outlineOpen"

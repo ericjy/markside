@@ -118,6 +118,7 @@ export function useContentReviewHighlights({
     }
     const observer = new ResizeObserver(recomputeBadges)
     observer.observe(preview)
+    if (contentRef.current) observer.observe(contentRef.current)
     window.addEventListener("resize", recomputeBadges)
     return () => {
       observer.disconnect()

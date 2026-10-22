@@ -34,7 +34,8 @@ import { formatDocumentStats } from "~lib/document-stats"
 import { type QuestionCard } from "~lib/markdown"
 import {
   MIN_SPLIT_PANE_WIDTH,
-  setPaneFullWidth
+  setSourceFullWidthPreference,
+  type PreviewWidth
 } from "~lib/markdown-mode"
 import type { ResolvedReadabilityResult } from "~lib/readability"
 import {
@@ -127,7 +128,7 @@ interface ContentViewProps {
   revealSelectionInSource: () => void
   contentRef: React.RefObject<HTMLDivElement>
   readabilityControlsVisible: boolean
-  previewFullWidth: boolean
+  previewWidth: PreviewWidth
   readabilityMounts: { heading: HTMLElement; mount: HTMLSpanElement; section: ReadabilitySection; }[]
   questionCards: QuestionCard[]
   questionAnswer: (target: HTMLElement) => React.ComponentProps<typeof QuestionCardActions>["answer"]
@@ -216,7 +217,7 @@ export function ContentView({
   revealSelectionInSource,
   contentRef,
   readabilityControlsVisible,
-  previewFullWidth,
+  previewWidth,
   readabilityMounts,
   questionCards,
   questionAnswer,
@@ -365,7 +366,7 @@ export function ContentView({
                           onToggleFullWidth={() => {
                             const next = !sourceFullWidth
                             setSourceFullWidth(next)
-                            void setPaneFullWidth("source", next).catch(() => undefined)
+                            void setSourceFullWidthPreference(next).catch(() => undefined)
                           }}
                           fileName={currentFileName}
                           autoFocus={focusSource}
@@ -699,7 +700,7 @@ export function ContentView({
                   <div
                     ref={contentRef}
                     className={`prose prose-neutral dark:prose-invert ${!readabilityControlsVisible ? "readability-controls-hidden" : ""} ${
-                      previewFullWidth ? "max-w-none" : "mx-auto max-w-5xl"
+                      previewWidth === "full" ? "max-w-none" : previewWidth === "narrow" ? "mx-auto max-w-3xl" : "mx-auto max-w-5xl"
                     }`}
                   />
                   {readabilityControlsVisible && readabilityMounts.map(({ heading, mount, section }) => {

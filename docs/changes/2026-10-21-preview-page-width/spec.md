@@ -1,7 +1,7 @@
 # Narrow Preview page width
 
 **Date:** 2026-10-21
-**Status:** Proposed. Design confirmed; not implemented.
+**Status:** Implemented.
 **Interview:** [Full questions and decisions](grill.md)
 
 ## Behavior

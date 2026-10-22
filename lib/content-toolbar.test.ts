@@ -1,16 +1,15 @@
 // @vitest-environment jsdom
-import { act, createElement, type ComponentProps } from "react"
+import { act, createElement, useState, type ComponentProps } from "react"
 import { createRoot } from "react-dom/client"
 import { expect, it, vi } from "vitest"
 import { ContentToolbar } from "../components/content-toolbar"
 import { SidebarProvider } from "../components/ui/sidebar"
-import { stubMatchMedia } from "./test-harness"
+import { stubChromeStorage, stubMatchMedia } from "./test-harness"
+import { getPaneWidthPreferences } from "./markdown-mode"
 
-it("announces replies and send failures without opening Review, and opens on request", () => {
-  stubMatchMedia(false)
+function toolbarProps(): ComponentProps<typeof ContentToolbar> {
   const noop = vi.fn()
-  const open = vi.fn()
-  const props: ComponentProps<typeof ContentToolbar> = {
+  return {
     leftOpen: false, hasMore: false, crumbs: ["PLAN.md"], crumbUrls: [],
     fileUrl: "file:///docs/PLAN.md", setCopied: noop, copied: false,
     isAddressBarSynced: true, navigateTabToFile: noop, currentFileName: "PLAN.md", addressBarFileName: "PLAN.md",
@@ -19,12 +18,18 @@ it("announces replies and send failures without opening Review, and opens on req
     reloadLoading: false, content: "Plan", diskChanged: false, previewVisible: true, selectMode: noop,
     isMdFile: true, mode: "preview", dark: false, followsSystemThemeRef: { current: true }, setDark: noop,
     reviewTriggerRef: { current: null }, reviewOverlayOpen: false, closeReviewOverlay: noop,
-    setReviewOverlayOpen: open, reviewItemCount: 2, chooseOutlineOpen: noop, outlineOpen: false,
+    setReviewOverlayOpen: noop, reviewItemCount: 2, chooseOutlineOpen: noop, outlineOpen: false,
     requestLinkSnapshot: noop, fileMenuTriggerRef: { current: null }, fileMenuPointerInteractionRef: { current: false },
-    previewFullWidth: false, setPreviewFullWidth: noop, numberHeadings: false, setNumberHeadings: noop,
+    previewWidth: "standard", setPreviewWidth: noop, numberHeadings: false, setNumberHeadings: noop,
     readabilityControlsVisible: false, setReadabilityControlsVisible: noop, copyRenderedPreview: async () => {},
     isPdfExportable: true, requestPdfExport: noop,
   }
+}
+
+it("announces replies and send failures without opening Review, and opens on request", () => {
+  stubMatchMedia(false)
+  const open = vi.fn()
+  const props = { ...toolbarProps(), setReviewOverlayOpen: open }
   const container = document.createElement("div")
   document.body.append(container)
   const root = createRoot(container)
@@ -46,6 +51,41 @@ it("announces replies and send failures without opening Review, and opens on req
     render({})
     expect(trigger().getAttribute("aria-label")).toBe("Toggle Review, 2 items")
     expect(trigger().querySelector('[role="status"]')?.textContent).toBe("")
+  } finally {
+    act(() => root.unmount())
+    container.remove()
+    vi.unstubAllGlobals()
+  }
+})
+
+it.each(["preview", "split"] as const)("selects and remembers one Page width in %s", async (mode) => {
+  stubMatchMedia(false)
+  stubChromeStorage({ sourceFullWidth: false })
+  const props = { ...toolbarProps(), mode, sourceVisible: mode === "split" }
+  function Toolbar() {
+    const [width, setWidth] = useState(props.previewWidth)
+    return createElement(ContentToolbar, { ...props, previewWidth: width, setPreviewWidth: setWidth })
+  }
+  const container = document.createElement("div")
+  document.body.append(container)
+  const root = createRoot(container)
+  const openMenu = () => act(() => {
+    container.querySelector<HTMLButtonElement>('[aria-label="File actions"]')!
+      .dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
+  })
+  try {
+    act(() => root.render(createElement(SidebarProvider, null, createElement(Toolbar))))
+    openMenu()
+    let items = Array.from(document.querySelectorAll<HTMLElement>('[role="menuitemradio"]'))
+    expect(items.map(item => item.textContent)).toEqual(["Narrow", "Standard", "Full width"])
+    expect(items.filter(item => item.getAttribute("aria-checked") === "true").map(item => item.textContent)).toEqual(["Standard"])
+
+    await act(async () => items[0].click())
+    expect(await getPaneWidthPreferences()).toEqual({ previewWidth: "narrow", sourceFullWidth: false })
+
+    openMenu()
+    items = Array.from(document.querySelectorAll<HTMLElement>('[role="menuitemradio"]'))
+    expect(items.filter(item => item.getAttribute("aria-checked") === "true").map(item => item.textContent)).toEqual(["Narrow"])
   } finally {
     act(() => root.unmount())
     container.remove()

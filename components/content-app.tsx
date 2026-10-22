@@ -94,7 +94,7 @@ export function FileRenderer({
   const [questionCards, setQuestionCards] = useState<QuestionCard[]>([])
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null)
   const [mode, setMode] = useState<MarkdownMode>(initialMode)
-  const [previewFullWidth, setPreviewFullWidth] = useState(initialPaneWidthPreferences.previewFullWidth)
+  const [previewWidth, setPreviewWidth] = useState(initialPaneWidthPreferences.previewWidth)
   const [sourceFullWidth, setSourceFullWidth] = useState(initialPaneWidthPreferences.sourceFullWidth)
   const [sidebarWidth, setSidebarWidth] = useState(280)
   const [rightSidebarWidth, setRightSidebarWidth] = useState(300)
@@ -766,8 +766,8 @@ export function FileRenderer({
         requestLinkSnapshot={snapshots.requestLinkSnapshot}
         fileMenuTriggerRef={fileMenuTriggerRef}
         fileMenuPointerInteractionRef={fileMenuPointerInteractionRef}
-        previewFullWidth={previewFullWidth}
-        setPreviewFullWidth={setPreviewFullWidth}
+        previewWidth={previewWidth}
+        setPreviewWidth={setPreviewWidth}
         numberHeadings={numberHeadings}
         setNumberHeadings={setNumberHeadings}
         readabilityControlsVisible={readability.readabilityControlsVisible}
@@ -862,7 +862,7 @@ export function FileRenderer({
         revealSelectionInSource={revealSelectionInSource}
         contentRef={contentRef}
         readabilityControlsVisible={readability.readabilityControlsVisible}
-        previewFullWidth={previewFullWidth}
+        previewWidth={previewWidth}
         readabilityMounts={readability.readabilityMounts}
         questionCards={questionCards}
         questionAnswer={reviewActions.questionAnswer}

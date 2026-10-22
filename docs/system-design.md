@@ -149,9 +149,16 @@ A blockquote starting with **Your decision**, **Assumed decision**,
 archived question, renders as a callout rather than a quotation: teal for the
 reviewer's decision, amber for the agent's assumed one, and gray otherwise.
 
-The file actions (`…`) menu includes **Full width**, which lets Preview use the
-whole window and persists in `chrome.storage.local`, and **Number headings**, stored in `chrome.storage.local`
-and off by default. It applies to Preview, Split Preview, Outline, and PDF Export.
+The file actions (`…`) menu includes a **Page width** group with mutually
+exclusive **Narrow** (48rem), **Standard** (64rem), and **Full width** (no maximum)
+choices for Preview, including Split Preview. Available space can constrain each
+width further; type size and side spacing stay unchanged. The choice persists in
+`chrome.storage.local` as `previewWidth`. If no valid choice exists, Markside
+uses the legacy `previewFullWidth` boolean, preserving existing users' choices;
+new installations default to Standard. PDF Export keeps its separate layout.
+
+The same menu includes **Number headings**, stored in `chrome.storage.local`
+and off by default. Heading numbering applies to Preview, Split Preview, Outline, and PDF Export.
 A sole opening H1 stays unnumbered as the title; nested sections use decimal
 numbers, compressing skipped heading levels. If any heading already has an
 explicit numeric section prefix, the entire document keeps its authored labels.
@@ -202,7 +209,7 @@ Markdown files support Preview, Source, and Split. Non-Markdown text files use S
 
 Source defaults to full width for all text files, including Markdown. Its width
 control is in the Source options menu alongside Word wrap and Copy. Preview defaults to column width and has its
-own Full width item in the file actions menu, present only when Preview is shown.
+own Page width group in the file actions menu, present only when Preview is shown.
 Both choices persist independently across reloads and files, including in Split
 mode. The Split divider persists separately: releasing a drag, or a keyboard
 adjustment, stores the position for the next load.
@@ -347,7 +354,7 @@ Hosted Snapshots.
 | `autoSaveEnabledRef` | Current Auto Save preference |
 | `saveState` | Idle, unsaved, saving, saved, or failed |
 | `conflict` | Whether the disk version changed externally |
-| `dark`, `previewFullWidth`, and `sourceFullWidth` | Current theme and independent pane width choices; both width choices persist in `chrome.storage.local` |
+| `dark`, `previewWidth`, and `sourceFullWidth` | Current theme and independent pane width choices; both width choices persist in `chrome.storage.local`; legacy `previewFullWidth` is a fallback for Preview |
 | `leftOpen` and `outlineOpen` | Sidebar visibility; a shown or hidden Outline choice is stored in `chrome.storage.local` and restored before the first paint, though narrow windows still start with Outline closed |
 | `sidebarWidth` and `rightSidebarWidth` | Sidebar widths |
 | `reviewOverlaySize` | Session-only compact, standard, or wide Review width; compact is the default |

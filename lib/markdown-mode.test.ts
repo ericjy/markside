@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { stubChromeStorage } from "./test-harness"
 
 import {
   clampSplitPercent,
@@ -12,12 +13,14 @@ import {
   MARKDOWN_MODE_STORAGE_KEY,
   MIN_SPLIT_PANE_WIDTH,
   PREVIEW_FULL_WIDTH_STORAGE_KEY,
+  PREVIEW_WIDTH_STORAGE_KEY,
   getOutlineOpenPreference,
   OUTLINE_OPEN_STORAGE_KEY,
   resolveInitialSidebarState,
   resolveModeTransition,
   setMarkdownMode,
-  setPaneFullWidth,
+  setPreviewWidthPreference,
+  setSourceFullWidthPreference,
   setSplitPercent,
   SPLIT_PERCENT_STORAGE_KEY,
   SOURCE_FULL_WIDTH_STORAGE_KEY,
@@ -29,18 +32,17 @@ import {
 const storageGet = vi.fn()
 const storageSet = vi.fn()
 
-vi.stubGlobal("chrome", {
-  storage: {
-    local: {
-      get: storageGet,
-      set: storageSet,
-    },
-  },
-})
-
 beforeEach(() => {
   storageGet.mockReset()
   storageSet.mockReset()
+  vi.stubGlobal("chrome", {
+    storage: {
+      local: {
+        get: storageGet,
+        set: storageSet,
+      },
+    },
+  })
 })
 
 describe("Markdown modes", () => {
@@ -128,10 +130,11 @@ describe("Markdown modes", () => {
     })
 
     await expect(getPaneWidthPreferences()).resolves.toEqual({
-      previewFullWidth: true,
+      previewWidth: "full",
       sourceFullWidth: false,
     })
     expect(storageGet).toHaveBeenCalledWith([
+      PREVIEW_WIDTH_STORAGE_KEY,
       PREVIEW_FULL_WIDTH_STORAGE_KEY,
       SOURCE_FULL_WIDTH_STORAGE_KEY,
     ])
@@ -151,11 +154,11 @@ describe("Markdown modes", () => {
   it("saves each pane width without overwriting the other", async () => {
     storageSet.mockResolvedValue(undefined)
 
-    await setPaneFullWidth("preview", true)
-    await setPaneFullWidth("source", false)
+    await setPreviewWidthPreference("narrow")
+    await setSourceFullWidthPreference(false)
 
     expect(storageSet).toHaveBeenNthCalledWith(1, {
-      [PREVIEW_FULL_WIDTH_STORAGE_KEY]: true,
+      [PREVIEW_WIDTH_STORAGE_KEY]: "narrow",
     })
     expect(storageSet).toHaveBeenNthCalledWith(2, {
       [SOURCE_FULL_WIDTH_STORAGE_KEY]: false,
@@ -257,5 +260,38 @@ describe("getSplitMinWidth", () => {
   it("grows so the narrower pane keeps its minimum width", () => {
     expect(getSplitMinWidth(25)).toBe(MIN_SPLIT_PANE_WIDTH * 4)
     expect(getSplitMinWidth(80)).toBe(MIN_SPLIT_PANE_WIDTH * 5)
+  })
+})
+
+describe("Preview page width", () => {
+  it.each([
+    [true, "full"],
+    [false, "standard"],
+    [undefined, "standard"],
+  ])("preserves the legacy Full width choice (%s)", async (legacy, expected) => {
+    stubChromeStorage({ [PREVIEW_FULL_WIDTH_STORAGE_KEY]: legacy })
+
+    expect((await getPaneWidthPreferences()).previewWidth).toBe(expected)
+  })
+
+  it.each(["narrow", "standard", "full"] as const)("remembers %s across loads without changing Source", async (width) => {
+    const storage = stubChromeStorage({
+      [PREVIEW_FULL_WIDTH_STORAGE_KEY]: true,
+      [SOURCE_FULL_WIDTH_STORAGE_KEY]: false,
+    })
+
+    await setPreviewWidthPreference(width)
+
+    expect(await getPaneWidthPreferences()).toEqual({ previewWidth: width, sourceFullWidth: false })
+    expect(storage.data[SOURCE_FULL_WIDTH_STORAGE_KEY]).toBe(false)
+  })
+
+  it("falls back to the legacy choice when the new preference is invalid", async () => {
+    stubChromeStorage({
+      [PREVIEW_WIDTH_STORAGE_KEY]: "wide",
+      [PREVIEW_FULL_WIDTH_STORAGE_KEY]: true,
+    })
+
+    expect((await getPaneWidthPreferences()).previewWidth).toBe("full")
   })
 })

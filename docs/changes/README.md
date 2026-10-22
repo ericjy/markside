@@ -30,4 +30,4 @@ and code examples may no longer match the current source tree.
 - [Pending decisions after 1.6.0](2026-10-20-pending-decisions/spec.md) (Historical interview decisions)
 - [Copy a link to a heading](2026-10-21-copy-heading-link/spec.md) (Confirmed design)
 - [Question Card rounds](2026-10-21-question-card-round/spec.md) (Historical interview design)
-- [Narrow Preview page width](2026-10-21-preview-page-width/spec.md) (Proposed)
+- [Narrow Preview page width](2026-10-21-preview-page-width/spec.md)

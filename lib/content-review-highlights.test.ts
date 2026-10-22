@@ -36,6 +36,32 @@ function options(text: string) {
 }
 
 describe("resolved agent comments in Preview", () => {
+  it("moves missing-passage badges when the content resizes inside an unchanged pane", () => {
+    let resized: ResizeObserverCallback = () => {}
+    const observed = new Set<Element>()
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(callback: ResizeObserverCallback) { resized = callback }
+      observe(element: Element) { observed.add(element) }
+      disconnect() {}
+    })
+    let headingTop = 20
+    Range.prototype.getClientRects = () => [new DOMRect(40, headingTop, 120, 30)] as unknown as DOMRectList
+    const props = options("New wording")
+    const pane = document.createElement("div")
+    pane.append(props.contentRef.current)
+    props.previewScrollRef = { current: pane }
+    const hook = renderHook(useContentReviewHighlights, props)
+    const before = hook.result.current.reviewBadgeAnchors[0].top
+
+    headingTop += 80
+    act(() => {
+      if (observed.has(props.contentRef.current)) resized([], {} as ResizeObserver)
+    })
+
+    expect(hook.result.current.reviewBadgeAnchors[0].top).toBe(before + 80)
+    hook.unmount()
+  })
+
   it("keeps a draft anchored when opening a modal hides the preview's background", () => {
     const props = options("Old wording")
     const wrapper = document.createElement("div")

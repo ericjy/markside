@@ -123,6 +123,8 @@ section only decides how questions are asked and answered.
    - **A. Keep the interview in a sibling document.** Create a separate interview file next to the plan. The plan stays focused, but there is another file to manage.
    - **B. Put the interview inside the plan.** Add the questions and answers to the plan itself. Everything stays in one file, but temporary questions interrupt the plan.
 
+   **Recommended: A.** It keeps temporary interview questions out of the plan; the extra file can be removed afterward.
+
    <details open>
    <summary>Compare tradeoffs</summary>
 
@@ -132,8 +134,6 @@ section only decides how questions are asked and answered.
    | File management | Two files | One file |
 
    </details>
-
-   **Recommended: A.** It keeps temporary interview questions out of the plan; the extra file can be removed afterward.
    ```
    ````
 
@@ -162,7 +162,7 @@ section only decides how questions are asked and answered.
    - When shared criteria help compare the options, add a Markdown table
      inside `<details open>` with `<summary>Compare tradeoffs</summary>`, expanded
      by default so it is visible before choosing. Keep it collapsible. Put it
-     after the options and before the recommendation, as in the example.
+     last, after the recommendation, as in the example.
      Leave blank lines around the table so Markdown renders
      inside the HTML disclosure. Omit the comparison for simple questions.
    - In comparison tables, use options as columns and criteria as rows. Keep
@@ -171,8 +171,8 @@ section only decides how questions are asked and answered.
      verification, followed by explanatory text. Markside colors those
      symbols. Keep neutral facts such as file counts unscored. Do not add a
      legend or colored-circle emoji, and do not present assumptions as facts.
-   - End with exactly one `**Recommended: X.**` paragraph outside the
-     disclosure, naming one listed letter. Give the main reason and decisive
+   - Right after the options, write exactly one `**Recommended: X.**`
+     paragraph outside the disclosure, naming one listed letter. Give the main reason and decisive
      tradeoff in one or two short sentences. Put detailed comparisons in the
      table rather than a long recommendation paragraph. Markside labels the
      recommended option separately from the user's selected answer.

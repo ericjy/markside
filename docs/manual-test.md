@@ -156,7 +156,7 @@ pull request or review response.
   paragraph has a smaller heading
   and no thumbs-up icon in its own box below
   the options, with no send button. Something else… is a quieter tile, with a muted hint line,
-  directly after the options, before Compare tradeoffs and the recommendation;
+  directly after the options, before the recommendation and Compare tradeoffs;
   keyboard hints sit at the top right and wrap below the Question label on
   narrow screens. Select and copy an option's text: the copy reads "A. Title. …" and
   the selection opens the comment toolbar without choosing the option. Click a

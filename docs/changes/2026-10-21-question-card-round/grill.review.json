@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "doc": "question-card-rounds.grill.md",
+  "docHash": "f2e5cba4ecbc4d9fffbf1ddbe1442251b849fb398d96df6cca9f11a5e8f8974a",
+  "status": "resolved",
+  "requestedAt": "2026-10-21T19:59:21.158Z",
+  "comments": [
+    {
+      "id": "894136a4-f4fe-4708-986b-4bbbca37b7fb",
+      "quote": "Q1. Who decides how many questions an interview doc asks at once?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A; round 2 (Q2–Q7) is up."
+    },
+    {
+      "id": "169f6190-a756-48e0-8a0f-c6d91d698d0d",
+      "quote": "Q2. How does the interview doc lay out a round?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A; section renamed to Current questions. Q3–Q7 still open."
+    },
+    {
+      "id": "a8376b0b-e5f0-448d-8589-daa361602949",
+      "quote": "Q3. What happens when you send a round with some cards unanswered?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A; archived. Round 3 (Q8) is up."
+    },
+    {
+      "id": "7a244c2f-9d00-44b4-b09f-ead7db5c9c5a",
+      "quote": "Q4. How do letter keys work when several cards are answerable?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A; archived. Round 3 (Q8) is up."
+    },
+    {
+      "id": "8cb560ca-8f08-481d-af30-f7a440857764",
+      "quote": "Q5. Should a round offer “Accept remaining recommendations”?",
+      "line": null,
+      "body": "B",
+      "status": "resolved",
+      "reply": "Recorded B; archived. Round 3 (Q8) is up."
+    },
+    {
+      "id": "36a1c5d3-c1ce-4ebc-a100-b2a516fe3d15",
+      "quote": "Q6. When you stop mid-round, what happens to the cards you didn’t answer?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A; archived. Round 3 (Q8) is up."
+    },
+    {
+      "id": "feed7353-d14f-4003-933d-b3d82f498469",
+      "quote": "Q7. When you ask for fewer questions mid-round, does it apply to the other cards in that round?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A; archived. Round 3 (Q8) is up."
+    },
+    {
+      "id": "c842e8eb-f88d-4057-9806-1576756f121b",
+      "quote": "Q8. Where do these decisions land once the interview is finished?",
+      "line": 8,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A; archived. Summary is up — Finish review if it matches."
+    }
+  ],
+  "sentAt": "2026-10-21T23:28:18.070Z",
+  "note": ""
+}

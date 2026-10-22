@@ -66,7 +66,7 @@ place of copying a prompt. It requires the repository's local CLI and Node.js
 20+. The CLI and extension exchange data through `<document>.review.json` beside
 the Markdown file. The agent marks a comment Addressed and may reply. The user
 checks the result and chooses Resolve or Reopen. Only the user can send comments.
-See [agent Review setup and contract](docs/agent-review-loop.md).
+See [agent Review setup and contract](docs/changes/2026-10-18-agent-review-loop/spec.md).
 
 ## Sharing
 

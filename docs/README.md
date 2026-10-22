@@ -15,12 +15,6 @@
 - [Do not watch local files](adr/0002-no-file-watching.md)
 - [Chrome Web Store](store-listing.md) — release runbook and canonical Store listing copy
 
-## Agents
+## Changes
 
-- [Issue tracker](agents/issue-tracker.md)
-- [Triage labels](agents/triage-labels.md)
-- [Domain documentation](agents/domain.md)
-
-## History
-
-[Implemented feature designs](history/README.md) explain intent at the time of implementation. Current behavior is documented in the user guide and system design.
+[Change specs and interviews](changes/README.md) are grouped by date and topic. Each folder holds its specification and any interview, intent, or archived Review files. Current behavior is documented in the user guide and system design.

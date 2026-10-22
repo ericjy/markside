@@ -97,7 +97,7 @@ platforms.
 
 The prototype `/markside review PLAN.md` waits for Review Comments sent from
 Markside and lets the agent continue with them. It requires Node.js 20+ and the
-local CLI. See [Review loop setup](docs/agent-review-loop.md).
+local CLI. See [Review loop setup](docs/changes/2026-10-18-agent-review-loop/spec.md).
 
 ## Privacy and sharing
 

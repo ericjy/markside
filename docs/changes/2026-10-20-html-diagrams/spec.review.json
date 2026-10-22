@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "doc": "2026-10-20-html-diagrams-design.md",
+  "docHash": "64d16a0c1c7bf5e93c61f251ce6c4fe4ff6a4b1424cf44f770ccb94d7de0b375",
+  "status": "resolved",
+  "requestedAt": "2026-10-21T06:37:08.087Z",
+  "comments": [],
+  "sentAt": "2026-10-21T06:47:33.482Z",
+  "note": "looks good",
+  "noteStatus": "addressed",
+  "noteReply": "Thanks. No changes; I'll commit it once you finish the review."
+}

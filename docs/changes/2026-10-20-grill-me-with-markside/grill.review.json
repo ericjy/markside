@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "doc": "grill-me-with-markside.md",
+  "docHash": "819c92097b1db2ae3124451e1380372b91d0900ed3253c4d87fc6431e0295fb7",
+  "status": "resolved",
+  "requestedAt": "2026-10-20T16:06:36.705Z",
+  "comments": [
+    {
+      "id": "828718b9-95ca-4b47-a620-9d2e949d8cb2",
+      "quote": "Recommended: A",
+      "line": 34,
+      "body": "Agreed — this works well as written.",
+      "status": "resolved",
+      "reply": "Recorded as decision 1. Q2 (how you answer) is next."
+    },
+    {
+      "id": "3c807cde-6eb4-46f8-b97a-a196543232db",
+      "quote": "Recommended: B",
+      "line": 46,
+      "body": "Agreed — this works well as written. But how does Markside render these special controls?",
+      "status": "resolved",
+      "reply": "Recorded as decision 2. Your rendering question became Q3, with the mechanism explained there."
+    },
+    {
+      "id": "a30229fb-fcc1-43c9-b963-7ceb002f6379",
+      "quote": "Recommended: A",
+      "line": 59,
+      "body": "Agreed — this works well as written.",
+      "status": "resolved",
+      "reply": "Recorded as decision 3. Q4 covers how a grilling Review stays open and ends."
+    },
+    {
+      "id": "4451954a-10ba-4d82-b8eb-954259ba0658",
+      "quote": "Resolving the last addressed comment ended the Review while a question was still unanswered",
+      "line": 144,
+      "body": "I have another claude session helped addressed this issue",
+      "status": "resolved",
+      "reply": "Confirmed in the working tree: Finish review now ends the Review instead of resolving the last comment. Marked both friction items fixed and reframed Q4 around Finish review."
+    },
+    {
+      "id": "9d32e213-f6ee-496b-9c00-a19261685f4c",
+      "quote": "Current question",
+      "line": null,
+      "body": "I wonder if we should put Current question at the top before Decisions so far",
+      "status": "resolved",
+      "reply": "Done. Current question now sits at the top."
+    },
+    {
+      "id": "d062ec89-b719-4d00-a1b5-bafb8d8d0b29",
+      "quote": "Decisions so far",
+      "line": null,
+      "body": "Instead of showing each decision as an line item, I wonder if we should just keep the old question + answer options + recommendation format and plus a user decision paragraph/block.",
+      "status": "resolved",
+      "reply": "Done. Answered questions keep their full format with a Your decision block."
+    },
+    {
+      "id": "e9262af9-b8fe-4875-9001-7a4ceffd2a01",
+      "quote": "Recommended: A",
+      "line": 71,
+      "body": "Agreed — this works well as written.",
+      "status": "resolved",
+      "reply": "Recorded under Q4. Q5 is about where the ask-in-Markside behavior lives."
+    },
+    {
+      "id": "34951e5f-db70-467b-85f3-af3235fc7489",
+      "quote": "Recommended: A",
+      "line": 83,
+      "body": "agree. what's the user experience? /grill-me /markside blah?",
+      "status": "resolved",
+      "reply": "Recorded under Q5. Your invocation question became Q6."
+    },
+    {
+      "id": "02fbd41d-422f-4316-993f-2bf08d3cd650",
+      "quote": "Recommended: A",
+      "line": 95,
+      "body": "Agreed — this works well as written.",
+      "status": "resolved",
+      "reply": "Recorded under Q6. Q7 asks where the interview doc lives."
+    },
+    {
+      "id": "db4ca67f-1563-4d8b-9952-672b5d5cd8bd",
+      "quote": "With no subject file, the agent creates GRILL-<topic>.md at the repo root",
+      "line": null,
+      "body": "Check how grill-with-docs skill do? where does it create the doc",
+      "status": "resolved",
+      "reply": "grill-with-docs creates no interview doc, only CONTEXT.md and ADRs in place. Q7 now explains this, and option A is adjusted to match."
+    },
+    {
+      "id": "1ab41c50-b58d-49d6-9ef6-2794a7ff7619",
+      "quote": "Recommended: A",
+      "line": 109,
+      "body": "Agreed — this works well as written.",
+      "status": "resolved",
+      "reply": "Recorded under Q7. Q8 asks about resolving every answer before Finish."
+    },
+    {
+      "id": "3cd04674-fa45-4acc-8224-17479f578154",
+      "quote": "Recommended: C",
+      "line": 121,
+      "body": "Agreed — this works well as written.",
+      "status": "resolved",
+      "reply": "Recorded under Q8. Q9 is about how the next question appears without a manual reload."
+    },
+    {
+      "id": "4ad6a5be-a187-4daf-bf8d-4cb53bbc6a4e",
+      "quote": "Recommended: B",
+      "line": 133,
+      "body": "Agreed — this works well as written.",
+      "status": "resolved",
+      "reply": "Recorded under Q9. Q10, what ships first, is the last open branch I see."
+    },
+    {
+      "id": "8f1e07c7-b642-4d81-b062-9709ae828ac8",
+      "quote": "Recommended: A",
+      "line": 22,
+      "body": "Agreed — this works well as written.",
+      "status": "resolved",
+      "reply": "Recorded under Q10. No questions are left; the summary is at the top. Finish review when it matches your understanding."
+    }
+  ],
+  "sentAt": "2026-10-20T20:08:29.996Z",
+  "note": ""
+}

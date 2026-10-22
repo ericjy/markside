@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-20
 **Status:** Proposed
-**Intent:** [HTML diagrams in Markdown docs](../../intent/2026-10-20-html-diagrams/intent.md)
+**Intent:** [HTML diagrams in Markdown docs](intent.md)
 
 > Proposed design. Nothing here is implemented yet. Current behavior is in `docs/system-design.md`.
 
@@ -115,7 +115,7 @@ Markside or capping diagram size were rejected for v1.
 
 ## Relation to other designs
 
-[Diagram engines beyond Mermaid](2026-10-19-diagram-engines-design.md) covers
+[Diagram engines beyond Mermaid](../2026-10-19-diagram-engines/spec.md) covers
 declarative languages (Vega-Lite, Graphviz, PlantUML) rendered by bundled
 engines. HTML diagrams are a separate path: the author writes the markup and
 Markside only isolates it. Both designs touch the special-casing of `mermaid` in

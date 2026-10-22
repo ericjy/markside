@@ -64,6 +64,27 @@ Keep proposals aligned with Markside's focus on local Markdown viewing and
 editing. Markside does not watch files or automatically reload external
 changes.
 
+## Triage labels
+
+Use these labels when triaging issues:
+
+| Label | Meaning |
+| --- | --- |
+| `needs-triage` | Maintainer needs to evaluate the issue |
+| `needs-info` | Waiting for more information from the reporter |
+| `ready-for-agent` | Fully specified and ready for an agent to implement |
+| `ready-for-human` | Requires human implementation |
+| `wontfix` | Will not be actioned |
+
+## Change records
+
+Keep technical specs in `docs/changes/YYYY-MM-DD-topic/spec.md`, related
+interviews in `grill.md`, and archived Reviews in `grill.review.json` in the same
+directory. See the [change index](docs/changes/README.md).
+
+These records preserve design intent. Current behavior belongs in
+`docs/system-design.md`, and durable architectural decisions belong in `docs/adr/`.
+
 ## Submit a pull request
 
 1. Create a focused branch and make the smallest change that solves the issue.

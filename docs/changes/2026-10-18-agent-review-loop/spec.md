@@ -1,5 +1,12 @@
 # Local agent Review loop
 
+**Date:** 2026-10-18
+**Status:** Implemented. Historical design and prototype setup.
+
+Current behavior is documented in [the user guide](../../user-guide.md),
+[system design](../../system-design.md), and
+[the Markside skill](../../../skills/markside/SKILL.md).
+
 The user sends Review Comments to a waiting coding agent through a JSON file
 beside the Markdown document. Nothing is uploaded. The extension never watches
 the filesystem; only the foreground CLI waits for the response. The one bounded
@@ -7,7 +14,7 @@ re-read after Send is described below.
 
 ## Prototype setup
 
-Build and load the extension using [the manual checks](manual-test.md). Install
+Build and load the extension using [the manual checks](../../manual-test.md). Install
 Node.js 20+ and install the CLI from this checkout:
 
 ```sh
@@ -63,7 +70,7 @@ The path is `<document path>.review.json`, for example `docs/PLAN.md.review.json
 
 The file holds one flat comment list with each comment's latest state. Each Send
 replaces it with the comments being sent, so withdrawn drafts drop out and
-resolved comments stay as history. See [ADR-0008](adr/0008-flat-agent-review-file.md).
+resolved comments stay as history. See [ADR-0008](../../adr/0008-flat-agent-review-file.md).
 
 On send, `status` becomes `sent`, `sentAt` is an ISO timestamp, and `docHash` is
 64 lowercase hexadecimal characters containing the SHA-256 of the document's
@@ -124,7 +131,7 @@ agent's Addressed replies; the document itself still needs a reload.
 After a successful Send, the tab re-reads the Review file every 2 seconds for up
 to 2 minutes. At the agent's first change, it shows the reply and checks the
 document once, so Changed on disk and Reload appear without the reviewer leaving
-the tab. See [ADR-0002](adr/0002-no-file-watching.md).
+the tab. See [ADR-0002](../../adr/0002-no-file-watching.md).
 A pending request opens the panel once for that document. Sending uses the
 stored directory permission, or the existing folder picker in read-write mode
 when no saved directory contains the document. Before the first picker, one

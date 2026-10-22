@@ -2,6 +2,10 @@
 
 Markside is a Chrome extension that renders and edits local Markdown files in the browser. Read `CONTEXT.md`, `docs/system-design.md`, and any relevant ADR before changing behavior.
 
+Use the domain terms in `CONTEXT.md` consistently, including in issues and pull
+requests. If a proposed change conflicts with an ADR, state the conflict rather
+than silently overriding the decision.
+
 ## Commands
 
 ```bash
@@ -82,9 +86,10 @@ opening a GUI.
 ## Contributing and design notes
 
 Use GitHub issues for public bugs and feature proposals. See
-`CONTRIBUTING.md` and `docs/agents/issue-tracker.md`. Keep private research and
-business notes outside the repository. Existing technical specs in `.scratch/`
-may provide historical context; current behavior is documented in
+`CONTRIBUTING.md` for issue reporting, triage labels, and design records. Keep private research and
+business notes outside the repository. Design specs and interview records in
+`docs/changes/` provide historical context; current behavior is documented in
 `docs/system-design.md` and the ADRs.
 
-The repository uses a single-context domain layout. See `docs/agents/domain.md`.
+The repository uses a single-context domain layout: `CONTEXT.md` contains the
+glossary, and `docs/adr/` contains durable architectural decisions.

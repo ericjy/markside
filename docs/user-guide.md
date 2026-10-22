@@ -97,7 +97,7 @@ how the agent read your own-words answers and anything it inferred or assumed,
 matches your understanding.
 
 Review mode currently requires the prototype CLI installed from this repository
-and Node.js 20+. See [local agent Review setup](agent-review-loop.md). Comments
+and Node.js 20+. See [local agent Review setup](changes/2026-10-18-agent-review-loop/spec.md). Comments
 are sent through `PLAN.md.review.json` beside the document. Add `*.review.json`
 to your project's `.gitignore` to keep them out of version control.
 

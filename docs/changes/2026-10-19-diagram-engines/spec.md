@@ -109,7 +109,7 @@ const { render } = await import(chrome.runtime.getURL("diagram-graphviz.js"))
 Mermaid moves to the same path. On its own, that cuts about 6 MB from every
 `file://` page load.
 
-**Open question:** the [Mermaid design](2026-04-12-mermaid-support.md) found
+**Open question:** the [Mermaid design](../2026-04-12-mermaid-support/spec.md) found
 that Parcel's dynamic-import chunks fail to load on `file://` pages. Importing
 an esbuild bundle by extension URL is a different mechanism, but it needs a
 spike before anything else. The resource must be declared for `file:///*`

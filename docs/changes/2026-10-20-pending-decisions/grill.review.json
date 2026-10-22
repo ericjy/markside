@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "doc": "pending-decisions.grill.md",
+  "docHash": "327365b59b609aca52308b533b9cd653bc38a5b4497056889ef37d27d1ee28c4",
+  "status": "resolved",
+  "requestedAt": "2026-10-21T06:21:35.282Z",
+  "comments": [
+    {
+      "id": "41a29bc3-a06e-4908-96e0-a52204649a67",
+      "quote": "Q1. What happens to the reasons I wrote for rejected options in the HTML diagrams design?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded under Q1. Q2 asks about the stale raw-HTML line in the system design."
+    },
+    {
+      "id": "7c84ff66-d798-4655-bd92-2dc02515dd4c",
+      "quote": "Q2. Do I fix the stale raw-HTML line in the system design now?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded under Q2. Q3 asks which controls HTML diagram frames get."
+    },
+    {
+      "id": "fac957f0-dd32-402c-87b3-2af18eafa5dd",
+      "quote": "Q3. Which controls do HTML diagram frames get?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded under Q3. Q4 asks what a whole-diagram comment quotes."
+    },
+    {
+      "id": "6f0f97db-dc2e-488f-a253-47cd54bd9ce5",
+      "quote": "Q4. What does a whole-diagram comment quote?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded under Q4. Q5 asks how Reload Comparison shows a changed diagram."
+    },
+    {
+      "id": "70635779-ff61-41e0-8c63-d843d9ebd3c0",
+      "quote": "Q5. How does Reload Comparison show a changed diagram?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded under Q5. Q6 asks which diagram work comes first."
+    },
+    {
+      "id": "36bb92af-6957-4848-a0e6-c13f99b0cc14",
+      "quote": "Q6. Which diagram work comes first?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded under Q6. Q7 asks what happens to Web Preview."
+    },
+    {
+      "id": "d3a80b85-7f5d-4b97-bd04-d6cbf4825753",
+      "quote": "Q7. What happens to Web Preview?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded under Q7. Q8 asks about the next release and the agent loop's status."
+    },
+    {
+      "id": "be537d4d-b004-4432-b57b-90c9d5a6edbe",
+      "quote": "Q8. When does the next release ship, and with what agent-loop status?",
+      "line": null,
+      "body": "B",
+      "status": "resolved",
+      "reply": "Recorded under Q8. Q9, the last one, asks about the Mermaid look-and-feel fix."
+    },
+    {
+      "id": "df868891-137e-4c03-95ea-286c02a7211c",
+      "quote": "Q9. What happens to the Mermaid look-and-feel fix?",
+      "line": 8,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded under Q9. No questions left; the summary is at the top. Finish review if it matches."
+    }
+  ],
+  "sentAt": "2026-10-21T06:35:36.103Z",
+  "note": ""
+}

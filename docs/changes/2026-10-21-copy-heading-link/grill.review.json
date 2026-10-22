@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "doc": "copy-heading-link.grill.md",
+  "docHash": "6a9291fa35b8d84c9f7f89a72696148b406bdac068de35338393d26533f02278",
+  "status": "resolved",
+  "requestedAt": "2026-10-22T04:29:08.774Z",
+  "comments": [
+    {
+      "id": "de74899e-060f-49fd-9ae3-ba7988d3a192",
+      "quote": "Q1. Should the copied link point to the local file?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: copy a local file link. Added questions about the action, clipboard format, and Unsaved Drafts."
+    },
+    {
+      "id": "f79b51bd-a9cd-4e5a-b9ea-0cae7bb1424c",
+      "quote": "Q2. Should clicking the existing heading # copy its link?",
+      "line": null,
+      "body": "B",
+      "status": "resolved",
+      "reply": "Recorded B: keep the existing # navigation link and add a separate copy button."
+    },
+    {
+      "id": "0c96880a-dc35-44ce-a4d8-51a0af76084e",
+      "quote": "Q3. Should the clipboard contain the full file URL?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: copy the full local file URL as plain text."
+    },
+    {
+      "id": "677cc80a-41a8-429b-9224-b44d57f36c37",
+      "quote": "Q4. Should copying remain available while there is an Unsaved Draft?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: copy immediately without saving the Unsaved Draft."
+    },
+    {
+      "id": "5b4d24af-9b97-431b-9dd2-4c1ba7e0cf8c",
+      "quote": "Q5. Should the new copy button appear on hover and keyboard focus?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: reveal heading controls on hover or keyboard focus."
+    },
+    {
+      "id": "25133307-2362-48c5-a107-7959f85adefc",
+      "quote": "Q6. Should every Markdown heading in Preview and Split get the copy button?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: include all six heading levels in Preview and Split, including Question Cards. Added a question about deleted historical headings."
+    },
+    {
+      "id": "e4d03ad5-849f-4369-bdde-5f9e2b6795c9",
+      "quote": "Q7. Should copy feedback stay beside the button?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: inline success and actionable failure feedback, with screen reader announcements."
+    },
+    {
+      "id": "12313284-0ba6-4ba7-928d-44c42b12ed24",
+      "quote": "Q8. Is it acceptable for a link to break when its heading or file path changes?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: preserve existing heading identifiers and accept broken links after renames or moves."
+    },
+    {
+      "id": "8455feed-0154-406f-821c-b786e34424c7",
+      "quote": "Q9. Should removed historical headings be excluded from copying?",
+      "line": 8,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: omit copy buttons from removed historical headings."
+    },
+    {
+      "id": "8854d324-356a-4dc3-8407-9a178ab337d1",
+      "quote": "Q10. Should heading controls stay visible when the device cannot hover?",
+      "line": 19,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: keep controls visible without hover support. The interview is ready for your final check."
+    }
+  ],
+  "sentAt": "2026-10-22T04:40:53.630Z",
+  "note": ""
+}

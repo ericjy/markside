@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "doc": "simple-feature.grill.md",
+  "docHash": "5399b067aac0f156c8b8ec02d5649a289da8ad93be0fb06b140be0d6c08d9c98",
+  "status": "resolved",
+  "requestedAt": "2026-10-22T05:21:45.937Z",
+  "comments": [
+    {
+      "id": "55c2e6d2-32e5-4220-a26d-063f0d546694",
+      "quote": "Q1. 这次先解决阅读时的一个小麻烦，好吗？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录选择 A，下一题比较三个具体的阅读小功能，推荐任务完成数。"
+    },
+    {
+      "id": "8f38c050-1a0e-4c09-9880-48300880fc4b",
+      "quote": "Q2. 用“任务完成数”作为这次的小功能，好吗？",
+      "line": null,
+      "body": "换一批",
+      "status": "resolved",
+      "reply": "已换成图片放大和脚注就地预览两个候选，下一题推荐点击正文图片看大图。"
+    },
+    {
+      "id": "a406dedf-ec2d-4cb1-bd24-84e37b064ff7",
+      "quote": "Q3. 换成“点击正文图片看大图”，好吗？",
+      "line": null,
+      "body": "要不做一个可以改变页宽的吧\n\n现在只有一个固定页宽，或者full width，增加一个更短的页宽",
+      "status": "resolved",
+      "reply": "已改为新增更窄的阅读页宽，并列出宽度、适用范围、入口和记忆方式四个问题。"
+    },
+    {
+      "id": "bb2cfaf1-daed-47a3-8b24-daccae726b34",
+      "quote": "Q4. 新增的窄页宽用 768px，好吗？",
+      "line": 8,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录新增 768px、48rem 窄档，并保留现有两档。"
+    },
+    {
+      "id": "03998e4d-957b-46de-a174-133fd62a36ca",
+      "quote": "Q5. 新窄档只影响 Preview，包括 Split 里的 Preview，好吗？",
+      "line": 27,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录仅影响 Preview 和 Split 预览栏，Source 与 PDF Export 沿用现有规则。"
+    },
+    {
+      "id": "d48d082b-85c1-46ff-830d-d24e1924e43c",
+      "quote": "Q6. 在现有文件菜单里，用 Page width 选择三个档位，好吗？",
+      "line": 38,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录在文件菜单的 Page width 分组里列出三个互斥选项。"
+    },
+    {
+      "id": "fd5b1e48-63ae-4a4e-a734-37b01571ffa4",
+      "quote": "Q7. 继续跨文件记住页宽，同时保留用户原来的宽度，好吗？",
+      "line": 56,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录继续跨文件记住选择，保留已有偏好和默认宽度。"
+    }
+  ],
+  "sentAt": "2026-10-22T06:39:57.827Z",
+  "note": ""
+}

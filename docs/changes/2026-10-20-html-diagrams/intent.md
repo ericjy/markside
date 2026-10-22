@@ -3,7 +3,7 @@
 **Author:** Eric Yang. **Status:** draft
 **Date:** 2026-10-20
 **Grill:** [grill.md](grill.md)
-**Design:** [HTML diagrams](../../history/designs/2026-10-20-html-diagrams-design.md)
+**Design:** [HTML diagrams](spec.md)
 
 ## Problem
 

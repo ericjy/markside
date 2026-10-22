@@ -203,12 +203,6 @@ const INTERVIEW_PRESETS = [
     instruction: "Skip this question for now. Record it as deferred and move on.",
   },
   {
-    id: "fewer",
-    chip: "Fewer",
-    name: "Ask only high-value questions",
-    instruction: "Ask fewer questions from now on: only decisions that are costly to reverse or where reasonable people would disagree. Settle the rest yourself as assumed decisions I can veto. If this question doesn't meet that bar, settle it too.",
-  },
-  {
     id: "delegate",
     chip: "Delegate",
     name: "Use your recommendations for the rest",

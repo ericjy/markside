@@ -93,17 +93,12 @@ section only decides how questions are asked and answered.
 2. Lay it out as a title, one line explaining how to answer, then
    `## Current questions` and `## Previous questions`.
    The answer line says the user can pick an option or use the tile to answer
-   in their own words, ask, skip, ask for fewer questions, let you decide the
-   rest, or stop, that
-   they may answer any or all cards before sending, and that commenting on an
-   assumed decision under Previous questions asks it again. Previous questions
-   holds every settled question, answered, deferred, or assumed, in the order
-   it was settled; leave it empty until there is one. When the answer is
-   obvious from context and cheap to reverse, settle the question yourself
-   instead of asking it: write it in full with its own number, exactly as a
-   card's contents in step 3, and archive it as in step 5 with
-   `> **Assumed decision: X.** <one sentence>` naming the recommended option.
-   When continuing
+   in their own words, ask, skip, let you decide the rest, or stop, and that
+   they may answer any or all cards before sending. Previous questions
+   holds every settled question, answered, deferred, or left open, in the
+   order it was settled; leave it empty until there is one. Every decision is
+   the user's: put each one to them as a card unless they ask you to decide
+   the rest. When continuing
    from chat, copy the original questions and options already answered under
    Previous questions, including their context, tradeoffs, and recommendations.
    Do not replace them with summaries. If the original text is unavailable,
@@ -219,32 +214,26 @@ section only decides how questions are asked and answered.
    question in place, adding a diagram, table, or example where it helps, keeping its number and heading so the answer still
    anchors, address the comment with a one-line reply naming what changed, and
    continue the Review. If it asks to skip or defer the question, archive it as
-   above with `> **Deferred.**` in place of the decision line. Requests for
-   fewer questions, to decide the rest, or to stop apply to the whole
-   interview, whichever card carries them. If a comment asks
-   for fewer questions, add `Focus: fewer questions (asked at Q<n>).` below
-   the doc's answer line and keep to it for the rest of the interview: ask only
-   decisions that are costly to reverse or where reasonable people would
-   disagree, and settle the rest as assumed decisions. Recheck every unanswered
-   card in Current questions, including the one carrying the request, and
-   archive each that falls below that bar with
-   `> **Assumed decision: X.**` naming its recommended option. If a comment
-   on an assumed decision vetoes or questions it, remove it from Previous
-   questions and ask it again with the next questions as a card, keeping its
-   number and heading. If a comment asks you to decide the rest, add
+   above with `> **Deferred.**` in place of the decision line. Requests to
+   decide the rest or to stop apply to the whole interview, whichever card
+   carries them. If a comment asks you to decide the rest, add
    `Focus: you decide the rest (asked at Q<n>).` below the answer line,
    archive the other answers sent with it, then settle every unanswered card
-   and every question the questioning skill would still ask as assumed
-   decisions in Previous questions, and go to step 6. If a comment asks to
-   stop, archive the other answers
-   sent with it, archive each remaining unanswered card with
-   `> **Assumed decision: X.**` naming its recommended option, and go to step 6.
+   and every question the questioning skill would still ask, writing each in
+   full with its own number and archiving it with
+   `> **Assumed decision: X.** <one sentence>` naming its recommended option,
+   and go to step 6. If a comment on an assumed decision vetoes or questions
+   it, remove it from Previous questions and ask it again as a card, keeping
+   its number and heading. If a comment asks to stop, archive the other
+   answers sent with it, archive each remaining unanswered card with
+   `> **Open.**` in place of the decision line, and go to step 6. Do not
+   settle open questions yourself.
 6. When no questions remain or the user asks to stop, check every decision
    against the subject file and any spec or design doc the interview relies
    on. Ask about each contradiction as a new card before summarizing. Then
    replace Current questions with `## Summary`: the
-   user's decisions as short bullets, followed by the assumed decisions as
-   short bullets labeled as yours, then ask the user to click **Finish review** if
+   user's decisions as short bullets, followed by any assumed decisions as
+   short bullets labeled as yours and any open questions labeled as open, then ask the user to click **Finish review** if
    it matches their understanding. Finishing is the confirmation of shared
    understanding. Do not act on the decisions before `Review resolved`.
 7. After the Review is resolved, follow the questioning skill for durable

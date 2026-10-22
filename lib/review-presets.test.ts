@@ -64,7 +64,6 @@ describe("Review Comment presets", () => {
       { id: "clarify", chip: "Clarify" },
       { id: "example", chip: "Example" },
       { id: "skip", chip: "Skip" },
-      { id: "fewer", chip: "Fewer" },
       { id: "delegate", chip: "Delegate" },
       { id: "stop", chip: "Stop" },
     ])

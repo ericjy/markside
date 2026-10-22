@@ -79,10 +79,10 @@ Click an option, or press its letter, to make it your answer; choose another to
 change it, or use the **Something else…** tile below the options (or press T) to
 answer in your own words or ask a question. That tile is marked selected and
 shows your text in place of its hint after you save a custom answer.
-Its presets let you skip the question, ask for fewer questions (the agent settles
-obvious ones itself, recording each under Previous questions as an
-assumed decision you can veto by commenting on it), let the agent decide the
-rest with its recommendations, or stop the interview. If the question or
+Its presets let you skip the question, let the agent decide the rest with its
+recommendations (recorded under Previous questions as assumed decisions you can
+veto by commenting on them), or stop the interview, leaving unanswered
+questions open. If the question or
 its options are unclear, ask there instead; the agent rewrites the question and
 keeps it current. Hovering an option highlights its column in Compare tradeoffs.
 You can also select any text in the card to comment on it. Then click **Send review**

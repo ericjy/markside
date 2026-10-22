@@ -172,7 +172,7 @@ pull request or review response.
   the comment returns to Draft until sent again.
   Choose Something else… and confirm the composer opens on the heading
   with the placeholder "Your answer or question, or pick one above. You can also combine options or push back." without selecting the tile, and that its quick presets read Clarify, Example,
-  Skip, Fewer, Delegate, and Stop, wrapping if needed. Click Skip: its text is inserted,
+  Skip, Delegate, and Stop, wrapping if needed. Click Skip: its text is inserted,
   not saved. Save a free-text answer: its tile gains the teal
   selected state, shows the saved text in place of its hint, and all lettered options are unchecked. Choose a lettered
   option and confirm the custom tile becomes neutral again. Send a custom

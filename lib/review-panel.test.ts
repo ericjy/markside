@@ -481,8 +481,7 @@ describe("ReviewPanel", () => {
     const sentStatus = Array.from(container.querySelectorAll('[role="status"]')).find((element) => element.textContent?.includes("Review sent"))!
     expect(sentStatus).toBeDefined()
     expect(sentStatus.closest("button")).toBeNull()
-    expect(sentStatus.textContent?.trim()).toBe("Review sent")
-    expect(container.textContent).toContain("Waiting for the agent’s response.")
+    expect(sentStatus.textContent?.trim()).toBe("Review sent · Waiting for the agent’s reply")
     expect(container.textContent!.indexOf("Review sent")).toBeLessThan(container.textContent!.indexOf("Agent hasn’t started?"))
     expect(container.textContent).not.toContain("Your review is saved.")
     expect(container.textContent).not.toContain("Add or edit a comment")
@@ -500,10 +499,10 @@ describe("ReviewPanel", () => {
     const onCheckUpdates = vi.fn().mockResolvedValue(false)
     const agentHandoff = { disabled: true, disabledReason: null, sending: false, sent: true, error: null, send: vi.fn() }
     renderPanel({ agentHandoff, onCheckUpdates })
-    const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check response"))!
+    const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check for reply"))!
     await act(async () => check.click())
     expect(onCheckUpdates).toHaveBeenCalledOnce()
-    expect(check.textContent).toContain("No response yet")
+    expect(check.textContent).toContain("No reply yet")
     expect(container.textContent).not.toContain("Reload document")
   })
 
@@ -512,10 +511,10 @@ describe("ReviewPanel", () => {
       agentHandoff: { disabled: true, disabledReason: null, sending: false, sent: true, error: null, send: vi.fn() },
       onCheckUpdates: vi.fn().mockRejectedValue(new Error("Read failed")),
     })
-    const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check response"))!
+    const check = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("Check for reply"))!
     await act(async () => check.click())
     expect(container.textContent).toContain("Couldn’t check. Try again.")
-    expect(container.textContent).not.toContain("No response yet")
+    expect(container.textContent).not.toContain("No reply yet")
     expect(check.disabled).toBe(false)
   })
 

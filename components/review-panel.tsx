@@ -870,15 +870,13 @@ export function ReviewPanel({
         )}
         {activeAgentHandoff && !canFinish && (
           activeAgentHandoff.sent && !activeAgentHandoff.sending ? (
-            <div className="py-1">
-              <p role="status" className="flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-300">
-                <Check size={16} className="shrink-0" aria-hidden="true" />
-                Review sent
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                Waiting for the agent’s response.
-              </p>
-            </div>
+            <p role="status" className="flex items-center gap-2 py-1 text-sm">
+              <Check size={16} className="shrink-0 text-green-700 dark:text-green-300" aria-hidden="true" />
+              <span className="min-w-0">
+                <span className="font-medium text-green-700 dark:text-green-300">Review sent</span>
+                <span className="text-muted-foreground"> · Waiting for the agent’s reply</span>
+              </span>
+            </p>
           ) : (
             <Button className="h-11 w-full whitespace-nowrap px-3 disabled:bg-primary disabled:text-primary-foreground/60 disabled:opacity-100" disabled={activeAgentHandoff.disabled} onClick={() => void activeAgentHandoff.send()} aria-busy={activeAgentHandoff.sending}
               aria-describedby={showAgentDisabledHelp ? "agent-review-send-help" : showAgentFolderHelp ? "agent-review-folder-help" : undefined}>
@@ -919,9 +917,9 @@ export function ReviewPanel({
               aria-busy={updateCheck === "checking"}>
               <RefreshCw size={14} aria-hidden="true" className={updateCheck === "checking" ? "animate-spin" : ""} />
               <span className="grid">
-                <span aria-hidden="true" className="invisible" style={{ gridArea: "1 / 1" }}>Check response</span>
+                <span aria-hidden="true" className="invisible" style={{ gridArea: "1 / 1" }}>Check for reply</span>
                 <span aria-live="polite" style={{ gridArea: "1 / 1" }}>
-                  {updateCheck === "checking" ? "Checking…" : updateCheck === "unchanged" ? "No response yet" : updateCheck === "updated" ? "Updates found" : "Check response"}
+                  {updateCheck === "checking" ? "Checking…" : updateCheck === "unchanged" ? "No reply yet" : updateCheck === "updated" ? "Updates found" : "Check for reply"}
                 </span>
               </span>
             </Button>

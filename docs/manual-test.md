@@ -328,13 +328,13 @@ permissions and disk writes require manual verification.
 ### Review update check
 
 - Send a Review and verify the footer shows Review sent, Waiting for the agent’s
-  response, Check response, and Copy as prompt. Agent hasn’t started? and its
+  reply, Check for reply, and Copy as prompt. Agent hasn’t started? and its
   Start a review in your agent link are visible without expanding anything;
   click the link to open setup.
-- At the 360px minimum dock width, verify Check response and Copy as prompt
-  fit on one row without overflowing, including No response yet and copied
+- At the 360px minimum dock width, verify Check for reply and Copy as prompt
+  fit on one row without overflowing, including No reply yet and copied
   feedback. Repeat with a floating panel and in dark mode.
-- Check before the agent replies: No response yet appears briefly. Have the agent
+- Check before the agent replies: No reply yet appears briefly. Have the agent
   address a comment, then check: the reply appears without reloading the document.
 - Have the agent edit the document: checking offers Reload in the bottom-centered document bar without
   replacing the visible text. Reload opens the existing change comparison with Show changes and Done in the same bar.

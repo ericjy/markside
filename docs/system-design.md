@@ -278,6 +278,8 @@ highlighting and diagram rendering resume in clean reading.
 A newly added comment is not selected: its passage highlight and badge already
 mark it, so the panel only plays a brief entrance on its card, scrolling the
 card into view when it falls outside the list.
+Clicking empty space in the comment list, or document text outside a passage
+highlight, clears the selection.
 
 Removed text is excluded from the current document's Review text index, rendered
 clipboard output, and printing. Selecting a removed passage creates a Review

@@ -85,6 +85,9 @@ pull request or review response.
   shifts. On a question card, confirm the buttons are Clarify, Explain, and Example.
 - [ ] Add a Review Note, copy a comment and the full Review, and inspect the
   copied prompts. Reopen the file and confirm the Review persists.
+- [ ] Select a comment, then click empty space in the comment list and document
+  text outside any highlight. Confirm both clear the selection, and clicking a
+  card, button, or field does not.
 - [ ] Drag and resize the Review overlay. Check its position after reloading,
   passage highlights, badges, keyboard movement, and Escape handling.
 - [ ] Change reviewed text externally and confirm copying asks for a reload.

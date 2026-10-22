@@ -2,8 +2,19 @@ import { describe, expect, it } from "vitest"
 import {
   extractHeadings,
   groupHeadings,
+  headingIdFromHash,
   resolveActiveOutlineHeading,
 } from "./headings"
+
+describe("headingIdFromHash", () => {
+  it("decodes percent-encoded heading ids", () => {
+    expect(headingIdFromHash("#%E8%AE%BE%E8%AE%A1-markside")).toBe("设计-markside")
+  })
+
+  it("keeps a malformed hash as written", () => {
+    expect(headingIdFromHash("#100%-done")).toBe("100%-done")
+  })
+})
 
 describe("resolveActiveOutlineHeading", () => {
   const headings = [

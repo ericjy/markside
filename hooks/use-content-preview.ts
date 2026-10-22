@@ -3,7 +3,7 @@ import DOMPurify from "dompurify"
 import React,{ useEffect } from "react"
 import { parseFrontmatter,renderFrontmatterHTML } from "~lib/frontmatter"
 import { applyHeadingNumbers } from "~lib/heading-numbering"
-import { resolveActiveOutlineHeading,type Heading } from "~lib/headings"
+import { headingIdFromHash,resolveActiveOutlineHeading,type Heading } from "~lib/headings"
 import { addDefaultDetailsSummaries,md,mountQuestionCard,type QuestionCard } from "~lib/markdown"
 import {
   resolveModeTransition,
@@ -217,7 +217,7 @@ export function useContentPreview({
     if (isNewFile) {
       renderedFileUrlRef.current = fileUrl
       contentRef.current.closest(".overflow-y-auto")?.scrollTo(0, 0)
-      const hash = window.location.hash.slice(1)
+      const hash = headingIdFromHash(window.location.hash)
       if (hash) {
         setTimeout(
           () =>

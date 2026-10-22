@@ -18,6 +18,35 @@ describe("markdown renderer", () => {
     expect(html).toContain('id="my-heading-here"')
   })
 
+  it("matches GitHub heading ids", () => {
+    const ids = Array.from(
+      md.render([
+        "### Q5. What stays on screen in the mode?",
+        "## 设计一个简单的 Markside 功能",
+        "## 🚀 Launch",
+        "## Use `npm run` now",
+        "## C++ & <kbd>Rust</kbd>",
+        "## a -- b",
+        "## Hello\\_world",
+      ].join("\n\n")).matchAll(/<h\d id="([^"]*)"/g),
+      (match) => match[1],
+    )
+    expect(ids).toEqual([
+      "q5-what-stays-on-screen-in-the-mode",
+      "设计一个简单的-markside-功能",
+      "-launch",
+      "use-npm-run-now",
+      "c--rust",
+      "a----b",
+      "hello_world",
+    ])
+  })
+
+  it("numbers duplicate heading ids like GitHub", () => {
+    const html = md.render("## Notes\n\n## Notes\n\n## Notes 1")
+    expect(Array.from(html.matchAll(/id="([^"]*)"/g), (match) => match[1])).toEqual(["notes", "notes-1", "notes-1-1"])
+  })
+
   it("converts bare URLs to links when linkify is enabled", () => {
     const html = md.render("Visit https://example.com today")
     expect(html).toContain('href="https://example.com"')

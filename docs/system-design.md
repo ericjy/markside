@@ -73,6 +73,12 @@ file:// Markdown page
 → question cards receive answer controls
 ```
 
+Heading IDs match GitHub's, using `github-slugger` on the heading text before
+typographer replacements, so `#anchor` links written for GitHub work in
+Markside. Duplicate headings receive `-1`, `-2`, and so on. Non-ASCII
+characters stay as written, so the location hash is decoded before Markside
+scrolls to a heading on load.
+
 A fenced `question` block renders as a Question Card whose options are its
 answer controls. Its body is parsed as Markdown before inline parsing and heading
 IDs, with source lines mapped back to the document. Legacy `> [!QUESTION]`

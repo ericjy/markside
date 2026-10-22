@@ -6,6 +6,16 @@ export interface Heading {
   level: number
 }
 
+/** Location hashes arrive percent-encoded; heading ids keep non-ASCII characters as written. */
+export function headingIdFromHash(hash: string) {
+  const id = hash.replace(/^#/, "")
+  try {
+    return decodeURIComponent(id)
+  } catch {
+    return id
+  }
+}
+
 export function resolveActiveOutlineHeading(
   headings: Array<{ id: string; top: number }>,
   threshold: number,

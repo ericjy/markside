@@ -1,6 +1,8 @@
 import MarkdownIt from "markdown-it"
 import type StateCore from "markdown-it/lib/rules_core/state_core.mjs"
+import type Token from "markdown-it/lib/token.mjs"
 import anchor from "markdown-it-anchor"
+import { slug as githubSlug } from "github-slugger"
 import footnote from "markdown-it-footnote"
 import katex from "katex"
 
@@ -16,9 +18,29 @@ export const md = new MarkdownIt({
   linkify: true,
   typographer: true
 }).use(footnote).use(anchor, {
+  slugify: githubSlug,
+  getTokensText: (tokens) => headingSlugText.get(tokens) ?? collectHeadingText(tokens),
   permalink: anchor.permalink.linkInsideHeader({
     symbol: "",
     renderAttrs: () => ({ "aria-hidden": "true" })
+  })
+})
+
+// Heading ids follow GitHub, which slugs the text before typographer replacements
+// (`--` stays two hyphens), so capture it before those core rules run.
+const headingSlugText = new WeakMap<Token[], string>()
+
+function collectHeadingText(tokens: Token[]) {
+  return tokens
+    .filter((token) => ["text", "text_special", "code_inline"].includes(token.type))
+    .map((token) => token.content)
+    .join("")
+}
+
+md.core.ruler.before("replacements", "heading_slug_text", (state) => {
+  state.tokens.forEach((token, index) => {
+    const children = state.tokens[index + 1]?.children
+    if (token.type === "heading_open" && children) headingSlugText.set(children, collectHeadingText(children))
   })
 })
 

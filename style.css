@@ -1041,27 +1041,30 @@ button.readability-score-filter {
 }
 
 /* Child selectors outrank the alert's own child spacing. */
-.prose .markdown-alert.markdown-alert-question > table {
+.prose .markdown-alert.markdown-alert-question > .question-comparison {
   margin-top: 1.25rem;
 }
 
-/* The summary's own padding supplies the rest of the 1.25rem section gap. */
+/* Sections sit 2rem apart, about three tile gaps; a hairline sets the comparison apart as supporting detail. */
 .prose .markdown-alert.markdown-alert-question > details {
-  margin-top: 0.5rem;
+  margin-top: 2rem;
   margin-bottom: 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid color-mix(in srgb, var(--markdown-alert-color) 14%, transparent);
 }
 
+/* Section labels are small and quiet, like the Question label, so they don't read as table headers. */
 .prose .markdown-alert-question > details > summary {
   gap: 0.5rem;
   padding: 0.75rem 0;
-  color: hsl(var(--foreground));
-  font-size: 0.9em;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.8em;
   font-weight: 600;
 }
 
 .prose .markdown-alert-question > details {
-  /* Indent the content to the summary text: its 0.9em chevron plus the gap. */
-  padding-left: calc(0.9em + 0.5rem);
+  /* Indent the content to the summary text: its 0.8em chevron plus the gap. */
+  padding-left: calc(0.8em + 0.5rem);
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -1078,6 +1081,7 @@ button.readability-score-filter {
 
 .prose .markdown-alert-question > details > summary:hover {
   background: transparent;
+  color: hsl(var(--foreground));
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
@@ -1087,16 +1091,86 @@ button.readability-score-filter {
   margin-left: 0;
 }
 
-.prose .markdown-alert-question > details > table {
-  display: block;
-  width: 100%;
+.prose .markdown-alert-question > details > .question-comparison {
   margin-top: 0.25rem;
   margin-bottom: 0;
-  overflow-x: auto;
 }
 
-.prose .markdown-alert-question table thead th {
+/* A comparison sits on a white panel like the option tiles, scrolling sideways when narrow. */
+.prose .markdown-alert-question .question-comparison {
+  overflow-x: auto;
+  border: 1px solid var(--question-tile-border);
+  border-radius: 0.625rem;
+  background: var(--question-tile);
+}
+
+.prose .markdown-alert-question .question-comparison table {
+  width: 100%;
+  min-width: 36rem;
+  margin: 0;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.92em;
+  line-height: 1.6;
+}
+
+/* Tailwind Typography borders rows and the header group; the panel draws its own lines. */
+.prose .markdown-alert-question .question-comparison :is(thead, tr) {
+  border: 0;
+}
+
+.prose .markdown-alert-question .question-comparison :is(th, td) {
+  padding: 0.85rem 1.15rem;
+  border: 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+.prose .markdown-alert-question .question-comparison :is(th, td):first-child {
+  width: 32%;
+  color: hsl(var(--muted-foreground));
+}
+
+.prose .markdown-alert-question .question-comparison thead th {
+  padding-block: 0.7rem;
+  border-bottom: 1px solid var(--question-tile-border);
+  background: color-mix(in srgb, hsl(var(--foreground)) 2.5%, transparent);
+  color: hsl(var(--foreground));
   font-weight: 600;
+}
+
+.prose .markdown-alert-question .question-comparison thead th:first-child {
+  font-weight: 500;
+}
+
+.prose .markdown-alert-question .question-comparison tbody tr + tr td {
+  border-top: 1px solid color-mix(in srgb, var(--question-tile-border) 70%, transparent);
+}
+
+.prose .question-column-key {
+  display: inline-grid;
+  place-items: center;
+  width: 1.3rem;
+  height: 1.3rem;
+  margin-right: 0.15rem;
+  border: 1px solid var(--question-tile-border);
+  border-radius: 0.3rem;
+  background: var(--question-tile);
+  color: hsl(var(--muted-foreground));
+  font-size: 0.78em;
+  font-weight: 700;
+  vertical-align: 0.05em;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.prose .question-column-highlight .question-column-key {
+  border-color: var(--markdown-alert-color);
+  background: var(--markdown-alert-color);
+  color: hsl(0 0% 100%);
+}
+
+.dark .prose .question-column-highlight .question-column-key {
+  color: hsl(222 47% 8%);
 }
 
 /* Code reads as code by its font; red would compete with the ✕ ratings. */
@@ -1271,7 +1345,7 @@ button.readability-score-filter {
 
 
 .prose .markdown-alert-question > p.question-recommendation {
-  margin-top: 1.25rem;
+  margin-top: 2rem;
   padding: 0.1rem 0 0.1rem 1rem;
   border-left: 3px solid var(--markdown-alert-color);
 }
@@ -1281,7 +1355,7 @@ button.readability-score-filter {
   display: block;
   margin-bottom: 0.2rem;
   color: var(--markdown-alert-color);
-  font-size: 0.9em;
+  font-size: 0.8em;
   font-weight: 600;
 }
 
@@ -1342,7 +1416,7 @@ button.readability-score-filter {
   transition: opacity 140ms ease, color 140ms ease;
 }
 
-.prose .markdown-alert-question th.question-column-highlight {
+.prose .markdown-alert-question .question-comparison thead th.question-column-highlight {
   color: var(--markdown-alert-color);
 }
 

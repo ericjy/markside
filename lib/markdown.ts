@@ -394,11 +394,28 @@ export function mountQuestionCard(card: HTMLElement): QuestionCard | null {
   }))
   // A comparison column headed "B. …" belongs to option B, so choosing B can highlight it.
   for (const table of card.querySelectorAll("table")) {
+    if (!table.parentElement?.classList.contains("question-comparison")) {
+      const panel = card.ownerDocument.createElement("div")
+      panel.className = "question-comparison"
+      table.replaceWith(panel)
+      panel.append(table)
+    }
     const columns = Array.from(table.rows[0]?.cells ?? [], (cell) => /^([A-Z])\./.exec(cell.textContent?.trim() ?? "")?.[1])
     for (const row of table.rows) {
       Array.from(row.cells).forEach((cell, index) => {
         if (columns[index]) cell.dataset.questionColumn = columns[index]
       })
+    }
+    // Show the header's letter as a key like the options', keeping "B." in the text.
+    for (const cell of table.rows[0]?.cells ?? []) {
+      const text = cell.firstChild
+      const letter = text?.nodeType === Node.TEXT_NODE ? /^\s*([A-Z])\.\s*/.exec(text.textContent ?? "") : null
+      if (!text || !letter || !cell.dataset.questionColumn) continue
+      const key = card.ownerDocument.createElement("span")
+      key.className = "question-column-key"
+      key.innerHTML = `${letter[1]}<span class="question-option-key-dot">.</span>`
+      text.textContent = " " + (text.textContent ?? "").slice(letter[0].length)
+      cell.prepend(key)
     }
   }
   const footerMount = card.ownerDocument.createElement("div")

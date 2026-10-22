@@ -302,6 +302,10 @@ describe("markdown renderer", () => {
     const columns = (row: number) => Array.from(root.querySelectorAll("tr")[row].cells, (cell) => cell.dataset.questionColumn ?? "")
     expect(columns(0)).toEqual(["", "A", "B"])
     expect(columns(1)).toEqual(["", "A", "B"])
+    expect(root.querySelector("table")?.parentElement?.className).toBe("question-comparison")
+    const header = root.querySelectorAll("th")[1]
+    expect(header.querySelector(".question-column-key")?.textContent).toBe("A.")
+    expect(header.textContent).toBe("A. Sibling")
   })
 
   it("offers only free-text answers when a question has no lettered options", () => {

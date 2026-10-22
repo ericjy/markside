@@ -75,8 +75,10 @@ radio option, shows its letter as a key without changing the rendered text, and
 labels option X and the `**Recommended: X.**` paragraph that explains it.
 Leading ✓, △, ✕, and ? symbols in Question Card table cells receive colored
 spans without changing cell text, so copying and Review anchors stay intact.
-Comparison disclosures use a plain heading without a divider or enclosing box,
-keeping supporting information distinct from answer tiles. The
+Comparison disclosures sit below a hairline under a small muted label, and
+each Question Card table is wrapped in a white panel with fixed column widths,
+muted criteria, and its header letters drawn as keys like the options', while
+the cell text stays unchanged for anchoring and copying. The
 interview skill writes `<details open>` so comparisons start expanded and remain
 collapsible; rendering preserves the author's chosen open state. The
 preview then wires the options: clicking one (unless the click ends a text selection or lands on a

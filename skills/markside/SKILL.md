@@ -154,8 +154,11 @@ section only decides how questions are asked and answered.
      to an earlier question, restate what it decided, such as
      `Q3 (the interview doc lives beside the plan)`, never a bare `Q3`.
    - When the choice is visual or structural, such as a layout, flow, or
-     state change, add a small Mermaid diagram to the context. Fence it with
-     `~~~mermaid`, because a backtick fence would close the question fence.
+     state change, add a small Mermaid diagram to the context. It shows the
+     situation being decided, such as what a comment attaches to or how parts
+     connect, not the options or their outcomes, which the options and table
+     already state. Fence it with `~~~mermaid`, because a backtick fence would
+     close the question fence.
    - When shared criteria help compare the options, add a Markdown table
      inside `<details open>` with `<summary>Compare tradeoffs</summary>`, expanded
      by default so it is visible before choosing. Keep it collapsible. Put it

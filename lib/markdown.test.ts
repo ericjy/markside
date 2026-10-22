@@ -188,6 +188,23 @@ describe("markdown renderer", () => {
     expect(root.querySelector(".code-block")).toBeNull()
   })
 
+  it("keeps a context list that merges into the options a plain list", () => {
+    const root = document.createElement("div")
+    root.innerHTML = md.render(question.replace(
+      "### Q3. Where does the doc live?\n",
+      "### Q3. Where does the doc live?\n\n- One context point.\n- Another point.\n",
+    ))
+    const [context, options] = root.querySelectorAll("ul")
+    expect(context.className).toBe("")
+    expect(context.querySelector("p")).toBeNull()
+    expect(context.querySelector("li")?.dataset.sourceLine).toBe("4")
+    expect(context.textContent).toContain("One context point.")
+    expect(options.className).toBe("question-options")
+    expect(options.querySelectorAll("li.question-option")).toHaveLength(2)
+    expect(options.querySelector("p")).toBeNull()
+    expect(root.querySelectorAll("ul.question-options")).toHaveLength(1)
+  })
+
   it("keeps legacy question alerts working", () => {
     const legacy = question.split("\n").slice(1, -1).map((line) => "> " + line).join("\n")
     const root = document.createElement("div")

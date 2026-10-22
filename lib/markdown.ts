@@ -304,10 +304,67 @@ function markQuestionAnswers(state: StateCore, open: number, close: number) {
     }
     options.set(option[1], k - 2)
   }
-  if (!recommendation || !options.has(recommendation.value)) return
-  tokens[open].attrSet("data-question-recommended", recommendation.value)
-  tokens[options.get(recommendation.value)!].attrJoin("class", "question-option-recommended")
-  tokens[recommendation.index - 1].attrJoin("class", "question-recommendation")
+  if (recommendation && options.has(recommendation.value)) {
+    tokens[open].attrSet("data-question-recommended", recommendation.value)
+    tokens[options.get(recommendation.value)!].attrJoin("class", "question-option-recommended")
+    tokens[recommendation.index - 1].attrJoin("class", "question-recommendation")
+  }
+  splitOptionLists(state, open, close)
+}
+
+// A context list separated from the options only by a blank line merges into
+// the options list, so give each run of plain items and options its own list.
+function splitOptionLists(state: StateCore, open: number, close: number) {
+  const { tokens } = state
+  const lines = state.src.split("\n")
+  const blank = (line: number) => /^[\s>]*$/.test(lines[line] ?? "")
+  for (let list = open + 1; list < close; list++) {
+    if (tokens[list].type !== "bullet_list_open" || tokens[list].attrGet("class") !== "question-options") continue
+    const level = tokens[list].level
+    const items: { start: number; end: number; option: boolean }[] = []
+    let end = list + 1
+    for (; tokens[end].type !== "bullet_list_close" || tokens[end].level !== level; end++) {
+      if (tokens[end].type === "list_item_open" && tokens[end].level === level + 1) {
+        items.push({ start: end, end, option: tokens[end].attrGet("data-question-option") !== null })
+      }
+      if (tokens[end].type === "list_item_close" && tokens[end].level === level + 1) items.at(-1)!.end = end
+    }
+    if (items.every((item) => item.option)) continue
+
+    const runs: (typeof items)[] = []
+    for (const item of items) {
+      if (runs.at(-1)?.[0].option === item.option) runs.at(-1)!.push(item)
+      else runs.push([item])
+    }
+    const loose = !tokens[items[0].start + 1].hidden
+    const replacement = runs.flatMap((run) => {
+      const body = tokens.slice(run[0].start, run.at(-1)!.end + 1)
+      const first = body[0].map![0]
+      // Item and list maps include trailing blank lines, so measure their content.
+      const last = Math.max(...body.filter((token) => !/list/.test(token.type)).map((token) => token.map?.[1] ?? first))
+      if (loose && !lines.slice(first, last).some((_, line) => blank(first + line))) {
+        for (const token of body) {
+          if (token.level === level + 2 && token.type.startsWith("paragraph_")) token.hidden = true
+        }
+      }
+      const listOpen = new state.Token("bullet_list_open", "ul", 1)
+      const listClose = new state.Token("bullet_list_close", "ul", -1)
+      for (const token of [listOpen, listClose]) {
+        token.block = true
+        token.level = level
+        token.markup = tokens[list].markup
+      }
+      listOpen.map = [first, last]
+      if (run[0].option) {
+        listOpen.attrSet("class", "question-options")
+        listOpen.attrSet("role", "radiogroup")
+      }
+      return [listOpen, ...body, listClose]
+    })
+    tokens.splice(list, end - list + 1, ...replacement)
+    close += replacement.length - (end - list + 1)
+    list += replacement.length - 1
+  }
 }
 
 export function hasQuestionCard(markdown: string) {

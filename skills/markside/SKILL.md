@@ -237,9 +237,19 @@ section only decides how questions are asked and answered.
    you read each answer given in their own words, details you inferred or
    combined across questions that no question decided, assumed decisions
    labeled as yours, and open questions labeled as open. Do not restate
-   decisions made by choosing an option. End with one line asking the user
-   to click **Finish review** if this matches their understanding; when there
-   is nothing to list, that line is the whole section. With no current questions left, rename
+   decisions made by choosing an option. Open with one line saying what the
+   bullets are and what to do, such as `I decided these details without
+   asking you. Comment on any you'd change, or click **Finish review** if
+   they match your understanding.` When the bullets mix sources, start each
+   with a bold label such as `**Q2, your answer:**`, `**Inferred:**`,
+   `**Assumed (Q5):**`, or `**Open (Q6):**`, and word the opening line to
+   cover them; when they share one source, the opening line names it and the
+   bullets go unlabeled. State each outcome in one or two short sentences in
+   the words the user sees in the product. Say what will happen, not how you
+   read it; leave out reasons, implementation terms, and long lists of
+   exclusions. When the outcome is that something does not happen, say so
+   plainly. When there is nothing to list, the section is one line asking the
+   user to click **Finish review**. With no current questions left, rename
    Previous questions to `## Question history` and remove the answer line
    below the title. If a later comment reopens a question, restore both
    headings and the answer line, and ask it as a card. Finishing confirms shared

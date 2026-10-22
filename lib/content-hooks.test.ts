@@ -6,6 +6,7 @@ import { act,useState,type RefObject } from "react"
 import { afterEach,beforeEach,describe,expect,it,vi } from "vitest"
 
 import { useContentPreferences } from "../hooks/use-content-preferences"
+import { useActiveReview } from "../hooks/use-active-review"
 import { useContentReadability } from "../hooks/use-content-readability"
 import { useContentReload } from "../hooks/use-content-reload"
 import {
@@ -66,6 +67,23 @@ afterEach(() => {
   vi.clearAllMocks()
   vi.useRealTimers()
   document.documentElement.className = ""
+})
+
+describe("file tree Review counts", () => {
+  it("uses pending document counts and removes badges when Reviews leave the index", async () => {
+    const entry = { kind: "document", key: FILE_A, label: "a.md", detail: "/docs", itemCount: 1, updatedAt: "now" }
+    const storage = stubChromeStorage({ reviewIndex: [entry, { ...entry, kind: "localhost", key: "http://localhost:3000", itemCount: 10 }] })
+    const hook = renderHook(() => useActiveReview(FILE_A, false), null)
+    await flush()
+    expect(hook.result.current.reviewCounts).toEqual({ [FILE_A]: 1 })
+
+    await act(() => storage.set({ reviewIndex: [] }))
+    expect(hook.result.current.reviewCounts).toEqual({})
+
+    await act(() => storage.set({ reviewIndex: [{ ...entry, itemCount: 2 }] }))
+    expect(hook.result.current.reviewCounts).toEqual({ [FILE_A]: 2 })
+    hook.unmount()
+  })
 })
 
 describe("useContentPreferences", () => {

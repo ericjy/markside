@@ -3,10 +3,11 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import {
   ACTIVE_REVIEW_CHANNEL,
   getActiveReview,
-  getActiveReviews,
   mutateActiveReview,
 } from "~lib/db"
 import { getReviewItemCount, type ActiveReview } from "~lib/review"
+import { documentReviewEntries, resolveReviewIndex, REVIEW_INDEX_KEY } from "~lib/review-index"
+import { readReviewIndex } from "~lib/review-index-storage"
 
 export function useActiveReview(sourceUrl: string, enabled: boolean) {
   const [review, setReview] = useState<ActiveReview | null>(null)
@@ -23,13 +24,20 @@ export function useActiveReview(sourceUrl: string, enabled: boolean) {
   reviewRef.current = review
   sourceUrlRef.current = sourceUrl
 
-  const refreshCounts = useCallback(async () => {
-    const reviews = await getActiveReviews()
-    setReviewCounts(Object.fromEntries(
-      reviews
-        .map((item) => [item.sourceUrl, getReviewItemCount(item)] as const)
-        .filter(([, count]) => count > 0),
+  useEffect(() => {
+    let active = true
+    const updateCounts = (value: unknown) => setReviewCounts(Object.fromEntries(
+      documentReviewEntries(resolveReviewIndex(value)).map((entry) => [entry.key, entry.itemCount]),
     ))
+    void readReviewIndex().then((entries) => { if (active) updateCounts(entries) })
+    const onChange = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+      if (area === "local" && changes[REVIEW_INDEX_KEY]) updateCounts(changes[REVIEW_INDEX_KEY].newValue)
+    }
+    chrome.storage.onChanged.addListener(onChange)
+    return () => {
+      active = false
+      chrome.storage.onChanged.removeListener(onChange)
+    }
   }, [])
 
   const load = useCallback(async () => {
@@ -51,7 +59,6 @@ export function useActiveReview(sourceUrl: string, enabled: boolean) {
       setLoadedUrl(sourceUrl)
       setPersistenceError(false)
       persistenceErrorRef.current = false
-      await refreshCounts()
     } catch {
       if (sequence === loadSequenceRef.current) {
         setLoadedUrl(sourceUrl)
@@ -59,7 +66,7 @@ export function useActiveReview(sourceUrl: string, enabled: boolean) {
         persistenceErrorRef.current = true
       }
     }
-  }, [enabled, refreshCounts, sourceUrl])
+  }, [enabled, sourceUrl])
 
   useEffect(() => {
     setReview(null)
@@ -74,7 +81,6 @@ export function useActiveReview(sourceUrl: string, enabled: boolean) {
     const channel = new BroadcastChannel(ACTIVE_REVIEW_CHANNEL)
     channel.onmessage = (event: MessageEvent<{ sourceUrl?: string }>) => {
       if (!event.data.sourceUrl || event.data.sourceUrl === sourceUrl) void load()
-      else void refreshCounts()
     }
     const refreshOnFocus = () => void load()
     window.addEventListener("focus", refreshOnFocus)
@@ -82,7 +88,7 @@ export function useActiveReview(sourceUrl: string, enabled: boolean) {
       channel.close()
       window.removeEventListener("focus", refreshOnFocus)
     }
-  }, [load, refreshCounts, sourceUrl])
+  }, [load, sourceUrl])
 
   useEffect(() => {
     const warnIfUnpersisted = (event: BeforeUnloadEvent) => {
@@ -106,13 +112,6 @@ export function useActiveReview(sourceUrl: string, enabled: boolean) {
     const next = mutate(reviewRef.current)
     setReview(next)
     reviewRef.current = next
-    setReviewCounts((current) => {
-      const updated = { ...current }
-      const count = next ? getReviewItemCount(next) : 0
-      if (count > 0) updated[sourceUrl] = count
-      else delete updated[sourceUrl]
-      return updated
-      })
     persistQueueRef.current = persistQueueRef.current
       .then(async () => {
         const pending = pendingMutationsByUrlRef.current.get(sourceUrl)
@@ -130,13 +129,6 @@ export function useActiveReview(sourceUrl: string, enabled: boolean) {
         ) {
           setReview(stored)
           reviewRef.current = stored
-          setReviewCounts((current) => {
-            const updated = { ...current }
-            const count = stored ? getReviewItemCount(stored) : 0
-            if (count > 0) updated[sourceUrl] = count
-            else delete updated[sourceUrl]
-            return updated
-          })
         }
         if (sourceUrlRef.current === sourceUrl) {
           setPersistenceError(false)

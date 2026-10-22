@@ -716,7 +716,7 @@ export function FileRenderer({
         reauthorize={reauthorize}
         folderError={folderError}
         onOpenPalette={() => setPaletteOpen(true)}
-        reviewCounts={reviewCounts}
+        reviewCounts={{ ...reviewCounts, [fileUrl]: pendingReviewItemCount }}
       />
       <SidebarInset ref={sidebarInsetRef} className="relative h-svh overflow-hidden">
       <ContentToolbar

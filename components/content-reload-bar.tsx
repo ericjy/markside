@@ -34,12 +34,12 @@ export function ContentReloadBar({
   // Matches the Review panel: an agent Review clears only unsent drafts.
   const canClear = agentReviewFile ? hasReviewDrafts(review, agentReviewFile) : !!review
   return (
-    <div aria-label="Document changes" className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-3 rounded-xl border bg-background px-3 py-2 text-foreground shadow-lg">
+    <div aria-label="Document changes" className={`pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-2 rounded-xl border bg-background px-2 py-2 text-[13px] text-foreground shadow-sm${diskChanged ? " reload-notice-enter" : ""}`}>
       {diskChanged ? (
         <>
-          <span role="status" className="text-xs text-muted-foreground">Document changed on disk</span>
-          <Button size="sm" onClick={requestReloadFromDisk} disabled={disabled || reloadLoading}>
-            <RefreshCw size={14} className={reloadLoading ? "animate-spin" : ""} aria-hidden="true" />
+          <span role="status" className="px-1">File changed on disk</span>
+          <Button size="sm" className="h-8 text-[13px]" onClick={requestReloadFromDisk} disabled={disabled || reloadLoading}>
+            {reloadLoading && <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />}
             {reloadLoading ? "Reloading…" : "Reload"}
           </Button>
         </>

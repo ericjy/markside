@@ -21,11 +21,11 @@ it("keeps Reload and comparison controls in one surface and uses the protected r
   }
   try {
     act(() => root.render(createElement(ContentReloadBar, props)))
-    expect(container.textContent).toContain("Document changed on disk")
+    expect(container.textContent).toContain("File changed on disk")
     act(() => container.querySelector("button")!.click())
     expect(props.requestReloadFromDisk).toHaveBeenCalledOnce()
     act(() => root.render(createElement(ContentReloadBar, { ...props, diskChanged: false, hasReloadChanges: true })))
-    expect(container.textContent).not.toContain("Document changed on disk")
+    expect(container.textContent).not.toContain("File changed on disk")
     act(() => container.querySelector<HTMLInputElement>('input[type="checkbox"]')!.click())
     expect(props.closeSelectionComposer).toHaveBeenCalledOnce()
     expect(props.setShowChanges).toHaveBeenCalledWith(true)

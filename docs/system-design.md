@@ -149,8 +149,9 @@ A blockquote starting with **Your decision**, **Assumed decision**,
 archived question, renders as a callout rather than a quotation: teal for the
 reviewer's decision, amber for the agent's assumed one, and gray otherwise.
 
-The file actions (`…`) menu includes a **Page width** group with mutually
-exclusive **Narrow** (48rem), **Standard** (64rem), and **Full width** (no maximum)
+The file actions (`…`) menu includes a **Page width** row showing the current
+choice. Its submenu provides mutually exclusive **Narrow** (48rem),
+**Standard** (64rem), and **Full width** (no maximum)
 choices for Preview, including Split Preview. Available space can constrain each
 width further; type size and side spacing stay unchanged. The choice persists in
 `chrome.storage.local` as `previewWidth`. If no valid choice exists, Markside
@@ -209,7 +210,7 @@ Markdown files support Preview, Source, and Split. Non-Markdown text files use S
 
 Source defaults to full width for all text files, including Markdown. Its width
 control is in the Source options menu alongside Word wrap and Copy. Preview defaults to column width and has its
-own Page width group in the file actions menu, present only when Preview is shown.
+own Page width submenu in the file actions menu, present only when Preview is shown.
 Both choices persist independently across reloads and files, including in Split
 mode. The Split divider persists separately: releasing a drag, or a keyboard
 adjustment, stores the position for the next load.

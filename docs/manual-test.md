@@ -31,8 +31,11 @@ pull request or review response.
   `<1 min read`, `1 min read`, and `2 min read` respectively.
 - [ ] Resize the Split divider with the pointer and keyboard. Reload and check
   that the saved divider and mode return. Test independent pane width controls.
-- [ ] In Preview and Split, open file actions and select Page width: Narrow,
-  Standard, and Full width. Only one is checked. With enough room, Narrow caps
+- [ ] In Preview and Split, file actions has one Page width row showing the
+  current choice. Open its submenu with the pointer or Right arrow, then select
+  Narrow, Standard, or Full width. Only one is checked; Left arrow returns to
+  the parent menu. After selection, reopening shows the updated choice on the
+  parent row. With enough room, Narrow caps
   the body at 48rem and Standard at 64rem; Full width fills the available area.
   Narrow windows and docked Review still fit the body to the available space.
   Headings, paragraphs, tables, code, and images reflow without changing type size

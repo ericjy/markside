@@ -76,6 +76,14 @@ it.each(["preview", "split"] as const)("selects and remembers one Page width in 
   try {
     act(() => root.render(createElement(SidebarProvider, null, createElement(Toolbar))))
     openMenu()
+    expect(document.querySelectorAll('[role="menuitemradio"]')).toHaveLength(0)
+    const openWidths = () => act(() => {
+      const trigger = document.querySelector<HTMLElement>('[role="menuitem"][aria-haspopup="menu"]')!
+      expect(trigger.textContent).toContain("Page width")
+      trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }))
+    })
+    expect(document.querySelector('[role="menuitem"][aria-haspopup="menu"]')?.textContent).toContain("Standard")
+    openWidths()
     let items = Array.from(document.querySelectorAll<HTMLElement>('[role="menuitemradio"]'))
     expect(items.map(item => item.textContent)).toEqual(["Narrow", "Standard", "Full width"])
     expect(items.filter(item => item.getAttribute("aria-checked") === "true").map(item => item.textContent)).toEqual(["Standard"])
@@ -84,6 +92,8 @@ it.each(["preview", "split"] as const)("selects and remembers one Page width in 
     expect(await getPaneWidthPreferences()).toEqual({ previewWidth: "narrow", sourceFullWidth: false })
 
     openMenu()
+    expect(document.querySelector('[role="menuitem"][aria-haspopup="menu"]')?.textContent).toContain("Narrow")
+    openWidths()
     items = Array.from(document.querySelectorAll<HTMLElement>('[role="menuitemradio"]'))
     expect(items.filter(item => item.getAttribute("aria-checked") === "true").map(item => item.textContent)).toEqual(["Narrow"])
   } finally {

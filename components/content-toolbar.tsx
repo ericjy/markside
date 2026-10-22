@@ -2,6 +2,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import {
   BookOpen,
   Check,
+  ChevronRight,
   Columns2,
   Copy,
   Eye,
@@ -410,33 +411,42 @@ export function ContentToolbar({
                 style={{ minWidth: "11rem", zIndex: 100000 }}
                 className="rounded-md border bg-background p-1 text-foreground shadow-md">
                 {isMdFile && previewVisible && (
-                  <>
-                    <DropdownMenu.Label className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                  <DropdownMenu.Sub>
+                    <DropdownMenu.SubTrigger className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent">
                       <MoveHorizontal size={14} className="w-3.5 shrink-0" />
                       Page width
-                    </DropdownMenu.Label>
-                    <DropdownMenu.RadioGroup value={previewWidth} aria-label="Page width"
-                      onValueChange={(value) => {
-                        const width = value as PreviewWidth
-                        setPreviewWidth(width)
-                        void setPreviewWidthPreference(width).catch(() => undefined)
-                      }}>
-                      {([
-                        ["narrow", "Narrow"],
-                        ["standard", "Standard"],
-                        ["full", "Full width"],
-                      ] as const).map(([width, label]) => (
-                        <DropdownMenu.RadioItem key={width} value={width}
-                          className="flex cursor-pointer select-none items-center gap-2 rounded-sm py-1.5 pl-7 pr-2 text-sm outline-none focus:bg-accent">
-                          {label}
-                          <span className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center">
-                            <DropdownMenu.ItemIndicator><Check size={13} strokeWidth={2.5} /></DropdownMenu.ItemIndicator>
-                          </span>
-                        </DropdownMenu.RadioItem>
-                      ))}
-                    </DropdownMenu.RadioGroup>
-                    <DropdownMenu.Separator className="my-1 h-px bg-border" />
-                  </>
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        {previewWidth === "narrow" ? "Narrow" : previewWidth === "standard" ? "Standard" : "Full width"}
+                      </span>
+                      <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
+                    </DropdownMenu.SubTrigger>
+                    <DropdownMenu.Portal>
+                      <DropdownMenu.SubContent sideOffset={4} alignOffset={-4}
+                        style={{ minWidth: "10rem", zIndex: 100000 }}
+                        className="rounded-md border bg-background p-1 text-foreground shadow-md">
+                        <DropdownMenu.RadioGroup value={previewWidth} aria-label="Page width"
+                          onValueChange={(value) => {
+                            const width = value as PreviewWidth
+                            setPreviewWidth(width)
+                            void setPreviewWidthPreference(width).catch(() => undefined)
+                          }}>
+                          {([
+                            ["narrow", "Narrow"],
+                            ["standard", "Standard"],
+                            ["full", "Full width"],
+                          ] as const).map(([width, label]) => (
+                            <DropdownMenu.RadioItem key={width} value={width}
+                              className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent">
+                              {label}
+                              <span className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center">
+                                <DropdownMenu.ItemIndicator><Check size={13} strokeWidth={2.5} /></DropdownMenu.ItemIndicator>
+                              </span>
+                            </DropdownMenu.RadioItem>
+                          ))}
+                        </DropdownMenu.RadioGroup>
+                      </DropdownMenu.SubContent>
+                    </DropdownMenu.Portal>
+                  </DropdownMenu.Sub>
                 )}
                 {isMdFile && previewVisible && (
                   <DropdownMenu.CheckboxItem checked={numberHeadings}

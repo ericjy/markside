@@ -175,7 +175,9 @@ export function getPendingReviewItemCount(review: ActiveReview, file?: AgentRevi
   const comments = current.comments.filter((comment) =>
     getReviewCommentStatus(comment, file?.comments.find(({ id }) => id === comment.id)) !== "Resolved"
   )
-  // A Review Note belongs to its comments, so it is not pending once they are all resolved.
-  const note = comments.length > 0 || current.comments.length === 0 ? current.note : ""
+  // A Review Note belongs to its comments, so it is not pending once they are all resolved,
+  // nor once the reviewer finishes a note-only Review without editing the note.
+  const noteResolved = file?.status === "resolved" && current.note === (file.note ?? "")
+  const note = !noteResolved && (comments.length > 0 || current.comments.length === 0) ? current.note : ""
   return getReviewItemCount({ ...current, comments, note })
 }

@@ -91,6 +91,11 @@ describe("pending Review item count", () => {
     expect(getPendingReviewItemCount(review, { ...sent, comments: [{ ...sent.comments[0], status: "addressed" }] })).toBe(2)
     expect(getPendingReviewItemCount(review, { ...sent, status: "resolved", comments: [{ ...sent.comments[0], status: "resolved" }] })).toBe(0)
     expect(getPendingReviewItemCount({ ...review, comments: [] })).toBe(1)
+    const noteOnly = { ...review, comments: [] }
+    const sentNote = prepareAgentReview(pending, noteOnly, "a".repeat(64), () => null)
+    expect(getPendingReviewItemCount(noteOnly, sentNote)).toBe(1)
+    expect(getPendingReviewItemCount(noteOnly, { ...sentNote, status: "resolved", noteStatus: "addressed" })).toBe(0)
+    expect(getPendingReviewItemCount({ ...noteOnly, note: "Edited" }, { ...sentNote, status: "resolved", noteStatus: "addressed" })).toBe(1)
   })
 })
 

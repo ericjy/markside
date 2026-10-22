@@ -408,7 +408,7 @@ export function ContentView({
                         <Quote className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                         <p className="line-clamp-3">{selectionAction.anchor.exact}</p>
                       </div>
-                      <div className="mt-2 flex gap-1.5">
+                      <div className="mt-2 flex flex-wrap gap-1.5">
                         {(selectionAction.question ? QUESTION_QUICK_PRESETS : COMPOSER_QUICK_PRESETS).map((preset) => (
                           <Tooltip key={preset.id}>
                             <TooltipTrigger asChild>

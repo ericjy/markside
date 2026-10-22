@@ -76,8 +76,11 @@ keep it when the interview ends. Each question is a fenced
 `question` block, which appears as a card. The recommended option is labeled,
 with the agent's reasoning below the options.
 Click an option, or press its letter, to make it your answer; choose another to
-change it, or use the **Write your own answer or ask for clarification…** tile below the options.
-That tile is marked selected after you save a custom answer. If the question or
+change it, or use the **Answer in your own words, ask, skip, or stop…** tile below the options.
+That tile is marked selected and shows your text after you save a custom answer.
+Its presets let you skip the question, ask for fewer questions (the agent records
+obvious decisions under Assumed defaults, which you can veto by commenting), or
+stop the interview. If the question or
 its options are unclear, ask there instead; the agent rewrites the question and
 keeps it current. You can also select any text in the card to comment on it. Then click **Send review
 to agent**, or press Cmd/Ctrl+Shift+Enter. The agent records your decision and writes the next

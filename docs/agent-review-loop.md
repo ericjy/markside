@@ -82,7 +82,7 @@ the quote identifies the passage.
 
 A Question Card answer is an ordinary comment: `quote` is the question's
 heading and `body` is the chosen option letter, such as `B`, or the user's own
-text from Write your own answer or ask for clarification…, which may instead ask about the question.
+text from Answer in your own words, ask, skip, or stop…, which may instead ask about the question.
 
 Comment status is `open`, `addressed`, or `resolved`. The agent uses
 `markside address <file> <id> --reply "..."` to mark its work Addressed and record

@@ -92,7 +92,13 @@ questions are asked and answered.
    `<topic>.grill.md` at the repository root, with a short kebab-case topic.
    Leave the subject file unchanged during the interview.
 2. Lay it out as a title, one line explaining how to answer, then
-   `## Current question` followed by `## Answered questions`. When continuing
+   `## Current question`, `## Assumed defaults`, and `## Answered questions`.
+   The answer line says the user can pick an option or use the tile to answer
+   in their own words, ask, skip, ask for fewer questions, or stop. Under
+   Assumed defaults, list as one-line bullets the decisions you settled
+   yourself because the answer is obvious from context and cheap to reverse;
+   the user vetoes one by commenting on it. Leave the section empty until
+   there is one. When continuing
    from chat, copy the original questions and options already answered under
    Answered questions, including their context, tradeoffs, and recommendations.
    Do not replace them with summaries. If the original text is unavailable,
@@ -152,7 +158,7 @@ questions are asked and answered.
      table rather than a long recommendation paragraph. Markside labels the
      recommended option separately from the user's selected answer.
 4. Run the Review workflow above on the interview doc. Tell the user to click
-   an option (or press its letter), or click **Write your own answer or ask for clarification…**,
+   an option (or press its letter), or click **Answer in your own words, ask, skip, or stop…**,
    then click **Send review to agent**. Markside supplies the custom-answer
    tile after the options and the keyboard hints at the top of the card; do not write those controls
    into the Markdown. Clicking that tile opens the composer; saving a custom
@@ -173,10 +179,18 @@ questions are asked and answered.
    question in place, keeping its number and heading so the answer still
    anchors, address the comment with a one-line reply naming what changed, and
    continue the Review. If it asks to skip or defer the question, archive it as
-   above with `> **Deferred.**` instead of a decision and move on. If it asks to
-   stop, go to step 6 with the decisions made so far.
+   above with `> **Deferred.**` instead of a decision and move on. If it asks
+   for fewer questions, add `Focus: fewer questions (asked at Q<n>).` below
+   the answer line and keep to it for the rest of the interview: ask only
+   decisions that are costly to reverse or where reasonable people would
+   disagree, and move the rest to Assumed defaults, including the current
+   question when it falls below that bar (archive it with
+   `> **Moved to Assumed defaults.**`). If a comment on an assumed default
+   vetoes or questions it, remove the bullet and ask it as the next question.
+   If it asks to stop, go to step 6 with the decisions made so far.
 6. When no questions remain or the user asks to stop, replace Current question with `## Summary`: the
-   decisions as short bullets, then ask the user to click **Finish review** if
+   decisions as short bullets, followed by the remaining Assumed defaults
+   labeled as yours, then ask the user to click **Finish review** if
    it matches their understanding. Finishing is the confirmation of shared
    understanding. Do not act on the decisions before `Review resolved`.
 7. After the Review is resolved, follow the questioning skill for durable

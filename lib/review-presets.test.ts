@@ -60,11 +60,14 @@ describe("Review Comment presets", () => {
       "humanize",
       "verify",
     ])
-    expect(QUESTION_QUICK_PRESETS.map(({ id }) => id)).toEqual([
-      "clarify",
-      "explain",
-      "example",
+    expect(QUESTION_QUICK_PRESETS.map(({ id, chip }) => ({ id, chip }))).toEqual([
+      { id: "clarify", chip: "Clarify" },
+      { id: "example", chip: "Example" },
+      { id: "skip", chip: "Skip" },
+      { id: "fewer", chip: "Fewer questions" },
+      { id: "stop", chip: "Stop" },
     ])
+    expect(searchReviewPresets("skip")).toEqual([])
     expect(REVIEW_PRESETS.find(({ id }) => id === "humanize")?.instruction).toBe(
       "Rewrite this in a natural, distinctive voice. Remove common AI-writing patterns: contrived contrasts (“It’s not X. It’s Y.”), forced punchiness, unnecessary bullet lists, and overused em dashes. Preserve the meaning and intended tone.",
     )

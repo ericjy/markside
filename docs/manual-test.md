@@ -155,7 +155,7 @@ pull request or review response.
   background, border, and letter key as the other options. The Recommended
   paragraph has a smaller heading
   and no thumbs-up icon in its own box below
-  the options, with no send button. Write your own answer or ask for clarification… is a quieter tile
+  the options, with no send button. Answer in your own words, ask, skip, or stop… is a quieter tile
   directly after the options, before Compare tradeoffs and the recommendation;
   keyboard hints sit at the top right and wrap below the Question label on
   narrow screens. Select and copy an option's text: the copy reads "A. Title. …" and
@@ -170,9 +170,11 @@ pull request or review response.
   choose. Press Cmd/Ctrl+Shift+Enter: the agent receives the answer and its
   Review card shows Sent. Choose a different option before the agent replies;
   the comment returns to Draft until sent again.
-  Choose Write your own answer or ask for clarification… and confirm the composer opens on the heading
-  with the placeholder "Your answer, what’s unclear, or anything else — skip, combine options, push back" without selecting the tile. Save a free-text answer: its tile gains the teal
-  selected state and all lettered options are unchecked. Choose a lettered
+  Choose Answer in your own words, ask, skip, or stop… and confirm the composer opens on the heading
+  with the placeholder "Your answer, what’s unclear, or anything else — skip, combine options, push back" without selecting the tile, and that its quick presets read Clarify, Example,
+  Skip, Fewer questions, and Stop on one row. Click Skip: its text is inserted,
+  not saved. Save a free-text answer: its tile gains the teal
+  selected state, shows the saved text below its label, and all lettered options are unchecked. Choose a lettered
   option and confirm the custom tile becomes neutral again. Send a custom
   answer. Print the document and confirm the buttons are absent. In a
   Review with no agent, an option adds a local comment.

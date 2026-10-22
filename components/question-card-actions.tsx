@@ -113,8 +113,9 @@ export function QuestionCardActions({ card, answer, busy, composing, keyboard, o
           }}>
           <strong>
             <span className="question-option-key"><Pencil aria-hidden="true" /></span>
-            Write your own answer or ask for clarification…
+            Answer in your own words, ask, skip, or stop…
           </strong>
+          {customChosen && <span className="question-custom-answer-text">{chosen}</span>}
         </button>,
         card.composeMount,
       )}

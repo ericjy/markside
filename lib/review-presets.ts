@@ -194,11 +194,32 @@ export const COMPOSER_QUICK_PRESETS = [
   "verify",
 ].map((id) => REVIEW_PRESETS.find((preset) => preset.id === id)!)
 
+// Interview replies steer the questioning skill, so they appear only on Question Cards, not in the catalog.
+const INTERVIEW_PRESETS = [
+  {
+    id: "skip",
+    chip: "Skip",
+    name: "Skip for now",
+    instruction: "Skip this question for now. Record it as deferred and move on.",
+  },
+  {
+    id: "fewer",
+    chip: "Fewer questions",
+    name: "Ask only high-value questions",
+    instruction: "Ask fewer questions from now on: only decisions that are costly to reverse or where reasonable people would disagree. Record the rest as assumed defaults I can veto. If this question doesn't meet that bar, move it to Assumed defaults too.",
+  },
+  {
+    id: "stop",
+    chip: "Stop",
+    name: "Stop the interview here",
+    instruction: "Stop the interview here and summarize the decisions so far.",
+  },
+] as const satisfies readonly Omit<ReviewPreset, "group" | "aliases">[]
+
 export const QUESTION_QUICK_PRESETS = [
-  "clarify",
-  "explain",
-  "example",
-].map((id) => REVIEW_PRESETS.find((preset) => preset.id === id)!)
+  ...["clarify", "example"].map((id) => REVIEW_PRESETS.find((preset) => preset.id === id)!),
+  ...INTERVIEW_PRESETS,
+]
 
 function normalizeSearch(value: string) {
   return value.toLocaleLowerCase().replace(/\s+/g, " ").trim()

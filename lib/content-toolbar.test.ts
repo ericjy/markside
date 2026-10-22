@@ -4,8 +4,10 @@ import { createRoot } from "react-dom/client"
 import { expect, it, vi } from "vitest"
 import { ContentToolbar } from "../components/content-toolbar"
 import { SidebarProvider } from "../components/ui/sidebar"
-import { stubChromeStorage, stubMatchMedia } from "./test-harness"
+import { flush, stubChromeStorage, stubMatchMedia } from "./test-harness"
 import { getPaneWidthPreferences } from "./markdown-mode"
+import { getTypeface, TYPEFACES } from "./typeface"
+import { useContentPreferences } from "../hooks/use-content-preferences"
 
 function toolbarProps(): ComponentProps<typeof ContentToolbar> {
   const noop = vi.fn()
@@ -20,7 +22,7 @@ function toolbarProps(): ComponentProps<typeof ContentToolbar> {
     reviewTriggerRef: { current: null }, reviewOverlayOpen: false, closeReviewOverlay: noop,
     setReviewOverlayOpen: noop, reviewItemCount: 2, chooseOutlineOpen: noop, outlineOpen: false,
     requestLinkSnapshot: noop, fileMenuTriggerRef: { current: null }, fileMenuPointerInteractionRef: { current: false },
-    previewWidth: "standard", setPreviewWidth: noop, numberHeadings: false, setNumberHeadings: noop,
+    typeface: "sans", previewWidth: "standard", setPreviewWidth: noop, numberHeadings: false, setNumberHeadings: noop,
     readabilityControlsVisible: false, setReadabilityControlsVisible: noop, copyRenderedPreview: async () => {},
     isPdfExportable: true, requestPdfExport: noop,
   }
@@ -77,12 +79,12 @@ it.each(["preview", "split"] as const)("selects and remembers one Page width in 
     act(() => root.render(createElement(SidebarProvider, null, createElement(Toolbar))))
     openMenu()
     expect(document.querySelectorAll('[role="menuitemradio"]')).toHaveLength(0)
+    const widthTrigger = () => Array.from(document.querySelectorAll<HTMLElement>('[role="menuitem"][aria-haspopup="menu"]'))
+      .find(item => item.textContent?.startsWith("Page width"))!
     const openWidths = () => act(() => {
-      const trigger = document.querySelector<HTMLElement>('[role="menuitem"][aria-haspopup="menu"]')!
-      expect(trigger.textContent).toContain("Page width")
-      trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }))
+      widthTrigger().dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }))
     })
-    expect(document.querySelector('[role="menuitem"][aria-haspopup="menu"]')?.textContent).toContain("Standard")
+    expect(widthTrigger().textContent).toContain("Standard")
     openWidths()
     let items = Array.from(document.querySelectorAll<HTMLElement>('[role="menuitemradio"]'))
     expect(items.map(item => item.textContent)).toEqual(["Narrow", "Standard", "Full width"])
@@ -92,13 +94,57 @@ it.each(["preview", "split"] as const)("selects and remembers one Page width in 
     expect(await getPaneWidthPreferences()).toEqual({ previewWidth: "narrow", sourceFullWidth: false })
 
     openMenu()
-    expect(document.querySelector('[role="menuitem"][aria-haspopup="menu"]')?.textContent).toContain("Narrow")
+    expect(widthTrigger().textContent).toContain("Narrow")
     openWidths()
     items = Array.from(document.querySelectorAll<HTMLElement>('[role="menuitemradio"]'))
     expect(items.filter(item => item.getAttribute("aria-checked") === "true").map(item => item.textContent)).toEqual(["Narrow"])
   } finally {
     act(() => root.unmount())
     container.remove()
+    vi.unstubAllGlobals()
+  }
+})
+
+
+it("restores Typeface in the file menu, applies a selection, and follows other tabs", async () => {
+  stubMatchMedia(false)
+  const storage = stubChromeStorage({ typeface: "charter", previewWidth: "narrow", sourceFullWidth: false })
+  const props = toolbarProps()
+  function Toolbar() {
+    const { typeface } = useContentPreferences(false)
+    return createElement(ContentToolbar, { ...props, typeface })
+  }
+  const container = document.createElement("div")
+  document.body.append(container)
+  const root = createRoot(container)
+  const openMenu = () => act(() => {
+    container.querySelector<HTMLButtonElement>('[aria-label="File actions"]')!
+      .dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
+  })
+  const typefaceTrigger = () => Array.from(document.querySelectorAll<HTMLElement>('[role="menuitem"][aria-haspopup="menu"]'))
+    .find(item => item.textContent?.startsWith("Typeface"))!
+  try {
+    act(() => root.render(createElement(SidebarProvider, null, createElement(Toolbar))))
+    await flush()
+    openMenu()
+    expect(typefaceTrigger()?.textContent).toContain("Charter")
+    act(() => typefaceTrigger().dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true })))
+    const items = Array.from(document.querySelectorAll<HTMLElement>('[role="menuitemradio"]'))
+    expect(items.map(item => item.textContent)).toEqual(["Sans", "Serif", "Charter", "Iowan", "Avenir"])
+    expect(items.filter(item => item.getAttribute("aria-checked") === "true").map(item => item.textContent)).toEqual(["Charter"])
+
+    await act(async () => items[3].click())
+    expect(await getTypeface()).toBe("iowan")
+    expect(document.documentElement.style.getPropertyValue("--markside-prose-font")).toBe(TYPEFACES.iowan.stack)
+    expect(await getPaneWidthPreferences()).toEqual({ previewWidth: "narrow", sourceFullWidth: false })
+    openMenu()
+    expect(typefaceTrigger().textContent).toContain("Iowan")
+    await act(() => storage.set({ typeface: "serif" }))
+    expect(typefaceTrigger().textContent).toContain("Serif")
+  } finally {
+    act(() => root.unmount())
+    container.remove()
+    document.documentElement.style.removeProperty("--markside-prose-font")
     vi.unstubAllGlobals()
   }
 })

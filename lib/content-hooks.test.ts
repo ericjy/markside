@@ -108,10 +108,12 @@ describe("useContentPreferences", () => {
     const { result } = renderHook(useContentPreferences, null)
     await flush()
     expect(result.current.numberHeadings).toBe(true)
+    expect(result.current.typeface).toBe("serif")
     expect(document.documentElement.style.getPropertyValue("--markside-prose-font")).toBe(TYPEFACES.serif.stack)
 
     await act(() => storage.set({ numberHeadings: false, [TYPEFACE_STORAGE_KEY]: "sans" }))
     expect(result.current.numberHeadings).toBe(false)
+    expect(result.current.typeface).toBe("sans")
     expect(document.documentElement.style.getPropertyValue("--markside-prose-font")).toBe(TYPEFACES.sans.stack)
   })
 })

@@ -45,6 +45,13 @@ pull request or review response.
   first load preserves Full width and Standard respectively. Fresh preferences
   default to Standard. Source-only mode has no Page width choices, its Full
   width toggle remains independent, and PDF Export retains its print layout.
+- [ ] In Preview and Split, open file actions → Typeface. The parent row shows
+  the saved typeface, and the submenu previews Sans, Serif, Charter, Iowan, and
+  Avenir with exactly one checked. Change it and verify the rendered text and
+  parent label update, including in another open Markdown tab. Reload and open
+  another file to check persistence. Code blocks, Source, and PDF Export retain
+  their own fonts. Source-only mode has no Typeface submenu, and Settings no
+  longer has the old selector.
 - [ ] Check the outline, heading navigation, light/dark themes, and narrow windows.
 - [ ] Check Ctrl+E, Cmd/Ctrl+S, and Cmd/Ctrl+P. Save operates in Source or Split;
   the file switcher requires an opened folder.
@@ -84,7 +91,7 @@ pull request or review response.
   Reload and inspect anchored and unanchored comments before copying again.
 - [ ] Open the popup. Confirm pending Reviews appear with correct counts and
   selecting one opens the corresponding file and Review.
-- [ ] Open Settings from the popup. Check Auto Save, typeface, and guidance.
+- [ ] Open Settings from the popup. Check Auto Save and guidance.
   Check that preference changes reach already open documents.
 - [ ] Open Share, inspect Link and Hosted Snapshot choices, and cancel. If you
   test creating a link, use a disposable document and inspect its rendered view.

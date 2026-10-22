@@ -31,3 +31,4 @@ and code examples may no longer match the current source tree.
 - [Copy a link to a heading](2026-10-21-copy-heading-link/spec.md) (Confirmed design)
 - [Question Card rounds](2026-10-21-question-card-round/spec.md) (Historical interview design)
 - [Narrow Preview page width](2026-10-21-preview-page-width/spec.md)
+- [Typeface in the file menu](2026-10-22-typeface-menu/spec.md)

@@ -158,7 +158,15 @@ width further; type size and side spacing stay unchanged. The choice persists in
 uses the legacy `previewFullWidth` boolean, preserving existing users' choices;
 new installations default to Standard. PDF Export keeps its separate layout.
 
-The same menu includes **Number headings**, stored in `chrome.storage.local`
+The same menu includes a **Typeface** submenu, moved from Options. Its parent
+row shows the current choice; the submenu lists Sans, Serif, Charter, Iowan,
+and Avenir, each displayed in its own font stack. It retains the existing
+`typeface` preference and updates open documents through `chrome.storage.onChanged`.
+`use-content-preferences` supplies both the selected value and the Preview font
+variable. Typeface affects Preview and Split Preview; code, Source, and PDF
+Export retain their independent fonts.
+
+The menu also includes **Number headings**, stored in `chrome.storage.local`
 and off by default. Heading numbering applies to Preview, Split Preview, Outline, and PDF Export.
 A sole opening H1 stays unnumbered as the title; nested sections use decimal
 numbers, compressing skipped heading levels. If any heading already has an

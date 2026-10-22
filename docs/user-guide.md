@@ -218,6 +218,13 @@ The Page width row shows the current choice without opening the submenu.
 The choice also applies to the Preview pane in Split. Source width and PDF Export keep
 their independent settings and layout.
 
+Choose **Typeface** in the same file actions menu: Sans (default), Serif,
+Charter, Iowan, or Avenir. The parent row shows your current choice, and each
+option uses its typeface as a preview. These are system fonts; where one is not
+installed, Markside uses the closest available font. The choice persists across
+files and restarts, and open tabs update immediately. Code blocks, the Source
+editor, and PDF export keep their own fonts.
+
 The top-right margin shows the word count and estimated reading time. The count
 includes every whitespace-separated chunk of Markdown source, including syntax,
 code, and frontmatter. Reading time uses 200 words per minute, rounds up, and
@@ -272,10 +279,6 @@ Auto Save is off by default. Enable it in the extension options page to save aut
 
 - **Auto Save off:** switching files while a draft is unsaved shows a Save / Discard / Cancel prompt. Closing or reloading the page triggers Chrome's standard unsaved-changes warning.
 - **Auto Save on:** switching files flushes any pending save and navigates only after the write succeeds.
-
-### Typeface
-
-Choose the font for rendered Markdown in the extension options page: Sans (default), Serif, Charter, Iowan, or Avenir. These are system fonts; where one is not installed, Markside uses the closest available font. Code blocks, the Source editor, and PDF export keep their own fonts. Open tabs update immediately.
 
 ## Share Link
 

@@ -223,7 +223,7 @@ export function FileRenderer({
     hashReviewSource(content ?? ""),
   )
 
-  const { dark, setDark, followsSystemThemeRef, numberHeadings, setNumberHeadings } =
+  const { dark, setDark, followsSystemThemeRef, numberHeadings, setNumberHeadings, typeface } =
     useContentPreferences(initialThemePreference)
   const outlineNumbers = numberHeadings ? headingNumbers(headings) : []
   const promptActivity = useReviewPromptActivity()
@@ -768,6 +768,7 @@ export function FileRenderer({
         fileMenuPointerInteractionRef={fileMenuPointerInteractionRef}
         previewWidth={previewWidth}
         setPreviewWidth={setPreviewWidth}
+        typeface={typeface}
         numberHeadings={numberHeadings}
         setNumberHeadings={setNumberHeadings}
         readabilityControlsVisible={readability.readabilityControlsVisible}

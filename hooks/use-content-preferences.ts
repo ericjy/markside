@@ -9,6 +9,7 @@ export function useContentPreferences(initialThemePreference: boolean | null) {
   )
   const followsSystemThemeRef = useRef(initialThemePreference === null)
   const [numberHeadings, setNumberHeadings] = useState(false)
+  const [typeface, setTypeface] = useState<Typeface>("sans")
 
   useEffect(() => {
     let active = true
@@ -44,6 +45,7 @@ export function useContentPreferences(initialThemePreference: boolean | null) {
     let active = true
     const applyTypeface = (typeface: Typeface) => {
       if (!active) return
+      setTypeface(typeface)
       document.documentElement.style.setProperty("--markside-prose-font", TYPEFACES[typeface].stack)
     }
     void getTypeface().then(applyTypeface)
@@ -54,5 +56,5 @@ export function useContentPreferences(initialThemePreference: boolean | null) {
     }
   }, [])
 
-  return { dark, setDark, followsSystemThemeRef, numberHeadings, setNumberHeadings }
+  return { dark, setDark, followsSystemThemeRef, numberHeadings, setNumberHeadings, typeface }
 }

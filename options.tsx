@@ -6,13 +6,6 @@ import {
   setAutoSaveEnabled as persistAutoSaveEnabled,
   watchAutoSaveEnabled,
 } from "~lib/auto-save"
-import {
-  getTypeface,
-  setTypeface as persistTypeface,
-  TYPEFACES,
-  type Typeface,
-  watchTypeface,
-} from "~lib/typeface"
 import { FileAccessDemo, FILE_ACCESS_DEMO_CSS } from "~lib/file-access-demo"
 import { FILE_ACCESS_SETUP_KEY } from "~lib/file-access-setup"
 import {
@@ -90,7 +83,6 @@ function openExtensionSettings() {
 export default function Options() {
   const [hasFileAccess, setHasFileAccess] = useState<boolean | null>(null)
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(false)
-  const [typeface, setTypeface] = useState<Typeface>("sans")
   const [openedSettings, setOpenedSettings] = useState(false)
   const [returnedStillOff, setReturnedStillOff] = useState(false)
   const [setupJustFinished, setSetupJustFinished] = useState(false)
@@ -114,12 +106,9 @@ export default function Options() {
     window.addEventListener("focus", onFocus)
     void getAutoSaveEnabled().then(setAutoSaveEnabled)
     const unwatchAutoSave = watchAutoSaveEnabled(setAutoSaveEnabled)
-    void getTypeface().then(setTypeface)
-    const unwatchTypeface = watchTypeface(setTypeface)
     return () => {
       window.removeEventListener("focus", onFocus)
       unwatchAutoSave()
-      unwatchTypeface()
     }
   }, [])
 
@@ -229,9 +218,6 @@ export default function Options() {
         .switch { width: 40px; height: 22px; padding: 2px; border: none; border-radius: 999px; cursor: pointer; flex-shrink: 0; transition: background 150ms ease; }
         .switch span { display: block; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.2); transition: transform 150ms ease; }
 
-        .select { appearance: none; border: 1px solid var(--line); border-radius: 8px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23716c63' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center; padding: 6px 30px 6px 12px; font-size: 15px; color: var(--ink); cursor: pointer; transition: border-color 120ms ease; }
-        .select:hover { border-color: #c9c5bc; }
-        .select:focus-visible { outline: 2px solid var(--green); outline-offset: 1px; }
 
         .keys { display: inline-flex; align-items: center; gap: 3px; }
         .keys-plus { font-size: 11px; color: #b5b0a6; padding: 0 1px; }
@@ -388,26 +374,6 @@ export default function Options() {
                       style={{ background: autoSaveEnabled ? '#078a52' : '#c9c5bc' }}>
                       <span style={{ transform: `translateX(${autoSaveEnabled ? 18 : 0}px)` }} />
                     </button>
-                  </div>
-                  <div className="row">
-                    <div className="row-text">
-                      <p className="row-label">Typeface</p>
-                      <p className="row-desc">The font for rendered Markdown. Code keeps its monospaced font.</p>
-                    </div>
-                    <select
-                      aria-label="Typeface"
-                      className="select"
-                      value={typeface}
-                      onChange={(event) => {
-                        const next = event.target.value as Typeface
-                        setTypeface(next)
-                        void persistTypeface(next)
-                      }}
-                      style={{ fontFamily: TYPEFACES[typeface].stack }}>
-                      {(Object.keys(TYPEFACES) as Typeface[]).map((id) => (
-                        <option key={id} value={id}>{TYPEFACES[id].label}</option>
-                      ))}
-                    </select>
                   </div>
                 </Group>
 

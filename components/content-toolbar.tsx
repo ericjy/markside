@@ -16,7 +16,8 @@ import {
   RefreshCw,
   Share2,
   Sun,
-  TableOfContents
+  TableOfContents,
+  Type
 } from "lucide-react"
 import React from "react"
 import { Button } from "~components/ui/button"
@@ -31,6 +32,7 @@ import {
   type MarkdownMode
 } from "~lib/markdown-mode"
 import { READABILITY_CHECK_ENABLED } from "~lib/readability-service"
+import { setTypeface, TYPEFACES, type Typeface } from "~lib/typeface"
 import {
   setThemePreference
 } from "~lib/theme-preference"
@@ -77,6 +79,7 @@ interface ContentToolbarProps {
   fileMenuPointerInteractionRef: React.MutableRefObject<boolean>
   previewWidth: PreviewWidth
   setPreviewWidth: React.Dispatch<React.SetStateAction<PreviewWidth>>
+  typeface: Typeface
   numberHeadings: boolean
   setNumberHeadings: React.Dispatch<React.SetStateAction<boolean>>
   readabilityControlsVisible: boolean
@@ -128,6 +131,7 @@ export function ContentToolbar({
   fileMenuPointerInteractionRef,
   previewWidth,
   setPreviewWidth,
+  typeface,
   numberHeadings,
   setNumberHeadings,
   readabilityControlsVisible,
@@ -410,6 +414,35 @@ export function ContentToolbar({
                 }}
                 style={{ minWidth: "11rem", zIndex: 100000 }}
                 className="rounded-md border bg-background p-1 text-foreground shadow-md">
+                {isMdFile && previewVisible && (
+                  <DropdownMenu.Sub>
+                    <DropdownMenu.SubTrigger className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent">
+                      <Type size={14} className="w-3.5 shrink-0" />
+                      Typeface
+                      <span className="ml-auto text-xs text-muted-foreground">{TYPEFACES[typeface].label}</span>
+                      <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
+                    </DropdownMenu.SubTrigger>
+                    <DropdownMenu.Portal>
+                      <DropdownMenu.SubContent sideOffset={4} alignOffset={-4}
+                        style={{ minWidth: "10rem", zIndex: 100000 }}
+                        className="rounded-md border bg-background p-1 text-foreground shadow-md">
+                        <DropdownMenu.RadioGroup value={typeface} aria-label="Typeface"
+                          onValueChange={(value) => void setTypeface(value as Typeface).catch(() => undefined)}>
+                          {(Object.keys(TYPEFACES) as Typeface[]).map(id => (
+                            <DropdownMenu.RadioItem key={id} value={id}
+                              style={{ fontFamily: TYPEFACES[id].stack }}
+                              className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent">
+                              {TYPEFACES[id].label}
+                              <span className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center">
+                                <DropdownMenu.ItemIndicator><Check size={13} strokeWidth={2.5} /></DropdownMenu.ItemIndicator>
+                              </span>
+                            </DropdownMenu.RadioItem>
+                          ))}
+                        </DropdownMenu.RadioGroup>
+                      </DropdownMenu.SubContent>
+                    </DropdownMenu.Portal>
+                  </DropdownMenu.Sub>
+                )}
                 {isMdFile && previewVisible && (
                   <DropdownMenu.Sub>
                     <DropdownMenu.SubTrigger className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent">

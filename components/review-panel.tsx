@@ -58,6 +58,10 @@ interface ReviewPanelProps {
   reviewFolder?: { path: string; choose: () => Promise<boolean> } | null
   /** True while the document shows a question card; answered questions then stay out of the way. */
   interview?: boolean
+  /** The file changed on disk since it was loaded, so the agent's edits are not on screen yet. */
+  diskChanged?: boolean
+  /** A question card in the document has no answer yet. */
+  questionsOpen?: boolean
   copyStatus: ReviewCopyStatus | null
   jumpableCommentIds: ReadonlySet<string>
   resolvedImportedComments: ReadonlyMap<string, ReviewComment & ResolvedAnchor>
@@ -106,6 +110,8 @@ export function ReviewPanel({
   reviewLoading = false,
   reviewFolder,
   interview = false,
+  diskChanged = false,
+  questionsOpen = false,
   onSelectComment,
   onJumpToSection,
   onJumpToImportedComment,
@@ -256,6 +262,8 @@ export function ReviewPanel({
   }, [])
   const activeAgentHandoff = agentHandoff?.completed ? undefined : agentHandoff
   const canFinish = !!activeAgentHandoff?.canFinish
+  // Finishing before seeing the agent's edits, or with questions still unanswered, ends the Review too early.
+  const finishOffered = canFinish && !diskChanged && !questionsOpen
   const addressedCount = activeAgentHandoff?.file?.comments.filter(({ status }) => status === "addressed").length ?? 0
   const statusWriting = !!activeAgentHandoff && (!!activeAgentHandoff.finishing || !!activeAgentHandoff.resolvingAll || activeAgentHandoff.updatingCommentId != null)
   const showSentStatus = !!activeAgentHandoff?.sent && !activeAgentHandoff.sending && !canFinish
@@ -894,18 +902,20 @@ export function ReviewPanel({
         )}
         {canFinish && (
           <p className="mb-2 text-xs leading-relaxed text-muted-foreground">
-            Your agent is waiting. Add more comments or finish.
+            {diskChanged ? "Your agent updated the document. Reload to see its changes."
+              : questionsOpen ? "Answer the next questions in the document."
+              : "Your agent is waiting. Add more comments or finish."}
           </p>
         )}
         <div className={`review-footer-actions flex flex-wrap items-center gap-2 ${showAgentAction && !canFinish ? "mt-2" : ""}`}>
           {/* Secondary, so it doesn't invite ending the Review before the reviewer has added everything. */}
-          {activeAgentHandoff && canFinish && addressedCount > 0 && (
+          {activeAgentHandoff && finishOffered && addressedCount > 0 && (
             <Button variant="outline" className="h-11 whitespace-nowrap px-3 text-xs" disabled={statusWriting}
               onClick={activeAgentHandoff.resolveAll} aria-busy={activeAgentHandoff.resolvingAll}>
               {activeAgentHandoff.resolvingAll ? "Resolving…" : "Resolve all"}
             </Button>
           )}
-          {activeAgentHandoff && canFinish && (
+          {activeAgentHandoff && finishOffered && (
             <Button variant="outline" className="h-11 whitespace-nowrap px-3 text-xs" disabled={statusWriting}
               onClick={activeAgentHandoff.finish} aria-busy={activeAgentHandoff.finishing}>
               {activeAgentHandoff.finishing ? "Finishing review…" : "Finish review"}

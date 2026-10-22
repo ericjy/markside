@@ -149,6 +149,11 @@ pull request or review response.
   in the docked panel. Resolve all marks both resolved and the CLI keeps
   waiting; Finish review then ends the Review. Repeat with Addressed comments
   and click Finish review directly: both become resolved and the Review ends.
+  With Addressed comments and the document changed on disk, the footer says
+  "Your agent updated the document. Reload to see its changes." without Resolve
+  all or Finish review; after Reload they return. In an interview whose agent
+  added new question cards, the footer says "Answer the next questions in the
+  document." without them, and they return once only Before you finish remains.
   Addressed and Resolved comments are read-only until reopened. Reopen a
   comment, edit it, and confirm its old reply disappears for the new wording.
 - [ ] Run `/grill-me /markside <topic>` and `/grill-me <topic> in Markside`;

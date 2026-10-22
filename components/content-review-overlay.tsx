@@ -31,6 +31,8 @@ interface ContentReviewOverlayProps {
   reviewLoading: boolean
   reviewFolder: { path: string; choose: () => Promise<boolean> } | null
   interview: boolean
+  diskChanged: boolean
+  questionsOpen: boolean
   isMdFile: boolean
   reviewOverlayDocked: boolean
   reviewLayout: "floating" | "docked"
@@ -115,6 +117,8 @@ export function ContentReviewOverlay({
   reviewLoading,
   reviewFolder,
   interview,
+  diskChanged,
+  questionsOpen,
   jumpableReviewCommentIds,
   resolvedImportedComments,
   jumpableImportedCommentIds,
@@ -283,6 +287,8 @@ export function ContentReviewOverlay({
                 reviewLoading={reviewLoading}
                 reviewFolder={reviewFolder}
                 interview={interview}
+                diskChanged={diskChanged}
+                questionsOpen={questionsOpen}
                 jumpableCommentIds={jumpableReviewCommentIds}
                 resolvedImportedComments={resolvedImportedComments}
                 jumpableImportedCommentIds={jumpableImportedCommentIds}

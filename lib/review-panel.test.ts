@@ -192,6 +192,26 @@ describe("ReviewPanel", () => {
     expect(finish).toHaveBeenCalledOnce()
   })
 
+  it("withholds Finish review until the agent's edits are loaded and the interview has no open questions", () => {
+    const sent = sendReview(refreshReviewFile(null, "PLAN.md"), { docHash: "a".repeat(64), comments: [{ id: comment.id, quote: comment.anchor.exact, line: 1, body: comment.body, status: "open" }] })
+    const file = addressReviewComment(sent, comment.id, "Recorded")
+    const agentHandoff = { file, canFinish: true, finish: vi.fn(), resolveAll: vi.fn(), sent: true, disabled: true, disabledReason: "Add or reopen a comment to send again.", sending: false, error: null, send: vi.fn() }
+    const labels = () => Array.from(container.querySelectorAll("button")).map((item) => item.textContent)
+    renderPanel({ agentHandoff, diskChanged: true })
+    expect(container.textContent).toContain("Your agent updated the document. Reload to see its changes.")
+    expect(labels()).not.toContain("Finish review")
+    expect(labels()).not.toContain("Resolve all")
+    act(() => root.unmount())
+    root = createRoot(container)
+    renderPanel({ agentHandoff, interview: true, questionsOpen: true })
+    expect(container.textContent).toContain("Answer the next questions in the document.")
+    expect(labels()).not.toContain("Finish review")
+    act(() => root.unmount())
+    root = createRoot(container)
+    renderPanel({ agentHandoff, interview: true })
+    expect(labels()).toContain("Finish review")
+  })
+
   it("confirms Clear all for the copy-prompt workflow", () => {
     const onClear = vi.fn()
     renderPanel({ onClear })

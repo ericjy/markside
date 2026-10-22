@@ -627,7 +627,10 @@ reply. A normal retry or continuation preserves the request. Addressing and
 resolving keep the agent waiting; the reviewer's Finish review ends the request,
 because resolving is also how reviewers tidy up before more feedback. Only then does a fresh review
 start another, keeping resolved comments as history. Each send replaces the list
-with the comments being sent. See [ADR-0008](adr/0008-flat-agent-review-file.md).
+with the comments being sent. The panel withholds Finish review and Resolve all
+while the document has changed on disk, asking the reviewer to Reload and see
+the agent's edits first, and while a Question Card in the document is unanswered,
+asking them to answer it, so finishing cannot end an interview early. See [ADR-0008](adr/0008-flat-agent-review-file.md).
 
 Comments loaded from the sidecar use the same Active, Addressed, and Resolved cards as local
 comments, including comments missing from browser storage. Resolved starts

@@ -912,6 +912,8 @@ export function FileRenderer({
         }}
         reviewLoading={isMdFile && (!reviewLoaded || agentReviewLoadedUrl !== fileUrl)}
         interview={questionCards.length > 0}
+        diskChanged={reload.diskChanged}
+        questionsOpen={questionCards.some((card) => card.options.length > 0 && !reviewActions.questionAnswer(card.target)?.trim())}
         reviewFolder={fileUrl.startsWith("file:") && !(rootUrl && getSavePathParts(fileUrl, rootUrl))
           ? { path: fileFolderPath(fileUrl), choose: () => openDirectory("readwrite") }
           : null}

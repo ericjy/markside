@@ -82,6 +82,21 @@ describe("agent Review handoff", () => {
 })
 
 describe("pending Review item count", () => {
+  it("counts remaining feedback as comments are resolved and reopened", () => {
+    const active = {
+      ...review, note: "",
+      comments: Array.from({ length: 10 }, (_, index) => ({ ...review.comments[0], id: `c${index}` })),
+    }
+    const sent = prepareAgentReview(pending, active, "a".repeat(64), () => null)
+    sent.comments.forEach((comment, index) => { comment.status = index === 0 ? "addressed" : "resolved" })
+    expect(getPendingReviewItemCount(active, sent)).toBe(1)
+    sent.comments[0].status = "resolved"
+    expect(getPendingReviewItemCount(active, sent)).toBe(0)
+    sent.comments[0].status = "open"
+    expect(getPendingReviewItemCount(active, sent)).toBe(1)
+    expect(active.comments).toHaveLength(10)
+  })
+
   it("leaves out comments resolved locally or in the sidecar, and their note", () => {
     expect(getPendingReviewItemCount(review)).toBe(2)
     const resolvedLocally = { ...review, comments: [{ ...review.comments[0], localStatus: "resolved" as const }] }

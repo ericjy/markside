@@ -752,7 +752,7 @@ export function FileRenderer({
         reviewOverlayOpen={overlay.reviewOverlayOpen}
         closeReviewOverlay={overlay.closeReviewOverlay}
         setReviewOverlayOpen={overlay.setReviewOverlayOpen}
-        reviewItemCount={reviewItemCount}
+        reviewItemCount={pendingReviewItemCount}
         chooseOutlineOpen={chooseOutlineOpen}
         outlineOpen={outlineOpen}
         requestLinkSnapshot={snapshots.requestLinkSnapshot}

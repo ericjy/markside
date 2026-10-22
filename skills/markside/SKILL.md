@@ -254,7 +254,17 @@ section only decides how questions are asked and answered.
    below the title. If a later comment reopens a question, restore both
    headings and the answer line, and ask it as a card. Finishing confirms shared
    understanding; it is not a request to implement.
-7. After the Review is resolved, the interview is over. Write only the
+7. After the CLI reports `Review resolved for ...`, archive the completed
+   interview. Rename `## Before you finish` to `## Confirmed details` and
+   replace the action instructions with a past-tense record of confirmation.
+   Preserve the source of each detail: for example, `These details were
+   proposed by the agent and confirmed when the reviewer finished the Review.`
+   Keep the detail bullets and Question history unchanged, including any
+   explicit open or deferred status; finishing does not settle those questions.
+   If the section only asked the user to finish and has no details, remove it.
+   Do not record confirmation when the user merely stops the interview or
+   asks to proceed without finishing the Review.
+   The interview is over. Write only the
    durable docs the questioning skill names, such as a glossary or ADRs.
    Then report the decisions in chat and stop: do not edit code, build, or
    implement the plan unless the user asked for that, before or after the

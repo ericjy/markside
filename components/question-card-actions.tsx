@@ -113,7 +113,7 @@ export function QuestionCardActions({ card, answer, busy, composing, keyboard, o
           }}>
           <strong>
             <span className="question-option-key"><Pencil aria-hidden="true" /></span>
-            Answer or ask a question…
+            Write your own answer or ask for clarification…
           </strong>
         </button>,
         card.composeMount,

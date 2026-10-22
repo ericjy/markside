@@ -85,7 +85,7 @@ one Question Card creates, or changes, one ordinary Review Comment on the card's
 heading with the option letter as its body. The chosen option is marked in
 place, so that comment's heading highlight is hidden. Nothing is sent from the
 card; the reviewer sends the Review, or presses Cmd/Ctrl+Shift+Enter, so a
-misclick costs nothing. A separate Answer or ask a question… tile is mounted
+misclick costs nothing. A separate Write your own answer or ask for clarification… tile is mounted
 after the option list, before any comparison or recommendation. It opens the
 comment composer on the heading and is marked selected only when the saved
 answer is nonempty and does not match an option letter. Keyboard hints appear at the top right, wrapping below the Question label

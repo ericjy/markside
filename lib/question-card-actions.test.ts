@@ -57,8 +57,8 @@ describe("question card options", () => {
     act(() => tile.click())
     expect(onCompose).toHaveBeenCalledOnce()
     expect(onAnswer).not.toHaveBeenCalled()
-    expect(tile.textContent).toBe("Answer or ask a question…")
-    expect(buildRenderedTextIndex(container).text).not.toContain("Answer or ask a question")
+    expect(tile.textContent).toBe("Write your own answer or ask for clarification…")
+    expect(buildRenderedTextIndex(container).text).not.toContain("Write your own answer")
     expect(tile.classList.contains("question-option-selected")).toBe(false)
 
     render({ answer: "I want a different approach." })

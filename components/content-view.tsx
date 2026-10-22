@@ -23,7 +23,7 @@ import React from "react"
 import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
 import { createPortal } from "react-dom"
 import { RawEditor,type RawEditorHandle } from "~components/raw-editor"
-import { nextQuestionCard, QuestionCardActions } from "~components/question-card-actions"
+import { nextQuestionCard, QuestionCardActions, type QuestionCardStatus } from "~components/question-card-actions"
 import { ReadabilityHeadingControl } from "~components/readability-heading-control"
 import { ReviewPresetPicker } from "~components/review-preset-picker"
 import { SidebarRight } from "~components/sidebar-right"
@@ -130,6 +130,7 @@ interface ContentViewProps {
   questionCards: QuestionCard[]
   questionAnswer: (target: HTMLElement) => React.ComponentProps<typeof QuestionCardActions>["answer"]
   questionActionsBusy: boolean
+  checkReviewUpdates: () => Promise<boolean>
   answerQuestion: (target: HTMLElement, body: string) => void
   composeQuestionAnswer: (target: HTMLElement, point: { x: number; y: number }) => void
   matchingReadabilityResult: (section: ReadabilitySection) => ResolvedReadabilityResult | null
@@ -217,6 +218,7 @@ export function ContentView({
   questionCards,
   questionAnswer,
   questionActionsBusy,
+  checkReviewUpdates,
   answerQuestion,
   composeQuestionAnswer,
   matchingReadabilityResult,
@@ -251,6 +253,12 @@ export function ContentView({
   const activeQuestionCard = answerableQuestionCards.find((card) => card.element === activeQuestionElement)
     ?? answerableQuestionCards.find((card) => !questionAnswered(card))
     ?? answerableQuestionCards[0]
+  // The last card closes the round: it offers Send once everything is answered, then waits for the agent.
+  const questionStatus: QuestionCardStatus | undefined = !composerAgent ? undefined
+    : composerAgent.sending ? "sending"
+    : composerAgent.sent && !composerAgent.canFinish ? "sent"
+    : !composerAgent.disabled && answerableQuestionCards.length > 0 && answerableQuestionCards.every(questionAnswered) ? "ready"
+    : undefined
   return (
     <>
         <div className="flex-1 min-h-0 print:!mr-0" style={{ marginRight: reviewOverlayDocked ? reviewDockWidth : 0 }}>
@@ -673,9 +681,11 @@ export function ContentView({
                       busy={questionActionsBusy}
                       composing={selectionComposerOpen && !!selectionAction?.question && card.target.contains(selectionAction.range.startContainer)}
                       keyboard={card === activeQuestionCard}
+                      status={card === answerableQuestionCards.at(-1) ? questionStatus : undefined}
                       onAnswer={(body) => answerQuestion(card.target, body)}
                       onCompose={(point) => composeQuestionAnswer(card.target, point)}
                       onSend={composerAgent ? () => void composerAgent.send() : undefined}
+                      onCheck={checkReviewUpdates}
                       onActivate={() => setActiveQuestionElement(card.element)}
                       onAdvance={answerableQuestionCards.length > 1 ? () => {
                         const next = nextQuestionCard(answerableQuestionCards, card, questionAnswered)

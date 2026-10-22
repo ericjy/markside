@@ -483,6 +483,13 @@ export function FileRenderer({
     renderedTextIndexRef,
   })
   agentDiscoveryEnabledRef.current = isMdFile && fileUrl.startsWith("file:")
+  const checkReviewUpdates = async () => {
+    const [agentChanged, documentChanged] = await Promise.all([
+      agentHandoff?.checkForUpdates?.() ?? Promise.resolve(false),
+      reload.checkDiskForUpdates(),
+    ])
+    return agentChanged || documentChanged
+  }
   const pendingReviewItemCount = review ? getPendingReviewItemCount(review, agentHandoff?.file) : 0
   const reviewIndexReady = isMdFile && reviewLoaded && agentReviewLoadedUrl === fileUrl
   useEffect(() => {
@@ -782,6 +789,7 @@ export function FileRenderer({
         )}
 
       <ContentView
+        checkReviewUpdates={checkReviewUpdates}
         isImageFile={isImageFile}
         error={error}
         imageObjectUrl={imageObjectUrl}
@@ -894,13 +902,7 @@ export function FileRenderer({
         </div>
       )}
       <ContentReviewOverlay
-        checkReviewUpdates={async () => {
-          const [agentChanged, documentChanged] = await Promise.all([
-            agentHandoff?.checkForUpdates?.() ?? Promise.resolve(false),
-            reload.checkDiskForUpdates(),
-          ])
-          return agentChanged || documentChanged
-        }}
+        checkReviewUpdates={checkReviewUpdates}
         reloadDocumentLoading={reload.reloadLoading}
         agentHandoff={agentHandoff}
         agentSessionCheckStatus={agentSessionCheck?.url === fileUrl ? agentSessionCheck.status : "idle"}

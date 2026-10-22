@@ -87,17 +87,23 @@ card last clicked or focused into, otherwise the first unanswered one. When a
 round shows several answerable cards, the active card is outlined, and a letter
 answer moves activity to the next unanswered card, scrolling it into view only
 when it is off screen. The chosen option is marked in
-place, so that comment's heading highlight is hidden. Nothing is sent from the
-card; the reviewer sends the Review, or presses Cmd/Ctrl+Shift+Enter anywhere
-outside a text field, so a misclick costs nothing. A separate Something else… tile, with a muted hint line listing what it can do, is mounted
-after the option list, before any comparison or recommendation. It opens the
-comment composer on the heading, whose quick presets are Clarify, Example, Skip,
+place, so that comment's heading highlight is hidden. Choosing never sends;
+the reviewer sends the Review, or presses Cmd/Ctrl+Shift+Enter anywhere
+outside a text field, so a misclick costs nothing. During an agent Review a bar
+just after the last answerable card, outside it, covers the whole round: once every card is answered it offers
+**Send review**, and after sending it says the agent's next question will
+appear there, with **Check for reply** running the same check as the Review
+panel. A comparison column whose header starts with an option letter, such as
+`B. …`, is tagged with that letter; the hovered or focused option, else the
+chosen one, colors its column header, and hovering also fades the other options' columns. A separate Something else… tile, with a muted hint line listing what it can do, is mounted
+after the option list, before any comparison or recommendation. It, or T while its card is active
+unless an option uses that letter, opens the comment composer on the heading, whose quick presets are Clarify, Example, Skip,
 Fewer, Delegate, and Stop. The interview presets are not in the general preset
 catalog. Clarify on a card asks the agent to rewrite the question and allows a
 diagram, table, or example, since the rewrite stays in the interview doc. The tile is marked selected, with the saved text clamped to two lines
 in place of the hint, only when the saved answer is nonempty and does not match an
 option letter. Keyboard hints appear at the top right, wrapping below the Question label
-on narrow screens. Both mounts are excluded from Review anchoring, copying, and
+on narrow screens. These mounts are excluded from Review anchoring, copying, and
 print. The sidecar format is unchanged.
 
 Rendered Mermaid diagrams keep zoom, pan, and reset controls in a toolbar above

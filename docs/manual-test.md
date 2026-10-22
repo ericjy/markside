@@ -178,6 +178,12 @@ pull request or review response.
   option and confirm the custom tile becomes neutral again. Send a custom
   answer. Print the document and confirm the buttons are absent. In a
   Review with no agent, an option adds a local comment.
+- [ ] On a card with Compare tradeoffs, hover each option and confirm the
+  other options' columns fade and its header turns teal; on leaving, nothing is
+  faded and only the chosen option's header stays teal.
+  With an agent Review, answer every card: a bar below the last card, outside it, shows
+  **Send review**, which sends. After sending it shows the waiting dot and **Check for
+  reply**; with no reply it says so. The bar is absent when printing.
   Repeat a Reload after changing only a sidecar reply, without changing the
   Markdown file, and confirm the new reply appears.
 - [ ] In an interview round with three cards under Current questions, confirm

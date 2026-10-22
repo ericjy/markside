@@ -376,6 +376,8 @@ export interface QuestionCard {
   target: HTMLElement
   mount: HTMLElement
   composeMount: HTMLElement
+  /** Just after the card, outside it: the round's send and waiting status. */
+  footerMount: HTMLElement
   options: { value: string; element: HTMLElement }[]
   recommended: string | null
 }
@@ -390,6 +392,18 @@ export function mountQuestionCard(card: HTMLElement): QuestionCard | null {
     value: element.dataset.questionOption!,
     element,
   }))
+  // A comparison column headed "B. …" belongs to option B, so choosing B can highlight it.
+  for (const table of card.querySelectorAll("table")) {
+    const columns = Array.from(table.rows[0]?.cells ?? [], (cell) => /^([A-Z])\./.exec(cell.textContent?.trim() ?? "")?.[1])
+    for (const row of table.rows) {
+      Array.from(row.cells).forEach((cell, index) => {
+        if (columns[index]) cell.dataset.questionColumn = columns[index]
+      })
+    }
+  }
+  const footerMount = card.ownerDocument.createElement("div")
+  footerMount.className = "question-card-actions question-card-footer"
+  card.after(footerMount)
   const mount = card.ownerDocument.createElement("div")
   mount.className = "question-card-actions question-card-shortcuts"
   card.append(mount)
@@ -398,7 +412,7 @@ export function mountQuestionCard(card: HTMLElement): QuestionCard | null {
   const list = options[0]?.element.closest("ul")
   if (list) list.after(composeMount)
   else mount.before(composeMount)
-  return { element: card, target, mount, composeMount, options, recommended: card.dataset.questionRecommended ?? null }
+  return { element: card, target, mount, composeMount, footerMount, options, recommended: card.dataset.questionRecommended ?? null }
 }
 
 md.renderer.rules.markdown_alert_open = (tokens, idx, _options, _env, self) => {

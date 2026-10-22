@@ -108,8 +108,8 @@
       "expectations": [
         "Preserves the original question heading, context, both full option titles and descriptions verbatim",
         "Preserves the full comparison disclosure, table, and recommendation verbatim",
-        "Removes only the enclosing question fence from the archived question",
-        "Appends Your decision with option A and preserves the note about keeping the example self-contained separately from the original question",
+        "Writes the heading, then the Your decision line, then the rest of the question inside a collapsed <details> with <summary>Full question</summary>",
+        "Writes Your decision with option A directly below the heading and preserves the note about keeping the example self-contained",
         "Checks the archived question against the original before removing its fence from Current questions, then addresses c2 and continues the Review"
       ]
     },
@@ -121,7 +121,7 @@
       "expectations": [
         "Archives Q4 verbatim with its decision before Q5, in question-number order",
         "Treats Stop as ending the whole interview even though it was sent on Q6",
-        "Archives unanswered Q5 verbatim under Previous questions, ending with Assumed decision and its recommended option",
+        "Archives unanswered Q5 under Previous questions with an Assumed decision line naming its recommended option below the heading and the full question collapsed",
         "Replaces Current questions with ## Summary listing the user's decisions and the agent's assumed decisions, and asks the user to click Finish review",
         "Runs markside address for c4 and c6 with one-line replies, then markside review docs/PLAN.grill.md --continue --no-open"
       ]
@@ -133,8 +133,8 @@
       "files": [],
       "expectations": [
         "Adds Focus: you decide the rest (asked at Q4). below the doc's answer line",
-        "Archives Q4 verbatim under Previous questions ending with Assumed decision and its recommended option",
-        "Writes the two questions not yet asked in full as Q5 and Q6 under Previous questions, each ending with an Assumed decision, without showing them as cards",
+        "Archives Q4 under Previous questions with an Assumed decision line naming its recommended option below the heading and the full question collapsed",
+        "Writes the two questions not yet asked in full as Q5 and Q6 under Previous questions, each with an Assumed decision line and the full question collapsed, without showing them as cards",
         "Checks the decisions against docs/PLAN.md before writing the Summary",
         "Replaces Current questions with ## Summary labeling the assumed decisions as the agent's, and asks the user to click Finish review",
         "Runs markside address for c4 with a one-line reply, then markside review docs/PLAN.grill.md --continue --no-open"

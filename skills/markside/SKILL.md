@@ -101,9 +101,9 @@ section only decides how questions are asked and answered.
    it was settled; leave it empty until there is one. When the answer is
    obvious from context and cheap to reverse, settle the question yourself
    instead of asking it: write it in full with its own number, exactly as a
-   card's contents in step 3, append it to Previous questions without the
-   fence, and end it with `> **Assumed decision: X.** <one sentence>` naming
-   the recommended option. When continuing
+   card's contents in step 3, and archive it as in step 5 with
+   `> **Assumed decision: X.** <one sentence>` naming the recommended option.
+   When continuing
    from chat, copy the original questions and options already answered under
    Previous questions, including their context, tradeoffs, and recommendations.
    Do not replace them with summaries. If the original text is unavailable,
@@ -177,7 +177,7 @@ section only decides how questions are asked and answered.
      table rather than a long recommendation paragraph. Markside labels the
      recommended option separately from the user's selected answer.
 4. Run the Review workflow above on the interview doc. Tell the user to click
-   an option (or press its letter), or click **Something else…** to answer in their own words, ask,
+   an option (or press its letter), or click **Something else…** (or press T) to answer in their own words, ask,
    skip, or stop, then click **Send review to agent**. When several cards are shown, add that
    letters answer the outlined card and then move to the next unanswered one,
    and that they can send before answering every card. Markside supplies the custom-answer
@@ -187,13 +187,29 @@ section only decides how questions are asked and answered.
 5. An answer is a comment whose quote is a question heading and whose body is
    an option letter or the user's own words. One Send may answer several
    cards; handle each comment as follows, then archive in question-number order.
-   For an answer, copy the entire
-   contents of its `question` fence verbatim to the end of Previous questions
-   as plain Markdown, removing only the enclosing fence. Preserve the heading,
-   context, full option titles and descriptions, comparison disclosures and
-   tables, and recommendation. Do not shorten or rewrite any of them.
-   Append `> **Your decision: A.** <one sentence>` separately, preserving any
-   additional notes from the user's answer. Before removing the fence from
+   For an answer, archive the question at the end of Previous questions so
+   the record stays short but complete: its heading, then
+   `> **Your decision: A.** <one sentence>` preserving any additional notes
+   from the user's answer, then everything else from its `question` fence
+   verbatim inside a collapsed disclosure:
+
+   ````markdown
+   ### Q3. Where does the interview doc live?
+
+   > **Your decision: A.** Keep it beside the plan.
+
+   <details>
+   <summary>Full question</summary>
+
+   Context, options, recommendation, and comparison, copied verbatim.
+
+   </details>
+   ````
+
+   Preserve the context, full option titles and descriptions, recommendation,
+   and comparison disclosures and tables. Do not shorten or rewrite any of
+   them, and leave blank lines inside the disclosure so Markdown renders.
+   Before removing the fence from
    Current questions, verify that the archived question matches the original
    fence contents. Leave unanswered cards in place, and append after them any
    questions the questioning skill can now ask, continuing the numbering.
@@ -203,7 +219,7 @@ section only decides how questions are asked and answered.
    question in place, adding a diagram, table, or example where it helps, keeping its number and heading so the answer still
    anchors, address the comment with a one-line reply naming what changed, and
    continue the Review. If it asks to skip or defer the question, archive it as
-   above with `> **Deferred.**` instead of a decision. Requests for
+   above with `> **Deferred.**` in place of the decision line. Requests for
    fewer questions, to decide the rest, or to stop apply to the whole
    interview, whichever card carries them. If a comment asks
    for fewer questions, add `Focus: fewer questions (asked at Q<n>).` below

@@ -17,7 +17,7 @@ let card: QuestionCard
 
 beforeEach(() => {
   container = document.createElement("div")
-  container.innerHTML = md.render("```question\n### Q1. Which?\n\n- **A. First.** One.\n- **B. Second.** Two.\n\n**Recommended: A.** Why.\n```")
+  container.innerHTML = md.render("```question\n### Q1. Which?\n\n- **A. First.** One.\n- **B. Second.** Two.\n\n**Recommended: A.** Why.\n\n<details open>\n<summary>Compare tradeoffs</summary>\n\n| Criterion | A. First | B. Second |\n|---|---|---|\n| Speed | ✓ Fast | ✕ Slow |\n\n</details>\n```")
   document.body.append(container)
   card = mountQuestionCard(container.querySelector<HTMLElement>(".markdown-alert-question")!)!
   root = createRoot(card.mount)
@@ -132,15 +132,19 @@ describe("question card options", () => {
     expect(busy.onAnswer).not.toHaveBeenCalled()
   })
 
-  it("sends the Review with the send shortcut only during an agent Review", () => {
+  it("sends the Review with the send shortcut, which the card's hint leaves to the Send button", () => {
     const onSend = vi.fn()
     render({ onSend })
-    expect(container.textContent).toContain("to send review")
+    expect(container.querySelector(".question-card-hint")?.textContent).toBe("Press A B to choose or T to type something else")
     key({ key: "Enter", metaKey: true, shiftKey: true })
     expect(onSend).toHaveBeenCalledOnce()
+  })
 
-    render({ onSend: undefined })
-    expect(container.textContent).not.toContain("to send review")
+  it("opens the Something else composer with T", () => {
+    const { onCompose, onAnswer } = render()
+    key({ key: "t" })
+    expect(onCompose).toHaveBeenCalledOnce()
+    expect(onAnswer).not.toHaveBeenCalled()
   })
 
   it("does not listen for letter keys when another card owns the keyboard", () => {
@@ -186,5 +190,44 @@ describe("next question card", () => {
 
   it("finds none when every other card is answered", () => {
     expect(next("Q2", ["Q1", "Q2", "Q3"])).toBeUndefined()
+  })
+})
+
+describe("question card comparison and footer", () => {
+  const highlighted = () => Array.from(container.querySelectorAll<HTMLElement>(".question-column-highlight"), (cell) => cell.textContent)
+
+  it("lights the hovered option's column, falling back to the chosen one", () => {
+    render({ answer: "B" })
+    expect(highlighted()).toEqual(["B. Second", "✕ Slow"])
+    expect(card.element.classList.contains("question-column-hovering")).toBe(false)
+    act(() => { option("A").dispatchEvent(new Event("pointerenter")) })
+    expect(highlighted()).toEqual(["A. First", "✓ Fast"])
+    expect(card.element.classList.contains("question-column-hovering")).toBe(true)
+    act(() => { option("A").dispatchEvent(new Event("pointerleave")) })
+    expect(highlighted()).toEqual(["B. Second", "✕ Slow"])
+    expect(card.element.classList.contains("question-column-hovering")).toBe(false)
+  })
+
+  it("offers Send below the last card once everything is answered", () => {
+    const onSend = vi.fn()
+    render({ answer: "A", status: "ready", onSend })
+    expect(card.footerMount.textContent).toContain("All questions answered.")
+    act(() => card.footerMount.querySelector<HTMLButtonElement>(".question-card-send")!.click())
+    expect(onSend).toHaveBeenCalledOnce()
+    expect(buildRenderedTextIndex(container).text).not.toContain("All questions answered")
+  })
+
+  it("waits for the agent after sending and reports a check with no reply", async () => {
+    const onCheck = vi.fn().mockResolvedValue(false)
+    render({ answer: "A", status: "sent", onCheck })
+    expect(card.footerMount.textContent).toContain("Sent. The agent’s next question will appear here.")
+    await act(async () => card.footerMount.querySelector<HTMLButtonElement>("button")!.click())
+    expect(onCheck).toHaveBeenCalledOnce()
+    expect(card.footerMount.textContent).toContain("No reply yet.")
+  })
+
+  it("shows no footer without a status", () => {
+    render({ answer: "A" })
+    expect(card.footerMount.childElementCount).toBe(0)
   })
 })

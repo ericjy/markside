@@ -288,6 +288,20 @@ describe("markdown renderer", () => {
     expect(card.recommended).toBe("B")
     expect(card.mount.className).toBe("question-card-actions question-card-shortcuts")
     expect(card.mount.parentElement?.lastElementChild).toBe(card.mount)
+    expect(card.footerMount.className).toBe("question-card-actions question-card-footer")
+    expect(card.element.nextElementSibling).toBe(card.footerMount)
+  })
+
+  it("tags each comparison column with the option letter in its header", () => {
+    const root = document.createElement("div")
+    root.innerHTML = md.render(question.replace(
+      "**Recommended: B.** It keeps one file.",
+      "**Recommended: B.** It keeps one file.\n\n<details open>\n<summary>Compare tradeoffs</summary>\n\n| Criterion | A. Sibling | B. Inside |\n|---|---|---|\n| Files | Two | One |\n\n</details>",
+    ))
+    mountQuestionCard(root.querySelector<HTMLElement>(".markdown-alert-question")!)
+    const columns = (row: number) => Array.from(root.querySelectorAll("tr")[row].cells, (cell) => cell.dataset.questionColumn ?? "")
+    expect(columns(0)).toEqual(["", "A", "B"])
+    expect(columns(1)).toEqual(["", "A", "B"])
   })
 
   it("offers only free-text answers when a question has no lettered options", () => {

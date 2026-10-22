@@ -92,7 +92,9 @@ waiting and offers **Check for reply**. Answered questions move to Previous
 questions as the heading and your decision, with the full question collapsed
 below. The agent records your decision and writes the next
 question, and Markside shows **Changed on disk** so you can reload. Click
-**Finish review** once the summary matches your understanding.
+**Finish review** once the closing **Before you finish** section, which lists
+how the agent read your own-words answers and anything it inferred or assumed,
+matches your understanding.
 
 Review mode currently requires the prototype CLI installed from this repository
 and Node.js 20+. See [local agent Review setup](agent-review-loop.md). Comments

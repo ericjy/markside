@@ -231,13 +231,24 @@ section only decides how questions are asked and answered.
 6. When no questions remain or the user asks to stop, check every decision
    against the subject file and any spec or design doc the interview relies
    on. Ask about each contradiction as a new card before summarizing. Then
-   replace Current questions with `## Summary`: the
-   user's decisions as short bullets, followed by any assumed decisions as
-   short bullets labeled as yours and any open questions labeled as open, then ask the user to click **Finish review** if
-   it matches their understanding. Finishing is the confirmation of shared
-   understanding. Do not act on the decisions before `Review resolved`.
-7. After the Review is resolved, follow the questioning skill for durable
-   output. If it names none, offer to fold the decisions into the subject file.
+   replace Current questions with `## Before you finish`, listing as short
+   bullets only what the user has not already seen in a decision line: how
+   you read each answer given in their own words, details you inferred or
+   combined across questions that no question decided, assumed decisions
+   labeled as yours, and open questions labeled as open. Do not restate
+   decisions made by choosing an option. End with one line asking the user
+   to click **Finish review** if this matches their understanding; when there
+   is nothing to list, that line is the whole section. With no current questions left, rename
+   Previous questions to `## Question history` and remove the answer line
+   below the title. If a later comment reopens a question, restore both
+   headings and the answer line, and ask it as a card. Finishing confirms shared
+   understanding; it is not a request to implement.
+7. After the Review is resolved, the interview is over. Write only the
+   durable docs the questioning skill names, such as a glossary or ADRs.
+   Then report the decisions in chat and stop: do not edit code, build, or
+   implement the plan unless the user asked for that, before or after the
+   interview. If the questioning skill names no output, offer to fold the
+   decisions into the subject file or to implement them, and wait.
    Keep the interview doc as the record of how each decision was made; delete
    it, and its `<file>.review.json`, only when the user asks.
 

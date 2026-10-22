@@ -975,7 +975,7 @@ export function ReviewPanel({
         )}
         {showSentStatus && (
           <p className="mt-3 text-left text-xs leading-relaxed text-muted-foreground">
-            Agent hasn’t started?{" "}
+            Agent not responding?{" "}
             <button ref={sendHelpRef} type="button" aria-haspopup="dialog" onClick={() => setSendHelpOpen(true)}
               className="rounded-sm text-left underline underline-offset-2 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
               Start a review in your agent

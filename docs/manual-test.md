@@ -328,7 +328,7 @@ permissions and disk writes require manual verification.
 ### Review update check
 
 - Send a Review and verify the footer shows Review sent, Waiting for the agent’s
-  reply, Check for reply, and Copy as prompt. Agent hasn’t started? and its
+  reply, Check for reply, and Copy as prompt. Agent not responding? and its
   Start a review in your agent link are visible without expanding anything;
   click the link to open setup.
 - At the 360px minimum dock width, verify Check for reply and Copy as prompt

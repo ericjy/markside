@@ -482,7 +482,7 @@ describe("ReviewPanel", () => {
     expect(sentStatus).toBeDefined()
     expect(sentStatus.closest("button")).toBeNull()
     expect(sentStatus.textContent?.trim()).toBe("Review sent · Waiting for the agent’s reply")
-    expect(container.textContent!.indexOf("Review sent")).toBeLessThan(container.textContent!.indexOf("Agent hasn’t started?"))
+    expect(container.textContent!.indexOf("Review sent")).toBeLessThan(container.textContent!.indexOf("Agent not responding?"))
     expect(container.textContent).not.toContain("Your review is saved.")
     expect(container.textContent).not.toContain("Add or edit a comment")
     expect(container.textContent).not.toContain("Send review to agent")

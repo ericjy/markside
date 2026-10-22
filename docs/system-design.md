@@ -582,7 +582,7 @@ reads the agent sidecar and
 document once, refreshes replies, and briefly shows No reply yet or Updates
 found inside the check button. Read failures offer a retry. If the document changed, a bottom-centered document bar offers **Reload**
 using the existing Reload action and Unsaved Draft confirmation; checking never
-replaces document content. Inline Agent hasn’t started? guidance includes a
+replaces document content. Inline Agent not responding? guidance includes a
 Start a review in your agent link that opens the existing setup dialog. Copy as prompt
 remains available. Check for reply and Copy as prompt share one row at the
 360px minimum sidebar width and wrap naturally when space is insufficient. The sent status confirms a local write, not agent receipt; no agent

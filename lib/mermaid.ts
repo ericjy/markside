@@ -61,8 +61,10 @@ function readDefaultScale(wrapper: HTMLElement): number {
   )
 }
 
+// An archived question keeps its card's diagram style in its Full question disclosure.
 function inQuestionCard(element: HTMLElement): boolean {
-  return element.closest(".markdown-alert-question") !== null
+  if (element.closest(".markdown-alert-question")) return true
+  return element.closest("details")?.querySelector(":scope > summary")?.textContent?.trim() === "Full question"
 }
 
 function init(dark: boolean, question = false): void {
@@ -484,7 +486,8 @@ export async function renderMermaidBlocks(
 
   for (const codeEl of blocks) {
     const pre = codeEl.parentElement!
-    init(dark, inQuestionCard(pre))
+    const question = inQuestionCard(pre)
+    init(dark, question)
     const code = (codeEl.textContent ?? "").trim()
     const id = `mermaid-${++idCounter}`
     const sourceLine = pre.dataset.sourceLine
@@ -492,7 +495,7 @@ export async function renderMermaidBlocks(
     try {
       const { svg } = await mermaid.render(id, code)
       const wrapper = document.createElement("div")
-      wrapper.className = "mermaid-block not-prose"
+      wrapper.className = `mermaid-block not-prose${question ? " mermaid-question" : ""}`
       wrapper.dataset.mermaidSrc = code
       if (sourceLine) wrapper.dataset.sourceLine = sourceLine
       pre.replaceWith(wrapper)
@@ -520,12 +523,13 @@ export async function rerenderMermaidBlocks(
   for (const wrapper of wrappers) {
     const code = (wrapper.dataset.mermaidSrc ?? "").trim()
     if (!code) continue
-    init(dark, inQuestionCard(wrapper))
+    const question = inQuestionCard(wrapper)
+    init(dark, question)
     const id = `mermaid-${++idCounter}`
     try {
       const { svg } = await mermaid.render(id, code)
       if (wrapper.classList.contains("mermaid-error")) {
-        wrapper.className = "mermaid-block not-prose"
+        wrapper.className = `mermaid-block not-prose${question ? " mermaid-question" : ""}`
         delete wrapper.dataset.mermaidInteractive
         setMermaidSvg(wrapper, svg)
       } else {

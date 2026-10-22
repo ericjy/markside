@@ -2107,13 +2107,13 @@ button.readability-score-filter {
   padding: 0 0 0.5rem;
 }
 
-/* In a Question Card a diagram only explains the choice; keep Expand alone. */
-.markdown-alert-question .mermaid-block:not(.is-expanded) .mermaid-navigation-controls,
-.markdown-alert-question .mermaid-block:not(.is-expanded) .mermaid-zoom-controls {
+/* In a Question Card, or its archived copy, a diagram only explains the choice; keep Expand alone. */
+.mermaid-block.mermaid-question:not(.is-expanded) .mermaid-navigation-controls,
+.mermaid-block.mermaid-question:not(.is-expanded) .mermaid-zoom-controls {
   display: none;
 }
 
-.markdown-alert-question .mermaid-block:not(.is-expanded) .mermaid-toolbar {
+.mermaid-block.mermaid-question:not(.is-expanded) .mermaid-toolbar {
   position: absolute;
   top: 0;
   right: 0;
@@ -2125,8 +2125,8 @@ button.readability-score-filter {
 }
 
 /* Expand would cover the diagram's corner, so it appears only on hover or focus. */
-.markdown-alert-question .mermaid-block:not(.is-expanded):hover .mermaid-toolbar,
-.markdown-alert-question .mermaid-block:not(.is-expanded):focus-within .mermaid-toolbar {
+.mermaid-block.mermaid-question:not(.is-expanded):hover .mermaid-toolbar,
+.mermaid-block.mermaid-question:not(.is-expanded):focus-within .mermaid-toolbar {
   opacity: 1;
 }
 

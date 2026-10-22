@@ -124,7 +124,8 @@ Rendered Mermaid diagrams keep zoom, pan, and reset controls in a toolbar above
 an isolated viewport. Theme changes replace only the SVG inside that viewport so its current
 view remains stable. Expanded view temporarily moves the diagram to a
 viewport-filling overlay and restores its inline position and view state on exit.
-Inside a Question Card a diagram only explains the choice: it uses Mermaid's
+Inside a Question Card, or a `<details>` whose summary is "Full question" (an
+archived question), a diagram only explains the choice: it uses Mermaid's
 neutral theme in light mode, stays at natural size, and shows only the Expand
 control, on hover or focus, until expanded.
 

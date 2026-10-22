@@ -44,6 +44,14 @@ describe("renderMermaidBlocks", () => {
     expect(mockInit.mock.calls.map(([config]) => config.theme)).toEqual(["neutral", "default"])
   })
 
+  it("keeps the card's diagram style in an archived question", async () => {
+    const div = document.createElement("div")
+    div.innerHTML = '<details open><summary>Full question</summary><pre><code class="language-mermaid">graph TD; A-->B</code></pre></details><details open><summary>Notes</summary><pre><code class="language-mermaid">graph TD; C-->D</code></pre></details>'
+    await renderMermaidBlocks(div, false)
+    expect(mockInit.mock.calls.map(([config]) => config.theme)).toEqual(["neutral", "default"])
+    expect([...div.querySelectorAll(".mermaid-block")].map((block) => block.classList.contains("mermaid-question"))).toEqual([true, false])
+  })
+
   it("initializes mermaid with dark theme when dark is true", async () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"

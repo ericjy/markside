@@ -62,7 +62,7 @@ describe("Review Comment presets", () => {
     ])
     expect(QUESTION_QUICK_PRESETS.map(({ id, chip }) => ({ id, chip }))).toEqual([
       { id: "clarify", chip: "Clarify" },
-      { id: "example", chip: "Example" },
+      { id: "simplify", chip: "Simplify" },
       { id: "skip", chip: "Skip" },
       { id: "delegate", chip: "Delegate" },
       { id: "stop", chip: "Stop" },

@@ -111,10 +111,14 @@ panel. A comparison column whose header starts with an option letter, such as
 `B. …`, is tagged with that letter; the hovered or focused option, else the
 chosen one, colors its column header, and hovering also fades the other options' columns. A separate Something else… tile, with a muted hint line listing what it can do, is mounted
 after the option list, before any comparison or recommendation. It, or T while its card is active
-unless an option uses that letter, opens the comment composer on the heading, whose quick presets are Clarify, Example, Skip,
+unless an option uses that letter, opens the comment composer on the heading, whose quick presets are Clarify, Simplify, Skip,
 Delegate, and Stop. The interview presets are not in the general preset
 catalog. Clarify on a card asks the agent to rewrite the question and allows a
-diagram, table, or example, since the rewrite stays in the interview doc. The tile is marked selected, with the saved text clamped to two lines
+diagram, table, or example, since the rewrite stays in the interview doc. Simplify
+asks the agent to use the simplest reasonable approach for the current scope,
+record the decision, and move on, revisiting only if a concrete need arises.
+The general comment catalog retains Example and its original Simplify instruction.
+The tile is marked selected, with the saved text clamped to two lines
 in place of the hint, only when the saved answer is nonempty and does not match an
 option letter. Keyboard hints appear at the top right, wrapping below the Question label
 on narrow screens. These mounts are excluded from Review anchoring, copying, and

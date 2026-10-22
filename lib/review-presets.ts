@@ -224,7 +224,10 @@ export const QUESTION_QUICK_PRESETS = [
     ...presetById("clarify"),
     instruction: "This question or its options are unclear to me. Rewrite them in plain language. If the choice is visual or structural, add a small diagram, table, or example.",
   },
-  presetById("example"),
+  {
+    ...presetById("simplify"),
+    instruction: "This is worth considering, but keep it simple for now. Use the simplest reasonable approach for the current scope, record the decision, and move on. Revisit only if a concrete need arises.",
+  },
   ...INTERVIEW_PRESETS,
 ]
 

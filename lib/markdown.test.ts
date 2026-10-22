@@ -224,6 +224,17 @@ describe("markdown renderer", () => {
     expect(root.querySelector(".question-option-recommended")?.getAttribute("data-question-option")).toBe("B")
   })
 
+  it("marks an archived question's decision line", () => {
+    const root = document.createElement("div")
+    root.innerHTML = md.render("> **Your decision: A.** Keep it.\n\n> **Assumed decision: B.** Fine.\n\n> **Open.**\n\n> **Note:** quoted")
+    expect([...root.querySelectorAll("blockquote")].map((quote) => quote.className)).toEqual([
+      "question-decision question-decision-user",
+      "question-decision question-decision-assumed",
+      "question-decision question-decision-pending",
+      "",
+    ])
+  })
+
   it("leaves question examples inside other code fences literal", () => {
     const root = document.createElement("div")
     root.innerHTML = md.render("````markdown\n" + question + "\n````")

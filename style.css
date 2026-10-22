@@ -1281,6 +1281,45 @@ button.readability-score-filter {
   cursor: pointer;
 }
 
+/* An archived question's decision line reads as a status, not a quotation. */
+.prose blockquote.question-decision {
+  --decision-color: hsl(173 80% 30%);
+  margin: 1rem 0 1.25rem;
+  padding: 0.55rem 0.9rem;
+  border-left: 3px solid var(--decision-color);
+  border-radius: 0 0.5rem 0.5rem 0;
+  background: color-mix(in srgb, var(--decision-color) 7%, transparent);
+  color: hsl(var(--foreground));
+  font-style: normal;
+  font-weight: 400;
+  quotes: none;
+}
+
+.dark .prose blockquote.question-decision {
+  --decision-color: hsl(172 66% 55%);
+}
+
+.prose blockquote.question-decision-assumed {
+  --decision-color: hsl(35 85% 40%);
+}
+
+.dark .prose blockquote.question-decision-assumed {
+  --decision-color: hsl(38 90% 60%);
+}
+
+.prose blockquote.question-decision-pending,
+.dark .prose blockquote.question-decision-pending {
+  --decision-color: hsl(var(--muted-foreground));
+}
+
+.prose blockquote.question-decision > p {
+  margin: 0;
+}
+
+.prose blockquote.question-decision strong {
+  color: var(--decision-color);
+}
+
 /* In a round of cards, the one letter keys answer: its bezel deepens, keeping its size. */
 .prose .markdown-alert-question.question-card-active {
   border-color: color-mix(in srgb, var(--markdown-alert-color) 45%, transparent);

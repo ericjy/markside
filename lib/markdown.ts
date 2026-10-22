@@ -203,6 +203,9 @@ md.core.ruler.before("inline", "question_fences", (state) => {
   })
 })
 
+// An archived question's decision line, as the markside skill writes it.
+const QUESTION_DECISION = /^\*\*(Your decision|Assumed decision|Deferred|Open)\b/
+
 md.core.ruler.push("markdown_alerts", (state) => {
   const tokens = state.tokens
 
@@ -221,6 +224,12 @@ md.core.ruler.push("markdown_alerts", (state) => {
     }
 
     const inline = tokens[i + 2]
+    const decision = QUESTION_DECISION.exec(inline.content)
+    if (decision) {
+      const kind = decision[1] === "Your decision" ? "user" : decision[1] === "Assumed decision" ? "assumed" : "pending"
+      tokens[i].attrJoin("class", `question-decision question-decision-${kind}`)
+      continue
+    }
     const match = MARKDOWN_ALERT.exec(inline.content)
     if (!match) continue
 

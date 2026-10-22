@@ -185,7 +185,8 @@ section only decides how questions are asked and answered.
    For an answer, archive the question at the end of Previous questions so
    the record stays short but complete: its heading, then
    `> **Your decision: A.** <one sentence>` preserving any additional notes
-   from the user's answer, then everything else from its `question` fence
+   from the user's answer (for an answer in their own words,
+   `> **Your decision:** <their answer in one sentence>`), then everything else from its `question` fence
    verbatim inside a collapsed disclosure:
 
    ````markdown

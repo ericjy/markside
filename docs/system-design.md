@@ -128,6 +128,10 @@ Inside a Question Card, or a `<details>` whose summary is "Full question" (an
 archived question), a diagram only explains the choice: it uses Mermaid's
 neutral theme in light mode, stays at natural size, and shows only the Expand
 control, on hover or focus, until expanded.
+A blockquote starting with **Your decision**, **Assumed decision**,
+**Deferred**, or **Open**, the decision line the markside skill writes under an
+archived question, renders as a callout rather than a quotation: teal for the
+reviewer's decision, amber for the agent's assumed one, and gray otherwise.
 
 The file actions (`…`) menu includes **Full width**, which lets Preview use the
 whole window and persists in `chrome.storage.local`, and **Number headings**, stored in `chrome.storage.local`

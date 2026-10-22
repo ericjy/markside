@@ -80,12 +80,16 @@ keeping supporting information distinct from answer tiles. The
 interview skill writes `<details open>` so comparisons start expanded and remain
 collapsible; rendering preserves the author's chosen open state. The
 preview then wires the options: clicking one (unless the click ends a text selection or lands on a
-Review Comment), pressing Enter on it, or pressing its letter when the page has
-one Question Card creates, or changes, one ordinary Review Comment on the card's
-heading with the option letter as its body. The chosen option is marked in
+Review Comment), pressing Enter on it, or pressing its letter while its card is
+active creates, or changes, one ordinary Review Comment on the card's
+heading with the option letter as its body. One card at a time is active: the
+card last clicked or focused into, otherwise the first unanswered one. When a
+round shows several answerable cards, the active card is outlined, and a letter
+answer moves activity to the next unanswered card, scrolling it into view only
+when it is off screen. The chosen option is marked in
 place, so that comment's heading highlight is hidden. Nothing is sent from the
-card; the reviewer sends the Review, or presses Cmd/Ctrl+Shift+Enter, so a
-misclick costs nothing. A separate Answer in your own words, ask, skip, or stop… tile is mounted
+card; the reviewer sends the Review, or presses Cmd/Ctrl+Shift+Enter anywhere
+outside a text field, so a misclick costs nothing. A separate Answer in your own words, ask, skip, or stop… tile is mounted
 after the option list, before any comparison or recommendation. It opens the
 comment composer on the heading, whose quick presets are Clarify, Example, Skip,
 Fewer questions, and Stop. The interview presets are not in the general preset
@@ -199,7 +203,7 @@ removals; a removed block returns as a copy of the original element, complete
 with its list marker or table row, placed next to the neighbour it used to have.
 A floating bar centered at the bottom of the document area carries the controls: a Show changes checkbox toggles clean reading, and Done closes the
 comparison. Show changes starts checked unless the reloaded document contains a
-question card, since an interview's reloads mostly add the next question. Its menu repeats Done and adds Done and clear comments, which
+question card, since an interview's reloads mostly add the next questions. Its menu repeats Done and adds Done and clear comments, which
 also clears the entire Review. During an agent Review it reads Done and clear
 drafts and, like the panel's Clear drafts, removes only unsent changes and
 appears only when there are some. A reload without a comparison to show reports

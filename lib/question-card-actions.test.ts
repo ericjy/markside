@@ -4,7 +4,7 @@ import { act, createElement, type ComponentProps } from "react"
 import { createRoot, type Root } from "react-dom/client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { QuestionCardActions } from "../components/question-card-actions"
+import { nextQuestionCard, QuestionCardActions } from "../components/question-card-actions"
 import { md, mountQuestionCard, type QuestionCard } from "./markdown"
 import { buildRenderedTextIndex } from "./review-dom"
 
@@ -30,7 +30,7 @@ afterEach(() => {
 
 function render(props: Partial<ComponentProps<typeof QuestionCardActions>> = {}) {
   const all: ComponentProps<typeof QuestionCardActions> = {
-    card, answer: null, busy: false, composing: false, keyboard: true, onAnswer: vi.fn(), onCompose: vi.fn(), commentAt: () => false, ...props,
+    card, answer: null, busy: false, composing: false, keyboard: true, onAnswer: vi.fn(), onCompose: vi.fn(), onActivate: vi.fn(), commentAt: () => false, ...props,
   }
   act(() => root.render(createElement(QuestionCardActions, all)))
   return all
@@ -146,5 +146,43 @@ describe("question card options", () => {
     key({ key: "b" })
     expect(onAnswer).not.toHaveBeenCalled()
     expect(container.textContent).not.toContain("to choose")
+  })
+
+  it("in a round, outlines the active card and moves on after a letter answer", () => {
+    const onAdvance = vi.fn()
+    const { onAnswer } = render({ onAdvance })
+    expect(card.element.classList.contains("question-card-active")).toBe(true)
+    key({ key: "b" })
+    expect(onAnswer).toHaveBeenLastCalledWith("B")
+    expect(onAdvance).toHaveBeenCalledOnce()
+    act(() => option("A").click())
+    expect(onAdvance).toHaveBeenCalledOnce()
+
+    render({ onAdvance, keyboard: false })
+    expect(card.element.classList.contains("question-card-active")).toBe(false)
+    render({ onAdvance: undefined })
+    expect(card.element.classList.contains("question-card-active")).toBe(false)
+  })
+
+  it("becomes active when clicked or focused into", () => {
+    const { onActivate } = render({ keyboard: false })
+    act(() => { option("A").dispatchEvent(new Event("pointerdown", { bubbles: true })) })
+    act(() => { option("B").dispatchEvent(new FocusEvent("focusin", { bubbles: true })) })
+    expect(onActivate).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe("next question card", () => {
+  const answered = new Set(["Q1", "Q3"])
+  const next = (from: string, cards = ["Q1", "Q2", "Q3", "Q4"]) => nextQuestionCard(cards, from, (card) => answered.has(card))
+
+  it("moves to the next unanswered card, wrapping to earlier ones", () => {
+    expect(next("Q2")).toBe("Q4")
+    expect(next("Q4")).toBe("Q2")
+    expect(next("Q1")).toBe("Q2")
+  })
+
+  it("finds none when every other card is answered", () => {
+    expect(next("Q2", ["Q1", "Q2", "Q3"])).toBeUndefined()
   })
 })

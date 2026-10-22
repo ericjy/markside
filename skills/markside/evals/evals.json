@@ -88,11 +88,11 @@
     {
       "id": 8,
       "prompt": "/grill-me docs/PLAN.md in Markside. The installed CLI is available. This is an evaluation: do not launch a process; describe the doc you would create, show the first question exactly as you would write it, and list the commands you would run.",
-      "expected_output": "Create docs/PLAN.grill.md beside the plan without editing PLAN.md, write one question under Current question in a question code fence with lettered options and a Recommended line, then start markside review on the interview doc and wait.",
+      "expected_output": "Create docs/PLAN.grill.md beside the plan without editing PLAN.md, write the first question the questioning skill asks under Current questions in its own question code fence with lettered options and a Recommended line, then start markside review on the interview doc and wait.",
       "files": [],
       "expectations": [
         "Creates docs/PLAN.grill.md and leaves docs/PLAN.md unchanged",
-        "Writes exactly one question, inside a question code fence under Current question",
+        "Writes each question it asks now in its own question code fence under Current questions, numbered from Q1",
         "The question has bold lettered sentence titles, practical descriptions with the main benefit and drawback, and a short **Recommended: X.** rationale",
         "Each option is understandable without expanding a comparison; if a comparison is included, it is expanded by default in a collapsible details open section labeled Compare tradeoffs before the visible recommendation, with options as columns and criteria as rows",
         "Comparison cells use meaningful symbols plus text for ratings, leave neutral facts unscored, and do not include a legend or colored-circle emoji",
@@ -102,15 +102,28 @@
     },
     {
       "id": 9,
-      "prompt": "Continue the Markside interview in docs/PLAN.grill.md. Current question contains this question fence:\n\n```question\n### Q2. Where should diagrams live?\n\nThe plan must remain readable offline. Choose how diagrams are stored.\n\n- **A. Inline the diagram.** Keep HTML in the Markdown file. Sharing needs one file, but the source is longer.\n- **B. Use a companion file.** Link to a nearby HTML file. Editing is separate, but sharing requires both files.\n\n<details>\n<summary>Compare tradeoffs</summary>\n\n| Criterion | A. Inline | B. Companion |\n|---|---|---|\n| Files to share | One | Two |\n| Works offline | ✓ Yes | ✓ With both files |\n\n</details>\n\n**Recommended: A.** One file makes sharing easier, at the cost of longer Markdown source.\n```\n\nThe Review returned comment c2 quoting the question heading with body: A. Keep the example self-contained too. This is an evaluation: do not launch a process or edit files; show the complete Answered questions entry you would write, then describe the next actions.",
-      "expected_output": "Archive the complete original fence contents as plain Markdown without rewriting or omitting anything, append the selected answer and the user's extra note separately, then replace Current question, address c2, and continue the Review.",
+      "prompt": "Continue the Markside interview in docs/PLAN.grill.md. Current questions contains this question fence:\n\n```question\n### Q2. Where should diagrams live?\n\nThe plan must remain readable offline. Choose how diagrams are stored.\n\n- **A. Inline the diagram.** Keep HTML in the Markdown file. Sharing needs one file, but the source is longer.\n- **B. Use a companion file.** Link to a nearby HTML file. Editing is separate, but sharing requires both files.\n\n<details>\n<summary>Compare tradeoffs</summary>\n\n| Criterion | A. Inline | B. Companion |\n|---|---|---|\n| Files to share | One | Two |\n| Works offline | ✓ Yes | ✓ With both files |\n\n</details>\n\n**Recommended: A.** One file makes sharing easier, at the cost of longer Markdown source.\n```\n\nThe Review returned comment c2 quoting the question heading with body: A. Keep the example self-contained too. This is an evaluation: do not launch a process or edit files; show the complete Previous questions entry you would write, then describe the next actions.",
+      "expected_output": "Archive the complete original fence contents as plain Markdown without rewriting or omitting anything, append the selected answer and the user's extra note separately, then remove that fence from Current questions, address c2, and continue the Review.",
       "files": [],
       "expectations": [
         "Preserves the original question heading, context, both full option titles and descriptions verbatim",
         "Preserves the full comparison disclosure, table, and recommendation verbatim",
         "Removes only the enclosing question fence from the archived question",
         "Appends Your decision with option A and preserves the note about keeping the example self-contained separately from the original question",
-        "Checks the archived question against the original before replacing Current question, then addresses c2 and continues the Review"
+        "Checks the archived question against the original before removing its fence from Current questions, then addresses c2 and continues the Review"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Continue the grilling interview in docs/PLAN.grill.md. Current questions holds a round of three question fences, Q4, Q5, and Q6, each with options A and B and a recommendation. The Review returned c4 quoting the Q4 heading with body B, and c6 quoting the Q6 heading with body: Stop the interview here and summarize the decisions so far. Q5 has no comment. This is an evaluation: do not launch a process or edit files; describe the changes you would make to the interview doc and the commands you would run.",
+      "expected_output": "Archive Q4 verbatim with Your decision: B, archive Q5 verbatim under Previous questions with Assumed decision naming its recommended option, replace Current questions with a Summary that lists the user's decisions and labels the assumed decisions as the agent's, address c4 and c6, and continue the Review until the user finishes.",
+      "files": [],
+      "expectations": [
+        "Archives Q4 verbatim with its decision before Q5, in question-number order",
+        "Treats Stop as ending the whole interview even though it was sent on Q6",
+        "Archives unanswered Q5 verbatim under Previous questions, ending with Assumed decision and its recommended option",
+        "Replaces Current questions with ## Summary listing the user's decisions and the agent's assumed decisions, and asks the user to click Finish review",
+        "Runs markside address for c4 and c6 with one-line replies, then markside review docs/PLAN.grill.md --continue --no-open"
       ]
     }
   ]

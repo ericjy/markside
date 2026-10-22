@@ -146,7 +146,7 @@ pull request or review response.
   Addressed and Resolved comments are read-only until reopened. Reopen a
   comment, edit it, and confirm its old reply disappears for the new wording.
 - [ ] Run `/grill-me /markside <topic>` and `/grill-me <topic> in Markside`;
-  each creates `<topic>.grill.md` at the repository root. The current question renders as a
+  each creates `<topic>.grill.md` at the repository root. Each current question renders as a
   Question card from a fenced `question` block. In Source, confirm the body
   has ordinary Markdown without `>` prefixes; return to Preview and confirm
   its options are tiles with letter keys aligned to the titles, each bold
@@ -180,6 +180,16 @@ pull request or review response.
   Review with no agent, an option adds a local comment.
   Repeat a Reload after changing only a sidecar reply, without changing the
   Markdown file, and confirm the new reply appears.
+- [ ] In an interview round with three cards under Current questions, confirm
+  the first card has a faint outline and the only keyboard hint. Press a
+  letter: the first card is answered and the outline moves to the second;
+  when the next card is below the fold, it scrolls into view, otherwise the
+  page stays still. Click into the third card and press a letter: it answers
+  the third card. Answer the remaining card, press another letter, and confirm
+  it changes the outlined card's answer. Cmd/Ctrl+Shift+Enter sends all three
+  answers as separate comments. Send a round with one card unanswered and
+  confirm that card stays after the agent's reply. Print the document and
+  confirm the outline is absent.
 - [ ] Confirm the Markdown file is unchanged by sending, the Review file has a
   matching SHA-256 of the exact disk bytes, and sent time appears in the panel.
   The button stays disabled until a comment is added or edited.

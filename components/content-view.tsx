@@ -23,7 +23,7 @@ import React from "react"
 import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
 import { createPortal } from "react-dom"
 import { RawEditor,type RawEditorHandle } from "~components/raw-editor"
-import { QuestionCardActions } from "~components/question-card-actions"
+import { nextQuestionCard, QuestionCardActions } from "~components/question-card-actions"
 import { ReadabilityHeadingControl } from "~components/readability-heading-control"
 import { ReviewPresetPicker } from "~components/review-preset-picker"
 import { SidebarRight } from "~components/sidebar-right"
@@ -245,6 +245,12 @@ export function ContentView({
   const composerAgent = agentHandoff?.completed ? undefined : agentHandoff
   const composerSending = !!composerAgent && (composerAgent.sending || composerAgent.updatingCommentId != null)
   const answerableQuestionCards = questionCards.filter(({ options }) => options.length > 0)
+  const questionAnswered = (card: QuestionCard) => !!questionAnswer(card.target)?.trim()
+  // Letter keys answer the card last clicked into, else the first unanswered one.
+  const [activeQuestionElement, setActiveQuestionElement] = React.useState<HTMLElement | null>(null)
+  const activeQuestionCard = answerableQuestionCards.find((card) => card.element === activeQuestionElement)
+    ?? answerableQuestionCards.find((card) => !questionAnswered(card))
+    ?? answerableQuestionCards[0]
   return (
     <>
         <div className="flex-1 min-h-0 print:!mr-0" style={{ marginRight: reviewOverlayDocked ? reviewDockWidth : 0 }}>
@@ -666,10 +672,16 @@ export function ContentView({
                       answer={questionAnswer(card.target)}
                       busy={questionActionsBusy}
                       composing={selectionComposerOpen && !!selectionAction?.question && card.target.contains(selectionAction.range.startContainer)}
-                      keyboard={answerableQuestionCards.length === 1 && answerableQuestionCards[0] === card}
+                      keyboard={card === activeQuestionCard}
                       onAnswer={(body) => answerQuestion(card.target, body)}
                       onCompose={(point) => composeQuestionAnswer(card.target, point)}
                       onSend={composerAgent ? () => void composerAgent.send() : undefined}
+                      onActivate={() => setActiveQuestionElement(card.element)}
+                      onAdvance={answerableQuestionCards.length > 1 ? () => {
+                        const next = nextQuestionCard(answerableQuestionCards, card, questionAnswered)
+                        setActiveQuestionElement((next ?? card).element)
+                        next?.element.scrollIntoView({ block: "nearest" })
+                      } : undefined}
                       commentAt={(x, y) => !!(reviewCommentIdAtPoint(x, y) ?? importedReviewCommentIdAtPoint(x, y))}
                     />,
                     card.mount,

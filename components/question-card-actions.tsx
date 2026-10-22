@@ -11,26 +11,36 @@ function isTypingTarget(target: EventTarget | null) {
     !!target.closest("input, textarea, select, [contenteditable=''], [contenteditable='true'], [role='dialog']")
 }
 
+/** The first unanswered card after `from`, wrapping around; undefined when every other card is answered. */
+export function nextQuestionCard<T>(cards: readonly T[], from: T, answered: (card: T) => boolean) {
+  const index = cards.indexOf(from)
+  return [...cards.slice(index + 1), ...cards.slice(0, index)].find((card) => !answered(card))
+}
+
 // The rendered options are the answer controls: this wires them and reflects the current answer.
-export function QuestionCardActions({ card, answer, busy, composing, keyboard, onAnswer, onCompose, onSend, commentAt }: {
+export function QuestionCardActions({ card, answer, busy, composing, keyboard, onAnswer, onCompose, onSend, onActivate, onAdvance, commentAt }: {
   card: QuestionCard
   /** The body of the question's current answer comment. */
   answer: string | null
   busy: boolean
   /** The composer is open on this question; the saved answer keeps its check until Save. */
   composing: boolean
-  /** Letter keys choose an option; only one card on the page may listen. */
+  /** Letter keys choose an option; only one card on the page, the active one, may listen. */
   keyboard: boolean
   onAnswer: (body: string) => void
   onCompose: (point: { x: number; y: number }) => void
   /** Sends the whole Review; absent without an active agent Review. */
   onSend?: () => void
+  /** Clicking or focusing into the card makes it the active one. */
+  onActivate: () => void
+  /** Set when several cards are answerable: the active card is outlined, and a letter answer moves on. */
+  onAdvance?: () => void
   /** A Review Comment under the pointer takes the click instead of the option. */
   commentAt: (x: number, y: number) => boolean
 }) {
   const chosen = answer?.trim() ?? null
-  const latest = useRef({ chosen, busy, onAnswer, onSend, commentAt })
-  latest.current = { chosen, busy, onAnswer, onSend, commentAt }
+  const latest = useRef({ chosen, busy, onAnswer, onSend, onActivate, onAdvance, commentAt })
+  latest.current = { chosen, busy, onAnswer, onSend, onActivate, onAdvance, commentAt }
   const choose = (value: string) => {
     const { chosen, busy, onAnswer } = latest.current
     if (!busy && chosen !== value) onAnswer(value)
@@ -38,6 +48,9 @@ export function QuestionCardActions({ card, answer, busy, composing, keyboard, o
 
   useEffect(() => {
     card.element.classList.add("question-card-interactive")
+    const activate = () => latest.current.onActivate()
+    card.element.addEventListener("pointerdown", activate)
+    card.element.addEventListener("focusin", activate)
     const removers = card.options.map(({ value, element }) => {
       const onClick = (event: MouseEvent) => {
         // Dragging selects option text to comment on it; a link keeps its own click.
@@ -60,6 +73,8 @@ export function QuestionCardActions({ card, answer, busy, composing, keyboard, o
     })
     return () => {
       card.element.classList.remove("question-card-interactive")
+      card.element.removeEventListener("pointerdown", activate)
+      card.element.removeEventListener("focusin", activate)
       removers.forEach((remove) => remove())
     }
   }, [card])
@@ -71,6 +86,12 @@ export function QuestionCardActions({ card, answer, busy, composing, keyboard, o
       element.setAttribute("aria-disabled", String(busy))
     }
   }, [card, chosen, busy])
+
+  const outlined = keyboard && !!onAdvance
+  useEffect(() => {
+    card.element.classList.toggle("question-card-active", outlined)
+    return () => card.element.classList.remove("question-card-active")
+  }, [card, outlined])
 
   useEffect(() => {
     if (!keyboard) return
@@ -86,8 +107,10 @@ export function QuestionCardActions({ card, answer, busy, composing, keyboard, o
       const option = card.options.find(({ value }) => value === event.key.toUpperCase())
       if (!option) return
       event.preventDefault()
-      option.element.focus({ preventScroll: true })
+      if (latest.current.busy) return
       choose(option.value)
+      if (latest.current.onAdvance) latest.current.onAdvance()
+      else option.element.focus({ preventScroll: true })
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)

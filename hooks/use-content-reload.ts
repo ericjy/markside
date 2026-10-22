@@ -151,7 +151,7 @@ export function useContentReload({
         const text = file.text
         if (isMdFile && previousContent !== null) {
           setReloadComparison({ before: previousContent, after: text })
-          // An interview's reloads mostly add the next question; clean reading suits answering it.
+          // An interview's reloads mostly add the next questions; clean reading suits answering it.
           setShowChanges(previousContent !== text && !hasQuestionCard(text))
           if (previousContent !== text && mode === "source") setMode("preview")
         }

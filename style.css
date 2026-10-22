@@ -1184,6 +1184,11 @@ button.readability-score-filter {
   cursor: pointer;
 }
 
+/* In a round of cards, the one letter keys answer. */
+.prose .markdown-alert-question.question-card-active {
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--markdown-alert-color) 45%, transparent);
+}
+
 .prose .question-card-interactive .question-option:hover {
   border-color: color-mix(in srgb, var(--markdown-alert-color) 45%, var(--question-tile-border));
 }
@@ -2047,6 +2052,10 @@ button.readability-score-filter {
   .prose .wikilink {
     color: #1d4ed8 !important;
     text-decoration-thickness: 0.75pt;
+  }
+
+  .prose .markdown-alert-question.question-card-active {
+    box-shadow: none;
   }
 
   [data-readability-ui],

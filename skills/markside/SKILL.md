@@ -1,6 +1,6 @@
 ---
 name: markside
-description: Open a local Markdown file in Markside using Google Chrome, wait for its Review Comments with /markside review, or run one-question-at-a-time interviews (such as /grill-me) in Markside. Use this Beta skill when the user invokes /markside, asks to open a Markdown file specifically in Markside, asks to answer interview questions "in Markside", or asks for Markside setup. Do not trigger merely because Markdown was created or discussed.
+description: Open a local Markdown file in Markside using Google Chrome, wait for its Review Comments with /markside review, or run interviews (such as /grill-me) in Markside. Use this Beta skill when the user invokes /markside, asks to open a Markdown file specifically in Markside, asks to answer interview questions "in Markside", or asks for Markside setup. Do not trigger merely because Markdown was created or discussed.
 compatibility: Requires Google Chrome plus POSIX shell on macOS/Linux or PowerShell on Windows. Markside must be installed separately with file URL access enabled. Opening and setup need no Node.js. Review mode requires Node.js 20+ and the Markside CLI.
 ---
 
@@ -78,32 +78,40 @@ for a Review request; report the received comments and resulting changes.
 
 ## Ask questions in Markside
 
-Use this when the user wants another skill's one-question-at-a-time interview
-answered in Markside instead of chat: for example `/grill-me <topic> in
+Use this when the user wants another skill's interview answered in Markside instead of chat: for example `/grill-me <topic> in
 Markside`, "interview me in Markside", or "continue this in Markside" partway
 through an interview. A bare `/markside` invoked together with a questioning
 skill, such as `/grill-me /markside`, also means this workflow, not opening a
-file. The questioning skill still decides what to ask, when to
-look facts up, and what durable docs to write. This section only decides how
-questions are asked and answered.
+file. The questioning skill still decides what to ask, how many questions to
+ask at once, when to look facts up, and what durable docs to write. This
+section only decides how questions are asked and answered.
 
 1. Create the interview doc. When grilling an existing file such as
    `docs/PLAN.md`, use the sibling `docs/PLAN.grill.md`. Otherwise use
    `<topic>.grill.md` at the repository root, with a short kebab-case topic.
    Leave the subject file unchanged during the interview.
 2. Lay it out as a title, one line explaining how to answer, then
-   `## Current question`, `## Assumed defaults`, and `## Answered questions`.
+   `## Current questions` and `## Previous questions`.
    The answer line says the user can pick an option or use the tile to answer
-   in their own words, ask, skip, ask for fewer questions, or stop. Under
-   Assumed defaults, list as one-line bullets the decisions you settled
-   yourself because the answer is obvious from context and cheap to reverse;
-   the user vetoes one by commenting on it. Leave the section empty until
-   there is one. When continuing
+   in their own words, ask, skip, ask for fewer questions, or stop, that
+   they may answer any or all cards before sending, and that commenting on an
+   assumed decision under Previous questions asks it again. Previous questions
+   holds every settled question, answered, deferred, or assumed, in the order
+   it was settled; leave it empty until there is one. When the answer is
+   obvious from context and cheap to reverse, settle the question yourself
+   instead of asking it: write it in full with its own number, exactly as a
+   card's contents in step 3, append it to Previous questions without the
+   fence, and end it with `> **Assumed decision: X.** <one sentence>` naming
+   the recommended option. When continuing
    from chat, copy the original questions and options already answered under
-   Answered questions, including their context, tradeoffs, and recommendations.
+   Previous questions, including their context, tradeoffs, and recommendations.
    Do not replace them with summaries. If the original text is unavailable,
    label the record as a summary rather than reconstructing original wording.
-3. Write exactly one question under Current question in a `question` fence:
+3. Under Current questions, write each question the questioning skill asks
+   now in its own `question` fence: one fence when it asks one question, and
+   one per question, in order, when it asks a round. Number questions
+   continuously across the interview and do not label rounds; the unique
+   numbers keep each heading a distinct answer anchor. Write each fence like this:
 
    ````markdown
    ```question
@@ -159,38 +167,48 @@ questions are asked and answered.
      recommended option separately from the user's selected answer.
 4. Run the Review workflow above on the interview doc. Tell the user to click
    an option (or press its letter), or click **Answer in your own words, ask, skip, or stop…**,
-   then click **Send review to agent**. Markside supplies the custom-answer
+   then click **Send review to agent**. When several cards are shown, add that
+   letters answer the outlined card and then move to the next unanswered one,
+   and that they can send before answering every card. Markside supplies the custom-answer
    tile after the options and the keyboard hints at the top of the card; do not write those controls
    into the Markdown. Clicking that tile opens the composer; saving a custom
    answer marks it selected. Nothing is sent until the user sends the Review.
-5. An answer is a comment whose quote is the question heading and whose body is
-   an option letter or the user's own words. When it arrives, copy the entire
-   contents of the `question` fence verbatim to the end of Answered questions
+5. An answer is a comment whose quote is a question heading and whose body is
+   an option letter or the user's own words. One Send may answer several
+   cards; handle each comment as follows, then archive in question-number order.
+   For an answer, copy the entire
+   contents of its `question` fence verbatim to the end of Previous questions
    as plain Markdown, removing only the enclosing fence. Preserve the heading,
    context, full option titles and descriptions, comparison disclosures and
    tables, and recommendation. Do not shorten or rewrite any of them.
    Append `> **Your decision: A.** <one sentence>` separately, preserving any
-   additional notes from the user's answer. Before replacing Current question,
-   verify that the archived question matches the original fence contents.
-   Write the next question under
-   Current question, address the comment with a one-line reply, and continue
-   the Review. If the comment asks something or says the question or options
-   are unclear, record no decision. Rewrite the unclear part of the current
+   additional notes from the user's answer. Before removing the fence from
+   Current questions, verify that the archived question matches the original
+   fence contents. Leave unanswered cards in place, and append after them any
+   questions the questioning skill can now ask, continuing the numbering.
+   Address each comment with a one-line reply, and continue
+   the Review. If a comment asks something or says the question or options
+   are unclear, record no decision. Rewrite the unclear part of that
    question in place, keeping its number and heading so the answer still
    anchors, address the comment with a one-line reply naming what changed, and
    continue the Review. If it asks to skip or defer the question, archive it as
-   above with `> **Deferred.**` instead of a decision and move on. If it asks
+   above with `> **Deferred.**` instead of a decision. Fewer questions and
+   Stop apply to the whole interview, whichever card carries them. If a comment asks
    for fewer questions, add `Focus: fewer questions (asked at Q<n>).` below
-   the answer line and keep to it for the rest of the interview: ask only
+   the doc's answer line and keep to it for the rest of the interview: ask only
    decisions that are costly to reverse or where reasonable people would
-   disagree, and move the rest to Assumed defaults, including the current
-   question when it falls below that bar (archive it with
-   `> **Moved to Assumed defaults.**`). If a comment on an assumed default
-   vetoes or questions it, remove the bullet and ask it as the next question.
-   If it asks to stop, go to step 6 with the decisions made so far.
-6. When no questions remain or the user asks to stop, replace Current question with `## Summary`: the
-   decisions as short bullets, followed by the remaining Assumed defaults
-   labeled as yours, then ask the user to click **Finish review** if
+   disagree, and settle the rest as assumed decisions. Recheck every unanswered
+   card in Current questions, including the one carrying the request, and
+   archive each that falls below that bar with
+   `> **Assumed decision: X.**` naming its recommended option. If a comment
+   on an assumed decision vetoes or questions it, remove it from Previous
+   questions and ask it again with the next questions as a card, keeping its
+   number and heading. If a comment asks to stop, archive the other answers
+   sent with it, archive each remaining unanswered card with
+   `> **Assumed decision: X.**` naming its recommended option, and go to step 6.
+6. When no questions remain or the user asks to stop, replace Current questions with `## Summary`: the
+   user's decisions as short bullets, followed by the assumed decisions as
+   short bullets labeled as yours, then ask the user to click **Finish review** if
    it matches their understanding. Finishing is the confirmation of shared
    understanding. Do not act on the decisions before `Review resolved`.
 7. After the Review is resolved, follow the questioning skill for durable

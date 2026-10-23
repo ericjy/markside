@@ -5,6 +5,35 @@ version is tagged with the channel(s) it actually shipped on — Chrome Web
 Store and GitHub Releases run independently and can diverge; see
 `docs/github-release.md`.
 
+## 1.7.0 — Unreleased
+
+### Added
+
+- Review with your coding agent (Beta). Run `/markside review PLAN.md` with the Markside Agent Skill, add comments, and click **Send review to agent**. The agent addresses each comment and replies; you check the changes, then Resolve, Reopen, or send more feedback until you click **Finish review**. Requires Node.js 20+ and the `markside` CLI from npm.
+- Answer agent interviews in Markside (Beta). Ask a questioning skill such as `/grill-me` to interview you in Markside, and each question appears as a card: pick an option, answer in your own words, skip, let the agent decide the rest, or stop. Answer some or all cards before sending.
+- Zen mode hides the toolbar, file tree, and Outline. Press Cmd+. / Ctrl+. or choose it in the file menu.
+- Preview shows the word count and reading time.
+- A narrow page width for Preview.
+- One-click preset buttons above the comment composer.
+- File paths in YAML frontmatter render as links.
+
+### Improved
+
+- Review opens as a sidebar you can dock beside the document, and stays open across reloads.
+- Typeface and page width moved into the file menu.
+- The opened file is revealed in the file tree.
+- Heading anchors match GitHub's, so `#links` written for GitHub work in Markside.
+- Images in Markdown stay inline, as on GitHub.
+- Hidden Outline and file tree stay hidden across reloads.
+- The popup marks pending Reviews whose file was moved or deleted, and counts only unresolved comments.
+- Returning to a tab shows **Changed on disk** when the file changed, without replacing what you see.
+
+### Fixed
+
+- Printed Mermaid diagrams fit the page column.
+- Clicking empty space clears a Review Comment selection.
+- Selected quotes no longer carry surrounding whitespace.
+
 ## 1.6.0 — 2026-10-12 (Chrome Web Store)
 
 ### Added

@@ -141,6 +141,8 @@ Keep the dashboard answers and privacy policy consistent with the implementation
   key remains in the URL fragment, so Markside stores ciphertext only.
 - Review-prompt scheduling state is not transmitted to Markside, third parties,
   or remote servers
+- Agent Reviews are written to a `.review.json` file beside the document on the
+  user's disk, where the user's local agent reads them. Nothing is transmitted.
 - After uninstall, Chrome opens an optional survey at `markside.app/uninstall`
   whose URL carries only the extension version. Answers are sent only if the
   user presses Send and are stored without identifiers.
@@ -203,6 +205,16 @@ REVIEW
 • Review History — See a reviewer's comments alongside your own, each anchored to its passage
 • Agent-ready prompts — Copy any comment as a prompt for your coding agent
 
+WORK WITH YOUR CODING AGENT (BETA)
+
+Install the free Markside Agent Skill for Claude Code, Codex, Cursor, and other agents: npx skills add ericjy/markside --skill markside -g
+
+• Open from your agent — Run /markside to open the file your agent just wrote, without finding its path
+• Review loop — Run /markside review PLAN.md, comment in Markside, and click Send review to agent. The agent addresses each comment and replies until you finish the review
+• Interviews — Let your agent's questioning skill, such as /grill-me, ask its questions as cards in Markside. Pick an option or answer in your own words
+• Local by design — Comments travel through a file beside your document. No server, no account
+• Review loop and interviews require Node.js 20+. Learn more at https://markside.app/skill
+
 SHARE
 
 • Link Snapshot — Turn a saved local file into a readable link, with the content encoded in the URL and no upload
@@ -241,13 +253,15 @@ OTHER
 • Image viewer — Open local images without leaving Markside
 • Theme toggle — Switch themes without reloading the page
 • Full width — Expand the document across the available browser space
+• Zen mode — Hide the toolbar, file tree, and outline to focus on the document
+• Word count — See word count and reading time at the top of Preview
 • Free access — Use every local feature with no account required
 
-WHAT'S NEW IN 1.6.0
+WHAT'S NEW IN 1.7.0
 
-• Choose a typeface for rendered Markdown: Sans, Serif, Charter, Iowan, or Avenir
-• Guided file-access setup on first install
-• Redesigned Settings and popup
+• Review with your coding agent: send comments to your agent and see its replies (Beta)
+• Answer agent interviews in Markside with Question Cards (Beta)
+• Zen mode, word count and reading time, and a narrow page width
 
 SET UP IN 30 SECONDS
 

@@ -2489,11 +2489,20 @@ button.readability-score-filter {
   }
 
   .mermaid-viewport {
+    display: block;
+    height: auto !important;
     overflow: visible;
   }
 
   .mermaid-diagram {
+    display: block;
+    width: 100%;
     transform: none !important;
+  }
+
+  .mermaid-diagram svg {
+    display: block;
+    width: 100% !important;
   }
 }
 ::highlight(markside-review) {

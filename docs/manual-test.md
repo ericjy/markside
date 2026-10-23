@@ -74,6 +74,11 @@ pull request or review response.
   toolbar revealed. The print preview contains the document without Markside's
   toolbar, breadcrumbs, or action buttons in either layout. Cancel printing and
   confirm the toolbar still works on screen.
+- [ ] Print a document with a compact Mermaid sequence diagram and a wider
+  flowchart. Each fills the document column without clipping or stretching,
+  with no leftover blank viewport above or below. Zoom and pan on screen, then
+  print again: the printed size and position stay unchanged. Cancel printing
+  and confirm the screen's zoom and pan are preserved.
 - [ ] Check Ctrl+E, Cmd/Ctrl+S, Cmd/Ctrl+P, and Cmd/Ctrl+. for Zen mode. Save operates in Source or Split;
   the file switcher requires an opened folder.
 

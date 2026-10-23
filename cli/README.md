@@ -42,6 +42,7 @@ For local development, run `node cli/markside.mjs review PLAN.md` from the
 Markside repository. The package can be installed with `npm install ./cli`.
 Publishing to npm is a separate release step; `npx markside` requires that
 release and should only be used once this CLI is published under that name.
+See the [npm release runbook](https://github.com/ericjy/markside/blob/main/docs/npm-release.md).
 
 Comments move through Open → Addressed → Resolved. The agent uses `address` to
 report its work and reply. The user checks the result in Markside, then chooses
@@ -51,4 +52,4 @@ Send comments to agent before the agent receives it again. The former CLI
 
 `review` returns only open comments; `comments` lists every comment with its
 status and reply. The file keeps one flat comment list; see
-[ADR-0008](../docs/adr/0008-flat-agent-review-file.md).
+[ADR-0008](https://github.com/ericjy/markside/blob/main/docs/adr/0008-flat-agent-review-file.md).

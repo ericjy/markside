@@ -6,6 +6,7 @@ import { ContentReviewFinishBar } from "~components/content-review-finish-bar"
 import { ContentReloadBar } from "~components/content-reload-bar"
 import { ContentToolbar } from "~components/content-toolbar"
 import { ContentView } from "~components/content-view"
+import { ContentZenModeEdge } from "~components/content-zen-mode"
 import { FilePalette } from "~components/file-palette"
 import { type RawEditorHandle } from "~components/raw-editor"
 import { type ReviewCopyStatus } from "~components/review-panel"
@@ -38,6 +39,7 @@ import { useContentSelection } from "~hooks/use-content-selection"
 import { useContentShortcuts } from "~hooks/use-content-shortcuts"
 import { useContentSnapshots } from "~hooks/use-content-snapshots"
 import { useContentSplitPane } from "~hooks/use-content-split-pane"
+import { readZenModeSession,useContentZenMode } from "~hooks/use-content-zen-mode"
 import { usePersistedDirectory } from "~hooks/use-persisted-directory"
 import { getPendingReviewItemCount } from "~lib/agent-review"
 import { resolveUnsavedNavigationPolicy } from "~lib/auto-save"
@@ -118,6 +120,21 @@ export function FileRenderer({
   }
   const { handle, rootUrl, status, openDirectory, reauthorize, folderError } = usePersistedDirectory()
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const [zenMode, setZenMode] = useState(readZenModeSession)
+  // Zen mode starts with the Outline hidden and toggles it separately, leaving
+  // the normal open state and saved preference unchanged.
+  const [zenOutlineOpen, setZenOutlineOpen] = useState(false)
+  useEffect(() => {
+    if (!zenMode) setZenOutlineOpen(false)
+  }, [zenMode])
+  const outlineShown = zenMode ? zenOutlineOpen : outlineOpen
+  const toolbarWrapperRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    // A toolbar control clicked before entering would otherwise keep the hidden toolbar focused.
+    const active = document.activeElement
+    if (zenMode && active instanceof HTMLElement && toolbarWrapperRef.current?.contains(active)) active.blur()
+  }, [zenMode])
+  const chooseShownOutlineOpen = zenMode ? setZenOutlineOpen : chooseOutlineOpen
   const [saveFolderDialogOpen, setSaveFolderDialogOpen] = useState(false)
   const [imageReloadVersion, setImageReloadVersion] = useState(0)
   const [imageObjectUrl, setImageObjectUrl] = useState<string | null>(null)
@@ -232,9 +249,14 @@ export function FileRenderer({
     fileUrl,
     isMdFile,
     isSplitView,
-    outlineOpen,
+    outlineOpen: outlineShown,
     rightSidebarWidth,
     sidebarInsetRef,
+  })
+  const zen = useContentZenMode({
+    zenMode,
+    setZenMode,
+    escapeClosesPanel: overlay.reviewOverlayOpen || paletteOpen,
   })
   const selection = useContentSelection({
     fileUrl,
@@ -711,6 +733,7 @@ export function FileRenderer({
         handleReloadFromDisk={reload.handleReloadFromDisk}
         renderedCopyStatus={pdf.renderedCopyStatus}
       />
+      <div className={zenMode ? "hidden" : "contents"}>
       <SidebarLeft
         currentFileUrl={fileUrl}
         sidebarWidth={sidebarWidth}
@@ -725,7 +748,20 @@ export function FileRenderer({
         onOpenPalette={() => setPaletteOpen(true)}
         reviewCounts={{ ...reviewCounts, [fileUrl]: pendingReviewItemCount }}
       />
+      </div>
       <SidebarInset ref={sidebarInsetRef} className="relative h-svh overflow-hidden">
+      {zenMode && (
+        <ContentZenModeEdge
+          hintVisible={zen.hintVisible}
+          toolbarRevealed={zen.toolbarRevealed}
+          pointerNearTop={zen.pointerNearTop}
+          rightInset={overlay.reviewOverlayOpen && overlay.reviewOverlayDocked ? overlay.reviewDockWidth : 16}
+          onReveal={zen.revealToolbar}
+        />
+      )}
+      {/* In Zen mode the toolbar overlays the document while revealed; keyboard focus also reveals it. */}
+      <div ref={toolbarWrapperRef} data-zen-toolbar className={!zenMode ? "contents"
+        : `absolute inset-x-0 top-0 z-[60] bg-background shadow-sm ${zen.toolbarRevealed ? "" : "pointer-events-none opacity-0 has-[:focus-visible]:pointer-events-auto has-[:focus-visible]:opacity-100"}`}>
       <ContentToolbar
         leftOpen={leftOpen}
         hasMore={hasMore}
@@ -761,8 +797,8 @@ export function FileRenderer({
         setReviewOverlayOpen={overlay.setReviewOverlayOpen}
         reviewItemCount={pendingReviewItemCount}
         reviewNotice={reviewNotice}
-        chooseOutlineOpen={chooseOutlineOpen}
-        outlineOpen={outlineOpen}
+        chooseOutlineOpen={chooseShownOutlineOpen}
+        outlineOpen={outlineShown}
         requestLinkSnapshot={snapshots.requestLinkSnapshot}
         fileMenuTriggerRef={fileMenuTriggerRef}
         fileMenuPointerInteractionRef={fileMenuPointerInteractionRef}
@@ -776,7 +812,12 @@ export function FileRenderer({
         copyRenderedPreview={pdf.copyRenderedPreview}
         isPdfExportable={isPdfExportable}
         requestPdfExport={pdf.requestPdfExport}
+        zenMode={zenMode}
+        setZenMode={setZenMode}
       />
+      </div>
+      {/* Leaves room above the document so a revealed toolbar doesn't crowd it. */}
+      {zenMode && <div className="h-5 shrink-0" />}
         {conflict && (
           <div className="shrink-0 flex items-center justify-between gap-3 px-4 py-2 bg-amber-50 dark:bg-amber-950 border-b border-amber-200 dark:border-amber-800 text-xs">
             <span className="text-amber-800 dark:text-amber-200">
@@ -882,21 +923,22 @@ export function FileRenderer({
         reviewBadgeAnchors={highlights.reviewBadgeAnchors}
         jumpToReviewSection={reviewActions.jumpToReviewSection}
         selectedReviewId={selectedReviewId}
-        outlineOpen={outlineOpen}
+        outlineOpen={outlineOpen || outlineShown}
+        outlineHidden={zenMode && !zenOutlineOpen}
         numberHeadings={numberHeadings}
         headings={headings}
         outlineNumbers={outlineNumbers}
         activeHeadingId={activeHeadingId}
         rightSidebarWidth={rightSidebarWidth}
         setRightSidebarWidth={setRightSidebarWidth}
-        setOutlineOpen={setOutlineOpen}
-        chooseOutlineOpen={chooseOutlineOpen}
+        setOutlineOpen={zenMode ? setZenOutlineOpen : setOutlineOpen}
+        chooseOutlineOpen={chooseShownOutlineOpen}
         setActiveHeadingId={setActiveHeadingId}
       />
       {(reload.diskChanged || reload.hasReloadChanges || reload.reloadLoading || reload.reloadNoticeOpen) && (
         <div className="pointer-events-none absolute bottom-5 left-0 z-40 print:hidden" style={{ right: overlay.reviewOverlayDocked ? overlay.reviewDockWidth : 0 }}>
           <div style={{ width: isSplitView ? `${split.previewPercent}%` : "100%" }}>
-            <div className="flex justify-center px-4 xl:mr-[var(--reload-outline-width)]" style={{ "--reload-outline-width": `${outlineOpen && previewVisible ? rightSidebarWidth : 0}px` } as React.CSSProperties}>
+            <div className="flex justify-center px-4 xl:mr-[var(--reload-outline-width)]" style={{ "--reload-outline-width": `${outlineShown && previewVisible ? rightSidebarWidth : 0}px` } as React.CSSProperties}>
               <ContentReloadBar
                 diskChanged={reload.diskChanged}
                 reloadLoading={reload.reloadLoading}
@@ -945,7 +987,8 @@ export function FileRenderer({
         reviewOverlayRef={overlay.reviewOverlayRef}
         reviewOverlayOpen={overlay.reviewOverlayOpen}
         reviewOverlaySize={overlay.reviewOverlaySize}
-        outlineOpen={outlineOpen}
+        outlineOpen={outlineShown}
+        zenMode={zenMode}
         rightSidebarWidth={rightSidebarWidth}
         reviewOverlayPosition={overlay.reviewOverlayPosition}
         reviewOverlayDragging={overlay.reviewOverlayDragging}

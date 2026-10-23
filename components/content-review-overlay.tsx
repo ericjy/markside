@@ -44,6 +44,7 @@ interface ContentReviewOverlayProps {
   reviewOverlayOpen: boolean
   reviewOverlaySize: "compact" | "standard" | "wide"
   outlineOpen: boolean
+  zenMode: boolean
   rightSidebarWidth: number
   reviewOverlayPosition: { x: number; y: number; } | null
   reviewOverlayDragging: boolean
@@ -93,6 +94,7 @@ export function ContentReviewOverlay({
   reviewOverlayOpen,
   reviewOverlaySize,
   outlineOpen,
+  zenMode,
   rightSidebarWidth,
   reviewOverlayPosition,
   reviewOverlayDragging,
@@ -155,7 +157,7 @@ export function ContentReviewOverlay({
                 right: "auto",
               }),
             } as React.CSSProperties}
-            className={`review-overlay absolute z-50 print:!hidden flex-col text-foreground ${reviewOverlayDocked ? "right-0 top-12 bottom-0 border-l" : "right-6 top-[4.5rem] max-h-[70svh] overflow-hidden rounded-2xl border shadow-2xl xl:right-[calc(var(--review-outline-offset)+1.5rem)]"} ${reviewOverlayOpen ? "flex" : "hidden"}`}>
+            className={`review-overlay absolute z-50 print:!hidden flex-col text-foreground ${reviewOverlayDocked ? `right-0 bottom-0 border-l ${zenMode ? "top-0" : "top-12"}` : `right-6 max-h-[70svh] ${zenMode ? "top-6" : "top-[4.5rem]"} overflow-hidden rounded-2xl border shadow-2xl xl:right-[calc(var(--review-outline-offset)+1.5rem)]`} ${reviewOverlayOpen ? "flex" : "hidden"}`}>
             <div
               className={`review-chrome flex h-11 shrink-0 touch-none select-none items-center justify-between border-b px-4 ${reviewOverlayDocked ? "" : reviewOverlayDragging ? "cursor-grabbing" : "cursor-grab"}`}
               onPointerDown={reviewOverlayDocked ? undefined : startReviewOverlayDrag}

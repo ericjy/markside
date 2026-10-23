@@ -362,6 +362,16 @@ Both sidebars are resizable by dragging their edges:
 
 Sidebar widths and visibility reset on page reload. Expanded file-tree folders persist per root folder.
 
+### Zen mode
+
+Choose **Zen mode** in the file actions (`…`) menu, or press `Cmd+.` (`Ctrl+.` on Windows and Linux), to hide the toolbar, file tree, and Outline. It works in Preview, Source, and Split, and for other file types through the shortcut. An open Review panel, the word count, the Source formatting buttons, and the Reload and Review finish bars stay available. Page width and Typeface are unchanged.
+
+A faint bar at the top center marks where the toolbar is; it darkens as the pointer nears the top, and reaching the edge shows the toolbar over the document. It hides again when you move away. From it you can open Review, show the Outline, or switch modes without leaving Zen mode. Showing the Outline in Zen mode doesn't change whether it shows normally.
+
+To leave, press Escape, press the shortcut again, or click **Exit Zen mode** at the left end of the toolbar. Escape first closes the Review panel, menus, dialogs, the quick file switcher, an expanded diagram, Source search, or multiple cursors. A short hint names these ways out each time Zen mode starts.
+
+Zen mode stays on in the tab while you open other files, follow links, or reload the page. New tabs start with it off. It does not enter Chrome full screen; use Chrome's own shortcut for that.
+
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
@@ -372,6 +382,7 @@ Sidebar widths and visibility reset on page reload. Expanded file-tree folders p
 | `Cmd+B` / `Ctrl+B` | Bold selected Markdown in Source or Split |
 | `Cmd+Option+1/2/3/4` / `Ctrl+Alt+1/2/3/4` | Apply Heading 1, 2, 3, or 4 in Source or Split |
 | `Ctrl+E` | Toggle Preview / Source |
+| `Cmd+.` / `Ctrl+.` | Toggle Zen mode |
 
 
 ### Local agent review history

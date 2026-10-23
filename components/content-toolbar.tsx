@@ -7,6 +7,8 @@ import {
   Copy,
   Eye,
   Link2,
+  Maximize2,
+  Minimize2,
   MessageSquare,
   Moon,
   MoreHorizontal,
@@ -20,6 +22,7 @@ import {
   Type
 } from "lucide-react"
 import React from "react"
+import { ZEN_MODE_SHORTCUT } from "~components/content-zen-mode"
 import { Button } from "~components/ui/button"
 import { Separator } from "~components/ui/separator"
 import {
@@ -87,6 +90,8 @@ interface ContentToolbarProps {
   copyRenderedPreview: () => Promise<void>
   isPdfExportable: boolean
   requestPdfExport: () => void
+  zenMode: boolean
+  setZenMode: (zenMode: boolean) => void
 }
 
 export function ContentToolbar({
@@ -139,12 +144,22 @@ export function ContentToolbar({
   copyRenderedPreview,
   isPdfExportable,
   requestPdfExport,
+  zenMode,
+  setZenMode,
 }: ContentToolbarProps) {
   return (
     <>
         <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
           <>
-            <SidebarTrigger className={`-ml-1 ${leftOpen ? "bg-accent" : ""}`} />
+            {/* Zen mode keeps the file tree hidden, so its toggle becomes the way out. */}
+            {zenMode ? (
+              <Button variant="ghost" size="icon" className="-ml-1 h-7 w-7" onClick={() => setZenMode(false)}
+                aria-label="Exit Zen mode" title={`Exit Zen mode (${ZEN_MODE_SHORTCUT})`}>
+                <Minimize2 size={16} />
+              </Button>
+            ) : (
+              <SidebarTrigger className={`-ml-1 ${leftOpen ? "bg-accent" : ""}`} />
+            )}
             <Separator orientation="vertical" className="mr-2 h-4" />
           </>
           <nav className="flex min-w-0 flex-1 items-center gap-1 text-sm">
@@ -509,6 +524,13 @@ export function ContentToolbar({
                     </span>
                   </DropdownMenu.CheckboxItem>
                 )}
+                <DropdownMenu.Item
+                  className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
+                  onSelect={() => setZenMode(!zenMode)}>
+                  {zenMode ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                  {zenMode ? "Exit Zen mode" : "Zen mode"}
+                  <kbd className="ml-auto pl-4 font-mono text-xs text-muted-foreground">{ZEN_MODE_SHORTCUT}</kbd>
+                </DropdownMenu.Item>
                 {isMdFile && previewVisible && content !== null && (
                   <DropdownMenu.Item
                     className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"

@@ -4,6 +4,7 @@ import {
   getContentFileSurfaces,
   getSavePathParts,
   isFilePaletteShortcut,
+  isZenModeShortcut,
   isSaveShortcut,
   isToggleSourceShortcut,
 } from "./content-app-policy"
@@ -52,5 +53,11 @@ describe("content application characterization", () => {
     expect(isToggleSourceShortcut({ ...key, key: "e" }, false)).toBe(false)
     expect(isFilePaletteShortcut({ ...key, key: "p" }, "granted")).toBe(true)
     expect(isFilePaletteShortcut({ ...key, key: "p" }, "prompt")).toBe(false)
+    const zen = { ...key, key: ".", shiftKey: false, altKey: false }
+    expect(isZenModeShortcut(zen)).toBe(true)
+    expect(isZenModeShortcut({ ...zen, ctrlKey: false, metaKey: true })).toBe(true)
+    expect(isZenModeShortcut({ ...zen, ctrlKey: false })).toBe(false)
+    expect(isZenModeShortcut({ ...zen, shiftKey: true })).toBe(false)
+    expect(isZenModeShortcut({ ...zen, key: "Enter", shiftKey: true })).toBe(false)
   })
 })

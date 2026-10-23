@@ -33,7 +33,8 @@ mode lasts while the user moves between files in the tab and is easy to leave.
 
 - Works in Preview, Source, and Split, and for other file types.
 - Hides only Markside's interface; Chrome full screen stays separate.
-- Stays on in the tab until turned off; a reload starts with it off.
+- Stays on in the tab until turned off, including across reloads; new tabs
+  start with it off.
 - Existing preferences, such as Page width and the saved Outline choice, are
   unchanged.
 - No writing aids, such as dimming text or centering the current line, in the

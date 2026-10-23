@@ -24,7 +24,7 @@ function toolbarProps(): ComponentProps<typeof ContentToolbar> {
     requestLinkSnapshot: noop, fileMenuTriggerRef: { current: null }, fileMenuPointerInteractionRef: { current: false },
     typeface: "sans", previewWidth: "standard", setPreviewWidth: noop, numberHeadings: false, setNumberHeadings: noop,
     readabilityControlsVisible: false, setReadabilityControlsVisible: noop, copyRenderedPreview: async () => {},
-    isPdfExportable: true, requestPdfExport: noop,
+    isPdfExportable: true, requestPdfExport: noop, zenMode: false, setZenMode: noop,
   }
 }
 
@@ -145,6 +145,48 @@ it("restores Typeface in the file menu, applies a selection, and follows other t
     act(() => root.unmount())
     container.remove()
     document.documentElement.style.removeProperty("--markside-prose-font")
+    vi.unstubAllGlobals()
+  }
+})
+
+it.each(["preview", "source"] as const)("toggles Zen mode from the file menu in %s", (mode) => {
+  stubMatchMedia(false)
+  const setZenMode = vi.fn()
+  const props = { ...toolbarProps(), mode, previewVisible: mode === "preview", sourceVisible: mode === "source", setZenMode }
+  const container = document.createElement("div")
+  document.body.append(container)
+  const root = createRoot(container)
+  const render = (zenMode: boolean) => act(() => root.render(
+    createElement(SidebarProvider, null, createElement(ContentToolbar, { ...props, zenMode })),
+  ))
+  const menuItem = () => {
+    act(() => {
+      container.querySelector<HTMLButtonElement>('[aria-label="File actions"]')!
+        .dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
+    })
+    return Array.from(document.querySelectorAll<HTMLElement>('[role="menuitem"]'))
+      .find(element => /^(Exit )?Zen mode/.test(element.textContent ?? ""))!
+  }
+  try {
+    render(false)
+    expect(container.querySelector('[aria-label="Exit Zen mode"]')).toBeNull()
+    let item = menuItem()
+    expect(item.textContent).toMatch(/^Zen mode(⌘|Ctrl\+)\.$/)
+    act(() => item.click())
+    expect(setZenMode).toHaveBeenLastCalledWith(true)
+
+    render(true)
+    const exit = container.querySelector<HTMLButtonElement>('[aria-label="Exit Zen mode"]')!
+    act(() => exit.click())
+    expect(setZenMode).toHaveBeenLastCalledWith(false)
+    item = menuItem()
+    expect(item.textContent).toMatch(/^Exit Zen mode/)
+    setZenMode.mockClear()
+    act(() => item.click())
+    expect(setZenMode).toHaveBeenLastCalledWith(false)
+  } finally {
+    act(() => root.unmount())
+    container.remove()
     vi.unstubAllGlobals()
   }
 })

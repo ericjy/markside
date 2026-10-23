@@ -12,6 +12,10 @@ _Avoid_: Automatic saving, background save
 A preference that sets the font of rendered Markdown. It offers a fixed set of installed system fonts and defaults to Sans.
 _Avoid_: Font, theme
 
+**Zen mode**:
+A temporary view that hides Markside's toolbar, file tree, and Outline so the document fills the page. It lasts in the tab, across reloads and links, until the user turns it off; new tabs start without it, and it changes no saved preference.
+_Avoid_: Focus mode, full screen, distraction-free mode
+
 **Unsaved Draft**:
 Edits in the source editor that have not been written to the local file. Leaving an unsaved draft requires the user to save it, discard it, or cancel navigation.
 _Avoid_: Dirty file, pending changes

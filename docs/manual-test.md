@@ -52,8 +52,21 @@ pull request or review response.
   another file to check persistence. Code blocks, Source, and PDF Export retain
   their own fonts. Source-only mode has no Typeface submenu, and Settings no
   longer has the old selector.
+- [ ] Open file actions → Zen mode, which shows `⌘.` or `Ctrl+.`. The toolbar,
+  file tree, and Outline disappear at once; the word count stays and a hint
+  shows for about two seconds. Check the faint bar at the top center, which
+  darkens as the pointer nears the top; reach the edge or press Tab to reveal the toolbar over the
+  document, clear of the first heading, with **Exit Zen mode** at its left end. Show the
+  Outline and open Review from it; moving away hides the toolbar unless a menu
+  is open. Toggle with Cmd/Ctrl+. in Preview, Source (while typing),
+  Split, and a non-Markdown file. With Review open, the first Escape closes
+  Review and the second leaves Zen mode; docked Review reaches the window top.
+  In Source, Escape with a selection collapses it first. Open another file from
+  the file tree, quick switcher, or an ordinary link, and reload: Zen mode stays
+  on. A new tab starts with it off.
+  Leaving restores the sidebars, and the saved Outline choice is unchanged.
 - [ ] Check the outline, heading navigation, light/dark themes, and narrow windows.
-- [ ] Check Ctrl+E, Cmd/Ctrl+S, and Cmd/Ctrl+P. Save operates in Source or Split;
+- [ ] Check Ctrl+E, Cmd/Ctrl+S, Cmd/Ctrl+P, and Cmd/Ctrl+. for Zen mode. Save operates in Source or Split;
   the file switcher requires an opened folder.
 
 ## Save, reload, and folder permissions

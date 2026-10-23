@@ -373,6 +373,7 @@ Hosted Snapshots.
 | `conflict` | Whether the disk version changed externally |
 | `dark`, `previewWidth`, and `sourceFullWidth` | Current theme and independent pane width choices; both width choices persist in `chrome.storage.local`; legacy `previewFullWidth` is a fallback for Preview |
 | `leftOpen` and `outlineOpen` | Sidebar visibility; a shown or hidden Outline choice is stored in `chrome.storage.local` and restored before the first paint, though narrow windows still start with Outline closed |
+| `zenMode` and `zenOutlineOpen` | Zen mode, kept per tab in `sessionStorage` so it survives reloads and links but not new tabs; hides the file tree and Outline with CSS while leaving `leftOpen`, `outlineOpen`, and their saved preference unchanged. The toolbar becomes a transparent overlay revealed from the top edge or by keyboard focus, a 20 px spacer keeps the document clear of it, and `zenOutlineOpen` shows the Outline inside Zen mode. Its Escape listener records in the capture phase whether a dialog, menu, Review panel, file switcher, expanded diagram, or form field was open, and leaves Zen mode in the bubble phase only if none was and no handler prevented the default |
 | `sidebarWidth` and `rightSidebarWidth` | Sidebar widths |
 | `reviewOverlaySize` | Session-only compact, standard, or wide Review width; compact is the default |
 | `reviewOverlayPosition` | Per-file Review position stored in `chrome.storage.local`; restored after reload and clamped to the current document area |

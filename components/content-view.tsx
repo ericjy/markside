@@ -149,6 +149,7 @@ interface ContentViewProps {
   jumpToReviewSection: (id: string) => void
   selectedReviewId: string | null
   outlineOpen: boolean
+  outlineHidden: boolean
   numberHeadings: boolean
   headings: Heading[]
   outlineNumbers: string[]
@@ -238,6 +239,7 @@ export function ContentView({
   jumpToReviewSection,
   selectedReviewId,
   outlineOpen,
+  outlineHidden,
   numberHeadings,
   headings,
   outlineNumbers,
@@ -775,6 +777,7 @@ export function ContentView({
                     </button>
                   ))}
                     </div>
+                    <div className={outlineHidden ? "hidden" : "contents"}>
                     <SidebarRight
                       open={outlineOpen}
                       headings={numberHeadings ? headings.map((heading, index) => {
@@ -791,6 +794,7 @@ export function ContentView({
                         if (window.innerWidth < 1280) setOutlineOpen(false)
                       }}
                     />
+                    </div>
                   </div>
                 </div>
               </div>

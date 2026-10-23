@@ -32,6 +32,10 @@ export function isToggleSourceShortcut(event: ShortcutEvent, isMdFile: boolean) 
   return event.key === "e" && event.ctrlKey && !event.metaKey && isMdFile
 }
 
+export function isZenModeShortcut(event: ShortcutEvent & Pick<KeyboardEvent, "shiftKey" | "altKey">) {
+  return (event.metaKey || event.ctrlKey) && !event.shiftKey && !event.altKey && event.key === "."
+}
+
 export function isFilePaletteShortcut(event: ShortcutEvent, status: string) {
   return (event.metaKey || event.ctrlKey) && event.key === "p" && status === "granted"
 }

@@ -98,3 +98,4 @@ and code examples may no longer match the current source tree.
 - [Typeface in the file menu](2026-10-22-typeface-menu/spec.md)
 - [Zen mode](2026-10-22-focus-mode/spec.md)
 - [Question Card progress and partial Reviews](2026-10-22-partial-question-review/spec.md)
+- [Theme selection](2026-10-22-theme-selection/spec.md) (Confirmed design)

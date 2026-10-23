@@ -135,6 +135,7 @@ interface ContentViewProps {
   questionActionsBusy: boolean
   checkReviewUpdates: () => Promise<boolean>
   answerQuestion: (target: HTMLElement, body: string) => void
+  clearQuestionAnswer: (target: HTMLElement) => void
   composeQuestionAnswer: (target: HTMLElement, point: { x: number; y: number }) => void
   matchingReadabilityResult: (section: ReadabilitySection) => ResolvedReadabilityResult | null
   hasSingleH1: boolean
@@ -225,6 +226,7 @@ export function ContentView({
   questionActionsBusy,
   checkReviewUpdates,
   answerQuestion,
+  clearQuestionAnswer,
   composeQuestionAnswer,
   matchingReadabilityResult,
   hasSingleH1,
@@ -298,12 +300,12 @@ export function ContentView({
       scroller.removeEventListener("scrollend", onScrollEnd)
     }
   }, [previewScrollRef, followsQuestionScroll])
-  // The last card closes the round: it offers Send once everything is answered, then waits for the agent.
+  const answeredQuestionCount = answerableQuestionCards.filter(questionAnswered).length
+  // The round can be sent with unanswered questions, then waits for the agent.
   const questionStatus: QuestionCardStatus | undefined = !composerAgent ? undefined
     : composerAgent.sending ? "sending"
     : composerAgent.sent && !composerAgent.canFinish ? "sent"
-    : !composerAgent.disabled && answerableQuestionCards.length > 0 && answerableQuestionCards.every(questionAnswered) ? "ready"
-    : undefined
+    : "ready"
   return (
     <>
         <div className="flex-1 min-h-0 print:!mr-0" style={{ marginRight: reviewOverlayDocked ? reviewDockWidth : 0 }}>
@@ -733,7 +735,12 @@ export function ContentView({
                       composing={selectionComposerOpen && !!selectionAction?.question && card.target.contains(selectionAction.range.startContainer)}
                       keyboard={card === activeQuestionCard}
                       status={card === answerableQuestionCards.at(-1) ? questionStatus : undefined}
+                      answeredCount={answeredQuestionCount}
+                      questionCount={answerableQuestionCards.length}
+                      sendDisabled={composerAgent?.disabled}
+                      sendDisabledReason={composerAgent?.disabledReason}
                       onAnswer={(body) => answerQuestion(card.target, body)}
+                      onClearAnswer={() => clearQuestionAnswer(card.target)}
                       onCompose={(point) => composeQuestionAnswer(card.target, point)}
                       onSend={composerAgent ? () => void composerAgent.send() : undefined}
                       onCheck={checkReviewUpdates}

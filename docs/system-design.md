@@ -107,11 +107,17 @@ line a third of the way down the preview, to the card on that line, else the
 visible card nearest it. A letter answer moves activity to the next unanswered
 card, smoothly scrolling it fully into view when it is not, instantly under
 reduced motion. The chosen option is marked in
-place, so that comment's heading highlight is hidden. Choosing never sends;
+place, so that comment's heading highlight is hidden. Clicking a selected option
+again, or pressing Enter or Space on it, deletes its unsent answer comment and
+leaves the question unanswered. Repeating a letter shortcut does not clear an
+answer. Sent answer comments retain their history and use Withdraw in Review.
+Choosing never sends;
 the reviewer sends the Review, or presses Cmd/Ctrl+Shift+Enter anywhere
 outside a text field, so a misclick costs nothing. During an agent Review a bar
-just after the last answerable card, outside it, covers the whole round: once every card is answered it offers
-**Send review**, and after sending it says the agent's next question will
+just after the last answerable card, outside it, covers the whole round: it shows
+the answered count, such as **2 / 3 questions answered**, and **Send review** even
+while cards remain unanswered. The button follows the Review's existing send
+conditions, so an empty Review cannot be sent. After sending it says the agent's next question will
 appear there, with **Check for reply** running the same check as the Review
 panel. A comparison column whose header starts with an option letter, such as
 `B. …`, is tagged with that letter; the hovered or focused option, else the

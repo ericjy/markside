@@ -523,6 +523,16 @@ export function useContentReview({
     if (question) createReviewComment(question.anchor, body, { activate: false })
   }
 
+  const clearQuestionAnswer = (target: HTMLElement) => {
+    if (questionActionsBusy) return
+    const question = questionBlock(target)
+    if (!question) return
+    const comment = review?.comments.find((comment) =>
+      !retiredCommentIds.has(comment.id) && isSameReviewAnchor(comment.anchor, question.anchor)
+    )
+    if (comment) deleteReviewCommentById(comment.id)
+  }
+
   const composeQuestionAnswer = (target: HTMLElement, point: { x: number; y: number }) => {
     if (questionActionsBusy) return
     const question = questionBlock(target)
@@ -603,6 +613,7 @@ export function useContentReview({
     activateQuickComment,
     handleReviewHighlightClick,
     answerQuestion,
+    clearQuestionAnswer,
     composeQuestionAnswer,
     questionAnswer,
     questionActionsBusy,

@@ -910,6 +910,7 @@ export function FileRenderer({
         questionAnswer={reviewActions.questionAnswer}
         questionActionsBusy={reviewActions.questionActionsBusy}
         answerQuestion={reviewActions.answerQuestion}
+        clearQuestionAnswer={reviewActions.clearQuestionAnswer}
         composeQuestionAnswer={reviewActions.composeQuestionAnswer}
         matchingReadabilityResult={readability.matchingReadabilityResult}
         hasSingleH1={readability.hasSingleH1}

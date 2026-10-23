@@ -76,7 +76,9 @@ keep it when the interview ends. Each question is a fenced
 `question` block, which appears as a card. The recommended option is labeled,
 with the agent's reasoning below the options.
 Click an option, or press its letter, to make it your answer; choose another to
-change it, or use the **Something else…** tile below the options (or press T) to
+change it. Before sending, click the selected option again to clear its answer
+and leave that question unanswered. Answers already sent use **Withdraw** in
+Review. Use the **Something else…** tile below the options (or press T) to
 answer in your own words or ask a question. That tile is marked selected and
 shows your text in place of its hint after you save a custom answer.
 Its presets let you skip the question, let the agent decide the rest with its
@@ -87,7 +89,9 @@ its options are unclear, ask there instead; the agent rewrites the question and
 keeps it current. Hovering an option highlights its column in Compare tradeoffs.
 You can also select any text in the card to comment on it. Then click **Send review**
 below the last card or **Send review to agent** in the Review panel,
-or press Cmd/Ctrl+Shift+Enter. Until the agent replies, that bar says it is
+or press Cmd/Ctrl+Shift+Enter, even if some questions are unanswered. The bar shows
+your progress, such as **2 / 3 questions answered**. Add an answer, Review Comment,
+or Review Note before sending. Until the agent replies, that bar says it is
 waiting and offers **Check for reply**. Answered questions move to Previous
 questions as the heading and your decision, with the full question collapsed
 below. The agent records your decision and writes the next

@@ -87,7 +87,9 @@ the choices, the recommended one is labeled, and its reasoning sits in its own
 box below them. A quieter Something else… tile follows the listed
 options and is marked selected, showing the saved text in place of its hint, after a custom answer or question is saved. Choosing an option creates or changes an
 ordinary Review Comment on the question's heading, which the user sends with
-the rest of the Review.
+the rest of the Review. During an active agent Review, the bar below the last
+card shows how many questions are answered and allows sending with unanswered
+questions remaining. Clicking a selected option again clears its unsent answer.
 _Avoid_: Poll, form, quiz
 
 

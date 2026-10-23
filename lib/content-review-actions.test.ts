@@ -259,6 +259,45 @@ describe("question card answers", () => {
     hook.unmount()
   })
 
+  it.each([true, false])("clears an unsent answer without sending, agent Review: %s", (agent) => {
+    const { hook, options, saved, card, send } = questionSetup(review)
+    const agentHandoff = agent ? options.agentHandoff : undefined
+    hook.rerender({ ...options, agentHandoff })
+    act(() => hook.result.current.answerQuestion(card.target, "A"))
+    const answer = saved()!.comments[1]
+    hook.rerender({ ...options, agentHandoff, review: saved() })
+    act(() => hook.result.current.clearQuestionAnswer(card.target))
+    expect(saved()!.comments).toEqual([prior])
+    expect(saved()!.note).toBe(review.note)
+    hook.rerender({ ...options, agentHandoff, review: saved() })
+    expect(hook.result.current.questionAnswer(card.target)).toBeNull()
+    act(() => hook.result.current.answerQuestion(card.target, "B"))
+    expect(saved()!.comments[1]).toMatchObject({ body: "B" })
+    expect(saved()!.comments[1].id).not.toBe(answer.id)
+    expect(send).not.toHaveBeenCalled()
+    hook.unmount()
+  })
+
+  it("preserves sent answer history when asked to clear a question", () => {
+    const { hook, options, saved, card } = questionSetup()
+    act(() => hook.result.current.answerQuestion(card.target, "A"))
+    const answer = saved()!.comments[0]
+    const file = sendReview(refreshReviewFile(null, "PLAN.md"), { docHash: "a".repeat(64), comments: [{ id: answer.id, quote: answer.anchor.exact, line: 1, body: answer.body, status: "open" }] })
+    hook.rerender({ ...options, review: saved(), agentHandoff: { ...options.agentHandoff!, file } })
+    act(() => hook.result.current.clearQuestionAnswer(card.target))
+    expect(saved()!.comments).toEqual([answer])
+    hook.unmount()
+  })
+
+  it("does not clear an answer while sending", () => {
+    const { hook, options, saved, card } = questionSetup()
+    act(() => hook.result.current.answerQuestion(card.target, "A"))
+    hook.rerender({ ...options, review: saved(), agentHandoff: { ...options.agentHandoff!, sending: true } })
+    act(() => hook.result.current.clearQuestionAnswer(card.target))
+    expect(saved()!.comments).toMatchObject([{ body: "A" }])
+    hook.unmount()
+  })
+
   it("ignores answers while a send is in progress", () => {
     const { hook, options, send, saved, card } = questionSetup()
     hook.rerender({ ...options, agentHandoff: { ...options.agentHandoff!, sending: true } })

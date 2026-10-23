@@ -24,8 +24,12 @@ function highlightColumn(card: QuestionCard, hovered: string | null, chosen: str
 
 export type QuestionCardStatus = "ready" | "sending" | "sent"
 
-function QuestionCardFooter({ status, onSend, onCheck }: {
+function QuestionCardFooter({ status, answeredCount, questionCount, sendDisabled, sendDisabledReason, onSend, onCheck }: {
   status: QuestionCardStatus
+  answeredCount: number
+  questionCount: number
+  sendDisabled?: boolean
+  sendDisabledReason?: string | null
   onSend?: () => void
   onCheck?: () => Promise<boolean>
 }) {
@@ -34,8 +38,8 @@ function QuestionCardFooter({ status, onSend, onCheck }: {
   if (status === "ready") {
     return (
       <>
-        <p className="question-card-footer-text">All questions answered.</p>
-        <button type="button" className="question-card-footer-button question-card-send" onClick={onSend}>
+        <p className="question-card-footer-text" role="status">{answeredCount} / {questionCount} {questionCount === 1 ? "question" : "questions"} answered</p>
+        <button type="button" className="question-card-footer-button question-card-send" disabled={sendDisabled} title={sendDisabledReason ?? undefined} onClick={onSend}>
           Send review <kbd>{SEND_KEYS}</kbd>
         </button>
       </>
@@ -103,7 +107,7 @@ export function nextQuestionCard<T>(cards: readonly T[], from: T, answered: (car
 }
 
 // The rendered options are the answer controls: this wires them and reflects the current answer.
-export function QuestionCardActions({ card, answer, busy, composing, keyboard, status, onAnswer, onCompose, onSend, onCheck, onActivate, onAdvance, commentAt }: {
+export function QuestionCardActions({ card, answer, busy, composing, keyboard, status, answeredCount, questionCount, sendDisabled, sendDisabledReason, onAnswer, onClearAnswer, onCompose, onSend, onCheck, onActivate, onAdvance, commentAt }: {
   card: QuestionCard
   /** The body of the question's current answer comment. */
   answer: string | null
@@ -112,9 +116,14 @@ export function QuestionCardActions({ card, answer, busy, composing, keyboard, s
   composing: boolean
   /** Letter keys choose an option; only one card on the page, the active one, may listen. */
   keyboard: boolean
-  /** Shown just after the card: set only on the last card, while the round can be sent or is waiting on the agent. */
+  /** Shown just after the card: set only on the last card during an active agent Review. */
   status?: QuestionCardStatus
+  answeredCount: number
+  questionCount: number
+  sendDisabled?: boolean
+  sendDisabledReason?: string | null
   onAnswer: (body: string) => void
+  onClearAnswer: () => void
   onCompose: (point: { x: number; y: number }) => void
   /** Sends the whole Review; absent without an active agent Review. */
   onSend?: () => void
@@ -128,13 +137,18 @@ export function QuestionCardActions({ card, answer, busy, composing, keyboard, s
   commentAt: (x: number, y: number) => boolean
 }) {
   const chosen = answer?.trim() ?? null
-  const latest = useRef({ chosen, busy, onAnswer, onCompose, onSend, onActivate, onAdvance, commentAt })
-  latest.current = { chosen, busy, onAnswer, onCompose, onSend, onActivate, onAdvance, commentAt }
+  const latest = useRef({ chosen, busy, onAnswer, onClearAnswer, onCompose, onSend, onActivate, onAdvance, commentAt })
+  latest.current = { chosen, busy, onAnswer, onClearAnswer, onCompose, onSend, onActivate, onAdvance, commentAt }
   const tile = useRef<HTMLButtonElement>(null)
   const hovered = useRef<string | null>(null)
   const choose = (value: string) => {
     const { chosen, busy, onAnswer } = latest.current
     if (!busy && chosen !== value) onAnswer(value)
+  }
+  const toggle = (value: string) => {
+    if (latest.current.busy) return
+    if (latest.current.chosen === value) latest.current.onClearAnswer()
+    else choose(value)
   }
 
   useEffect(() => {
@@ -147,13 +161,13 @@ export function QuestionCardActions({ card, answer, busy, composing, keyboard, s
         // Dragging selects option text to comment on it; a link keeps its own click.
         if (!window.getSelection()?.isCollapsed || (event.target as Element).closest("a")) return
         if (latest.current.commentAt(event.clientX, event.clientY)) return
-        choose(value)
+        toggle(value)
       }
       const onKeyDown = (event: KeyboardEvent) => {
         if (event.key !== "Enter" && event.key !== " ") return
         if (event.metaKey || event.ctrlKey) return
         event.preventDefault()
-        choose(value)
+        toggle(value)
       }
       const onEnter = () => {
         hovered.current = value
@@ -263,7 +277,7 @@ export function QuestionCardActions({ card, answer, busy, composing, keyboard, s
         </button>,
         card.composeMount,
       )}
-      {status && createPortal(<QuestionCardFooter status={status} onSend={onSend} onCheck={onCheck} />, card.footerMount)}
+      {status && createPortal(<QuestionCardFooter status={status} answeredCount={answeredCount} questionCount={questionCount} sendDisabled={sendDisabled} sendDisabledReason={sendDisabledReason} onSend={onSend} onCheck={onCheck} />, card.footerMount)}
       {letters.length > 0 && (
         <p className={keyboard ? "question-card-hint" : "question-card-hint question-card-hint-idle"} aria-hidden="true">
           Press {letters.length > 4

@@ -30,7 +30,7 @@ afterEach(() => {
 
 function render(props: Partial<ComponentProps<typeof QuestionCardActions>> = {}) {
   const all: ComponentProps<typeof QuestionCardActions> = {
-    card, answer: null, busy: false, composing: false, keyboard: true, onAnswer: vi.fn(), onCompose: vi.fn(), onActivate: vi.fn(), commentAt: () => false, ...props,
+    card, answer: null, busy: false, composing: false, keyboard: true, answeredCount: 0, questionCount: 1, onAnswer: vi.fn(), onClearAnswer: vi.fn(), onCompose: vi.fn(), onActivate: vi.fn(), commentAt: () => false, ...props,
   }
   act(() => root.render(createElement(QuestionCardActions, all)))
   return all
@@ -105,13 +105,27 @@ describe("question card options", () => {
     expect(selected.onAnswer).not.toHaveBeenCalled()
   })
 
-  it("marks the current answer as the checked option and ignores choosing it again", () => {
-    const { onAnswer } = render({ answer: "A" })
+  it("clears a selected option on a second click", () => {
+    const { onAnswer, onClearAnswer } = render({ answer: "A" })
     expect(option("A").getAttribute("aria-checked")).toBe("true")
     expect(option("A").classList.contains("question-option-selected")).toBe(true)
     expect(option("B").getAttribute("aria-checked")).toBe("false")
     act(() => option("A").click())
+    expect(onClearAnswer).toHaveBeenCalledOnce()
     expect(onAnswer).not.toHaveBeenCalled()
+    render({ answer: null })
+    expect(option("A").getAttribute("aria-checked")).toBe("false")
+    expect(option("A").classList.contains("question-option-selected")).toBe(false)
+  })
+
+  it("does not clear answers with letter keys or while busy", () => {
+    const { onAnswer, onClearAnswer } = render({ answer: "A" })
+    key({ key: "a" })
+    expect(onAnswer).not.toHaveBeenCalled()
+    expect(onClearAnswer).not.toHaveBeenCalled()
+    render({ answer: "A", busy: true, onClearAnswer })
+    act(() => option("A").click())
+    expect(onClearAnswer).not.toHaveBeenCalled()
   })
 
   it("chooses with letter keys and Enter, but not while typing or busy", () => {
@@ -208,13 +222,30 @@ describe("question card comparison and footer", () => {
     expect(card.element.classList.contains("question-column-hovering")).toBe(false)
   })
 
-  it("offers Send below the last card once everything is answered", () => {
+  it.each([0, 2, 3])("offers Send with %i of 3 questions answered", (answeredCount) => {
     const onSend = vi.fn()
-    render({ answer: "A", status: "ready", onSend })
-    expect(card.footerMount.textContent).toContain("All questions answered.")
+    render({ status: "ready", answeredCount, questionCount: 3, onSend })
+    expect(card.footerMount.textContent).toContain(`${answeredCount} / 3 questions answered`)
     act(() => card.footerMount.querySelector<HTMLButtonElement>(".question-card-send")!.click())
     expect(onSend).toHaveBeenCalledOnce()
-    expect(buildRenderedTextIndex(container).text).not.toContain("All questions answered")
+    expect(buildRenderedTextIndex(container).text).not.toContain("questions answered")
+  })
+
+  it("updates the count as answers change and uses singular for one question", () => {
+    render({ status: "ready", answeredCount: 0 })
+    expect(card.footerMount.textContent).toContain("0 / 1 question answered")
+    render({ status: "ready", answer: "A", answeredCount: 1 })
+    expect(card.footerMount.textContent).toContain("1 / 1 question answered")
+  })
+
+  it("keeps Send visible but disabled when the Review cannot be sent", () => {
+    const onSend = vi.fn()
+    render({ status: "ready", sendDisabled: true, sendDisabledReason: "Add a comment or overall feedback before sending to the agent.", onSend })
+    const button = card.footerMount.querySelector<HTMLButtonElement>(".question-card-send")!
+    expect(button.disabled).toBe(true)
+    expect(button.title).toContain("Add a comment")
+    act(() => button.click())
+    expect(onSend).not.toHaveBeenCalled()
   })
 
   it("waits for the agent after sending and reports a check with no reply", async () => {

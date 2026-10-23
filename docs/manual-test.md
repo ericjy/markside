@@ -216,7 +216,11 @@ pull request or review response.
   option letter, the heading has no highlight, and nothing is sent. Press
   another option's letter and confirm the same comment changes; Tab to an
   option and press Enter. Typing a letter in the composer or Source must not
-  choose. Press Cmd/Ctrl+Shift+Enter: the agent receives the answer and its
+  choose. Click the selected option again before sending: it becomes unchecked,
+  its draft comment disappears, and the answered count decreases. Select it
+  again, then press Enter or Space on the focused option to clear it. Repeat its
+  letter shortcut instead: the answer stays selected. Select an answer again.
+  Press Cmd/Ctrl+Shift+Enter: the agent receives the answer and its
   Review card shows Sent. Choose a different option before the agent replies;
   the comment returns to Draft until sent again.
   Choose Something else… and confirm the composer opens on the heading
@@ -230,8 +234,12 @@ pull request or review response.
 - [ ] On a card with Compare tradeoffs, hover each option and confirm the
   other options' columns fade and its header turns teal; on leaving, nothing is
   faded and only the chosen option's header stays teal.
-  With an agent Review, answer every card: a bar below the last card, outside it, shows
-  **Send review**, which sends. After sending it shows the waiting dot and **Check for
+  With an agent Review and three unanswered cards, a bar below the last card,
+  outside it, shows **0 / 3 questions answered** and a disabled **Send review**.
+  Answer two cards: it shows **2 / 3 questions answered** and **Send review**
+  sends those answers while the third remains unanswered. In a new round, answer
+  every card and confirm the count reaches **3 / 3 questions answered**.
+  After sending it shows the waiting dot and **Check for
   reply**; with no reply it says so. The bar is absent when printing.
   Repeat a Reload after changing only a sidecar reply, without changing the
   Markdown file, and confirm the new reply appears.

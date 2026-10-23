@@ -97,3 +97,4 @@ and code examples may no longer match the current source tree.
 - [Narrow Preview page width](2026-10-21-preview-page-width/spec.md)
 - [Typeface in the file menu](2026-10-22-typeface-menu/spec.md)
 - [Zen mode](2026-10-22-focus-mode/spec.md)
+- [Question Card progress and partial Reviews](2026-10-22-partial-question-review/spec.md)

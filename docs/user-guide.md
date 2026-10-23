@@ -74,7 +74,8 @@ expand only one command. The agent writes the interview to a `.grill.md` file,
 beside the file being discussed or at the repository root, and asks whether to
 keep it when the interview ends. Each question is a fenced
 `question` block, which appears as a card. The recommended option is labeled,
-with the agent's reasoning below the options.
+with the agent's reasoning below the options under **Why A?**, or the matching
+recommended letter. In Source, that label remains `**Recommended: A.**`.
 Click an option, or press its letter, to make it your answer; choose another to
 change it. Before sending, click the selected option again to clear its answer
 and leave that question unanswered. Answers already sent use **Withdraw** in

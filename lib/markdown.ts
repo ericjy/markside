@@ -339,6 +339,11 @@ function markQuestionAnswers(state: StateCore, open: number, close: number) {
     tokens[open].attrSet("data-question-recommended", recommendation.value)
     tokens[options.get(recommendation.value)!].attrJoin("class", "question-option-recommended")
     tokens[recommendation.index - 1].attrJoin("class", "question-recommendation")
+    const children = tokens[recommendation.index].children!
+    const label = children[children.findIndex((child) => child.type === "strong_open") + 1]
+    if (label?.type === "text") {
+      label.content = label.content.replace(/^Recommended:\s*[A-Z]\b\.?/i, `Why ${recommendation.value}?`)
+    }
   }
   splitOptionLists(state, open, close)
 }

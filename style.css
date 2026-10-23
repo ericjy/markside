@@ -1413,7 +1413,7 @@ button.readability-score-filter {
   border-left: 3px solid var(--markdown-alert-color);
 }
 
-/* "Recommended: X." leads the reasoning as its own line. */
+/* "Why X?" leads the reasoning as its own line. */
 .prose .question-recommendation > strong:first-child {
   display: block;
   margin-bottom: 0.2rem;

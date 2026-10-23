@@ -305,8 +305,16 @@ describe("markdown renderer", () => {
 
     expect(recommended.className).toBe("question-option question-option-recommended")
     expect(recommended.querySelector(".question-recommendation")).toBeNull()
-    expect(root.querySelector(".markdown-alert-question > p.question-recommendation")?.textContent).toBe("Recommended: B. It keeps one file.")
+    expect(root.querySelector(".markdown-alert-question > p.question-recommendation")?.textContent).toBe("Why B? It keeps one file.")
     expect(root.textContent).toContain("A. Sibling doc. Next to the plan.")
+  })
+
+  it("uses the recommended letter in the explanation heading", () => {
+    const root = document.createElement("div")
+    const source = question.replace("Recommended: B", "Recommended: A")
+    root.innerHTML = md.render(source)
+    expect(root.querySelector(".question-recommendation > strong")?.textContent).toBe("Why A?")
+    expect(root.querySelector(".question-option-recommended")?.getAttribute("data-question-option")).toBe("A")
   })
 
   it("leaves a recommendation in place when no option has its letter", () => {

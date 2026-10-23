@@ -84,7 +84,8 @@ answer controls. Its body is parsed as Markdown before inline parsing and headin
 IDs, with source lines mapped back to the document. Legacy `> [!QUESTION]`
 blocks remain supported. The question-answer rule marks each `**A. …**` list item as a
 radio option, shows its letter as a key without changing the rendered text, and
-labels option X and the `**Recommended: X.**` paragraph that explains it.
+labels option X and the `**Recommended: X.**` paragraph that explains it. That
+paragraph's label renders as **Why X?**; the Markdown source stays unchanged.
 Leading ✓, △, ✕, and ? symbols in Question Card table cells receive colored
 spans without changing cell text, so copying and Review anchors stay intact.
 Comparison disclosures sit below a hairline under a small muted label, and

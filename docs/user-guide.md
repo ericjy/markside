@@ -101,8 +101,9 @@ question, and Markside shows **Changed on disk** so you can reload. Click
 how the agent read your own-words answers and anything it inferred or assumed,
 matches your understanding.
 
-Review mode currently requires the prototype CLI installed from this repository
-and Node.js 20+. See [local agent Review setup](changes/2026-10-18-agent-review-loop/spec.md). Comments
+Review mode is Beta and requires Node.js 20+ and the
+[Markside CLI](https://www.npmjs.com/package/markside). The skill runs it with
+`npx markside` unless you install it with `npm install --global markside`. Comments
 are sent through `PLAN.md.review.json` beside the document. Add `*.review.json`
 to your project's `.gitignore` to keep them out of version control.
 

@@ -38,11 +38,10 @@ The agent repeats this loop until the reviewer finishes the Review or asks it to
 
 Add `*.review.json` to your project's `.gitignore` to keep local comments private.
 
-For local development, run `node cli/markside.mjs review PLAN.md` from the
-Markside repository. The package can be installed with `npm install ./cli`.
-Publishing to npm is a separate release step; `npx markside` requires that
-release and should only be used once this CLI is published under that name.
-See the [npm release runbook](https://github.com/ericjy/markside/blob/main/docs/npm-release.md).
+Install it with `npm install --global markside`, or run it without installing
+as `npx markside review PLAN.md`. For local development, run
+`node cli/markside.mjs review PLAN.md` from the Markside repository. See the
+[npm release runbook](https://github.com/ericjy/markside/blob/main/docs/npm-release.md).
 
 Comments move through Open → Addressed → Resolved. The agent uses `address` to
 report its work and reply. The user checks the result in Markside, then chooses

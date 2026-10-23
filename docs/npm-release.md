@@ -81,4 +81,6 @@ when preparing the extension release.
 
 ## Published versions
 
-No CLI version has been published yet.
+| Version | Date | Commit | Integrity | Tag |
+| --- | --- | --- | --- | --- |
+| 0.1.0 | 2026-10-22 | `69c151dc2fbbe4515cfc32aac97efa73daae37fc` | `sha512-EannaHzx1VrUstIldm70MBrXCyQCdYBpoDwMVEmdF7PcQ6hDG8ERWRbGVRIDIfMlG1gNGXLF81ZoHOkqgw4EAg==` | `cli-v0.1.0` |

@@ -651,7 +651,7 @@ The version 1/2 contract and parser live in `cli/review-file.mjs` and are shared
 by the CLI and extension. Node uses temp-file rename; Chrome commits its staged
 writable stream on close. Watching and a one-second fallback poll exist only
 inside the waiting CLI and end on send, timeout, or interrupt. ADR-0002 still
-applies to the extension. See [the contract and prototype setup](changes/2026-10-18-agent-review-loop/spec.md).
+applies to the extension. See [the contract and setup](changes/2026-10-18-agent-review-loop/spec.md).
 
 Agent Review Comments have three states: Open, Addressed, and Resolved. The
 agent uses the CLI `address` command to report its work and reply; only the user

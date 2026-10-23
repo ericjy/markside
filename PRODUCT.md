@@ -14,7 +14,7 @@ Read, review, and edit local Markdown in Chrome. Give an agent feedback on its
 plans, specs, and docs, or correct the source yourself. Changes go back to the
 original file.
 
-This brief covers the current repository, including the prototype agent Review
+This brief covers the current repository, including the Beta agent Review
 loop. The latest Web Store release may have fewer features.
 
 ## Users and jobs
@@ -61,8 +61,8 @@ To review a document:
 4. After the agent edits the file, Reload, inspect the Reload
    Comparison, and continue the Review.
 
-The optional prototype two-way Review loop adds **Send comments to agent** in
-place of copying a prompt. It requires the repository's local CLI and Node.js
+The optional Beta two-way Review loop adds **Send comments to agent** in
+place of copying a prompt. It requires the `markside` npm CLI and Node.js
 20+. The CLI and extension exchange data through `<document>.review.json` beside
 the Markdown file. The agent marks a comment Addressed and may reply. The user
 checks the result and chooses Resolve or Reopen. Only the user can send comments.
@@ -89,8 +89,8 @@ may load from their original hosts. See the [sharing guide](docs/user-guide.md#s
 
 - Local reading, editing, saving, document Review, Reload Comparison, and PDF
   Export are part of the current extension.
-- Snapshot sharing and the optional Agent Skill are Beta. The two-way agent
-  Review loop is a local prototype requiring separate CLI setup.
+- Snapshot sharing, the optional Agent Skill, and its two-way agent Review
+  loop are Beta. The Review loop requires Node.js 20+ and the `markside` npm CLI.
 - Localhost Review is paused. Its entry is outside the content-script build.
   Current builds do not register it or request localhost access.
 - Readability Check is unreleased and disabled by default. A build with it
@@ -105,7 +105,7 @@ may load from their original hosts. See the [sharing guide](docs/user-guide.md#s
 - The current extension is free and the client is MIT-licensed. Future hosted
   service pricing is not defined by this brief.
 - The extension never watches or polls document files. Users control when to
-  Reload or navigate. The waiting prototype CLI watches only its Review handoff
+  Reload or navigate. The waiting CLI watches only its Review handoff
   file for the duration of a request. See [ADR-0002](docs/adr/0002-no-file-watching.md).
 - Saves target the original file through an authorized directory. If no saved
   directory contains it, ask for its folder. Detect external edits before

@@ -95,9 +95,12 @@ different invocation syntax, such as `$markside` in Codex. See the
 [Agent Skill guide](docs/user-guide.md#open-from-an-agent) for setup and supported
 platforms.
 
-The prototype `/markside review PLAN.md` waits for Review Comments sent from
-Markside and lets the agent continue with them. It requires Node.js 20+ and the
-local CLI. See [Review loop setup](docs/changes/2026-10-18-agent-review-loop/spec.md).
+With `/markside review PLAN.md`, the agent waits while you comment in Markside,
+then addresses each Review Comment and replies until you finish the Review. With
+`/grill-me /markside <topic>`, the agent interviews you through Question Cards
+you answer by picking an option. Both are Beta and require Node.js 20+; the skill
+runs the [Markside CLI](https://www.npmjs.com/package/markside) with
+`npx markside`. See the [Review loop guide](docs/user-guide.md#open-from-an-agent).
 
 ## Privacy and sharing
 

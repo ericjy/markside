@@ -16,10 +16,12 @@ For `/markside review <file>`, use this workflow instead of the open-only flow
 below. Invocation authorizes opening Chrome and waiting for the user's Review.
 
 1. Resolve the supplied Markdown file. Use an installed `markside` CLI, or
+   `npx --yes markside` when it is not installed. Use
    `node <Markside checkout>/cli/markside.mjs` when developing in its repository.
-   After npm publication, `npx markside` is also supported. If none is available,
-   explain that the prototype CLI must be installed from the Markside checkout
-   with `npm install --global ./cli`; do not substitute an unrelated npm package.
+   The CLI is the npm package `markside`; do not substitute another package. Keep
+   the chosen form for every later command, including retries the CLI prints as
+   `markside ...`. If Node.js 20+ is unavailable, explain that Review mode
+   requires it.
 2. Before the first wait, tell the user in one short message that the review has
    started, because the waiting command shows no output until it exits. Name the
    file and say to add comments in Markside, then click **Send review to agent**.

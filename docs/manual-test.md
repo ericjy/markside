@@ -211,9 +211,11 @@ pull request or review response.
   each creates `<topic>.grill.md` at the repository root. Each current question renders as a
   Question card from a fenced `question` block. In Source, confirm the body
   has ordinary Markdown without `>` prefixes; return to Preview and confirm
-  its options are tiles with letter keys aligned to the titles, each bold
-  title on its own line with a smaller, softer description below, a Recommended label
-  on the recommended option. Before choosing, that tile has the same neutral
+  its options are tiles with letter keys in the left gutter, each bold
+  title on its own line with a smaller, softer description below, and a small
+  uppercase RECOMMENDED label above the recommended option's title, aligned with
+  its text. The label is muted teal with slight letter spacing and no pill border.
+  Before choosing, that tile has the same neutral
   background, border, and letter key as the other options. The Recommended
   paragraph has a smaller heading
   and no thumbs-up icon in its own box below

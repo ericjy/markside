@@ -1391,19 +1391,17 @@ button.readability-score-filter {
   clip-path: inset(50%);
 }
 
-/* A label, not text, so anchors and copies match the source. It floats into
-   the corner opposite the key, clear of the option's text. */
+/* Generated text keeps anchors and copies matching the source. */
 .prose .markdown-alert-question .question-option-recommended::before {
   content: "Recommended";
-  float: right;
-  margin: 0.15rem 0 0.25rem 0.75rem;
-  padding: 0 0.5rem;
-  border: 1px solid color-mix(in srgb, var(--markdown-alert-color) 60%, transparent);
-  border-radius: 999px;
-  color: var(--markdown-alert-color);
-  font-size: 0.75em;
+  display: block;
+  margin-bottom: 0.25rem;
+  color: color-mix(in srgb, var(--markdown-alert-color) 80%, hsl(var(--foreground)));
+  font-size: 0.68em;
   font-weight: 600;
-  line-height: 1.6;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 

@@ -15,110 +15,11 @@ Markside is a Chrome extension that renders and edits local Markdown files direc
 
 ## Opening Files
 
-### Open from an agent
+### From your coding agent
 
-Install the Beta `markside` Agent Skill globally with the open Agent Skills CLI:
-
-```bash
-npx skills add ericjy/markside --skill markside -g
-```
-
-The installer command requires Node.js. Opening a file with the installed skill
-does not. It
-uses the operating system's native shell on macOS and Linux or PowerShell on
-Windows.
-
-After an agent creates or references a Markdown file, invoke `/markside` or say
-“open this in Markside.” Some hosts use another syntax, such as `$markside` in
-Codex. The agent opens the single `.md`, `.mdx`, or `.markdown` file identified by
-the current task. You can also provide a path explicitly. If several files are
-plausible, the agent asks which one instead of opening several tabs or guessing
-from modification times.
-
-Run `/markside setup` to open Markside's Chrome Web Store page. Chrome still
-requires you to approve the extension installation and enable **Allow access to
-file URLs** in Markside's extension details. The skill cannot inspect which
-Chrome profile has Markside installed. It uses Chrome's normal profile and opens
-a new tab each time.
-
-For a two-way Review, use `/markside review PLAN.md`. The agent opens the file
-and waits until you click **Send review to agent** in Review. On the
-first send from a folder, Chrome asks for access to it so your agent can receive
-the review. Review names that folder below the button; select it or a parent.
-Later sends use the remembered folder permission. **Copy review as prompt**
-is a separate button below Send, so you can paste the Review into your agent's
-chat instead. After sending, **Sent for agent to pick up** confirms that the Review file
-was saved. It does not confirm that an agent has read it or start an agent.
-If your agent isn't waiting, use Copy review as prompt. Editing feedback makes Send
-available again. With no agent request, Review keeps its usual Copy action.
-Choose **Start a review in your agent…** below the buttons to see skill installation
-instructions and a command for the open file. If Markside can't yet save feedback
-beside the file, the setup also lets you choose its folder. Paste the command into
-your agent and switch back to Chrome: Markside finds the review when you return.
-If it isn't found yet, click **Check for review** once your agent is waiting. The link is hidden while
-an agent review is active.
-
-After addressing your comments, the agent keeps waiting. Reload Markside to check
-the changes, then send more feedback or resolve the addressed comments. The agent
-finishes when you click **Finish review** or ask it to stop. Once the agent has
-addressed everything, **Resolve all** accepts the replies while you keep
-reviewing, and **Finish review** also accepts any that remain.
-During an active agent review, the comment composer offers **Save & send review**
-to save a comment and send the whole Review in one action. Use **Save** to keep
-adding feedback first. If sending fails or you cancel folder selection, the
-comment stays saved in Review so you can retry.
-
-Agents can also interview you in Markside instead of chat: for example, run
-`/grill-me /markside <topic>`, or `/grill-me <topic> in Markside` in hosts that
-expand only one command. The agent writes the interview to a `.grill.md` file,
-beside the file being discussed or at the repository root, and asks whether to
-keep it when the interview ends. Each question is a fenced
-`question` block, which appears as a card. The recommended option is labeled,
-with the agent's reasoning below the options under **Why A?**, or the matching
-recommended letter. In Source, that label remains `**Recommended: A.**`.
-Click an option, or press its letter, to make it your answer; choose another to
-change it. Before sending, click the selected option again to clear its answer
-and leave that question unanswered. Answers already sent use **Withdraw** in
-Review. Use the **Something else…** tile below the options (or press T) to
-answer in your own words or ask a question. That tile is marked selected and
-shows your text in place of its hint after you save a custom answer.
-Its presets let you skip the question, let the agent decide the rest with its
-recommendations (recorded under Previous questions as assumed decisions you can
-veto by commenting on them), or stop the interview, leaving unanswered
-questions open. If the question or
-its options are unclear, ask there instead; the agent rewrites the question and
-keeps it current. Hovering an option highlights its column in Compare tradeoffs.
-You can also select any text in the card to comment on it. Then click **Send review**
-below the last card or **Send review to agent** in the Review panel,
-or press Cmd/Ctrl+Shift+Enter, even if some questions are unanswered. The bar shows
-your progress, such as **2 / 3 questions answered**. Add an answer, Review Comment,
-or Review Note before sending. Until the agent replies, that bar says it is
-waiting and offers **Check for reply**. Answered questions move to Previous
-questions as the heading and your decision, with the full question collapsed
-below. The agent records your decision and writes the next
-question, and Markside shows **Changed on disk** so you can reload. Click
-**Finish review** once the closing **Before you finish** section, which lists
-how the agent read your own-words answers and anything it inferred or assumed,
-matches your understanding.
-
-Review mode is Beta and requires Node.js 20+ and the
-[Markside CLI](https://www.npmjs.com/package/markside). The skill runs it with
-`npx markside` unless you install it with `npm install --global markside`. Comments
-are sent through `PLAN.md.review.json` beside the document. Add `*.review.json`
-to your project's `.gitignore` to keep them out of version control.
-
-If the command fails:
-
-- **Raw Markdown appears:** install Markside in the Chrome profile that opened,
-  enable **Allow access to file URLs**, and retry.
-- **Chrome was not found:** install Google Chrome. The skill intentionally does
-  not fall back to another default browser.
-- **No file or several files are identified:** provide one explicit local path,
-  for example `/markside docs/plan.md`.
-- **Unsupported file:** use a lowercase `.md`, `.mdx`, or `.markdown` extension.
-
-The launcher validates the local path but does not read file contents. It sends
-no telemetry and performs no update checks or other network requests.
+With the Markside Agent Skill installed, `/markside` opens the file your agent
+just wrote. See [Work with your coding agent](#work-with-your-coding-agent) for
+setup, agent Reviews, and interviews.
 
 ### From the browser
 
@@ -391,39 +292,146 @@ Zen mode stays on in the tab while you open other files, follow links, or reload
 | `Cmd+.` / `Ctrl+.` | Toggle Zen mode |
 
 
-### Local agent review history
+## Work with your coding agent
 
-An agent review lasts until you resolve its comments. Addressing a comment keeps
-the review open so you can check the reply or send more feedback. Starting another
-review after completion keeps the earlier comments under Resolved.
+The Beta Markside Agent Skill connects Claude Code, Codex, Cursor, and other
+Agent Skills hosts to Markside:
 
-Comments, their statuses, and the agent's latest replies are stored in the
-`.review.json` beside the document and are available through
-`markside comments <file>`. Reload Markside to see changes made by the agent.
+| Ask your agent | What happens |
+|----------------|--------------|
+| `/markside` | Opens the Markdown file it just wrote or referenced |
+| `/markside review PLAN.md` | Waits while you comment in Markside, then addresses each comment |
+| `/grill-me /markside <topic>` | Interviews you through Question Cards you answer in Markside |
 
+Some hosts use another syntax, such as `$markside` in Codex.
 
-In the copy-prompt workflow, **Clear all** clears the local review, including
-comments, overall feedback, and imported review history, then closes the panel.
+### Install the skill
 
-For an agent review, **Clear drafts** removes new unsent comments and restores edited comments and
-overall feedback to their last sent version. It keeps sent feedback, replies,
-completed reviews, and imported history. It does not end the review or
-write to the sidecar. The button is hidden when there are no unsent changes.
+```bash
+npx skills add ericjy/markside --skill markside -g
+```
 
-Comments in an agent review show one badge: **Draft** for unsent feedback or edits,
-**Sent** for the current text sent to the agent, **Addressed** when the agent has
-responded, and **Resolved** after you accept it. Editing sent feedback makes it a
-Draft again until you send it. These replace the Shared with agent label.
+Then run `/markside setup` to open Markside's Chrome Web Store page. Approve the
+installation and enable **Allow access to file URLs** in Markside's extension
+details.
 
-In the copy-prompt workflow, comments are **Open** or **Resolved**. Copying or
-reloading does not resolve them. Use Resolve after checking the changes, or
-Reopen if more work is needed. Local resolution stays in browser storage; only
-comments already sent through the integration update their sidecar status.
-Resolved comments are excluded from copied prompts and their passage warnings
-and highlights are hidden.
+- **Opening files** needs no Node.js. The skill uses the native shell on macOS
+  and Linux, and PowerShell on Windows. Only the installer command needs Node.js.
+- **Reviews and interviews** need Node.js 20+. The skill runs the
+  [Markside CLI](https://www.npmjs.com/package/markside) with `npx`, or you can
+  install it with `npm install --global markside`.
+- The skill uses Chrome's normal profile and opens a new tab each time. It can't
+  tell which profile has Markside installed.
 
-If you add feedback after an agent review completes, the panel shows **Start
-another review**. It opens the command dialog without changing the completed
-review. Ask the agent to start that review, then reload or reopen the panel to
-send the new feedback. Review complete is hidden while active feedback or drafts
-remain. Starting another review does not itself launch an agent.
+### Open a file
+
+Invoke `/markside` or say "open this in Markside." The agent opens the single
+`.md`, `.mdx`, or `.markdown` file from the current task, or a path you give it.
+If several files are plausible, it asks which one instead of guessing.
+
+### Review with your agent
+
+1. Run `/markside review PLAN.md`. The agent opens the file and waits.
+2. Add Review Comments in Markside. In the comment composer, **Save & send
+   review** saves the comment and sends the whole Review; **Save** lets you keep
+   adding feedback first.
+3. Click **Send review to agent**. The first time, Chrome asks for access to the
+   file's folder; Review names it below the button. Select it or a parent.
+4. The agent addresses each comment and replies. If you stayed in the tab,
+   Markside shows **Reload** once the reply lands. Reload to check the changes.
+5. Send more feedback, or resolve addressed comments. **Resolve all** accepts
+   every reply while you keep reviewing.
+6. Click **Finish review** when you're done. It accepts any remaining replies,
+   and the agent stops waiting.
+
+**Sent for agent to pick up** means the Review file was saved. It does not mean
+an agent has read it. If no agent is waiting, use **Copy review as prompt** below
+the Send button and paste it into your agent's chat. If sending fails or you
+cancel folder selection, your comment stays saved so you can retry.
+
+Comments are exchanged through `PLAN.md.review.json` beside the document. Add
+`*.review.json` to your project's `.gitignore` to keep them out of version control.
+
+#### Start a review from Markside
+
+When no agent is waiting, choose **Start a review in your agent…** below the
+Review buttons. It shows how to install the skill and a command for the open
+file, and lets you choose the file's folder if Markside can't save feedback
+beside it yet. Paste the command into your agent and switch back to Chrome;
+Markside finds the review when you return. If it doesn't, click **Check for
+review** once your agent is waiting.
+
+#### Comment badges
+
+| Badge | Meaning |
+|-------|---------|
+| **Draft** | New or edited feedback not sent yet |
+| **Sent** | This version was sent to the agent |
+| **Addressed** | The agent replied |
+| **Resolved** | You accepted the reply |
+
+Only you resolve comments. Editing sent feedback turns it back into a Draft
+until you send it again.
+
+#### Clearing drafts and starting over
+
+- **Clear drafts** removes unsent comments and restores edited feedback to its
+  last sent version. Sent feedback, replies, and history stay. It's hidden when
+  there's nothing to clear.
+- A review stays open until you finish it. Finished comments stay under
+  **Resolved**, and `markside comments <file>` lists them with the agent's replies.
+- Adding feedback after a review finishes shows **Start another review**, which
+  gives you the command to start it in your agent.
+
+### Answer an interview in Markside
+
+Use a questioning skill such as `/grill-me` and ask for Markside:
+`/grill-me /markside <topic>`, or `/grill-me <topic> in Markside` in hosts that
+expand only one command. You can also say "continue this in Markside" partway
+through an interview.
+
+The agent writes the interview to a `.grill.md` file, beside the file being
+discussed or at the repository root, and asks whether to keep it at the end.
+Each question appears as a card.
+
+- **Answer:** click an option or press its letter. Click another to change it,
+  or click the selected one again to clear it. The recommended option is
+  labeled, with the agent's reasoning under **Why A?** To take back an answer
+  you already sent, use **Withdraw** in Review.
+- **Answer in your own words:** use **Something else…** below the options, or
+  press T. Its presets skip the question, let the agent decide the rest, or stop
+  the interview. You can also ask for clarification there; the agent rewrites
+  the question.
+- **Comment:** select any text in a card to add a Review Comment.
+- **Send:** click **Send review** below the last card, or press
+  Cmd/Ctrl+Shift+Enter. You don't have to answer every question first. Until
+  the agent replies, the bar says it's waiting and offers **Check for reply**.
+
+After you send, answered questions move to **Previous questions** and the agent
+writes the next round. Click **Reload** when Markside shows **Changed on disk**.
+Decisions the agent assumed for you are listed there too; comment on one to veto
+it. When the closing **Before you finish** section matches your understanding,
+click **Finish review**.
+
+### Copy-prompt reviews
+
+Without the skill, copy the Review as a prompt and paste it into your agent's
+chat. Comments are **Open** or **Resolved**; copying or reloading doesn't
+resolve them. Resolve after checking the changes, or Reopen if more work is
+needed. Resolved comments are left out of copied prompts and lose their
+highlights. **Clear all** clears the local Review, including overall feedback
+and imported history, and closes the panel.
+
+### Troubleshooting
+
+- **Raw Markdown appears:** install Markside in the Chrome profile that opened,
+  enable **Allow access to file URLs**, and retry.
+- **Chrome was not found:** install Google Chrome. The skill doesn't fall back to
+  another browser.
+- **No file or several files are identified:** give one path, for example
+  `/markside docs/plan.md`.
+- **Unsupported file:** use a lowercase `.md`, `.mdx`, or `.markdown` extension.
+- **The agent isn't responding:** use **Copy review as prompt** instead.
+
+The launcher validates the local path but doesn't read file contents. It sends no
+telemetry and makes no update checks or other network requests.

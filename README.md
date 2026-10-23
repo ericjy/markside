@@ -81,7 +81,7 @@ keyboard shortcuts, and sharing.
   directly.
 - **Light and dark themes** that follow your system or your choice.
 
-## Open files from an agent
+## Use with your coding agent
 
 The optional Beta Agent Skill lets a coding agent open the Markdown file it just
 created or referenced in Chrome:
@@ -92,15 +92,15 @@ npx skills add ericjy/markside --skill markside -g
 
 Ask the agent to run `/markside` or say "open this in Markside." Hosts may use a
 different invocation syntax, such as `$markside` in Codex. See the
-[Agent Skill guide](docs/user-guide.md#open-from-an-agent) for setup and supported
+[Agent Skill guide](docs/user-guide.md#work-with-your-coding-agent) for setup and supported
 platforms.
 
 With `/markside review PLAN.md`, the agent waits while you comment in Markside,
-then addresses each Review Comment and replies until you finish the Review. With
-`/grill-me /markside <topic>`, the agent interviews you through Question Cards
-you answer by picking an option. Both are Beta and require Node.js 20+; the skill
-runs the [Markside CLI](https://www.npmjs.com/package/markside) with
-`npx markside`. See the [Review loop guide](docs/user-guide.md#open-from-an-agent).
+then addresses each Review Comment and replies until you finish the Review. Ask
+a questioning skill to interview you in Markside, such as `/grill-me /markside
+<topic>`, and you answer through Question Cards by picking an option. Both are
+Beta and require Node.js 20+; the skill runs the
+[Markside CLI](https://www.npmjs.com/package/markside) with `npx markside`. See the [Review loop guide](docs/user-guide.md#work-with-your-coding-agent).
 
 ## Privacy and sharing
 

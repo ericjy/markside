@@ -9,6 +9,7 @@ import {
   DEFAULT_PANE_WIDTH_PREFERENCES,
   DEFAULT_SPLIT_PERCENT,
   getMarkdownMode,
+  getLeftOpenPreference,
   getOutlineOpenPreference,
   getPaneWidthPreferences,
   getSplitPercent
@@ -131,12 +132,13 @@ async function bootstrap() {
   mount.id = "markside-mount"
   mount.style.cssText = "height:100%;display:flex;flex-direction:column"
   document.body.appendChild(mount)
-  const [initialMode, initialSplitPercent, initialPaneWidthPreferences, initialThemePreference, initialOutlineOpen, newFile] = await Promise.all([
+  const [initialMode, initialSplitPercent, initialPaneWidthPreferences, initialThemePreference, initialOutlineOpen, initialLeftOpen, newFile] = await Promise.all([
     getMarkdownMode().catch(() => "preview" as const),
     getSplitPercent().catch(() => DEFAULT_SPLIT_PERCENT),
     getPaneWidthPreferences().catch(() => DEFAULT_PANE_WIDTH_PREFERENCES),
     getThemePreference().catch(() => null),
     getOutlineOpenPreference().catch(() => null),
+    getLeftOpenPreference().catch(() => true),
     chrome.runtime.sendMessage({ type: "consume-new-markdown-file" }).catch(() => null),
   ])
   createRoot(mount).render(React.createElement(FileRenderer, {
@@ -147,6 +149,7 @@ async function bootstrap() {
     focusSource: newFile?.created === true,
     initialThemePreference,
     initialOutlineOpen,
+    initialLeftOpen,
   }))
 }
 

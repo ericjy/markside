@@ -15,6 +15,9 @@ import {
   PREVIEW_FULL_WIDTH_STORAGE_KEY,
   PREVIEW_WIDTH_STORAGE_KEY,
   getOutlineOpenPreference,
+  getLeftOpenPreference,
+  setLeftOpenPreference,
+  LEFT_OPEN_STORAGE_KEY,
   OUTLINE_OPEN_STORAGE_KEY,
   resolveInitialSidebarState,
   resolveModeTransition,
@@ -46,6 +49,31 @@ beforeEach(() => {
 })
 
 describe("Markdown modes", () => {
+  it.each([true, false])("remembers the file tree's %s visibility after a reload", async (open) => {
+    stubChromeStorage()
+    await setLeftOpenPreference(open)
+    const restored = await getLeftOpenPreference()
+    expect(restored).toBe(open)
+    expect(resolveInitialSidebarState({
+      mode: "preview", isMarkdown: true, leftOpenByDefault: restored, outlineOpenByDefault: true,
+    }).leftOpen).toBe(open)
+  })
+
+  it.each([undefined, null, "false"])("defaults the file tree to open for an invalid preference (%s)", async (stored) => {
+    stubChromeStorage({ [LEFT_OPEN_STORAGE_KEY]: stored })
+    expect(await getLeftOpenPreference()).toBe(true)
+  })
+
+  it("keeps the saved closed file tree state to restore after reloading in Split", async () => {
+    const storage = stubChromeStorage({ [LEFT_OPEN_STORAGE_KEY]: false })
+    const state = resolveInitialSidebarState({
+      mode: "split", isMarkdown: true, leftOpenByDefault: await getLeftOpenPreference(), outlineOpenByDefault: true,
+    })
+    expect(state.leftOpen).toBe(false)
+    expect(state.stateBeforeSplit).toEqual({ leftOpen: false, outlineOpen: true })
+    expect(storage.data[LEFT_OPEN_STORAGE_KEY]).toBe(false)
+  })
+
   it("starts restored Split mode with sidebars closed before the first paint", () => {
     expect(resolveInitialSidebarState({
       mode: "split",

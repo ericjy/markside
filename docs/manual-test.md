@@ -23,6 +23,10 @@ pull request or review response.
   Preview. Check headings, code highlighting, diagrams, math, links, and images.
 - [ ] Switch between Preview, Source, and Split. An edit survives mode changes;
   Split updates its rendered pane while typing.
+- [ ] Close the file tree, refresh the page, and navigate to another local file:
+  it stays closed without flashing open. Reopen it and repeat: it stays open.
+  Enter Split and reload, then return to Preview: the file tree restores the
+  saved choice. Enter and leave Zen mode without changing the saved choice.
 - [ ] Check the word count and reading time in Preview's top-right margin,
   including Split. They follow unsaved edits in Split, scroll away with the
   document, and stay clear of text, Outline, and docked Review at narrow widths.

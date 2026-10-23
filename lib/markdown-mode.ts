@@ -69,6 +69,18 @@ export async function setSourceFullWidthPreference(fullWidth: boolean): Promise<
   await chrome.storage.local.set({ [SOURCE_FULL_WIDTH_STORAGE_KEY]: fullWidth })
 }
 
+export const LEFT_OPEN_STORAGE_KEY = "leftOpen"
+
+export async function getLeftOpenPreference(): Promise<boolean> {
+  const stored = await chrome.storage.local.get(LEFT_OPEN_STORAGE_KEY)
+  const open = stored[LEFT_OPEN_STORAGE_KEY]
+  return typeof open === "boolean" ? open : true
+}
+
+export async function setLeftOpenPreference(open: boolean): Promise<void> {
+  await chrome.storage.local.set({ [LEFT_OPEN_STORAGE_KEY]: open })
+}
+
 export const OUTLINE_OPEN_STORAGE_KEY = "outlineOpen"
 
 // null means the user has never toggled the outline, so the window width decides.
@@ -90,17 +102,19 @@ interface SidebarState {
 export function resolveInitialSidebarState({
   mode,
   isMarkdown,
+  leftOpenByDefault = true,
   outlineOpenByDefault,
 }: {
   mode: MarkdownMode
   isMarkdown: boolean
+  leftOpenByDefault?: boolean
   outlineOpenByDefault: boolean
 }): SidebarState & {
   stateBeforeSplit: SidebarState | null
   wasSplitView: boolean
 } {
   const defaultState = {
-    leftOpen: true,
+    leftOpen: leftOpenByDefault,
     outlineOpen: outlineOpenByDefault,
   }
   const wasSplitView = isMarkdown && mode === "split"

@@ -52,6 +52,7 @@ import { type QuestionCard } from "~lib/markdown"
 import {
   resolveInitialSidebarState,
   setOutlineOpenPreference,
+  setLeftOpenPreference,
   shouldSyncDraftFromContent,
   type MarkdownMode,
   type PaneWidthPreferences
@@ -80,6 +81,7 @@ export function FileRenderer({
   initialPaneWidthPreferences,
   initialThemePreference,
   initialOutlineOpen,
+  initialLeftOpen,
   focusSource = false,
 }: {
   initialContent: string | null
@@ -88,6 +90,7 @@ export function FileRenderer({
   initialPaneWidthPreferences: PaneWidthPreferences
   initialThemePreference: boolean | null
   initialOutlineOpen: boolean | null
+  initialLeftOpen: boolean
   focusSource?: boolean
 }) {
   const [content, setContent] = useState<string | null>(initialContent)
@@ -110,9 +113,14 @@ export function FileRenderer({
   const initialSidebarState = resolveInitialSidebarState({
     mode: initialMode,
     isMarkdown: isMdFile,
+    leftOpenByDefault: initialLeftOpen,
     outlineOpenByDefault: initialOutlineOpen !== false && window.innerWidth >= 1280,
   })
   const [leftOpen, setLeftOpen] = useState(initialSidebarState.leftOpen)
+  const chooseLeftOpen = (open: boolean) => {
+    setLeftOpen(open)
+    void setLeftOpenPreference(open).catch(() => undefined)
+  }
   const [outlineOpen, setOutlineOpen] = useState(initialSidebarState.outlineOpen)
   const chooseOutlineOpen = (open: boolean) => {
     setOutlineOpen(open)
@@ -684,7 +692,7 @@ export function FileRenderer({
   return (
     <SidebarProvider
       open={leftOpen}
-      onOpenChange={setLeftOpen}
+      onOpenChange={chooseLeftOpen}
       style={
         { "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties
       }>

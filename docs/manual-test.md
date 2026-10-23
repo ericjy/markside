@@ -66,6 +66,10 @@ pull request or review response.
   on. A new tab starts with it off.
   Leaving restores the sidebars, and the saved Outline choice is unchanged.
 - [ ] Check the outline, heading navigation, light/dark themes, and narrow windows.
+- [ ] Open Print or PDF Export with Zen mode off, then with Zen mode on and its
+  toolbar revealed. The print preview contains the document without Markside's
+  toolbar, breadcrumbs, or action buttons in either layout. Cancel printing and
+  confirm the toolbar still works on screen.
 - [ ] Check Ctrl+E, Cmd/Ctrl+S, Cmd/Ctrl+P, and Cmd/Ctrl+. for Zen mode. Save operates in Source or Split;
   the file switcher requires an opened folder.
 

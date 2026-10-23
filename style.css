@@ -2229,7 +2229,7 @@ button.readability-score-filter {
   [data-sidebar="sidebar"],
   [data-markside-outline],
   [data-markside-toast],
-  main > header {
+  [data-markside-toolbar] {
     display: none !important;
   }
 

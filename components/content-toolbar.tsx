@@ -149,7 +149,7 @@ export function ContentToolbar({
 }: ContentToolbarProps) {
   return (
     <>
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
+        <header data-markside-toolbar className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
           <>
             {/* Zen mode keeps the file tree hidden, so its toggle becomes the way out. */}
             {zenMode ? (

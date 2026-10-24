@@ -889,6 +889,7 @@ export function FileRenderer({
         reviewFinishBar={
           <ContentReviewFinishBar
             agentHandoff={agentHandoff}
+            review={review}
             panelOpen={overlay.reviewOverlayOpen}
             diskChanged={reload.diskChanged}
             questionsOpen={questionCards.some((card) => card.archivedAnswer === undefined && card.options.length > 0 && !reviewActions.questionAnswer(card.target)?.trim())}

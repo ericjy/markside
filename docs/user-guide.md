@@ -344,6 +344,11 @@ If several files are plausible, it asks which one instead of guessing.
 6. Click **Finish review** when you're done. It accepts any remaining replies,
    and the agent stops waiting.
 
+With Review closed, the compact bar above Preview shows how many saved comments
+are ready and offers **Send review**. Once the agent has addressed everything,
+it reminds you that you can keep commenting and offers **Finish review**. You
+can complete either action without opening the sidebar.
+
 **Sent for agent to pick up** means the Review file was saved. It does not mean
 an agent has read it. If no agent is waiting, use **Copy review as prompt** below
 the Send button and paste it into your agent's chat. If sending fails or you

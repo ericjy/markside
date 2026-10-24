@@ -357,6 +357,15 @@ pull request or review response.
   Preview bar says Your agent is waiting and offers Finish review; it stays hidden until you Reload changed
   content and answer remaining questions. Finish there and confirm the CLI exits
   and the bar disappears. With Review open, only its panel offers Finish review.
+- [ ] With Review closed, save a passage comment. The compact top bar changes to
+  1 comment ready to send and Send review. Add a second comment and check the
+  count. Send there and confirm the sidebar stays closed and the agent receives
+  both. Sent or Addressed comments must not count as drafts. Repeat with only a
+  changed Review Note, and with unanswered Question Cards. Force a send failure
+  and confirm its error appears in the bar with retry available. Check that both
+  actions stay hidden while disk changes await Reload and while Review is open.
+  Check the single row and adjacent button at wide widths, and wrapping on a
+  narrow window.
 
 ## Local Review history verification
 

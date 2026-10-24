@@ -158,10 +158,15 @@ the badge a green treatment and a reply-count label, while an agent Review error
 shows an error badge and its message. These are pending-review indicators, not
 unread tracking. Opening Review or selecting a passage's comment explicitly
 opens the panel; its existing per-document open preference still restores on load.
-With the panel closed, a sticky bar at the top of Preview offers Finish review once
-the same finish conditions as the panel allow it. It stays hidden while the
-document has changed on disk or a question is unanswered, keeps the action
-visible beside the agent-waiting status, and displays finish failures in place for retry.
+With the panel closed, a compact sticky row at the top of Preview keeps its action
+beside its message. Saved unsent Review Comments show their draft count and Send
+review; an unsent Review Note can be sent there too. Sending uses the panel's
+existing handler and disabled conditions, including support for partial question
+rounds. Otherwise, when the same finish conditions as the panel allow it and no
+question is unanswered, it says “Your agent is waiting. Keep commenting, or finish.”
+and offers Finish review. Both actions stay hidden while the document has changed
+on disk or the Review is complete. Failures appear in place for retry. Narrow
+windows can wrap the row.
 
 Rendered Mermaid diagrams keep zoom, pan, and reset controls in a toolbar above
 an isolated viewport. Theme changes replace only the SVG inside that viewport so its current

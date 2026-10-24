@@ -38,6 +38,8 @@ Optional overall guidance that applies to a Review as a whole rather than to a s
 
 **Review**:
 A feedback package that the user explicitly prepares for handoff to an agent. It may contain one Review Note, Review Comments, and Text Replacements.
+With the Review sidebar closed, a compact Preview bar offers Send review for saved
+unsent feedback, or Finish review when the Review is ready to finish.
 _Avoid_: Comment bundle, feedback file
 
 **Readability Check**:

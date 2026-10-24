@@ -1060,7 +1060,7 @@ button.readability-score-filter {
 }
 
 /* Sections sit 2rem apart, about three tile gaps; a hairline sets the comparison apart as supporting detail. */
-.prose .markdown-alert.markdown-alert-question > details {
+.prose .markdown-alert.markdown-alert-question details {
   margin-top: 2rem;
   margin-bottom: 0;
   padding-top: 0.5rem;
@@ -1068,7 +1068,7 @@ button.readability-score-filter {
 }
 
 /* Section labels are small and quiet, like the Question label, so they don't read as table headers. */
-.prose .markdown-alert-question > details > summary {
+.prose .markdown-alert-question details > summary {
   gap: 0.5rem;
   padding: 0.75rem 0;
   color: hsl(var(--muted-foreground));
@@ -1076,36 +1076,35 @@ button.readability-score-filter {
   font-weight: 600;
 }
 
-.prose .markdown-alert-question > details {
-  /* Indent the content to the summary text: its 0.8em chevron plus the gap. */
-  padding-left: calc(0.8em + 0.5rem);
+.prose .markdown-alert-question details {
+  padding-left: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
 }
 
-.prose .markdown-alert-question > details > summary {
-  margin-left: calc(-1em - 0.5rem);
+.prose .markdown-alert-question details > summary {
+  margin-left: 0;
 }
 
-.prose .markdown-alert-question > details[open] > summary {
+.prose .markdown-alert-question details[open] > summary {
   border-bottom: 0;
   background: transparent;
 }
 
-.prose .markdown-alert-question > details > summary:hover {
+.prose .markdown-alert-question details > summary:hover {
   background: transparent;
   color: hsl(var(--foreground));
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
 
-.prose .markdown-alert-question > details > :not(summary) {
+.prose .markdown-alert-question details > :not(summary) {
   margin-right: 0;
   margin-left: 0;
 }
 
-.prose .markdown-alert-question > details > .question-comparison {
+.prose .markdown-alert-question details > .question-comparison {
   margin-top: 0.25rem;
   margin-bottom: 0;
 }

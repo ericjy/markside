@@ -6,7 +6,6 @@ research
 node_modules
 .DS_Store
 lib/shiki-engine-bundle.mjs
-lib/mermaid-bundle.mjs
 lib/codemirror-bundle.mjs
 lib/katex-bundle.css
 assets/icon.png

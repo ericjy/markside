@@ -6,6 +6,10 @@ status: proposed
 # Diagram Engines Beyond Mermaid
 
 > Proposed design. Nothing here is implemented yet. Current behavior is in `docs/system-design.md`.
+>
+> Mermaid's move to on-demand loading is superseded by
+> [Render Mermaid diagrams with Pele](../2026-10-24-pele-diagrams/spec.md), which
+> replaced the Mermaid bundle. The rest of this design remains proposed.
 
 ## Goal
 

@@ -285,26 +285,38 @@ md.core.ruler.push("markdown_alerts", (state) => {
   }
 })
 
-// The interview archive keeps a heading and decision above a Full question disclosure.
+// Archived questions keep their complete body in Markdown; Preview supplies the folding.
 md.core.ruler.push("archived_questions", (state) => {
   const { tokens } = state
-  for (let i = tokens.length - 1; i >= 0; i--) {
-    if (tokens[i].type !== "heading_open" || tokens[i + 3]?.type !== "blockquote_open") continue
+  for (let i = 0; i < tokens.length; i++) {
+    if (tokens[i].type !== "heading_open" || tokens[i].level !== 0 || tokens[i + 3]?.type !== "blockquote_open") continue
+    const heading = tokens[i]
     const decision = tokens[i + 5]
     if (decision?.type !== "inline" || !QUESTION_DECISION.test(decision.content)) continue
     const quoteEnd = tokens.findIndex((token, index) => index > i + 3 && token.type === "blockquote_close" && token.level === tokens[i + 3].level)
-    let disclosure = quoteEnd + 1
-    if (tokens[disclosure]?.type === "paragraph_open" && tokens[disclosure + 1]?.content.startsWith("Focus:")) disclosure += 3
-    const details = tokens[disclosure]
-    if (details?.type !== "html_block" || !/^<details(?:\s[^>]*)?>\s*<summary>Full question<\/summary>\s*$/i.test(details.content)) continue
-    let depth = 0
-    let end = disclosure
-    for (; end < tokens.length; end++) {
-      if (tokens[end].type !== "html_block") continue
-      for (const tag of tokens[end].content.matchAll(/<(\/?)details\b[^>]*>/gi)) depth += tag[1] ? -1 : 1
-      if (depth === 0) break
+    let bodyStart = quoteEnd + 1
+    if (tokens[bodyStart]?.type === "paragraph_open" && tokens[bodyStart + 1]?.content.startsWith("Focus:")) bodyStart += 3
+    const first = tokens[bodyStart]
+    const beforeBody = tokens[bodyStart - 1]
+    const legacy = first?.type === "html_block" && /^<details(?:\s[^>]*)?>\s*<summary>Full question<\/summary>\s*$/i.test(first.content)
+    let end = bodyStart
+    if (legacy) {
+      let depth = 0
+      for (; end < tokens.length; end++) {
+        if (tokens[end].type !== "html_block") continue
+        for (const tag of tokens[end].content.matchAll(/<(\/?)details\b[^>]*>/gi)) depth += tag[1] ? -1 : 1
+        if (depth === 0) break
+      }
+      if (end === tokens.length) continue
+      end++
+      first.content = first.content.replace(/^(<details)\s[^>]*(>)/i, "$1$2")
+    } else {
+      if (!/^Q\d+\.\s/.test(tokens[i + 1].content)) continue
+      for (; end < tokens.length; end++) {
+        const token = tokens[end]
+        if (token.type === "heading_open" && token.level === heading.level && Number(token.tag[1]) <= Number(heading.tag[1])) break
+      }
     }
-    if (end === tokens.length) continue
     const text = collectHeadingText(decision.children ?? [])
     const label = /^(?:Your decision|Assumed decision):\s*(?:([A-Z])\.\s*)?/.exec(text)
     const answer = label ? label[1] ?? text.slice(label[0].length).trim() : ""
@@ -315,14 +327,22 @@ md.core.ruler.push("archived_questions", (state) => {
     open.meta = { title: "Previous question", type: "question" }
     const close = new state.Token("markdown_alert_close", "div", -1)
     close.block = true
-    details.content = details.content.replace(/^(<details)\s[^>]*(>)/i, "$1$2")
-    tokens.splice(end + 1, 0, close)
+    tokens.splice(end, 0, close)
     tokens.splice(i, 0, open)
-    markQuestionAnswers(state, i, end + 2)
+    markQuestionAnswers(state, i, tokens.indexOf(close))
+    if (!legacy && bodyStart < end) {
+      const bodyOpen = new state.Token("question_body_open", "details", 1)
+      bodyOpen.block = true
+      const bodyClose = new state.Token("question_details_close", "details", -1)
+      bodyClose.block = true
+      tokens.splice(tokens.indexOf(close), 0, bodyClose)
+      tokens.splice(tokens.indexOf(beforeBody) + 1, 0, bodyOpen)
+    }
     for (const token of tokens.slice(i + 1, tokens.indexOf(close))) {
       if (token.attrGet("data-question-option") === answer) token.attrJoin("class", "question-option-selected")
       token.attrs = token.attrs?.filter(([name, value]) => name !== "tabindex" && name !== "aria-checked" && !(name === "role" && ["radio", "radiogroup"].includes(value))) ?? null
     }
+    i = tokens.indexOf(close)
   }
 })
 
@@ -331,6 +351,7 @@ md.core.ruler.push("archived_questions", (state) => {
 // answer controls.
 function markQuestionAnswers(state: StateCore, open: number, close: number) {
   const { tokens } = state
+  const closeToken = tokens[close]
   const options = new Map<string, number>()
   let recommendation: { value: string; index: number } | null = null
   for (let k = open + 1; k < close; k++) {
@@ -387,6 +408,34 @@ function markQuestionAnswers(state: StateCore, open: number, close: number) {
     }
   }
   splitOptionLists(state, open, close)
+  foldQuestionComparisons(state, open, tokens.indexOf(closeToken))
+}
+
+function foldQuestionComparisons(state: StateCore, open: number, close: number) {
+  const { tokens } = state
+  let htmlDepth = 0
+  for (let i = open + 1; i < close; i++) {
+    const heading = tokens[i]
+    if (heading.type === "html_block") {
+      for (const tag of heading.content.matchAll(/<(\/?)details\b[^>]*>/gi)) htmlDepth += tag[1] ? -1 : 1
+    }
+    if (htmlDepth > 0 || heading.type !== "heading_open" || collectHeadingText(tokens[i + 1].children ?? []).trim() !== "Compare tradeoffs") continue
+    let end = i + 3
+    for (; end < close; end++) {
+      if (tokens[end].type === "heading_open" && tokens[end].level === heading.level && Number(tokens[end].tag[1]) <= Number(heading.tag[1])) break
+    }
+    const detailsOpen = new state.Token("question_comparison_open", "details", 1)
+    detailsOpen.block = true
+    detailsOpen.attrSet("open", "")
+    const summaryClose = new state.Token("question_summary_close", "summary", -1)
+    const detailsClose = new state.Token("question_details_close", "details", -1)
+    detailsClose.block = true
+    tokens.splice(end, 0, detailsClose)
+    tokens.splice(i + 3, 0, summaryClose)
+    tokens.splice(i, 0, detailsOpen)
+    close += 3
+    i = tokens.indexOf(detailsClose)
+  }
 }
 
 // A context list separated from the options only by a blank line merges into
@@ -519,6 +568,17 @@ md.renderer.rules.markdown_alert_open = (tokens, idx, _options, _env, self) => {
   const icon = `<svg class="markdown-alert-icon" aria-hidden="true" data-alert-icon="${type}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${MARKDOWN_ALERT_ICONS[type]}</svg>`
   return `${self.renderToken(tokens, idx, _options)}<p class="markdown-alert-title">${icon}${title}</p>\n`
 }
+
+md.renderer.rules.question_body_open = (tokens, idx, options, _env, self) =>
+  `${self.renderToken(tokens, idx, options)}<summary aria-label="Full question"><span aria-hidden="true">Full question</span></summary>\n`
+
+md.renderer.rules.question_comparison_open = (tokens, idx, options, _env, self) =>
+  `${self.renderToken(tokens, idx, options)}<summary class="question-comparison-summary">\n`
+
+md.renderer.rules.question_summary_close = (tokens, idx, options, _env, self) =>
+  self.renderToken(tokens, idx, options)
+
+md.renderer.rules.question_details_close = md.renderer.rules.question_summary_close
 
 md.renderer.rules.archived_question_open = md.renderer.rules.markdown_alert_open
 

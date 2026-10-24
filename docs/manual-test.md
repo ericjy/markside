@@ -74,6 +74,14 @@ pull request or review response.
   toolbar revealed. The print preview contains the document without Markside's
   toolbar, breadcrumbs, or action buttons in either layout. Cancel printing and
   confirm the toolbar still works on screen.
+- [ ] Open a document with a compact Mermaid sequence diagram, a wide
+  flowchart, and a flowchart with `e1@{ animate: true }` and
+  `e2@{ animation: slow }` edges. The compact diagram's labels match body text
+  size, the wide one fits the column, and the marked edges show moving dashes,
+  the slow one more slowly. With the system's reduce-motion setting on, the
+  dashes stay still. Zoom a diagram, switch between light and dark, and confirm
+  colors change without losing the zoom. Change the typeface and confirm labels
+  still fit their boxes. A diagram with a syntax error shows its line and column.
 - [ ] Print a document with a compact Mermaid sequence diagram and a wider
   flowchart. Each fills the document column without clipping or stretching,
   with no leftover blank viewport above or below. Zoom and pan on screen, then
@@ -207,6 +215,13 @@ pull request or review response.
   document." without them, and they return once only Before you finish remains.
   Addressed and Resolved comments are read-only until reopened. Reopen a
   comment, edit it, and confirm its old reply disappears for the new wording.
+- [ ] Write a plain Markdown archive with numbered question headings, decision
+  callouts, full question bodies, and subordinate Compare tradeoffs headings and
+  tables. Confirm Source contains no details/summary HTML. Preview should show
+  collapsed archived cards with expandable comparisons, read-only options, and
+  Revisit question. Verify adjacent questions and closing sections stay separate,
+  source lines and heading links remain correct, and existing HTML-wrapped
+  archives still render. Check a mixed document containing both formats.
 - [ ] In an interview with Previous questions, confirm each archived heading and
   decision appears in a Question Card with Full question collapsed. Expand it
   with the mouse and keyboard: original options, recommendation, and comparisons

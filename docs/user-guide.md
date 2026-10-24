@@ -143,7 +143,7 @@ Markside renders Markdown with:
 
 - **YAML frontmatter** shown as a summary table above the document; values that are relative paths, such as `../guide.md`, or Markdown filenames, such as `notes.md`, link to those files
 - **Syntax highlighting** for 19 languages
-- **Mermaid diagrams** rendered inline with zoom controls, panning, and an expanded view. Ordinary dragging remains available for selecting diagram text and adding Review Comments; choose **Enter Pan Mode** to drag the canvas, hold Shift while dragging as a shortcut, or use the arrow keys. Choose **Exit Pan Mode** to return to text selection. The default view balances the available content width and browser height, scaling between 75% and 350% so compact diagrams stay readable without letting tall diagrams dominate the page. Hold Control or Command while scrolling over a diagram to zoom, use **Reset** to restore its fitted view, or choose **Expand** for a viewport-filling canvas that closes with **Close** or Escape.
+- **Mermaid diagrams** rendered inline with zoom controls, panning, and an expanded view. Ordinary dragging remains available for selecting diagram text and adding Review Comments; choose **Enter Pan Mode** to drag the canvas, hold Shift while dragging as a shortcut, or use the arrow keys. Choose **Exit Pan Mode** to return to text selection. Diagrams use the document font and theme colors. The default view shows a diagram at its natural size, shrinking wide or tall diagrams to fit the column and browser height. Hold Control or Command while scrolling over a diagram to zoom, use **Reset** to restore its fitted view, or choose **Expand** for a viewport-filling canvas that closes with **Close** or Escape.
 - **GitHub-style alerts** for Note, Important, Warning, Tip, and Caution callouts
 - **Question cards** for fenced `question` blocks, with answer buttons for agent interviews
 - **Wikilinks** — `[[Page Name]]` resolves to `Page Name.md`, `.mdx`, or `.markdown` in the same directory
@@ -416,6 +416,10 @@ After you send, answered questions move to **Previous questions** and the agent
 writes the next round. Click **Reload** when Markside shows **Changed on disk**.
 Each previous question is a read-only card with its recorded decision visible.
 Expand **Full question** to inspect the original context, options, and recommendation.
+These folding controls are generated in Preview. In Source and other Markdown
+renderers, new archived questions use ordinary headings, lists, and tables;
+comparison sections use a **Compare tradeoffs** Markdown heading. Older interviews
+with HTML disclosures still work.
 Click **Revisit question** to open a composer with the recorded answer, revise it,
 then save and send the Review. Reopening restores any saved pending revision.
 The recorded decision stays visible until the agent processes the revision;

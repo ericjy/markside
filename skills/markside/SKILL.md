@@ -122,15 +122,13 @@ section only decides how questions are asked and answered.
 
    **Recommended: A.** It keeps temporary interview questions out of the plan; the extra file can be removed afterward.
 
-   <details open>
-   <summary>Compare tradeoffs</summary>
+   #### Compare tradeoffs
 
    | Criterion | A. Sibling document | B. Inside the plan |
    |---|---|---|
    | Plan stays focused | ✓ Interview stays separate | △ Questions interrupt the plan |
    | File management | Two files | One file |
 
-   </details>
    ```
    ````
 
@@ -156,12 +154,12 @@ section only decides how questions are asked and answered.
      connect, not the options or their outcomes, which the options and table
      already state. Fence it with `~~~mermaid`, because a backtick fence would
      close the question fence.
-   - When shared criteria help compare the options, add a Markdown table
-     inside `<details open>` with `<summary>Compare tradeoffs</summary>`, expanded
-     by default so it is visible before choosing. Keep it collapsible. Put it
-     last, after the recommendation, as in the example.
-     Leave blank lines around the table so Markdown renders
-     inside the HTML disclosure. Omit the comparison for simple questions.
+   - When shared criteria help compare the options, add a subordinate Markdown
+     heading named `Compare tradeoffs`, one level below the question heading,
+     followed by a Markdown table. Put it last, after the recommendation, as in
+     the example. Markside makes this section expandable and initially open in
+     Preview; other renderers show ordinary Markdown. Do not write HTML
+     `<details>` or `<summary>` wrappers. Omit the comparison for simple questions.
    - In comparison tables, use options as columns and criteria as rows. Keep
      cells short. Prefix evaluative cells with ✓ for meeting the need, △ for
      a tradeoff, ✕ for not meeting the need, or ? for an unknown that needs
@@ -169,7 +167,7 @@ section only decides how questions are asked and answered.
      symbols. Keep neutral facts such as file counts unscored. Do not add a
      legend or colored-circle emoji, and do not present assumptions as facts.
    - Right after the options, write exactly one `**Recommended: X.**`
-     paragraph outside the disclosure, naming one listed letter. Give the main reason and decisive
+     paragraph before the comparison heading, naming one listed letter. Give the main reason and decisive
      tradeoff in one or two short sentences. Put detailed comparisons in the
      table rather than a long recommendation paragraph. Markside labels the
      recommended option separately from the user's selected answer.
@@ -185,28 +183,25 @@ section only decides how questions are asked and answered.
    an option letter or the user's own words. One Send may answer several
    cards; handle each comment as follows, then archive in question-number order.
    For an answer, archive the question at the end of Previous questions so
-   the record stays short but complete: its heading, then
+   the record remains complete: its heading, then
    `> **Your decision: A.** <one sentence>` preserving any additional notes
    from the user's answer (for an answer in their own words,
    `> **Your decision:** <their answer in one sentence>`), then everything else from its `question` fence
-   verbatim inside a collapsed disclosure:
+   verbatim as ordinary Markdown. Do not add a Full question heading or HTML
+   disclosure; Markside generates that folding control in Preview:
 
    ````markdown
    ### Q3. Where does the interview doc live?
 
    > **Your decision: A.** Keep it beside the plan.
 
-   <details>
-   <summary>Full question</summary>
-
-   Context, options, recommendation, and comparison, copied verbatim.
-
-   </details>
+   Context, options, recommendation, and comparison, copied verbatim as Markdown.
    ````
 
    Preserve the context, full option titles and descriptions, recommendation,
-   and comparison disclosures and tables. Do not shorten or rewrite any of
-   them, and leave blank lines inside the disclosure so Markdown renders.
+   and comparison headings and tables. Do not shorten or rewrite any of
+   them. Each archived question ends at the next heading of the same or higher
+   level, so keep supporting headings subordinate to the question heading.
    Before removing the fence from
    Current questions, verify that the archived question matches the original
    fence contents. Leave unanswered cards in place, and append after them any

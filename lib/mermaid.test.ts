@@ -1,68 +1,78 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest"
 
-vi.mock("mermaid", () => ({
-  default: {
-    initialize: vi.fn(),
-    render: vi.fn()
-  }
+// Pele measures labels with a canvas, which jsdom lacks.
+vi.mock("pele", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("pele")>()),
+  render: vi.fn(),
 }))
 
-import mermaid from "mermaid"
+import { PeleError, render } from "pele"
 import { renderMermaidBlocks, rerenderMermaidBlocks } from "./mermaid"
 
-const mockRender = mermaid.render as ReturnType<typeof vi.fn>
-const mockInit = mermaid.initialize as ReturnType<typeof vi.fn>
+const mockRender = render as unknown as ReturnType<typeof vi.fn>
 
 describe("renderMermaidBlocks", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockRender.mockResolvedValue({ svg: "<svg><text>diagram</text></svg>" })
+    mockRender.mockReturnValue({ svg: "<svg><text>diagram</text></svg>" })
   })
 
-  it("returns early without calling mermaid when no mermaid code blocks exist", async () => {
+  it("returns early without rendering when no mermaid code blocks exist", async () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-typescript'>const x = 1</code></pre>"
-    await renderMermaidBlocks(div, false)
-    expect(mockInit).not.toHaveBeenCalled()
+    await renderMermaidBlocks(div)
     expect(mockRender).not.toHaveBeenCalled()
   })
 
-  it("initializes mermaid with default theme when dark is false", async () => {
+  it("lays out labels in the document font with a unique ID prefix per diagram", async () => {
     const div = document.createElement("div")
-    div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
-    await renderMermaidBlocks(div, false)
-    expect(mockInit).toHaveBeenCalledWith(
-      expect.objectContaining({ theme: "default", startOnLoad: false, securityLevel: "strict" })
-    )
+    div.style.fontFamily = "Charter, serif"
+    div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre><pre><code class='language-mermaid'>graph TD; C-->D</code></pre>"
+    await renderMermaidBlocks(div)
+    const [first, second] = mockRender.mock.calls.map(([, options]) => options)
+    expect(first.fontFamily).toBe("Charter, serif")
+    expect(first.idPrefix).toMatch(/^mermaid-\d+-$/)
+    expect(second.idPrefix).not.toBe(first.idPrefix)
   })
 
-  it("uses the neutral theme inside a Question Card", async () => {
+  it("marks diagrams in a Question Card or archived question", async () => {
     const div = document.createElement("div")
-    div.innerHTML = '<div class="markdown-alert-question"><pre><code class="language-mermaid">graph TD; A-->B</code></pre></div><pre><code class="language-mermaid">graph TD; C-->D</code></pre>'
-    await renderMermaidBlocks(div, false)
-    expect(mockInit.mock.calls.map(([config]) => config.theme)).toEqual(["neutral", "default"])
+    div.innerHTML = '<div class="markdown-alert-question"><pre><code class="language-mermaid">graph TD; A-->B</code></pre></div><details open><summary>Full question</summary><pre><code class="language-mermaid">graph TD; A-->B</code></pre></details><details open><summary>Notes</summary><pre><code class="language-mermaid">graph TD; C-->D</code></pre></details>'
+    await renderMermaidBlocks(div)
+    expect([...div.querySelectorAll(".mermaid-block")].map((block) => block.classList.contains("mermaid-question"))).toEqual([true, true, false])
   })
 
-  it("keeps the card's diagram style in an archived question", async () => {
+  it("marks edges whose source asks for animation", async () => {
+    mockRender.mockReturnValue({
+      svg: '<svg><g class="pele-edges"><g class="pele-edge" data-id="e1"><path/></g><g class="pele-edge" data-id="e2"><path/></g><g class="pele-edge" data-id="e3"><path/></g><g class="pele-edge" data-id="e4"><path/></g></g></svg>',
+    })
     const div = document.createElement("div")
-    div.innerHTML = '<details open><summary>Full question</summary><pre><code class="language-mermaid">graph TD; A-->B</code></pre></details><details open><summary>Notes</summary><pre><code class="language-mermaid">graph TD; C-->D</code></pre></details>'
-    await renderMermaidBlocks(div, false)
-    expect(mockInit.mock.calls.map(([config]) => config.theme)).toEqual(["neutral", "default"])
-    expect([...div.querySelectorAll(".mermaid-block")].map((block) => block.classList.contains("mermaid-question"))).toEqual([true, false])
-  })
-
-  it("initializes mermaid with dark theme when dark is true", async () => {
-    const div = document.createElement("div")
-    div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
-    await renderMermaidBlocks(div, true)
-    expect(mockInit).toHaveBeenCalledWith(expect.objectContaining({ theme: "dark" }))
+    div.innerHTML = `<pre><code class='language-mermaid'>flowchart LR
+  A e1@--> B e2@--> C e3@--> D e4@--> E
+  e1@{ animate: true }
+  e2@{ animation: slow }
+  e3@{ animate: true }
+  e3@{ animate: false }
+</code></pre>`
+    await renderMermaidBlocks(div)
+    const edges = [...div.querySelectorAll<SVGGElement>(".pele-edge")].map((edge) => [
+      edge.dataset.id,
+      edge.classList.contains("mermaid-edge-animated"),
+      edge.dataset.animation,
+    ])
+    expect(edges).toEqual([
+      ["e1", true, "fast"],
+      ["e2", true, "slow"],
+      ["e3", false, undefined],
+      ["e4", false, undefined],
+    ])
   })
 
   it("replaces the pre element with a mermaid-block div containing the SVG", async () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
     expect(div.querySelector("pre")).toBeNull()
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     expect(wrapper).not.toBeNull()
@@ -73,7 +83,7 @@ describe("renderMermaidBlocks", () => {
   it("adds accessible zoom and reset controls", async () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
 
     expect(div.querySelector("[aria-label='Zoom out']")).not.toBeNull()
     expect(div.querySelector("[aria-label='Zoom in']")).not.toBeNull()
@@ -122,7 +132,7 @@ describe("renderMermaidBlocks", () => {
     ).toBe("0")
   })
 
-  it("fits a narrow diagram toward the available width and sizes its viewport", async () => {
+  it("keeps a narrow diagram at its natural size", async () => {
     const rectSpy = vi
       .spyOn(HTMLElement.prototype, "getBoundingClientRect")
       .mockImplementation(function (this: HTMLElement) {
@@ -144,13 +154,13 @@ describe("renderMermaidBlocks", () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
 
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
 
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     const viewport = div.querySelector(".mermaid-viewport") as HTMLElement
-    expect(wrapper.dataset.mermaidScale).toBe("2.4")
-    expect(wrapper.dataset.mermaidDefaultScale).toBe("2.4")
-    expect(viewport.style.height).toBe("480px")
+    expect(wrapper.dataset.mermaidScale).toBe("1")
+    expect(wrapper.dataset.mermaidDefaultScale).toBe("1")
+    expect(viewport.style.height).toBe("200px")
     rectSpy.mockRestore()
   })
 
@@ -176,7 +186,7 @@ describe("renderMermaidBlocks", () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
 
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
 
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     const viewport = div.querySelector(".mermaid-viewport") as HTMLElement
@@ -185,7 +195,7 @@ describe("renderMermaidBlocks", () => {
     rectSpy.mockRestore()
   })
 
-  it("scales compact diagrams up to 350% for readable labels", async () => {
+  it("does not enlarge compact diagrams", async () => {
     const rectSpy = vi
       .spyOn(HTMLElement.prototype, "getBoundingClientRect")
       .mockImplementation(function (this: HTMLElement) {
@@ -207,13 +217,13 @@ describe("renderMermaidBlocks", () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
 
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
 
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     const viewport = div.querySelector(".mermaid-viewport") as HTMLElement
-    expect(wrapper.dataset.mermaidScale).toBe("3.5")
-    expect(wrapper.dataset.mermaidDefaultScale).toBe("3.5")
-    expect(viewport.style.height).toBe("350px")
+    expect(wrapper.dataset.mermaidScale).toBe("1")
+    expect(wrapper.dataset.mermaidDefaultScale).toBe("1")
+    expect(viewport.style.height).toBe("100px")
     rectSpy.mockRestore()
   })
 
@@ -224,7 +234,7 @@ describe("renderMermaidBlocks", () => {
       .mockImplementation(function (this: HTMLElement) {
         const isDiagram = this.classList.contains("mermaid-diagram")
         const width = isDiagram ? 300 : 1000
-        const height = isDiagram ? 650 : 400
+        const height = isDiagram ? 1000 : 400
         return {
           bottom: height,
           height,
@@ -240,11 +250,11 @@ describe("renderMermaidBlocks", () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>flowchart TD; A-->B</code></pre>"
 
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
 
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     const viewport = div.querySelector(".mermaid-viewport") as HTMLElement
-    expect(Number(wrapper.dataset.mermaidScale)).toBeCloseTo(1.23)
+    expect(wrapper.dataset.mermaidScale).toBe("0.8")
     expect(viewport.style.height).toBe("800px")
     rectSpy.mockRestore()
     heightSpy.mockRestore()
@@ -253,7 +263,7 @@ describe("renderMermaidBlocks", () => {
   it("zooms with controls and resets the diagram view", async () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     const diagram = div.querySelector(".mermaid-diagram") as HTMLElement
     const zoomIn = div.querySelector(
@@ -280,7 +290,7 @@ describe("renderMermaidBlocks", () => {
   it("zooms with the mouse wheel and pans with arrow keys", async () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     const viewport = div.querySelector(".mermaid-viewport") as HTMLElement
 
@@ -311,7 +321,7 @@ describe("renderMermaidBlocks", () => {
   it("pans by dragging when the Pan control is enabled", async () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     const viewport = div.querySelector(".mermaid-viewport") as HTMLElement
     const pan = div.querySelector(
@@ -358,7 +368,7 @@ describe("renderMermaidBlocks", () => {
   it("leaves ordinary dragging available for text selection", async () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     const viewport = div.querySelector(".mermaid-viewport") as HTMLElement
     const pointerEvent = (type: string, clientX: number) => {
@@ -386,7 +396,7 @@ describe("renderMermaidBlocks", () => {
     const div = document.createElement("div")
     document.body.append(div)
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     const zoomIn = wrapper.querySelector(
       "[data-mermaid-action='zoom-in']"
@@ -450,17 +460,17 @@ describe("renderMermaidBlocks", () => {
     const div = document.createElement("div")
     document.body.append(div)
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     const expand = wrapper.querySelector(
       "[data-mermaid-action='expand']"
     ) as HTMLButtonElement
 
-    expect(wrapper.dataset.mermaidScale).toBe("2.4")
+    expect(wrapper.dataset.mermaidScale).toBe("1")
     expand.click()
     expect(Number(wrapper.dataset.mermaidScale)).toBeCloseTo(2.25)
     expand.click()
-    expect(wrapper.dataset.mermaidScale).toBe("2.4")
+    expect(wrapper.dataset.mermaidScale).toBe("1")
     expect(
       wrapper.querySelector<HTMLElement>(".mermaid-diagram")!.style.transition
     ).toBe("")
@@ -493,7 +503,7 @@ describe("renderMermaidBlocks", () => {
     const div = document.createElement("div")
     document.body.append(div)
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     const zoomIn = wrapper.querySelector(
       "[data-mermaid-action='zoom-in']"
@@ -517,24 +527,35 @@ describe("renderMermaidBlocks", () => {
   it("stores original source code in data-mermaid-src attribute", async () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     expect(wrapper.dataset.mermaidSrc).toBe("graph TD; A-->B")
-    expect(mockRender).toHaveBeenCalledWith(
-      expect.stringMatching(/^mermaid-/),
-      "graph TD; A-->B"
+    expect(mockRender).toHaveBeenCalledWith("graph TD; A-->B", expect.any(Object))
+  })
+
+  it("replaces pre with an error block that locates a syntax error", async () => {
+    mockRender.mockImplementation(() => {
+      throw new PeleError("Parse error: unexpected token", "syntax", { line: 3, column: 7 })
+    })
+    const div = document.createElement("div")
+    div.innerHTML = "<pre><code class='language-mermaid'>invalid diagram</code></pre>"
+    await renderMermaidBlocks(div)
+    expect(div.querySelector("pre")).toBeNull()
+    expect(div.querySelector(".mermaid-error")?.textContent).toBe(
+      "Mermaid error at line 3, column 7: Parse error: unexpected token"
     )
   })
 
-  it("replaces pre with error div when mermaid.render throws", async () => {
-    mockRender.mockRejectedValue(new Error("Parse error: unexpected token"))
+  it("omits the location when Pele cannot detect the diagram type", async () => {
+    mockRender.mockImplementation(() => {
+      throw new PeleError("No diagram type detected for the given text.", "unsupported-diagram")
+    })
     const div = document.createElement("div")
-    div.innerHTML = "<pre><code class='language-mermaid'>invalid diagram</code></pre>"
-    await renderMermaidBlocks(div, false)
-    expect(div.querySelector("pre")).toBeNull()
-    const errDiv = div.querySelector(".mermaid-error") as HTMLElement
-    expect(errDiv).not.toBeNull()
-    expect(errDiv.textContent).toContain("Parse error: unexpected token")
+    div.innerHTML = "<pre><code class='language-mermaid'>zenuml</code></pre>"
+    await renderMermaidBlocks(div)
+    expect(div.querySelector(".mermaid-error")?.textContent).toBe(
+      "Mermaid error: No diagram type detected for the given text."
+    )
   })
 
   it("processes multiple mermaid blocks in one call", async () => {
@@ -543,7 +564,7 @@ describe("renderMermaidBlocks", () => {
       <pre><code class='language-mermaid'>graph TD; A-->B</code></pre>
       <pre><code class='language-mermaid'>sequenceDiagram; A->>B: Hello</code></pre>
     `
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
     expect(mockRender).toHaveBeenCalledTimes(2)
     expect(div.querySelectorAll(".mermaid-block")).toHaveLength(2)
   })
@@ -552,21 +573,20 @@ describe("renderMermaidBlocks", () => {
 describe("rerenderMermaidBlocks", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockRender.mockResolvedValue({ svg: "<svg><text>updated</text></svg>" })
+    mockRender.mockReturnValue({ svg: "<svg><text>updated</text></svg>" })
   })
 
-  it("returns early without calling mermaid when no mermaid-block wrappers exist", async () => {
+  it("returns early without rendering when no mermaid-block wrappers exist", async () => {
     const div = document.createElement("div")
     div.innerHTML = "<p>no mermaid here</p>"
-    await rerenderMermaidBlocks(div, true)
+    await rerenderMermaidBlocks(div)
     expect(mockRender).not.toHaveBeenCalled()
   })
 
-  it("re-renders existing blocks with updated theme", async () => {
+  it("re-renders existing blocks with new layouts", async () => {
     const div = document.createElement("div")
     div.innerHTML = `<div class="mermaid-block not-prose" data-mermaid-src="graph TD; A-->B"><svg><text>old</text></svg></div>`
-    await rerenderMermaidBlocks(div, true)
-    expect(mockInit).toHaveBeenCalledWith(expect.objectContaining({ theme: "dark" }))
+    await rerenderMermaidBlocks(div)
     expect(mockRender).toHaveBeenCalledTimes(1)
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     expect(wrapper.innerHTML).toContain("<text>updated</text>")
@@ -575,7 +595,7 @@ describe("rerenderMermaidBlocks", () => {
   it("preserves zoom and pan when re-rendering an interactive block", async () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
-    await renderMermaidBlocks(div, false)
+    await renderMermaidBlocks(div)
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     const viewport = div.querySelector(".mermaid-viewport") as HTMLElement
     const zoomIn = div.querySelector(
@@ -586,18 +606,18 @@ describe("rerenderMermaidBlocks", () => {
       new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true })
     )
 
-    mockRender.mockResolvedValue({ svg: "<svg><text>themed</text></svg>" })
-    await rerenderMermaidBlocks(div, true)
+    mockRender.mockReturnValue({ svg: "<svg><text>relaid</text></svg>" })
+    await rerenderMermaidBlocks(div)
 
     expect(wrapper.dataset.mermaidScale).toBe("1.5")
     expect(wrapper.dataset.mermaidX).toBe("24")
-    expect(div.querySelector(".mermaid-diagram")?.innerHTML).toContain("themed")
+    expect(div.querySelector(".mermaid-diagram")?.innerHTML).toContain("relaid")
   })
 
   it("retries error blocks and promotes them to mermaid-block on success", async () => {
     const div = document.createElement("div")
     div.innerHTML = `<div class="mermaid-error" data-mermaid-src="graph TD; A-->B">Mermaid error: Parse error</div>`
-    await rerenderMermaidBlocks(div, false)
+    await rerenderMermaidBlocks(div)
     expect(mockRender).toHaveBeenCalledTimes(1)
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     expect(wrapper).not.toBeNull()
@@ -606,11 +626,13 @@ describe("rerenderMermaidBlocks", () => {
   })
 
   it("leaves existing SVG in place when re-render fails", async () => {
-    mockRender.mockRejectedValue(new Error("render failed"))
+    mockRender.mockImplementation(() => {
+      throw new Error("render failed")
+    })
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
     const div = document.createElement("div")
     div.innerHTML = `<div class="mermaid-block not-prose" data-mermaid-src="graph TD; A-->B"><svg><text>old</text></svg></div>`
-    await rerenderMermaidBlocks(div, true)
+    await rerenderMermaidBlocks(div)
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     expect(wrapper.innerHTML).toContain("<text>old</text>")
     consoleSpy.mockRestore()

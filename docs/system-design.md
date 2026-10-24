@@ -68,7 +68,7 @@ file:// Markdown page
 → DOMPurify sanitizes the HTML
 → relative image and document links are resolved against the current file
 → Shiki enhances code blocks
-→ Mermaid enhances diagram blocks
+→ Pele renders Mermaid diagram blocks
 → headings are extracted for the outline
 → question cards receive answer controls
 ```
@@ -93,8 +93,10 @@ Comparison disclosures sit below a hairline under a small muted label, and
 each Question Card table is wrapped in a white panel with fixed column widths,
 muted criteria, and its header letters drawn as keys like the options', while
 the cell text stays unchanged for anchoring and copying. The
-interview skill writes `<details open>` so comparisons start expanded and remain
-collapsible; rendering preserves the author's chosen open state. The
+interview skill writes a subordinate `Compare tradeoffs` Markdown heading and
+table. Rendering makes that section an initially expanded disclosure, preserving
+the actual heading, its ID, and its source line inside the summary. Existing
+HTML comparisons retain their authored open state. The
 preview then wires the options: clicking one (unless the click ends a text selection or lands on a
 Review Comment), pressing Enter on it, or pressing its letter while its card is
 active creates, or changes, one ordinary Review Comment on the card's
@@ -138,10 +140,13 @@ option letter. Keyboard hints appear at the top right, wrapping below the Questi
 on narrow screens. These mounts are excluded from Review anchoring, copying, and
 print. The sidecar format is unchanged.
 
-Archived questions in the skill's existing heading, decision callout, and
-Full question disclosure format render as Question Cards too. Their heading
-and recorded decision stay visible, and Full question starts collapsed while
-nested comparisons retain their authored open state. Options use the current
+Archived questions use an ordinary numbered question heading, decision callout,
+and full Markdown body ending at the next heading of the same or higher level.
+Markside renders them as Question Cards, generating a collapsed Full question
+section around the body while keeping the heading and decision visible. The
+generated label is excluded from Review text indexing. Source remains readable
+in other Markdown renderers. Existing HTML-wrapped archives remain supported;
+legacy nested comparisons retain their authored open state. Options use the current
 card styling and mark the recorded choice, but have no answer handlers or
 radio roles. Archived cards take no part in letter shortcuts, active-card
 tracking, round counts, or unanswered-question finish checks. Revisit question
@@ -169,16 +174,22 @@ and offers Finish review. Both actions stay hidden while the document has change
 on disk or the Review is complete. Failures appear in place for retry. Narrow
 windows can wrap the row.
 
-Rendered Mermaid diagrams keep zoom, pan, and reset controls in a toolbar above
-an isolated viewport. Theme changes replace only the SVG inside that viewport so its current
-view remains stable. Expanded view temporarily moves the diagram to a
+Mermaid diagrams are rendered by Pele, which lays out labels in the document font
+and draws them as SVG text. Rendered diagrams keep zoom, pan, and reset controls
+in a toolbar above an isolated viewport. Diagram colors come from CSS variables
+mapped to Markside's palette, so theme changes need no re-render. A typeface
+change replaces only the SVG inside the viewport so its current view remains
+stable. Inline diagrams start at their natural size or smaller; wide diagrams
+shrink to fit the column. Pele ignores Mermaid's animated edges, so Markside
+reads `id@{ animate … }` lines from the source and animates the matching edges
+itself, except under reduced motion. A diagram Pele cannot render shows an
+error block with Pele's message and, for syntax errors, its line and column. Expanded view temporarily moves the diagram to a
 viewport-filling overlay and restores its inline position and view state on exit.
 Print and PDF Export ignore the screen's pan, zoom, and viewport height, sizing
 each inline SVG to the document column with its aspect ratio preserved.
 Inside a Question Card, or a `<details>` whose summary is "Full question" (an
-archived question), a diagram only explains the choice: it uses Mermaid's
-neutral theme in light mode, stays at natural size, and shows only the Expand
-control, on hover or focus, until expanded.
+archived question), a diagram only explains the choice: it shows only the
+Expand control, on hover or focus, until expanded.
 A blockquote starting with **Your decision**, **Assumed decision**,
 **Deferred**, or **Open**, the decision line the markside skill writes under an
 archived question, renders as a callout rather than a quotation: teal for the
@@ -596,9 +607,9 @@ Opening that email link does not complete the automatic review-prompt sequence.
 
 ### Pre-bundled ESM dependencies
 
-Shiki, Mermaid, and CodeMirror are pre-bundled with esbuild and aliased through `package.json` because Plasmo's Parcel pipeline cannot reliably bundle their ESM dependency graphs for this extension.
+Shiki and CodeMirror are pre-bundled with esbuild and aliased through `package.json` because Plasmo's Parcel pipeline cannot reliably bundle their ESM dependency graphs for this extension.
 
-Never import those packages directly. Use the project wrappers and update the matching bundle script when adding a language, theme, or editor dependency. See [ADR-0001](adr/0001-prebundle-esm-only-dependencies.md).
+Never import those packages directly. Use the project wrappers and update the matching bundle script when adding a language, theme, or editor dependency. Pele, which renders Mermaid diagrams, is bundled by Parcel directly and pinned to an exact version. See [ADR-0001](adr/0001-prebundle-esm-only-dependencies.md).
 
 ### No file watching
 

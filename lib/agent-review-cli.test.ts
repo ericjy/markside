@@ -127,7 +127,9 @@ describe("markside CLI with real files", () => {
     const waiting = run(["review", doc, "--continue", "--no-open", "--timeout", "3"])
     await waiting.waiting
     const reopened = setReviewerCommentStatus(parseReviewFile(addressed, "plan #1.md"), "c1", "open")
-    await writeFile(sidecar, JSON.stringify(reopened))
+    // The CLI is watching: replace atomically, as Chrome and the CLI do, so it never reads a partial file.
+    await writeFile(`${sidecar}.tmp`, JSON.stringify(reopened))
+    await rename(`${sidecar}.tmp`, sidecar)
     // Reopening alone is pending; the reviewer must explicitly send it.
     await send()
     expect(await waiting.done).toMatchObject({ code: 0, stdout: expect.stringContaining("Got 1 comment") })

@@ -216,7 +216,16 @@ section only decides how questions are asked and answered.
    are unclear, record no decision. Rewrite the unclear part of that
    question in place, adding a diagram, table, or example where it helps, keeping its number and heading so the answer still
    anchors, address the comment with a one-line reply naming what changed, and
-   continue the Review. If it asks to skip or defer the question, archive it as
+   continue the Review. Previous questions render as collapsed, read-only cards.
+   Revisit question opens a composer with a revisit instruction and the recorded
+   answer; it sends nothing until the user sends the Review. When a comment on
+   a previous question asks to revisit it, reconsider its recorded decision and
+   any dependent decisions using the user's revised answer. Update the decision
+   when the revision is clear; if more input is needed, move the full question
+   back to Current questions as a `question` card, keeping its number and heading.
+   Preserve the original context and options unless the revision requires a
+   change, address the comment with what changed, and continue the Review.
+   If it asks to skip or defer the question, archive it as
    above with `> **Deferred.**` in place of the decision line. Requests to
    decide the rest or to stop apply to the whole interview, whichever card
    carries them. If a comment asks you to decide the rest, add

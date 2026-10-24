@@ -207,6 +207,20 @@ pull request or review response.
   document." without them, and they return once only Before you finish remains.
   Addressed and Resolved comments are read-only until reopened. Reopen a
   comment, edit it, and confirm its old reply disappears for the new wording.
+- [ ] In an interview with Previous questions, confirm each archived heading and
+  decision appears in a Question Card with Full question collapsed. Expand it
+  with the mouse and keyboard: original options, recommendation, and comparisons
+  remain readable, the recorded option is marked, and clicking or typing letters
+  does not change it. Nested comparisons keep their original open state. Confirm
+  archived cards are excluded from active-card tracking and question counts and
+  do not block Finish review. Check light/dark mode and a narrow window.
+- [ ] Click Revisit question while collapsed. Confirm the composer contains a
+  revisit instruction and the recorded answer. Cancel: the decision and Review
+  are unchanged. Reopen, revise, and Save: a pending Review Comment appears on
+  that heading, without sending or replacing the recorded decision. Reopen again:
+  the saved revision returns. Send the Review and confirm the agent handles the
+  revision and dependent decisions, or restores the question as a current card
+  if more input is needed. Repeat for a custom answer and an assumed decision.
 - [ ] Run `/grill-me /markside <topic>` and `/grill-me <topic> in Markside`;
   each creates `<topic>.grill.md` at the repository root. Each current question renders as a
   Question card from a fenced `question` block. In Source, confirm the body

@@ -409,8 +409,14 @@ Each question appears as a card.
 
 After you send, answered questions move to **Previous questions** and the agent
 writes the next round. Click **Reload** when Markside shows **Changed on disk**.
-Decisions the agent assumed for you are listed there too; comment on one to veto
-it. When the closing **Before you finish** section matches your understanding,
+Each previous question is a read-only card with its recorded decision visible.
+Expand **Full question** to inspect the original context, options, and recommendation.
+Click **Revisit question** to open a composer with the recorded answer, revise it,
+then save and send the Review. Reopening restores any saved pending revision.
+The recorded decision stays visible until the agent processes the revision;
+archived options cannot be selected directly. Decisions the agent assumed for
+you are listed there too and can be revisited in the same way.
+When the closing **Before you finish** section matches your understanding,
 click **Finish review**.
 
 ### Copy-prompt reviews

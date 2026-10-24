@@ -4,7 +4,7 @@ import { act, createElement, type ComponentProps } from "react"
 import { createRoot, type Root } from "react-dom/client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { followQuestionCard, nextQuestionCard, QuestionCardActions } from "../components/question-card-actions"
+import { ArchivedQuestionCardActions, followQuestionCard, nextQuestionCard, QuestionCardActions } from "../components/question-card-actions"
 import { md, mountQuestionCard, type QuestionCard } from "./markdown"
 import { buildRenderedTextIndex } from "./review-dom"
 
@@ -291,5 +291,35 @@ describe("following the reader's question card", () => {
 
   it("keeps the active card when no other card is visible", () => {
     expect(follow("Q1", ["Q1"])).toBe("Q1")
+  })
+})
+
+
+describe("archived question actions", () => {
+  it("offers Revisit while collapsed without making the options answer controls", () => {
+    act(() => root.unmount())
+    container.innerHTML = md.render("### Q1. Which?\n\n> **Your decision: A.** First.\n\n<details>\n<summary>Full question</summary>\n\n- **A. First.** One.\n- **B. Second.** Two.\n\n</details>")
+    card = mountQuestionCard(container.querySelector<HTMLElement>(".question-card-archived")!)!
+    root = createRoot(card.mount)
+    const onCompose = vi.fn()
+    const props = { card, busy: false, composing: false, onCompose }
+    act(() => root.render(createElement(ArchivedQuestionCardActions, props)))
+    const button = container.querySelector<HTMLButtonElement>("button")!
+    expect(button.textContent).toContain("Revisit question")
+    expect(container.querySelector("details")!.open).toBe(false)
+    expect(button.closest("details")).toBeNull()
+    expect(container.querySelector(".question-custom-answer, .question-card-hint, .question-card-footer:not(:empty)")).toBeNull()
+    const before = buildRenderedTextIndex(container).text
+    expect(before).not.toContain("Revisit question")
+    act(() => option("B").click())
+    key({ key: "b" })
+    expect(option("A").classList.contains("question-option-selected")).toBe(true)
+    expect(onCompose).not.toHaveBeenCalled()
+    act(() => button.click())
+    expect(onCompose).toHaveBeenCalledOnce()
+    expect(buildRenderedTextIndex(container).text).toBe(before)
+    act(() => root.render(createElement(ArchivedQuestionCardActions, { ...props, composing: true, busy: true })))
+    expect(button.getAttribute("aria-expanded")).toBe("true")
+    expect(button.disabled).toBe(true)
   })
 })

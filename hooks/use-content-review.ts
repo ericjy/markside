@@ -386,9 +386,7 @@ export function useContentReview({
 
   // Question card answers pass activate: false so choosing an option doesn't select its comment.
   const createReviewComment = (anchor: ReviewAnchor, body: string, { activate = true } = {}) => {
-    const existing = review?.comments.find((comment) =>
-      !retiredCommentIds.has(comment.id) && isSameReviewAnchor(comment.anchor, anchor)
-    )
+    const existing = findDuplicateReviewComment(anchor)
     if (existing && review) {
       updateReviewComment(existing.id, body)
       if (activate) setSelectedReviewId(existing.id)
@@ -533,25 +531,36 @@ export function useContentReview({
     if (comment) deleteReviewCommentById(comment.id)
   }
 
-  const composeQuestionAnswer = (target: HTMLElement, point: { x: number; y: number }) => {
-    if (questionActionsBusy) return
+  const composeQuestionAnswer = (target: HTMLElement, point: { x: number; y: number }, archivedAnswer?: string) => {
+    if (agentHandoff?.sending || agentHandoff?.finishing || agentHandoff?.updatingCommentId != null) return
+    if (agentHandoff?.completed && archivedAnswer === undefined) return
     const question = questionBlock(target)
     const range = question && rangeFromOffsets(question.index, question.block.start, question.block.end)
     if (!question || !range) return
-    selection.openSelectionComposerAt(question.anchor, range, point, questionAnswer(target) ?? "")
+    const comment = questionComment(target)
+    const pending = comment && ["Open", "Draft"].includes(questionCommentStatus(comment)) ? comment.body : null
+    const body = archivedAnswer !== undefined
+      ? pending ?? `Revisit this question.${archivedAnswer ? `\n\n${archivedAnswer}` : ""}`
+      : questionAnswer(target) ?? ""
+    selection.openSelectionComposerAt(question.anchor, range, point, body)
     setSelectedReviewId(null)
     setSelectedImportedCommentId(null)
   }
 
-  const questionAnswer = (target: HTMLElement) => {
+  const questionComment = (target: HTMLElement) => {
     const block = questionSpan(renderedTextIndexRef.current, target)
-    const comment = block && resolvedReviewComments.find((candidate) =>
+    return block && resolvedReviewComments.find((candidate) =>
       !retiredCommentIds.has(candidate.id) && candidate.status === "anchored" &&
       candidate.range.start === block.start && candidate.range.end === block.end
     )
-    if (!comment) return null
-    const sent = agentHandoff?.file?.comments.find(({ id }) => id === comment.id)
-    return getReviewCommentStatus(comment, sent, !!agentHandoff) === "Resolved" ? null : comment.body
+  }
+
+  const questionCommentStatus = (comment: NonNullable<ReturnType<typeof questionComment>>) =>
+    getReviewCommentStatus(comment, agentHandoff?.file?.comments.find(({ id }) => id === comment.id), !!agentHandoff)
+
+  const questionAnswer = (target: HTMLElement) => {
+    const comment = questionComment(target)
+    return !comment || questionCommentStatus(comment) === "Resolved" ? null : comment.body
   }
 
   const activateReviewSelection = () => {

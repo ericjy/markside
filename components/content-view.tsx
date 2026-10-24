@@ -23,7 +23,7 @@ import React from "react"
 import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
 import { createPortal } from "react-dom"
 import { RawEditor,type RawEditorHandle } from "~components/raw-editor"
-import { followQuestionCard, nextQuestionCard, QuestionCardActions, type QuestionCardStatus } from "~components/question-card-actions"
+import { ArchivedQuestionCardActions, followQuestionCard, nextQuestionCard, QuestionCardActions, type QuestionCardStatus } from "~components/question-card-actions"
 import { ReadabilityHeadingControl } from "~components/readability-heading-control"
 import { ReviewPresetPicker } from "~components/review-preset-picker"
 import { SidebarRight } from "~components/sidebar-right"
@@ -136,7 +136,7 @@ interface ContentViewProps {
   checkReviewUpdates: () => Promise<boolean>
   answerQuestion: (target: HTMLElement, body: string) => void
   clearQuestionAnswer: (target: HTMLElement) => void
-  composeQuestionAnswer: (target: HTMLElement, point: { x: number; y: number }) => void
+  composeQuestionAnswer: (target: HTMLElement, point: { x: number; y: number }, archivedAnswer?: string) => void
   matchingReadabilityResult: (section: ReadabilitySection) => ResolvedReadabilityResult | null
   hasSingleH1: boolean
   readabilityConsentGranted: boolean
@@ -261,7 +261,7 @@ export function ContentView({
   )
   const composerAgent = agentHandoff?.completed ? undefined : agentHandoff
   const composerSending = !!composerAgent && (composerAgent.sending || composerAgent.updatingCommentId != null)
-  const answerableQuestionCards = questionCards.filter(({ options }) => options.length > 0)
+  const answerableQuestionCards = questionCards.filter(({ options, archivedAnswer }) => archivedAnswer === undefined && options.length > 0)
   const questionAnswered = (card: QuestionCard) => !!questionAnswer(card.target)?.trim()
   // Letter keys answer the card last clicked into, else the first unanswered one.
   const [activeQuestionElement, setActiveQuestionElement] = React.useState<HTMLElement | null>(null)
@@ -727,8 +727,13 @@ export function ContentView({
                       `${section.sourceLine}:${section.path.join("/")}`,
                     )
                   })}
-                  {!agentHandoff?.completed && questionCards.map((card, index) => card.mount.isConnected && createPortal(
-                    <QuestionCardActions
+                  {questionCards.map((card, index) => card.mount.isConnected && (card.archivedAnswer !== undefined || !agentHandoff?.completed) && createPortal(
+                    card.archivedAnswer !== undefined ? <ArchivedQuestionCardActions
+                      card={card}
+                      busy={!!agentHandoff && (agentHandoff.sending || !!agentHandoff.finishing || agentHandoff.updatingCommentId != null)}
+                      composing={selectionComposerOpen && !!selectionAction?.question && card.target.contains(selectionAction.range.startContainer)}
+                      onCompose={(point) => composeQuestionAnswer(card.target, point, card.archivedAnswer)}
+                    /> : <QuestionCardActions
                       card={card}
                       answer={questionAnswer(card.target)}
                       busy={questionActionsBusy}

@@ -352,6 +352,61 @@ describe("question card answers", () => {
     hook.unmount()
   })
 
+  it.each(["A", "Combine both approaches.", ""])("revisits an archived answer %j through a pending Review Comment", (answer) => {
+    vi.stubGlobal("CSS", {})
+    const { hook: fixture, options, root, saved, send } = setup(null,
+      "<h3>Q1. Which?</h3><blockquote><p>Your decision: " + answer + "</p></blockquote>")
+    fixture.unmount()
+    const target = root.querySelector("h3")!
+    const hook = renderHook((current: typeof options) => {
+      const selection = useContentSelection({
+        fileUrl: sourceUrl, content: "", isMdFile: true, previewVisible: true,
+        contentRef: { current: root }, previewScrollRef: { current: root },
+      })
+      return { selection, actions: useContentReview({ ...current, selection }) }
+    }, options)
+    const archiveText = root.textContent
+    act(() => hook.result.current.actions.composeQuestionAnswer(target, { x: 10, y: 20 }, answer))
+    const body = `Revisit this question.${answer ? `\n\n${answer}` : ""}`
+    expect(hook.result.current.selection.selectionComposerBody).toBe(body)
+    act(() => hook.result.current.selection.closeSelectionComposer())
+    expect(saved()).toBeNull()
+    act(() => hook.result.current.actions.composeQuestionAnswer(target, { x: 10, y: 20 }, answer))
+    act(() => hook.result.current.actions.saveSelectionComposerComment())
+    expect(saved()!.comments).toMatchObject([{ body, anchor: { exact: "Q1. Which?" } }])
+    expect(send).not.toHaveBeenCalled()
+    const comment = saved()!.comments[0]
+    hook.rerender({ ...options, review: saved(), highlights: { ...options.highlights, resolvedReviewComments: [{ ...comment, displayNumber: 1, status: "anchored", range: { start: comment.anchor.start, end: comment.anchor.end } }] } })
+    act(() => hook.result.current.actions.composeQuestionAnswer(target, { x: 10, y: 20 }, answer))
+    expect(hook.result.current.selection.selectionComposerBody).toBe(body)
+    act(() => hook.result.current.selection.setSelectionComposerBody("Revisit this question. I prefer B."))
+    act(() => hook.result.current.actions.saveSelectionComposerComment())
+    expect(saved()!.comments).toMatchObject([{ id: comment.id, body: "Revisit this question. I prefer B." }])
+    expect(saved()!.comments).toHaveLength(1)
+    expect(root.textContent).toBe(archiveText)
+    hook.unmount()
+  })
+
+  it.each(["open", "addressed", "resolved"] as const)("prefills a revisit instruction for a %s answer and updates its reattached comment", (status) => {
+    const original = { ...prior, body: "A", anchor: { ...anchor, exact: "Q1. Which?", start: 100, end: 110 } }
+    const initial = { ...review, comments: [original] }
+    const { hook, options, root, saved } = setup(initial, "<h3>Q1. Which?</h3>")
+    const file = sendReview(refreshReviewFile(null, "PLAN.md"), { docHash: "a".repeat(64), comments: [{ id: original.id, quote: original.anchor.exact, line: 1, body: "A", status: "open" }] })
+    file.comments[0].status = status
+    const highlights = { ...options.highlights, resolvedReviewComments: [{ ...original, displayNumber: 1, status: "anchored" as const, range: { start: 0, end: 10 } }] }
+    hook.rerender({ ...options, highlights, agentHandoff: { ...options.agentHandoff!, file } })
+    act(() => hook.result.current.composeQuestionAnswer(root.querySelector("h3")!, { x: 10, y: 20 }, "A"))
+    expect(options.selection.openSelectionComposerAt).toHaveBeenCalledWith(
+      expect.objectContaining({ exact: "Q1. Which?" }), expect.anything(), { x: 10, y: 20 }, "Revisit this question.\n\nA",
+    )
+    const selectionAction = { ...options.selection.selectionAction!, anchor: { ...original.anchor, start: 0, end: 10 } }
+    hook.rerender({ ...options, highlights, agentHandoff: { ...options.agentHandoff!, file }, selection: { ...options.selection, selectionAction, selectionComposerBody: "Revisit this question. I prefer B." } })
+    act(() => hook.result.current.saveSelectionComposerComment())
+    expect(saved()!.comments).toHaveLength(1)
+    expect(saved()!.comments[0]).toMatchObject({ id: original.id, body: "Revisit this question. I prefer B." })
+    hook.unmount()
+  })
+
   it("reports the current answer", () => {
     const { hook, options, card, saved } = questionSetup()
     expect(hook.result.current.questionAnswer(card.target)).toBeNull()

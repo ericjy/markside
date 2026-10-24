@@ -1217,7 +1217,7 @@ button.readability-score-filter {
   color: hsl(0 60% 72%);
 }
 
-.prose .markdown-alert-question > ul.question-options {
+.prose .markdown-alert-question ul.question-options {
   display: grid;
   gap: 0.625rem;
   margin-top: 1.25rem;
@@ -1405,7 +1405,7 @@ button.readability-score-filter {
 }
 
 
-.prose .markdown-alert-question > p.question-recommendation {
+.prose .markdown-alert-question p.question-recommendation {
   margin-top: 2rem;
   padding: 0.1rem 0 0.1rem 1rem;
   border-left: 3px solid var(--markdown-alert-color);
@@ -1611,6 +1611,27 @@ button.readability-score-filter {
   .prose .question-option-key {
     transition: none;
   }
+}
+
+.prose .markdown-alert.markdown-alert-question.question-card-archived > details {
+  margin-top: 0.75rem;
+}
+
+.prose .question-card-archived .question-option {
+  cursor: text;
+}
+
+.prose .question-card-archived .question-column-key {
+  position: relative;
+}
+
+.prose .question-card-archived .question-option-key {
+  animation: none;
+}
+
+.prose .question-card-archived .question-card-revisit {
+  max-width: 100%;
+  white-space: normal;
 }
 
 .prose .question-card-actions:empty {

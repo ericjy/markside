@@ -1,4 +1,4 @@
-import { Pencil, RefreshCw } from "lucide-react"
+import { Pencil, RefreshCw, RotateCcw } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
@@ -104,6 +104,30 @@ export function followQuestionCard<T>(cards: readonly T[], active: T, rect: (car
 export function nextQuestionCard<T>(cards: readonly T[], from: T, answered: (card: T) => boolean) {
   const index = cards.indexOf(from)
   return [...cards.slice(index + 1), ...cards.slice(0, index)].find((card) => !answered(card))
+}
+
+export function ArchivedQuestionCardActions({ card, busy, composing, onCompose }: {
+  card: QuestionCard
+  busy: boolean
+  composing: boolean
+  onCompose: (point: { x: number; y: number }) => void
+}) {
+  return createPortal(
+    <button
+      type="button"
+      className="question-card-footer-button question-card-revisit"
+      disabled={busy}
+      aria-expanded={composing}
+      onMouseUp={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.stopPropagation()
+        const rect = event.currentTarget.getBoundingClientRect()
+        onCompose({ x: rect.left, y: rect.bottom })
+      }}>
+      <RotateCcw aria-hidden="true" /> Revisit question
+    </button>,
+    card.composeMount,
+  )
 }
 
 // The rendered options are the answer controls: this wires them and reflects the current answer.

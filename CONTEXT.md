@@ -93,3 +93,11 @@ questions remaining. Clicking a selected option again clears its unsent answer.
 _Avoid_: Poll, form, quiz
 
 
+
+**Archived Question Card**:
+A previous interview question shown as a read-only Question Card. Its heading
+and recorded decision stay visible while Full question starts collapsed.
+Revisit question opens a Review Comment for revising the decision through the
+normal handoff to the agent; the recorded decision remains until the agent
+processes the revision.
+_Avoid_: Disabled question, locked answer

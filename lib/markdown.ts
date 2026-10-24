@@ -285,6 +285,47 @@ md.core.ruler.push("markdown_alerts", (state) => {
   }
 })
 
+// The interview archive keeps a heading and decision above a Full question disclosure.
+md.core.ruler.push("archived_questions", (state) => {
+  const { tokens } = state
+  for (let i = tokens.length - 1; i >= 0; i--) {
+    if (tokens[i].type !== "heading_open" || tokens[i + 3]?.type !== "blockquote_open") continue
+    const decision = tokens[i + 5]
+    if (decision?.type !== "inline" || !QUESTION_DECISION.test(decision.content)) continue
+    const quoteEnd = tokens.findIndex((token, index) => index > i + 3 && token.type === "blockquote_close" && token.level === tokens[i + 3].level)
+    let disclosure = quoteEnd + 1
+    if (tokens[disclosure]?.type === "paragraph_open" && tokens[disclosure + 1]?.content.startsWith("Focus:")) disclosure += 3
+    const details = tokens[disclosure]
+    if (details?.type !== "html_block" || !/^<details(?:\s[^>]*)?>\s*<summary>Full question<\/summary>\s*$/i.test(details.content)) continue
+    let depth = 0
+    let end = disclosure
+    for (; end < tokens.length; end++) {
+      if (tokens[end].type !== "html_block") continue
+      for (const tag of tokens[end].content.matchAll(/<(\/?)details\b[^>]*>/gi)) depth += tag[1] ? -1 : 1
+      if (depth === 0) break
+    }
+    if (end === tokens.length) continue
+    const text = collectHeadingText(decision.children ?? [])
+    const label = /^(?:Your decision|Assumed decision):\s*(?:([A-Z])\.\s*)?/.exec(text)
+    const answer = label ? label[1] ?? text.slice(label[0].length).trim() : ""
+    const open = new state.Token("archived_question_open", "div", 1)
+    open.block = true
+    open.attrSet("class", "markdown-alert markdown-alert-question question-card-archived")
+    open.attrSet("data-question-answer", answer)
+    open.meta = { title: "Previous question", type: "question" }
+    const close = new state.Token("markdown_alert_close", "div", -1)
+    close.block = true
+    details.content = details.content.replace(/^(<details)\s[^>]*(>)/i, "$1$2")
+    tokens.splice(end + 1, 0, close)
+    tokens.splice(i, 0, open)
+    markQuestionAnswers(state, i, end + 2)
+    for (const token of tokens.slice(i + 1, tokens.indexOf(close))) {
+      if (token.attrGet("data-question-option") === answer) token.attrJoin("class", "question-option-selected")
+      token.attrs = token.attrs?.filter(([name, value]) => name !== "tabindex" && name !== "aria-checked" && !(name === "role" && ["radio", "radiogroup"].includes(value))) ?? null
+    }
+  }
+})
+
 // Question cards turn each lettered option into a choice and mark the
 // recommended one, so the content script can make the options themselves the
 // answer controls.
@@ -416,6 +457,8 @@ export interface QuestionCard {
   footerMount: HTMLElement
   options: { value: string; element: HTMLElement }[]
   recommended: string | null
+  /** Defined only for read-only cards in Previous questions. */
+  archivedAnswer?: string
 }
 
 /** Adds an answer-controls mount to a rendered question card. Answers anchor to its heading. */
@@ -423,7 +466,7 @@ export function mountQuestionCard(card: HTMLElement): QuestionCard | null {
   const target = card.querySelector<HTMLElement>("h1,h2,h3,h4,h5,h6") ??
     card.querySelector<HTMLElement>(":scope > p:not(.markdown-alert-title)")
   if (!target) return null
-  target.dataset.questionTarget = ""
+  if (!card.classList.contains("question-card-archived")) target.dataset.questionTarget = ""
   const options = Array.from(card.querySelectorAll<HTMLElement>("li[data-question-option]"), (element) => ({
     value: element.dataset.questionOption!,
     element,
@@ -463,9 +506,11 @@ export function mountQuestionCard(card: HTMLElement): QuestionCard | null {
   const composeMount = card.ownerDocument.createElement("div")
   composeMount.className = "question-card-actions question-card-compose"
   const list = options[0]?.element.closest("ul")
-  if (list) list.after(composeMount)
+  const archivedAnswer = card.classList.contains("question-card-archived") ? card.dataset.questionAnswer ?? "" : undefined
+  if (archivedAnswer !== undefined) card.append(composeMount)
+  else if (list) list.after(composeMount)
   else mount.before(composeMount)
-  return { element: card, target, mount, composeMount, footerMount, options, recommended: card.dataset.questionRecommended ?? null }
+  return { element: card, target, mount, composeMount, footerMount, options, recommended: card.dataset.questionRecommended ?? null, archivedAnswer }
 }
 
 md.renderer.rules.markdown_alert_open = (tokens, idx, _options, _env, self) => {
@@ -474,6 +519,8 @@ md.renderer.rules.markdown_alert_open = (tokens, idx, _options, _env, self) => {
   const icon = `<svg class="markdown-alert-icon" aria-hidden="true" data-alert-icon="${type}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${MARKDOWN_ALERT_ICONS[type]}</svg>`
   return `${self.renderToken(tokens, idx, _options)}<p class="markdown-alert-title">${icon}${title}</p>\n`
 }
+
+md.renderer.rules.archived_question_open = md.renderer.rules.markdown_alert_open
 
 md.renderer.rules.markdown_alert_close = (tokens, idx, options, _env, self) =>
   self.renderToken(tokens, idx, options)

@@ -264,6 +264,56 @@ describe("markdown renderer", () => {
     ])
   })
 
+  it("renders archived questions as collapsed read-only cards with the recorded option marked", () => {
+    const body = question.split("\n").slice(3, -1).join("\n")
+    const archived = "### Q3. Where does the doc live?\n\n> **Your decision: A.** Keep it beside the plan.\n\n<details open>\n<summary>Full question</summary>\n\n" + body + "\n\n<details open>\n<summary>Compare tradeoffs</summary>\n\n| Criterion | A. Sibling | B. Inside |\n|---|---|---|\n| Files | ✓ Two | △ One |\n\n</details>\n\n</details>"
+    const root = document.createElement("div")
+    root.innerHTML = md.render(archived)
+    const element = root.querySelector<HTMLElement>(".question-card-archived")!
+    expect(element).not.toBeNull()
+    expect(element.querySelector("h3")?.id).toBe("q3-where-does-the-doc-live")
+    expect(element.querySelector("h3")?.dataset.sourceLine).toBe("1")
+    expect(element.querySelector(".question-decision")?.textContent).toContain("Your decision: A.")
+    const disclosures = element.querySelectorAll("details")
+    expect(disclosures[0].open).toBe(false)
+    expect(disclosures[1].open).toBe(true)
+    expect(element.querySelectorAll(".question-option")).toHaveLength(2)
+    expect(element.querySelector(".question-option-selected")?.getAttribute("data-question-option")).toBe("A")
+    expect(element.querySelector("[role=radio], [role=radiogroup], [tabindex]")).toBeNull()
+    expect(element.querySelector(".question-recommendation")?.textContent).toBe("Why B? It keeps one file.")
+    expect(hasQuestionCard(archived)).toBe(false)
+    const card = mountQuestionCard(element)!
+    expect(card.archivedAnswer).toBe("A")
+    expect(element.contains(card.composeMount)).toBe(true)
+    expect(disclosures[0].contains(card.composeMount)).toBe(false)
+    expect(element.querySelector(".question-comparison")).not.toBeNull()
+  })
+
+  it("preserves custom archived answers and leaves ordinary disclosures alone", () => {
+    const root = document.createElement("div")
+    root.innerHTML = md.render("### Q1. Which?\n\n> **Your decision:** Combine **both** approaches.\n\n<details>\n<summary>Full question</summary>\n\nContext.\n\n- **A. First.**\n- **B. Second.**\n\n</details>\n\n### Other notes\n\n<details>\n<summary>Full question</summary>\n\nAn unrelated example.\n\n</details>")
+    expect(root.querySelectorAll(".question-card-archived")).toHaveLength(1)
+    const card = mountQuestionCard(root.querySelector<HTMLElement>(".question-card-archived")!)!
+    expect(card.archivedAnswer).toBe("Combine both approaches.")
+    expect(card.element.querySelector(".question-option-selected")).toBeNull()
+    expect(root.lastElementChild?.tagName).toBe("DETAILS")
+  })
+
+  it.each([
+    ["Assumed decision: B.", "B"],
+    ["Deferred.", ""],
+    ["Open.", ""],
+  ])("keeps archived %s questions available to revisit", (label, answer) => {
+    const root = document.createElement("div")
+    root.innerHTML = md.render(`### Q1. Which?\n\n> **${label}**\n\nFocus: you decide the rest (asked at Q1).\n\n<details>\n<summary>Full question</summary>\n\n- **A. First.**\n- **B. Second.**\n\n</details>`)
+    const card = mountQuestionCard(root.querySelector<HTMLElement>(".question-card-archived")!)!
+    expect(card.archivedAnswer).toBe(answer)
+    expect(card.target.hasAttribute("data-question-target")).toBe(false)
+    expect(card.element.querySelector(".question-option-selected")?.getAttribute("data-question-option") ?? "").toBe(answer)
+    expect(card.element.textContent).toContain("Focus: you decide the rest")
+    expect(card.element.querySelector("details")?.open).toBe(false)
+  })
+
   it("leaves question examples inside other code fences literal", () => {
     const root = document.createElement("div")
     root.innerHTML = md.render("````markdown\n" + question + "\n````")

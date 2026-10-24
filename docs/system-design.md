@@ -138,6 +138,19 @@ option letter. Keyboard hints appear at the top right, wrapping below the Questi
 on narrow screens. These mounts are excluded from Review anchoring, copying, and
 print. The sidecar format is unchanged.
 
+Archived questions in the skill's existing heading, decision callout, and
+Full question disclosure format render as Question Cards too. Their heading
+and recorded decision stay visible, and Full question starts collapsed while
+nested comparisons retain their authored open state. Options use the current
+card styling and mark the recorded choice, but have no answer handlers or
+radio roles. Archived cards take no part in letter shortcuts, active-card
+tracking, round counts, or unanswered-question finish checks. Revisit question
+opens the ordinary heading-anchored composer with an explicit revisit instruction
+and the recorded answer, or restores an existing pending revision. Saving and
+sending follow the existing Review flow; the source decision stays unchanged
+until the agent handles the revision. Heading comments on archived cards retain
+their Review highlight so pending revisions remain discoverable.
+
 Choosing or changing an answer, saving a Review Comment, sending a Review, and
 discovering an agent request or reply preserve whether the Review panel is open.
 The Review toolbar entry retains its pending-item count; Addressed replies give

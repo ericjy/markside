@@ -1,6 +1,6 @@
 {
   "name": "markside",
-  "displayName": "Markside: Local Markdown Viewer & Editor",
+  "displayName": "Markside: Markdown Viewer & Editor",
   "version": "1.7.0",
   "description": "Read, edit, comment on, and share local Markdown files in Chrome. Built for reviewing what your AI agents write.",
   "author": "Jing Yang",

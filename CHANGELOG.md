@@ -23,6 +23,7 @@ Store and GitHub Releases run independently and can diverge; see
 - Calmer reading: Preview defaults to a narrower Standard page width, with Extended and Full width in the file menu. Inline code is neutral instead of red, heading rules are lighter, the word count is quieter, and the file tree starts collapsed.
 - Mermaid diagrams render faster, in the document's font and colors, and the extension is smaller.
 - Answered interview questions are saved as plain Markdown that reads well in any editor.
+- The extension is now named "Markside: Markdown Viewer & Editor".
 - Review opens as a sidebar you can dock beside the document, and stays open across reloads.
 - Typeface and page width moved into the file menu.
 - The opened file is revealed in the file tree.

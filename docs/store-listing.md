@@ -164,10 +164,10 @@ future change introduces a remote font, image, script, or automatic request.
 ## Name (75 chars max)
 
 ```
-Markside: Local Markdown Viewer & Editor
+Markside: Markdown Viewer & Editor
 ```
 
-Set by `displayName` in `package.json`. Keep search nouns (Local, Markdown, Viewer, Editor) up front.
+Set by `displayName` in `package.json`. Keep the exact search phrase "Markdown Viewer" up front; the descriptions say that Markside opens local files.
 
 ## Short description (132 chars max)
 

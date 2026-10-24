@@ -1110,6 +1110,14 @@ button.readability-score-filter {
   margin-bottom: 0;
 }
 
+.prose .markdown-alert-question .question-comparison-summary > :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  font: inherit;
+}
+
 /* A comparison sits on a white panel like the option tiles, scrolling sideways when narrow. */
 .prose .markdown-alert-question .question-comparison {
   overflow-x: auto;

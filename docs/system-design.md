@@ -93,8 +93,10 @@ Comparison disclosures sit below a hairline under a small muted label, and
 each Question Card table is wrapped in a white panel with fixed column widths,
 muted criteria, and its header letters drawn as keys like the options', while
 the cell text stays unchanged for anchoring and copying. The
-interview skill writes `<details open>` so comparisons start expanded and remain
-collapsible; rendering preserves the author's chosen open state. The
+interview skill writes a subordinate `Compare tradeoffs` Markdown heading and
+table. Rendering makes that section an initially expanded disclosure, preserving
+the actual heading, its ID, and its source line inside the summary. Existing
+HTML comparisons retain their authored open state. The
 preview then wires the options: clicking one (unless the click ends a text selection or lands on a
 Review Comment), pressing Enter on it, or pressing its letter while its card is
 active creates, or changes, one ordinary Review Comment on the card's
@@ -138,10 +140,13 @@ option letter. Keyboard hints appear at the top right, wrapping below the Questi
 on narrow screens. These mounts are excluded from Review anchoring, copying, and
 print. The sidecar format is unchanged.
 
-Archived questions in the skill's existing heading, decision callout, and
-Full question disclosure format render as Question Cards too. Their heading
-and recorded decision stay visible, and Full question starts collapsed while
-nested comparisons retain their authored open state. Options use the current
+Archived questions use an ordinary numbered question heading, decision callout,
+and full Markdown body ending at the next heading of the same or higher level.
+Markside renders them as Question Cards, generating a collapsed Full question
+section around the body while keeping the heading and decision visible. The
+generated label is excluded from Review text indexing. Source remains readable
+in other Markdown renderers. Existing HTML-wrapped archives remain supported;
+legacy nested comparisons retain their authored open state. Options use the current
 card styling and mark the recorded choice, but have no answer handlers or
 radio roles. Archived cards take no part in letter shortcuts, active-card
 tracking, round counts, or unanswered-question finish checks. Revisit question

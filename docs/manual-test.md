@@ -207,6 +207,13 @@ pull request or review response.
   document." without them, and they return once only Before you finish remains.
   Addressed and Resolved comments are read-only until reopened. Reopen a
   comment, edit it, and confirm its old reply disappears for the new wording.
+- [ ] Write a plain Markdown archive with numbered question headings, decision
+  callouts, full question bodies, and subordinate Compare tradeoffs headings and
+  tables. Confirm Source contains no details/summary HTML. Preview should show
+  collapsed archived cards with expandable comparisons, read-only options, and
+  Revisit question. Verify adjacent questions and closing sections stay separate,
+  source lines and heading links remain correct, and existing HTML-wrapped
+  archives still render. Check a mixed document containing both formats.
 - [ ] In an interview with Previous questions, confirm each archived heading and
   decision appears in a Question Card with Full question collapsed. Expand it
   with the mouse and keyboard: original options, recommendation, and comparisons

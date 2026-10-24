@@ -102,3 +102,4 @@ and code examples may no longer match the current source tree.
 - [Revisiting previous questions](2026-10-23-revisit-questions/spec.md)
 
 - [Inline Review actions](2026-10-23-inline-review-actions/spec.md)
+- [Plain Markdown interview source](2026-10-24-plain-question-source/spec.md)

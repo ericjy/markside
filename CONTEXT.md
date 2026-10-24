@@ -98,7 +98,9 @@ _Avoid_: Poll, form, quiz
 
 **Archived Question Card**:
 A previous interview question shown as a read-only Question Card. Its heading
-and recorded decision stay visible while Full question starts collapsed.
+and recorded decision stay visible while Full question starts collapsed in Preview.
+Its source uses an ordinary numbered heading, decision callout, and Markdown
+body; Markside generates the folding control.
 Revisit question opens a Review Comment for revising the decision through the
 normal handoff to the agent; the recorded decision remains until the agent
 processes the revision.

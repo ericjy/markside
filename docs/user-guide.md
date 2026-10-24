@@ -416,6 +416,10 @@ After you send, answered questions move to **Previous questions** and the agent
 writes the next round. Click **Reload** when Markside shows **Changed on disk**.
 Each previous question is a read-only card with its recorded decision visible.
 Expand **Full question** to inspect the original context, options, and recommendation.
+These folding controls are generated in Preview. In Source and other Markdown
+renderers, new archived questions use ordinary headings, lists, and tables;
+comparison sections use a **Compare tradeoffs** Markdown heading. Older interviews
+with HTML disclosures still work.
 Click **Revisit question** to open a composer with the recorded answer, revise it,
 then save and send the Review. Reopening restores any saved pending revision.
 The recorded decision stays visible until the agent processes the revision;

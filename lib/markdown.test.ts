@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
+import { buildRenderedTextIndex } from "./review-dom"
 import { hasQuestionCard, md, mountQuestionCard } from "./markdown"
 
 describe("markdown renderer", () => {
@@ -262,6 +263,58 @@ describe("markdown renderer", () => {
       "question-decision question-decision-pending",
       "",
     ])
+  })
+
+  it("folds plain Markdown archives without consuming adjacent sections or changing source headings", () => {
+    const source = "## Question history\n\n### Q1. Which?\n\n> **Your decision: B.** Use the second approach.\n\nOriginal context.\n\n- **A. First.** One.\n- **B. Second.** Two.\n\n**Recommended: A.** Shorter.\n\n#### Compare tradeoffs\n\n| Criterion | A. First | B. Second |\n|---|---|---|\n| Size | ✓ Small | △ Large |\n\n### Q2. What next?\n\n> **Your decision:** Combine both approaches.\n\nSecond question context.\n\n## Closing notes\n\nLeave this outside the cards."
+    const root = document.createElement("div")
+    root.innerHTML = md.render(source, { sourceLineOffset: 3 })
+    const cards = root.querySelectorAll<HTMLElement>(".question-card-archived")
+    expect(cards).toHaveLength(2)
+    const full = cards[0].querySelector("details")!
+    expect(full.open).toBe(false)
+    expect(cards[0].querySelector(".question-decision")?.closest("details")).toBeNull()
+    expect(full.textContent).toContain("Original context.")
+    expect(cards[0].textContent).not.toContain("Q2.")
+    expect(cards[1].textContent).not.toContain("Closing notes")
+    expect(root.querySelector("#closing-notes")?.closest(".question-card-archived")).toBeNull()
+    expect(cards[0].querySelector(".question-option-selected")?.getAttribute("data-question-option")).toBe("B")
+    expect(cards[0].querySelector("[role=radio], [tabindex]")).toBeNull()
+    const comparison = full.querySelector("details")!
+    expect(comparison.open).toBe(true)
+    const heading = comparison.querySelector("summary h4")!
+    expect(heading.id).toBe("compare-tradeoffs")
+    expect(heading.getAttribute("data-source-line")).toBe(String(source.split("\n").indexOf("#### Compare tradeoffs") + 4))
+    expect(comparison.querySelectorAll(".question-comparison-symbol")).toHaveLength(2)
+    expect(hasQuestionCard(source)).toBe(false)
+    expect(mountQuestionCard(cards[1])!.archivedAnswer).toBe("Combine both approaches.")
+    expect(buildRenderedTextIndex(root).text).not.toContain("Full question")
+  })
+
+  it("folds plain comparison headings only inside Question Cards", () => {
+    const root = document.createElement("div")
+    const comparison = "#### Compare tradeoffs\n\n| Criterion | A. First | B. Second |\n|---|---|---|\n| Size | Small | Large |"
+    root.innerHTML = md.render(question.replace("\n```", "\n\n" + comparison + "\n\n#### Other context\n\nKeep this outside the comparison.\n```"))
+    const details = root.querySelector("details")!
+    expect(details.open).toBe(true)
+    expect(details.querySelector("summary h4")?.textContent?.trim()).toBe("Compare tradeoffs")
+    expect(details.textContent).not.toContain("Other context")
+    expect(root.querySelector("#other-context")?.closest("details")).toBeNull()
+    root.innerHTML = md.render(comparison)
+    expect(root.querySelector("details")).toBeNull()
+  })
+
+  it("keeps comparison-only and empty archives well formed and ignores ordinary decision headings", () => {
+    const root = document.createElement("div")
+    root.innerHTML = md.render("### Q1. Compare?\n\n> **Assumed decision: A.** First.\n\n#### Compare tradeoffs\n\n| A | B |\n|---|---|\n| One | Two |\n\n### Q2. Pending?\n\n> **Deferred.**\n\n### Other decision\n\n> **Your decision:** A general note.\n\nOrdinary text.")
+    const cards = root.querySelectorAll(".question-card-archived")
+    expect(cards).toHaveLength(2)
+    const full = cards[0].querySelector("details")!
+    expect(full.open).toBe(false)
+    expect(full.querySelector("details")?.open).toBe(true)
+    expect(cards[0].querySelector("h3")?.closest("details")).toBeNull()
+    expect(cards[1].querySelector("details")).toBeNull()
+    expect(root.querySelector("#other-decision")?.closest(".question-card-archived")).toBeNull()
   })
 
   it("renders archived questions as collapsed read-only cards with the recorded option marked", () => {

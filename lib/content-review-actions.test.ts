@@ -2,6 +2,7 @@ import { sendReview, refreshReviewFile, setReviewerCommentStatus } from "../cli/
 // @vitest-environment jsdom
 import { act } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
+import { useContentSelection } from "../hooks/use-content-selection"
 import { useContentReview } from "../hooks/use-content-review"
 import { md, mountQuestionCard } from "./markdown"
 import { createEmptyReview, type ActiveReview } from "./review"
@@ -314,7 +315,40 @@ describe("question card answers", () => {
       expect.objectContaining({ exact: "Q3. Where?" }),
       expect.anything(),
       { x: 10, y: 20 },
+      "",
     )
+    hook.unmount()
+  })
+
+  it("reopens a saved custom answer for editing and saves it as the same comment", () => {
+    vi.stubGlobal("CSS", {})
+    const { hook: fixture, options, card, root, saved } = questionSetup()
+    act(() => fixture.result.current.answerQuestion(card.target, "Use both options.\nKeep it simple."))
+    const answer = saved()!.comments[0]
+    fixture.unmount()
+    const props = {
+      ...options,
+      review: saved(),
+      highlights: { ...options.highlights, resolvedReviewComments: [{ ...answer, displayNumber: 1, status: "anchored" as const, range: { start: answer.anchor.start, end: answer.anchor.end } }] },
+    }
+    const hook = renderHook((current: typeof props) => {
+      const selection = useContentSelection({
+        fileUrl: sourceUrl, content: "", isMdFile: true, previewVisible: true,
+        contentRef: { current: root }, previewScrollRef: { current: root },
+      })
+      const actions = useContentReview({ ...current, selection })
+      return { selection, actions }
+    }, props)
+    act(() => hook.result.current.actions.composeQuestionAnswer(card.target, { x: 10, y: 20 }))
+    expect(hook.result.current.selection.selectionComposerBody).toBe(answer.body)
+    act(() => hook.result.current.selection.setSelectionComposerBody("Unsaved edit"))
+    act(() => hook.result.current.selection.closeSelectionComposer())
+    act(() => hook.result.current.actions.composeQuestionAnswer(card.target, { x: 10, y: 20 }))
+    expect(hook.result.current.selection.selectionComposerBody).toBe(answer.body)
+    act(() => hook.result.current.selection.setSelectionComposerBody("Updated answer"))
+    act(() => hook.result.current.actions.saveSelectionComposerComment())
+    expect(saved()!.comments).toMatchObject([{ id: answer.id, body: "Updated answer" }])
+    expect(saved()!.comments).toHaveLength(1)
     hook.unmount()
   })
 

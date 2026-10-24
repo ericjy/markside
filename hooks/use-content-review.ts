@@ -538,7 +538,7 @@ export function useContentReview({
     const question = questionBlock(target)
     const range = question && rangeFromOffsets(question.index, question.block.start, question.block.end)
     if (!question || !range) return
-    selection.openSelectionComposerAt(question.anchor, range, point)
+    selection.openSelectionComposerAt(question.anchor, range, point, questionAnswer(target) ?? "")
     setSelectedReviewId(null)
     setSelectedImportedCommentId(null)
   }

@@ -85,10 +85,10 @@ export function useContentSelection({
     setSelectionAction(null)
   }
 
-  const openSelectionComposer = () => {
-    setSelectionComposerBody("")
+  const openSelectionComposer = (body = "") => {
+    setSelectionComposerBody(body)
     setSelectionComposerCopyState("idle")
-    selectionComposerSelectionRef.current = { start: 0, end: 0 }
+    selectionComposerSelectionRef.current = { start: body.length, end: body.length }
     setSelectionComposerOpen(true)
   }
 
@@ -130,12 +130,12 @@ export function useContentSelection({
   }
 
   // Opens the comment composer for a question card's answer, chosen by a control rather than a text selection.
-  const openSelectionComposerAt = (anchor: ReviewAnchor, range: Range, point: { x: number; y: number }) => {
+  const openSelectionComposerAt = (anchor: ReviewAnchor, range: Range, point: { x: number; y: number }, body = "") => {
     const preview = previewScrollRef.current
     if (!preview) return
     clearSelectionActionTimeout()
     setSelectionAction({ ...selectionActionAt(anchor, range, point, preview), question: true })
-    openSelectionComposer()
+    openSelectionComposer(body)
   }
 
   const captureReviewSelection = (event: React.MouseEvent) => {

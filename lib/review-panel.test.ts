@@ -172,7 +172,7 @@ describe("ReviewPanel", () => {
     expect(container.textContent).not.toContain("Review complete")
     const button = Array.from(container.querySelectorAll("button")).find((item) => item.textContent === "Finish review")!
     expect(button.className).toContain("border-input")
-    expect(container.textContent).toContain("Your agent is waiting. Add more comments or finish.")
+    expect(container.textContent).toContain("Anything else to change? Comment on it, or finish.")
     act(() => button.click())
     expect(finish).toHaveBeenCalledOnce()
   })

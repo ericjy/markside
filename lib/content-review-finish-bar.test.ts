@@ -17,7 +17,7 @@ it("offers Finish review in the document only when the existing finish condition
   const render = (updates: Partial<typeof props> = {}) => act(() => root.render(createElement(ContentReviewFinishBar, { ...props, ...updates })))
   try {
     render()
-    expect(container.textContent).toContain("Your agent is waiting")
+    expect(container.textContent).toContain("Anything else to change? Comment on it, or finish.")
     act(() => container.querySelector("button")!.click())
     expect(finish).toHaveBeenCalledOnce()
     for (const state of [{ panelOpen: true }, { diskChanged: true }, { questionsOpen: true }, { agentHandoff: undefined }, { agentHandoff: { ...props.agentHandoff!, canFinish: false } }]) {

@@ -911,7 +911,7 @@ export function ReviewPanel({
           <p className="mb-2 text-xs leading-relaxed text-muted-foreground">
             {diskChanged ? "Your agent updated the document. Reload to see its changes."
               : questionsOpen ? "Answer the next questions in the document."
-              : "Your agent is waiting. Add more comments or finish."}
+              : "Anything else to change? Comment on it, or finish."}
           </p>
         )}
         <div className={`review-footer-actions flex flex-wrap items-center gap-2 ${showAgentAction && !canFinish ? "mt-2" : ""}`}>

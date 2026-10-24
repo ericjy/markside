@@ -195,7 +195,7 @@ pull request or review response.
   confirm Send returns and the CLI receives it. Resolve everything again, click
   Finish review, and confirm the CLI exits with Review resolved for the document.
   In another Review, leave two comments Addressed: confirm the footer shows
-  "Your agent is waiting. Add more comments or finish." above
+  "Anything else to change? Comment on it, or finish." above
   Resolve all, Finish review, and an icon-only Copy review as prompt on one row
   in the docked panel. Resolve all marks both resolved and the CLI keeps
   waiting; Finish review then ends the Review. Repeat with Addressed comments

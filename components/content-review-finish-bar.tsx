@@ -27,10 +27,10 @@ export function ContentReviewFinishBar({ agentHandoff, review = null, panelOpen,
     ? draftCount > 0
       ? `${draftCount} ${draftCount === 1 ? "comment" : "comments"}${noteChanged ? " and review note" : ""} ready to send`
       : "Review note ready to send"
-    : "Your agent is waiting. Keep commenting, or finish."
+    : "Anything else to change? Comment on it, or finish."
   const busy = agentHandoff.sending || agentHandoff.finishing || agentHandoff.resolvingAll || agentHandoff.updatingCommentId != null
   return (
-    <div aria-label="Review actions" className="sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b bg-muted px-8 py-2 text-sm text-foreground print:hidden">
+    <div aria-label="Review actions" className="sticky top-0 z-20 flex flex-wrap items-center justify-center gap-3 border-b bg-muted px-8 py-2 text-sm text-foreground print:hidden">
       <p role="status">{status}</p>
       <Button size="sm" className="h-7 shrink-0 text-xs" onClick={sendOffered ? () => void agentHandoff.send() : agentHandoff.finish}
         disabled={disabled || busy || (sendOffered && agentHandoff.disabled)} aria-busy={sendOffered ? agentHandoff.sending : agentHandoff.finishing}

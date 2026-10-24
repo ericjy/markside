@@ -16,9 +16,13 @@ Store and GitHub Releases run independently and can diverge; see
 - A narrow page width for Preview.
 - One-click preset buttons above the comment composer.
 - File paths in YAML frontmatter render as links.
+- Revisit an answered interview question from its read-only card and send a revised answer.
+- With the Review sidebar closed, a bar above the document sends your comments or finishes the Review.
 
 ### Improved
 
+- Mermaid diagrams render faster, in the document's font and colors, and the extension is smaller.
+- Answered interview questions are saved as plain Markdown that reads well in any editor.
 - Review opens as a sidebar you can dock beside the document, and stays open across reloads.
 - Typeface and page width moved into the file menu.
 - The opened file is revealed in the file tree.
@@ -33,6 +37,7 @@ Store and GitHub Releases run independently and can diverge; see
 - Printed Mermaid diagrams fit the page column.
 - Clicking empty space clears a Review Comment selection.
 - Selected quotes no longer carry surrounding whitespace.
+- Reopening a question's composer restores the answer you saved.
 
 ## 1.6.0 — 2026-10-12 (Chrome Web Store)
 

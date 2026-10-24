@@ -261,6 +261,7 @@ WHAT'S NEW IN 1.7.0
 
 • Review with your coding agent: send comments to your agent and see its replies (Beta)
 • Answer agent interviews in Markside with Question Cards (Beta)
+• Faster Mermaid diagrams that match your document's font and colors
 • Zen mode, word count and reading time, and a narrow page width
 
 SET UP IN 30 SECONDS

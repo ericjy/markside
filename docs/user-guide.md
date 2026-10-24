@@ -346,7 +346,7 @@ If several files are plausible, it asks which one instead of guessing.
 
 With Review closed, the compact bar above Preview shows how many saved comments
 are ready and offers **Send review**. Once the agent has addressed everything,
-it reminds you that you can keep commenting and offers **Finish review**. You
+it asks whether anything else needs changing and offers **Finish review**. You
 can complete either action without opening the sidebar.
 
 **Sent for agent to pick up** means the Review file was saved. It does not mean

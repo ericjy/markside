@@ -610,8 +610,8 @@ export function FileRenderer({
 
   useEffect(() => {
     if (!content || !contentRef.current || reload.changesVisible) return
-    rerenderMermaidBlocks(contentRef.current, dark)
-  }, [dark])
+    rerenderMermaidBlocks(contentRef.current)
+  }, [typeface])
 
   useEffect(() => {
     if (content === null || !shouldSyncDraftFromContent({

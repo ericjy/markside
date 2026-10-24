@@ -19,7 +19,7 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["lib/**/*.ts"],
-      exclude: ["lib/shiki-engine-bundle.mjs", "lib/mermaid-bundle.mjs", "lib/codemirror-bundle.mjs", "lib/shiki.ts"]
+      exclude: ["lib/shiki-engine-bundle.mjs", "lib/codemirror-bundle.mjs", "lib/shiki.ts"]
     }
   }
 })

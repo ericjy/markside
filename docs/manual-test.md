@@ -74,6 +74,14 @@ pull request or review response.
   toolbar revealed. The print preview contains the document without Markside's
   toolbar, breadcrumbs, or action buttons in either layout. Cancel printing and
   confirm the toolbar still works on screen.
+- [ ] Open a document with a compact Mermaid sequence diagram, a wide
+  flowchart, and a flowchart with `e1@{ animate: true }` and
+  `e2@{ animation: slow }` edges. The compact diagram's labels match body text
+  size, the wide one fits the column, and the marked edges show moving dashes,
+  the slow one more slowly. With the system's reduce-motion setting on, the
+  dashes stay still. Zoom a diagram, switch between light and dark, and confirm
+  colors change without losing the zoom. Change the typeface and confirm labels
+  still fit their boxes. A diagram with a syntax error shows its line and column.
 - [ ] Print a document with a compact Mermaid sequence diagram and a wider
   flowchart. Each fills the document column without clipping or stretching,
   with no leftover blank viewport above or below. Zoom and pan on screen, then

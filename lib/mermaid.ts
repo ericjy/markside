@@ -1,4 +1,4 @@
-import mermaid from "mermaid"
+import { PeleError, render } from "pele"
 
 let idCounter = 0
 
@@ -7,7 +7,6 @@ const MAX_MANUAL_SCALE = 16
 const SCALE_STEP = 0.25
 const FALLBACK_DEFAULT_SCALE = 1.25
 const MIN_DEFAULT_SCALE = 0.75
-const MAX_DEFAULT_SCALE = 3.5
 const MAX_EXPANDED_DEFAULT_SCALE = 4
 const DEFAULT_WIDTH_RATIO = 0.96
 const DEFAULT_HEIGHT_RATIO = 0.8
@@ -67,12 +66,26 @@ function inQuestionCard(element: HTMLElement): boolean {
   return element.closest("details")?.querySelector(":scope > summary")?.textContent?.trim() === "Full question"
 }
 
-function init(dark: boolean, question = false): void {
-  mermaid.initialize({
-    startOnLoad: false,
-    securityLevel: "strict",
-    theme: dark ? "dark" : question ? "neutral" : "default",
-    suppressErrorRendering: true
+// Pele parses `id@{ animate: true }` and `animation: slow|fast` on edges but does not draw them yet.
+function readEdgeAnimations(code: string): Map<string, "slow" | "fast"> {
+  const animations = new Map<string, "slow" | "fast">()
+  for (const [, id, props] of code.matchAll(/^\s*([\w-]+)@\{([^}]*)\}/gm)) {
+    const speed = /\banimation\s*:\s*["']?(slow|fast)/.exec(props)?.[1] as "slow" | "fast" | undefined
+    const animate = /\banimate\s*:\s*(true|false)/.exec(props)?.[1]
+    if (animate === "false") animations.delete(id)
+    else if (speed || animate === "true") animations.set(id, speed ?? animations.get(id) ?? "fast")
+  }
+  return animations
+}
+
+function renderSvg(code: string, container: HTMLElement): string {
+  const fontFamily = getComputedStyle(container).fontFamily || undefined
+  const svg = render(code, { fontFamily, idPrefix: `mermaid-${++idCounter}-` }).svg
+  const animations = readEdgeAnimations(code)
+  if (animations.size === 0) return svg
+  return svg.replace(/<g class="pele-edge( [^"]*)?" data-id="([^"]+)"/g, (tag, classes = "", id: string) => {
+    const speed = animations.get(id)
+    return speed ? `<g class="pele-edge${classes} mermaid-edge-animated" data-animation="${speed}" data-id="${id}"` : tag
   })
 }
 
@@ -140,14 +153,14 @@ function fitViewportToDefaultScale(wrapper: HTMLElement): void {
   const availableHeight = expanded
     ? viewport.getBoundingClientRect().height * 0.9
     : Math.min(window.innerHeight * DEFAULT_HEIGHT_RATIO, MAX_DEFAULT_HEIGHT)
-  // The SVG shrinks inside its flex box, so its viewBox gives the size Mermaid
-  // drew it at. A Question Card diagram only explains the choice, so it stops there.
+  // The SVG shrinks inside its flex box, so its viewBox gives the size Pele drew
+  // it at. Pele draws labels near body text size, so inline diagrams stop there.
   const intrinsicWidth = diagram.querySelector("svg")?.viewBox.baseVal?.width ?? 0
   const maximumScale = expanded
     ? MAX_EXPANDED_DEFAULT_SCALE
-    : inQuestionCard(wrapper) && intrinsicWidth > 0 && naturalRect.width > 0
+    : intrinsicWidth > 0 && naturalRect.width > 0
       ? intrinsicWidth / naturalRect.width
-      : MAX_DEFAULT_SCALE
+      : 1
   const minimumScale = expanded ? MIN_SCALE : MIN_DEFAULT_SCALE
 
   let defaultScale = FALLBACK_DEFAULT_SCALE
@@ -475,10 +488,14 @@ function setMermaidSvg(
   else resetView(wrapper)
 }
 
-export async function renderMermaidBlocks(
-  container: HTMLElement,
-  dark: boolean
-): Promise<void> {
+function errorMessage(error: unknown): string {
+  if (error instanceof PeleError && error.line > 0) {
+    return `Mermaid error at line ${error.line}, column ${error.column}: ${error.message}`
+  }
+  return `Mermaid error: ${error instanceof Error ? error.message : String(error)}`
+}
+
+export async function renderMermaidBlocks(container: HTMLElement): Promise<void> {
   const blocks = Array.from(
     container.querySelectorAll<HTMLElement>("pre > code.language-mermaid")
   )
@@ -487,13 +504,11 @@ export async function renderMermaidBlocks(
   for (const codeEl of blocks) {
     const pre = codeEl.parentElement!
     const question = inQuestionCard(pre)
-    init(dark, question)
     const code = (codeEl.textContent ?? "").trim()
-    const id = `mermaid-${++idCounter}`
     const sourceLine = pre.dataset.sourceLine
 
     try {
-      const { svg } = await mermaid.render(id, code)
+      const svg = renderSvg(code, container)
       const wrapper = document.createElement("div")
       wrapper.className = `mermaid-block not-prose${question ? " mermaid-question" : ""}`
       wrapper.dataset.mermaidSrc = code
@@ -505,16 +520,14 @@ export async function renderMermaidBlocks(
       errDiv.className = "mermaid-error"
       errDiv.dataset.mermaidSrc = code
       if (sourceLine) errDiv.dataset.sourceLine = sourceLine
-      errDiv.textContent = `Mermaid error: ${e instanceof Error ? e.message : String(e)}`
+      errDiv.textContent = errorMessage(e)
       pre.replaceWith(errDiv)
     }
   }
 }
 
-export async function rerenderMermaidBlocks(
-  container: HTMLElement,
-  dark: boolean
-): Promise<void> {
+// Pele measures labels in the document font, so a typeface change needs new layouts.
+export async function rerenderMermaidBlocks(container: HTMLElement): Promise<void> {
   const wrappers = Array.from(
     container.querySelectorAll<HTMLElement>(".mermaid-block[data-mermaid-src], .mermaid-error[data-mermaid-src]")
   )
@@ -524,10 +537,8 @@ export async function rerenderMermaidBlocks(
     const code = (wrapper.dataset.mermaidSrc ?? "").trim()
     if (!code) continue
     const question = inQuestionCard(wrapper)
-    init(dark, question)
-    const id = `mermaid-${++idCounter}`
     try {
-      const { svg } = await mermaid.render(id, code)
+      const svg = renderSvg(code, container)
       if (wrapper.classList.contains("mermaid-error")) {
         wrapper.className = `mermaid-block not-prose${question ? " mermaid-question" : ""}`
         delete wrapper.dataset.mermaidInteractive

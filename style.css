@@ -1961,10 +1961,40 @@ button.readability-score-filter {
 }
 
 /* ── Mermaid diagrams ── */
+.mermaid-block .mermaid-edge-animated > path:first-child {
+  stroke-dasharray: 9 5;
+  stroke-dashoffset: 900;
+  animation: mermaid-edge-dash 20s linear infinite;
+}
+
+.mermaid-block .mermaid-edge-animated[data-animation="slow"] > path:first-child {
+  animation-duration: 50s;
+}
+
+@keyframes mermaid-edge-dash {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mermaid-block .mermaid-edge-animated > path:first-child {
+    animation: none;
+  }
+}
+
 .mermaid-block {
   position: relative;
   margin: 1.25em 0;
   border-radius: 0.5rem;
+  --pele-bg: hsl(var(--background));
+  --pele-fg: hsl(var(--foreground));
+  --pele-muted: hsl(var(--muted-foreground));
+  --pele-line: hsl(var(--muted-foreground));
+  --pele-surface: hsl(var(--muted));
+  --pele-surface-alt: hsl(var(--accent));
+  --pele-border: hsl(var(--muted-foreground) / 0.6);
+  --pele-accent: hsl(var(--sidebar-ring));
 }
 
 .mermaid-toolbar {

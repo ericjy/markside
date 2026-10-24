@@ -1,13 +1,11 @@
 ---
 date: 2026-10-24
-status: confirmed
+status: implemented
 intent: intent.md
 interview: grill.md
 ---
 
 # Render Mermaid diagrams with Pele
-
-> Confirmed design. Current behavior is in `docs/system-design.md`.
 
 | Requirement | Decided by |
 | --- | --- |

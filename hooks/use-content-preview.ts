@@ -158,10 +158,7 @@ export function useContentPreview({
           previewEnhancementRef.current = null
           void Promise.all([
             highlightCodeBlocks(renderedContent),
-            renderMermaidBlocks(
-              renderedContent,
-              document.documentElement.classList.contains("dark")
-            ),
+            renderMermaidBlocks(renderedContent),
           ]).then(() => setReviewRenderVersion((version) => version + 1))
         },
         { timeout: 250 }

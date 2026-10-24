@@ -68,7 +68,7 @@ file:// Markdown page
 → DOMPurify sanitizes the HTML
 → relative image and document links are resolved against the current file
 → Shiki enhances code blocks
-→ Mermaid enhances diagram blocks
+→ Pele renders Mermaid diagram blocks
 → headings are extracted for the outline
 → question cards receive answer controls
 ```
@@ -174,16 +174,22 @@ and offers Finish review. Both actions stay hidden while the document has change
 on disk or the Review is complete. Failures appear in place for retry. Narrow
 windows can wrap the row.
 
-Rendered Mermaid diagrams keep zoom, pan, and reset controls in a toolbar above
-an isolated viewport. Theme changes replace only the SVG inside that viewport so its current
-view remains stable. Expanded view temporarily moves the diagram to a
+Mermaid diagrams are rendered by Pele, which lays out labels in the document font
+and draws them as SVG text. Rendered diagrams keep zoom, pan, and reset controls
+in a toolbar above an isolated viewport. Diagram colors come from CSS variables
+mapped to Markside's palette, so theme changes need no re-render. A typeface
+change replaces only the SVG inside the viewport so its current view remains
+stable. Inline diagrams start at their natural size or smaller; wide diagrams
+shrink to fit the column. Pele ignores Mermaid's animated edges, so Markside
+reads `id@{ animate … }` lines from the source and animates the matching edges
+itself, except under reduced motion. A diagram Pele cannot render shows an
+error block with Pele's message and, for syntax errors, its line and column. Expanded view temporarily moves the diagram to a
 viewport-filling overlay and restores its inline position and view state on exit.
 Print and PDF Export ignore the screen's pan, zoom, and viewport height, sizing
 each inline SVG to the document column with its aspect ratio preserved.
 Inside a Question Card, or a `<details>` whose summary is "Full question" (an
-archived question), a diagram only explains the choice: it uses Mermaid's
-neutral theme in light mode, stays at natural size, and shows only the Expand
-control, on hover or focus, until expanded.
+archived question), a diagram only explains the choice: it shows only the
+Expand control, on hover or focus, until expanded.
 A blockquote starting with **Your decision**, **Assumed decision**,
 **Deferred**, or **Open**, the decision line the markside skill writes under an
 archived question, renders as a callout rather than a quotation: teal for the
@@ -601,9 +607,9 @@ Opening that email link does not complete the automatic review-prompt sequence.
 
 ### Pre-bundled ESM dependencies
 
-Shiki, Mermaid, and CodeMirror are pre-bundled with esbuild and aliased through `package.json` because Plasmo's Parcel pipeline cannot reliably bundle their ESM dependency graphs for this extension.
+Shiki and CodeMirror are pre-bundled with esbuild and aliased through `package.json` because Plasmo's Parcel pipeline cannot reliably bundle their ESM dependency graphs for this extension.
 
-Never import those packages directly. Use the project wrappers and update the matching bundle script when adding a language, theme, or editor dependency. See [ADR-0001](adr/0001-prebundle-esm-only-dependencies.md).
+Never import those packages directly. Use the project wrappers and update the matching bundle script when adding a language, theme, or editor dependency. Pele, which renders Mermaid diagrams, is bundled by Parcel directly and pinned to an exact version. See [ADR-0001](adr/0001-prebundle-esm-only-dependencies.md).
 
 ### No file watching
 

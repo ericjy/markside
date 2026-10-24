@@ -30,9 +30,9 @@ export function ContentReviewFinishBar({ agentHandoff, review = null, panelOpen,
     : "Your agent is waiting. Keep commenting, or finish."
   const busy = agentHandoff.sending || agentHandoff.finishing || agentHandoff.resolvingAll || agentHandoff.updatingCommentId != null
   return (
-    <div aria-label="Review actions" className="sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b bg-background px-8 py-2 text-sm text-foreground print:hidden">
+    <div aria-label="Review actions" className="sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b bg-muted px-8 py-2 text-sm text-foreground print:hidden">
       <p role="status">{status}</p>
-      <Button size="sm" className="shrink-0" onClick={sendOffered ? () => void agentHandoff.send() : agentHandoff.finish}
+      <Button size="sm" className="h-7 shrink-0 text-xs" onClick={sendOffered ? () => void agentHandoff.send() : agentHandoff.finish}
         disabled={disabled || busy || (sendOffered && agentHandoff.disabled)} aria-busy={sendOffered ? agentHandoff.sending : agentHandoff.finishing}
         title={sendOffered ? agentHandoff.disabledReason ?? undefined : undefined}>
         {sendOffered ? agentHandoff.sending ? "Sending review…" : "Send review" : agentHandoff.finishing ? "Finishing review…" : "Finish review"}

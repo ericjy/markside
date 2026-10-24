@@ -159,7 +159,8 @@ shows an error badge and its message. These are pending-review indicators, not
 unread tracking. Opening Review or selecting a passage's comment explicitly
 opens the panel; its existing per-document open preference still restores on load.
 With the panel closed, a compact sticky row at the top of Preview keeps its action
-beside its message. Saved unsent Review Comments show their draft count and Send
+beside its message. Its neutral tinted background and bottom border separate it
+from the document; its button is 28px tall with 12px text. Saved unsent Review Comments show their draft count and Send
 review; an unsent Review Note can be sent there too. Sending uses the panel's
 existing handler and disabled conditions, including support for partial question
 rounds. Otherwise, when the same finish conditions as the panel allow it and no

@@ -255,6 +255,7 @@ export function ContentView({
   const statsSource = previewVisible && content !== null && !error
     ? sourceVisible ? draft : content
     : null
+  const previewWidthClass = previewWidth === "full" ? "max-w-none" : previewWidth === "extended" ? "mx-auto max-w-5xl" : "mx-auto max-w-3xl"
   const documentStats = React.useMemo(
     () => statsSource === null ? null : formatDocumentStats(statsSource),
     [statsSource],
@@ -458,8 +459,10 @@ export function ContentView({
                     <div
                       className="relative min-h-full min-w-0 flex-1 pl-20 pr-8 pt-10 pb-28 transition-[padding] duration-200 print:p-0">
                   {documentStats && (
-                    <div className="pointer-events-none absolute right-8 top-3 select-none whitespace-nowrap text-xs tabular-nums text-muted-foreground print:hidden">
-                      {documentStats}
+                    <div className="pointer-events-none absolute inset-x-0 top-3 select-none pl-[inherit] pr-[inherit] print:hidden">
+                      <div className={`${previewWidthClass} whitespace-nowrap text-right text-[11px] tabular-nums text-muted-foreground/70`}>
+                        {documentStats}
+                      </div>
                     </div>
                   )}
                   {selectionAction && selectionComposerOpen && (
@@ -704,7 +707,7 @@ export function ContentView({
                   <div
                     ref={contentRef}
                     className={`prose prose-neutral dark:prose-invert ${!readabilityControlsVisible ? "readability-controls-hidden" : ""} ${
-                      previewWidth === "full" ? "max-w-none" : previewWidth === "narrow" ? "mx-auto max-w-3xl" : "mx-auto max-w-5xl"
+                      previewWidthClass
                     }`}
                   />
                   {readabilityControlsVisible && readabilityMounts.map(({ heading, mount, section }) => {

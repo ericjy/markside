@@ -10,7 +10,7 @@ Markside is a Chrome extension that renders and edits local Markdown files direc
    - Press `Cmd+O` (macOS) or `Ctrl+O` (Windows/Linux) to open the browser's file picker.
    - Drag a `.md` file onto a Chrome tab.
    - Set Chrome as the default app for `.md` files (see [Opening Files](#opening-files)) so double-clicking opens Markside automatically.
-4. Markside renders the file. The left sidebar appears and prompts you to **Choose folder** so you can browse related files.
+4. Markside renders the file. To browse related files, click **Show file tree** at the left of the toolbar; the sidebar prompts you to **Choose folder**.
 5. Click **Choose folder** and select the folder your file lives in, or any parent folder. The file tree populates immediately.
 
 ## Opening Files
@@ -51,11 +51,11 @@ function md { start chrome $args }
 
 ## The File Tree
 
-The left sidebar shows the file tree for the folder you have open. To enable it, Markside needs read access to a folder on your system.
+The left sidebar shows the file tree for the folder you have open. It starts collapsed; click **Show file tree** at the left of the toolbar to open it, and Markside remembers whether you leave it open. To enable it, Markside needs read access to a folder on your system.
 
 ### Granting access
 
-When you open a file, the sidebar shows a prompt:
+When you open the file tree for a new folder, the sidebar shows a prompt:
 
 > Browse files in the **notes** folder, or any folder above it.
 
@@ -118,9 +118,9 @@ Expanded folders remain expanded when you navigate between files.
 
 ## Preview
 
-Open **Page width** in the file actions (`…`) menu, then choose **Narrow** for a shorter
-reading line, **Standard** for the existing column width, or **Full width** to
-use the available space. Markside remembers the choice across files and restarts.
+Preview uses the **Standard** page width, a comfortable reading line. Open
+**Page width** in the file actions (`…`) menu to choose **Extended** for a wider
+column or **Full width** to use the available space. Markside remembers the choice across files and restarts.
 The Page width row shows the current choice without opening the submenu.
 The choice also applies to the Preview pane in Split. Source width and PDF Export keep
 their independent settings and layout.

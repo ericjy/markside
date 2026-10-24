@@ -13,7 +13,6 @@ Store and GitHub Releases run independently and can diverge; see
 - Answer agent interviews in Markside (Beta). Ask a questioning skill such as `/grill-me` to interview you in Markside, and each question appears as a card: pick an option, answer in your own words, skip, let the agent decide the rest, or stop. Answer some or all cards before sending.
 - Zen mode hides the toolbar, file tree, and Outline. Press Cmd+. / Ctrl+. or choose it in the file menu.
 - Preview shows the word count and reading time.
-- A narrow page width for Preview.
 - One-click preset buttons above the comment composer.
 - File paths in YAML frontmatter render as links.
 - Revisit an answered interview question from its read-only card and send a revised answer.
@@ -21,6 +20,7 @@ Store and GitHub Releases run independently and can diverge; see
 
 ### Improved
 
+- Calmer reading: Preview defaults to a narrower Standard page width, with Extended and Full width in the file menu. Inline code is neutral instead of red, heading rules are lighter, the word count is quieter, and the file tree starts collapsed.
 - Mermaid diagrams render faster, in the document's font and colors, and the extension is smaller.
 - Answered interview questions are saved as plain Markdown that reads well in any editor.
 - Review opens as a sidebar you can dock beside the document, and stays open across reloads.

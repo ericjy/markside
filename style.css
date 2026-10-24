@@ -371,7 +371,7 @@ li[data-reload-removed]::marker {
 .prose h1,
 .prose h2 {
   padding-bottom: 0.3em;
-  border-bottom: 1px solid hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
   font-weight: 600;
 }
 
@@ -1194,7 +1194,7 @@ button.readability-score-filter {
   color: hsl(222 47% 8%);
 }
 
-/* Code reads as code by its font; red would compete with the ✕ ratings. */
+/* Code in a Question Card follows the card's text color. */
 .prose .markdown-alert.markdown-alert-question :not(pre) > code {
   color: inherit;
 }
@@ -1746,15 +1746,12 @@ button.readability-score-filter {
 
 /* ── Inline code ── */
 .prose :not(pre) > code {
-  color: #d4455a;
-  background-color: transparent;
-  border-radius: 0;
-  padding: 0;
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--muted));
+  border-radius: 0.375rem;
+  padding: 0.15em 0.35em;
   font-size: 0.875em;
   font-weight: 400;
-}
-.dark .prose :not(pre) > code {
-  color: #f47067;
 }
 
 /* Keep freshly-rendered fences visually stable while Shiki waits for idle time. */

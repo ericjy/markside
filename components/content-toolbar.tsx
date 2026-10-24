@@ -158,7 +158,8 @@ export function ContentToolbar({
                 <Minimize2 size={16} />
               </Button>
             ) : (
-              <SidebarTrigger className={`-ml-1 ${leftOpen ? "bg-accent" : ""}`} />
+              <SidebarTrigger className={`-ml-1 ${leftOpen ? "bg-accent" : ""}`}
+                aria-label={leftOpen ? "Hide file tree" : "Show file tree"} title={leftOpen ? "Hide file tree" : "Show file tree"} />
             )}
             <Separator orientation="vertical" className="mr-2 h-4" />
           </>
@@ -464,7 +465,7 @@ export function ContentToolbar({
                       <MoveHorizontal size={14} className="w-3.5 shrink-0" />
                       Page width
                       <span className="ml-auto text-xs text-muted-foreground">
-                        {previewWidth === "narrow" ? "Narrow" : previewWidth === "standard" ? "Standard" : "Full width"}
+                        {previewWidth === "standard" ? "Standard" : previewWidth === "extended" ? "Extended" : "Full width"}
                       </span>
                       <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
                     </DropdownMenu.SubTrigger>
@@ -479,8 +480,8 @@ export function ContentToolbar({
                             void setPreviewWidthPreference(width).catch(() => undefined)
                           }}>
                           {([
-                            ["narrow", "Narrow"],
                             ["standard", "Standard"],
+                            ["extended", "Extended"],
                             ["full", "Full width"],
                           ] as const).map(([width, label]) => (
                             <DropdownMenu.RadioItem key={width} value={width}

@@ -29,10 +29,11 @@ export async function setSplitPercent(percent: number): Promise<void> {
 }
 
 export const PREVIEW_FULL_WIDTH_STORAGE_KEY = "previewFullWidth"
+export const PREVIEW_PAGE_WIDTH_STORAGE_KEY = "previewPageWidth"
 export const PREVIEW_WIDTH_STORAGE_KEY = "previewWidth"
 export const SOURCE_FULL_WIDTH_STORAGE_KEY = "sourceFullWidth"
 
-export type PreviewWidth = "narrow" | "standard" | "full"
+export type PreviewWidth = "standard" | "extended" | "full"
 
 export type PaneWidthPreferences = {
   previewWidth: PreviewWidth
@@ -46,15 +47,20 @@ export const DEFAULT_PANE_WIDTH_PREFERENCES: PaneWidthPreferences = {
 
 export async function getPaneWidthPreferences(): Promise<PaneWidthPreferences> {
   const stored = await chrome.storage.local.get([
+    PREVIEW_PAGE_WIDTH_STORAGE_KEY,
     PREVIEW_WIDTH_STORAGE_KEY,
     PREVIEW_FULL_WIDTH_STORAGE_KEY,
     SOURCE_FULL_WIDTH_STORAGE_KEY,
   ])
-  const width = stored[PREVIEW_WIDTH_STORAGE_KEY]
+  const width = stored[PREVIEW_PAGE_WIDTH_STORAGE_KEY]
+  // Earlier choices were Narrow (48rem), Standard (64rem), and Full width.
+  const legacyWidth = stored[PREVIEW_WIDTH_STORAGE_KEY]
   return {
-    previewWidth: width === "narrow" || width === "standard" || width === "full"
-      ? width
-      : stored[PREVIEW_FULL_WIDTH_STORAGE_KEY] === true ? "full" : "standard",
+    previewWidth: width === "standard" || width === "extended" || width === "full" ? width
+      : legacyWidth === "narrow" ? "standard"
+      : legacyWidth === "standard" ? "extended"
+      : legacyWidth === "full" || stored[PREVIEW_FULL_WIDTH_STORAGE_KEY] === true ? "full"
+      : "standard",
     sourceFullWidth: typeof stored[SOURCE_FULL_WIDTH_STORAGE_KEY] === "boolean"
       ? stored[SOURCE_FULL_WIDTH_STORAGE_KEY]
       : DEFAULT_PANE_WIDTH_PREFERENCES.sourceFullWidth,
@@ -62,7 +68,7 @@ export async function getPaneWidthPreferences(): Promise<PaneWidthPreferences> {
 }
 
 export async function setPreviewWidthPreference(width: PreviewWidth): Promise<void> {
-  await chrome.storage.local.set({ [PREVIEW_WIDTH_STORAGE_KEY]: width })
+  await chrome.storage.local.set({ [PREVIEW_PAGE_WIDTH_STORAGE_KEY]: width })
 }
 
 export async function setSourceFullWidthPreference(fullWidth: boolean): Promise<void> {
@@ -74,7 +80,7 @@ export const LEFT_OPEN_STORAGE_KEY = "leftOpen"
 export async function getLeftOpenPreference(): Promise<boolean> {
   const stored = await chrome.storage.local.get(LEFT_OPEN_STORAGE_KEY)
   const open = stored[LEFT_OPEN_STORAGE_KEY]
-  return typeof open === "boolean" ? open : true
+  return typeof open === "boolean" ? open : false
 }
 
 export async function setLeftOpenPreference(open: boolean): Promise<void> {

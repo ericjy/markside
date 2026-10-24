@@ -13,6 +13,7 @@ import {
   MARKDOWN_MODE_STORAGE_KEY,
   MIN_SPLIT_PANE_WIDTH,
   PREVIEW_FULL_WIDTH_STORAGE_KEY,
+  PREVIEW_PAGE_WIDTH_STORAGE_KEY,
   PREVIEW_WIDTH_STORAGE_KEY,
   getOutlineOpenPreference,
   getLeftOpenPreference,
@@ -59,9 +60,9 @@ describe("Markdown modes", () => {
     }).leftOpen).toBe(open)
   })
 
-  it.each([undefined, null, "false"])("defaults the file tree to open for an invalid preference (%s)", async (stored) => {
+  it.each([undefined, null, "true"])("defaults the file tree to closed for an invalid preference (%s)", async (stored) => {
     stubChromeStorage({ [LEFT_OPEN_STORAGE_KEY]: stored })
-    expect(await getLeftOpenPreference()).toBe(true)
+    expect(await getLeftOpenPreference()).toBe(false)
   })
 
   it("keeps the saved closed file tree state to restore after reloading in Split", async () => {
@@ -162,6 +163,7 @@ describe("Markdown modes", () => {
       sourceFullWidth: false,
     })
     expect(storageGet).toHaveBeenCalledWith([
+      PREVIEW_PAGE_WIDTH_STORAGE_KEY,
       PREVIEW_WIDTH_STORAGE_KEY,
       PREVIEW_FULL_WIDTH_STORAGE_KEY,
       SOURCE_FULL_WIDTH_STORAGE_KEY,
@@ -182,11 +184,11 @@ describe("Markdown modes", () => {
   it("saves each pane width without overwriting the other", async () => {
     storageSet.mockResolvedValue(undefined)
 
-    await setPreviewWidthPreference("narrow")
+    await setPreviewWidthPreference("extended")
     await setSourceFullWidthPreference(false)
 
     expect(storageSet).toHaveBeenNthCalledWith(1, {
-      [PREVIEW_WIDTH_STORAGE_KEY]: "narrow",
+      [PREVIEW_PAGE_WIDTH_STORAGE_KEY]: "extended",
     })
     expect(storageSet).toHaveBeenNthCalledWith(2, {
       [SOURCE_FULL_WIDTH_STORAGE_KEY]: false,
@@ -302,7 +304,17 @@ describe("Preview page width", () => {
     expect((await getPaneWidthPreferences()).previewWidth).toBe(expected)
   })
 
-  it.each(["narrow", "standard", "full"] as const)("remembers %s across loads without changing Source", async (width) => {
+  it.each([
+    ["narrow", "standard"],
+    ["standard", "extended"],
+    ["full", "full"],
+  ])("keeps the earlier %s choice's width as %s", async (legacy, expected) => {
+    stubChromeStorage({ [PREVIEW_WIDTH_STORAGE_KEY]: legacy })
+
+    expect((await getPaneWidthPreferences()).previewWidth).toBe(expected)
+  })
+
+  it.each(["standard", "extended", "full"] as const)("remembers %s across loads without changing Source", async (width) => {
     const storage = stubChromeStorage({
       [PREVIEW_FULL_WIDTH_STORAGE_KEY]: true,
       [SOURCE_FULL_WIDTH_STORAGE_KEY]: false,
@@ -316,7 +328,7 @@ describe("Preview page width", () => {
 
   it("falls back to the legacy choice when the new preference is invalid", async () => {
     stubChromeStorage({
-      [PREVIEW_WIDTH_STORAGE_KEY]: "wide",
+      [PREVIEW_PAGE_WIDTH_STORAGE_KEY]: "wide",
       [PREVIEW_FULL_WIDTH_STORAGE_KEY]: true,
     })
 

@@ -37,17 +37,17 @@ pull request or review response.
   that the saved divider and mode return. Test independent pane width controls.
 - [ ] In Preview and Split, file actions has one Page width row showing the
   current choice. Open its submenu with the pointer or Right arrow, then select
-  Narrow, Standard, or Full width. Only one is checked; Left arrow returns to
+  Standard, Extended, or Full width. Only one is checked; Left arrow returns to
   the parent menu. After selection, reopening shows the updated choice on the
-  parent row. With enough room, Narrow caps
-  the body at 48rem and Standard at 64rem; Full width fills the available area.
+  parent row. With enough room, Standard caps
+  the body at 48rem and Extended at 64rem; Full width fills the available area.
   Narrow windows and docked Review still fit the body to the available space.
   Headings, paragraphs, tables, code, and images reflow without changing type size
   or side spacing. Review highlights and missing-passage badges follow the text.
 - [ ] Reload and open a second Markdown file; the chosen Preview width returns.
-  Check existing profiles with the old Full width setting on and off: their
-  first load preserves Full width and Standard respectively. Fresh preferences
-  default to Standard. Source-only mode has no Page width choices, its Full
+  Check existing profiles: an earlier Narrow choice loads as Standard, an
+  earlier Standard choice as Extended, and the old Full width setting as Full
+  width. Fresh preferences default to Standard. Source-only mode has no Page width choices, its Full
   width toggle remains independent, and PDF Export retains its print layout.
 - [ ] In Preview and Split, open file actions → Typeface. The parent row shows
   the saved typeface, and the submenu previews Sans, Serif, Charter, Iowan, and

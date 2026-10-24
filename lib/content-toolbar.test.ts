@@ -87,17 +87,17 @@ it.each(["preview", "split"] as const)("selects and remembers one Page width in 
     expect(widthTrigger().textContent).toContain("Standard")
     openWidths()
     let items = Array.from(document.querySelectorAll<HTMLElement>('[role="menuitemradio"]'))
-    expect(items.map(item => item.textContent)).toEqual(["Narrow", "Standard", "Full width"])
+    expect(items.map(item => item.textContent)).toEqual(["Standard", "Extended", "Full width"])
     expect(items.filter(item => item.getAttribute("aria-checked") === "true").map(item => item.textContent)).toEqual(["Standard"])
 
-    await act(async () => items[0].click())
-    expect(await getPaneWidthPreferences()).toEqual({ previewWidth: "narrow", sourceFullWidth: false })
+    await act(async () => items[1].click())
+    expect(await getPaneWidthPreferences()).toEqual({ previewWidth: "extended", sourceFullWidth: false })
 
     openMenu()
-    expect(widthTrigger().textContent).toContain("Narrow")
+    expect(widthTrigger().textContent).toContain("Extended")
     openWidths()
     items = Array.from(document.querySelectorAll<HTMLElement>('[role="menuitemradio"]'))
-    expect(items.filter(item => item.getAttribute("aria-checked") === "true").map(item => item.textContent)).toEqual(["Narrow"])
+    expect(items.filter(item => item.getAttribute("aria-checked") === "true").map(item => item.textContent)).toEqual(["Extended"])
   } finally {
     act(() => root.unmount())
     container.remove()
@@ -108,7 +108,7 @@ it.each(["preview", "split"] as const)("selects and remembers one Page width in 
 
 it("restores Typeface in the file menu, applies a selection, and follows other tabs", async () => {
   stubMatchMedia(false)
-  const storage = stubChromeStorage({ typeface: "charter", previewWidth: "narrow", sourceFullWidth: false })
+  const storage = stubChromeStorage({ typeface: "charter", previewPageWidth: "extended", sourceFullWidth: false })
   const props = toolbarProps()
   function Toolbar() {
     const { typeface } = useContentPreferences(false)
@@ -136,7 +136,7 @@ it("restores Typeface in the file menu, applies a selection, and follows other t
     await act(async () => items[3].click())
     expect(await getTypeface()).toBe("iowan")
     expect(document.documentElement.style.getPropertyValue("--markside-prose-font")).toBe(TYPEFACES.iowan.stack)
-    expect(await getPaneWidthPreferences()).toEqual({ previewWidth: "narrow", sourceFullWidth: false })
+    expect(await getPaneWidthPreferences()).toEqual({ previewWidth: "extended", sourceFullWidth: false })
     openMenu()
     expect(typefaceTrigger().textContent).toContain("Iowan")
     await act(() => storage.set({ typeface: "serif" }))

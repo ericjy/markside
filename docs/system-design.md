@@ -196,13 +196,19 @@ archived question, renders as a callout rather than a quotation: teal for the
 reviewer's decision, amber for the agent's assumed one, and gray otherwise.
 
 The file actions (`…`) menu includes a **Page width** row showing the current
-choice. Its submenu provides mutually exclusive **Narrow** (48rem),
-**Standard** (64rem), and **Full width** (no maximum)
+choice. Its submenu provides mutually exclusive **Standard** (48rem, the
+default), **Extended** (64rem), and **Full width** (no maximum)
 choices for Preview, including Split Preview. Available space can constrain each
 width further; type size and side spacing stay unchanged. The choice persists in
-`chrome.storage.local` as `previewWidth`. If no valid choice exists, Markside
-uses the legacy `previewFullWidth` boolean, preserving existing users' choices;
-new installations default to Standard. PDF Export keeps its separate layout.
+`chrome.storage.local` as `previewPageWidth`. Without it, Markside keeps an
+earlier `previewWidth` choice's width (Narrow becomes Standard, Standard becomes
+Extended), then the legacy `previewFullWidth` boolean. PDF Export keeps its
+separate layout.
+
+Prose stays close to GitHub's rendering but quieter: inline code is monospace
+foreground text on the muted background, and the rules under H1 and H2 use half
+the border contrast. The word count sits in the top-right margin in small,
+low-contrast text.
 
 The same menu includes a **Typeface** submenu, moved from Options. Its parent
 row shows the current choice; the submenu lists Sans, Serif, Charter, Iowan,
@@ -412,7 +418,7 @@ Hosted Snapshots.
 | `saveState` | Idle, unsaved, saving, saved, or failed |
 | `conflict` | Whether the disk version changed externally |
 | `dark`, `previewWidth`, and `sourceFullWidth` | Current theme and independent pane width choices; both width choices persist in `chrome.storage.local`; legacy `previewFullWidth` is a fallback for Preview |
-| `leftOpen` and `outlineOpen` | Sidebar visibility; explicit file-tree and Outline choices are stored in `chrome.storage.local` and restored before the first paint, though narrow windows still start with Outline closed. Split's temporary sidebar closures do not change these preferences |
+| `leftOpen` and `outlineOpen` | Sidebar visibility; the file tree starts collapsed, and its toolbar toggle is labeled Show file tree or Hide file tree. Explicit file-tree and Outline choices are stored in `chrome.storage.local` and restored before the first paint, though narrow windows still start with Outline closed. Split's temporary sidebar closures do not change these preferences |
 | `zenMode` and `zenOutlineOpen` | Zen mode, kept per tab in `sessionStorage` so it survives reloads and links but not new tabs; hides the file tree and Outline with CSS while leaving `leftOpen`, `outlineOpen`, and their saved preference unchanged. The toolbar becomes a transparent overlay revealed from the top edge or by keyboard focus, a 20 px spacer keeps the document clear of it, and `zenOutlineOpen` shows the Outline inside Zen mode. Its Escape listener records in the capture phase whether a dialog, menu, Review panel, file switcher, expanded diagram, or form field was open, and leaves Zen mode in the bubble phase only if none was and no handler prevented the default |
 | `sidebarWidth` and `rightSidebarWidth` | Sidebar widths |
 | `reviewOverlaySize` | Session-only compact, standard, or wide Review width; compact is the default |

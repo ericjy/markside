@@ -103,3 +103,4 @@ and code examples may no longer match the current source tree.
 
 - [Inline Review actions](2026-10-23-inline-review-actions/spec.md)
 - [Plain Markdown interview source](2026-10-24-plain-question-source/spec.md)
+- [Render Mermaid diagrams with Pele](2026-10-24-pele-diagrams/spec.md) (Confirmed design)

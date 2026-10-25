@@ -172,7 +172,7 @@ Set by `displayName` in `package.json`. Keep the exact search phrase "Markdown V
 ## Short description (132 chars max)
 
 ```
-Read, edit, comment on, and share local Markdown files in Chrome. Built for reviewing what your AI agents write.
+Preview, edit, comment & share local Markdown. AI Review, GitHub-flavored, Mermaid, math, code highlighting, dark mode, PDF export.
 ```
 
 ## Full description

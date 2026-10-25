@@ -2,7 +2,7 @@
   "name": "markside",
   "displayName": "Markside: Markdown Viewer & Editor",
   "version": "1.7.0",
-  "description": "Read, edit, comment on, and share local Markdown files in Chrome. Built for reviewing what your AI agents write.",
+  "description": "Preview, edit, comment & share local Markdown. AI Review, GitHub-flavored, Mermaid, math, code highlighting, dark mode, PDF export.",
   "author": "Jing Yang",
   "license": "MIT",
   "scripts": {

@@ -12,6 +12,7 @@
     "package": "plasmo package",
     "webstore": "node scripts/webstore-release.mjs",
     "webstore:prepare": "node scripts/webstore-release.mjs prepare",
+    "store-promo": "bash scripts/store-promo/render.sh",
     "test": "node scripts/bundle-codemirror.mjs && vitest run",
     "test:watch": "node scripts/bundle-codemirror.mjs && vitest",
     "test:coverage": "node scripts/bundle-codemirror.mjs && vitest run --coverage",

@@ -319,6 +319,9 @@ The tracked `assets/screenshots/markside-split-view.png` is documentation source
 material, not a Store-ready asset. Crop or recapture every uploaded screenshot at
 exactly 1280×800 px.
 
+The illustrated alternatives `assets/screenshots/promo-*.png` are rendered from
+`scripts/store-promo/cards.html`.
+
 ### Small promotional tile (440×280, required)
 
 Lead with the search phrase, large enough to read in search results:
@@ -330,8 +333,9 @@ Lead with the search phrase, large enough to read in search results:
 - The Markside logo and name, small, above the headline
 
 Do not claim that files never leave the computer, because Share Links upload a
-snapshot. The source is `scripts/cws-promo/tile.html` in the private landing
-repository; its `render.sh` writes both tiles.
+snapshot. Edit `scripts/store-promo/tile.html`, then run `pnpm store-promo` to
+write `assets/store-promo-small-440x280.png`,
+`assets/store-promo-marquee-1400x560.png`, and the promo screenshots.
 
 ### Marquee promotional tile (1400×560, optional)
 

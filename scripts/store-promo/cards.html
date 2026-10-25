@@ -1,0 +1,274 @@
+<!doctype html>
+<!--
+  Chrome Web Store promo cards (1280x800). Render with:
+    pnpm store-promo
+  Pick a card with ?card=read|review|edit|navigate|share.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Mono:wght@400;700&display=swap" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1280px; height: 800px; overflow: hidden; }
+  body {
+    font-family: 'DM Sans', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color: #000;
+  }
+
+  .card {
+    position: relative;
+    isolation: isolate;
+    width: 1280px;
+    height: 800px;
+    overflow: hidden;
+    background: var(--bg);
+    display: none;
+  }
+  .card.is-active { display: block; }
+
+  /* Cream base shared by every card; two soft corner blobs vary per card */
+  .card--read   { --bg: #f5f0e6; --blob-a: #f8cc65; --blob-b: #c4d8dc; --accent: #8a6420; }
+  .card--review { --bg: #f5f0e6; --blob-a: #f7b4bc; --blob-b: #d4c8ff; --accent: #9c3a52; }
+  .card--edit   { --bg: #f5f0e6; --blob-a: #9fe3b6; --blob-b: #f8cc65; --accent: #1f6b45; }
+  .card--navigate { --bg: #f5f0e6; --blob-a: #d4c8ff; --blob-b: #9fe3b6; --accent: #4b3aa8; }
+  .card--share  { --bg: #f5f0e6; --blob-a: #c4d8dc; --blob-b: #f7b4bc; --accent: #3d5a66; }
+
+  .card::before,
+  .card::after {
+    content: "";
+    position: absolute;
+    z-index: -2;
+    border-radius: 50%;
+  }
+  .card::before { left: -200px; bottom: -380px; width: 600px; height: 600px; background: var(--blob-a); }
+  .card::after  { right: -120px; top: -230px; width: 420px; height: 420px; background: var(--blob-b); }
+
+  .brand {
+    position: absolute;
+    top: 56px;
+    left: 64px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -.5px;
+  }
+  .brand svg { width: 40px; height: 40px; }
+
+  .copy {
+    position: absolute;
+    left: 64px;
+    top: 0;
+    bottom: 0;
+    width: 540px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 40px;
+  }
+
+  .kicker {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #3b3934;
+  }
+
+  h1 {
+    margin: 20px 0 20px;
+    font-size: 72px;
+    font-weight: 600;
+    line-height: .98;
+    letter-spacing: -3.2px;
+  }
+
+  .lead {
+    font-size: 28px;
+    line-height: 1.4;
+    color: #3b3934;
+  }
+  .lead strong { color: #000; font-weight: 600; }
+
+  .pills {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 28px;
+    list-style: none;
+  }
+  .pills li {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px 10px 16px;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    border-radius: 9999px;
+    background: rgba(255,255,255,.75);
+    font-size: 19px;
+    font-weight: 500;
+  }
+  .pills svg { width: 20px; height: 20px; color: var(--accent); flex: none; }
+
+  .stage {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 600px;
+    right: 0;
+  }
+
+  .shot {
+    position: absolute;
+    display: block;
+    height: auto;
+    max-width: none;
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+    border-radius: 14px;
+    box-shadow:
+      0 26px 56px color-mix(in srgb, var(--accent) 22%, transparent),
+      0 4px 12px rgba(88, 42, 20, .12);
+  }
+
+  /* Read */
+  .card--read .shot--note    { z-index: 3; top: 72px;  left: 10px;  width: 480px; transform: rotate(-1.3deg); }
+  .card--read .shot--diagram { z-index: 1; top: 300px; left: 40px;  width: 700px; height: 250px; object-fit: cover; transform: rotate(1.1deg); }
+  .card--read .shot--code    { z-index: 2; top: 470px; left: 150px; width: 470px; transform: rotate(-1deg); }
+
+  /* Review */
+  .card--review .shot--comment { z-index: 1; top: 90px;  left: 40px;  width: 700px; transform: rotate(-1deg); }
+  .card--review .shot--presets { z-index: 2; top: 450px; left: 30px;  width: 620px; transform: rotate(1.2deg); }
+
+  /* Edit */
+  .card--edit .shot--split  { z-index: 1; top: 40px;  left: 0;    width: 640px; transform: rotate(-1.1deg); }
+  .card--edit .shot--source { z-index: 2; top: 300px; left: 120px; width: 560px; transform: rotate(1deg); }
+  .card--edit .shot--code   { z-index: 3; top: 520px; left: -20px; width: 500px; transform: rotate(-2.4deg); }
+
+  /* Navigate */
+  .card--navigate .shot--workspace { z-index: 1; top: 70px;  left: 0;    width: 720px; transform: rotate(-1.1deg); }
+  .card--navigate .shot--switcher  { z-index: 2; top: 410px; left: 90px; width: 560px; transform: rotate(1.3deg); }
+
+  /* Share */
+  .card--share .shot--recipient { z-index: 1; top: 60px;  left: 70px; width: 610px; transform: rotate(1deg); }
+  .card--share .shot--dialog    { z-index: 2; top: 400px; left: 0;    width: 330px; transform: rotate(-1.6deg); }
+</style>
+</head>
+<body>
+
+<template id="logo">
+  <svg viewBox="0 0 128 128" aria-hidden="true">
+    <rect width="128" height="128" rx="28" fill="#18181b"/>
+    <path d="M22 92 V 28 h12 l26 38 26 -38 h12 V 92 h-12 V 50 l-22 32 h-8 L34 50 V 92 Z" fill="#fff"/>
+    <g stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M90 108 H118"/>
+      <path d="M109 99 L118 108 L109 117"/>
+    </g>
+  </svg>
+</template>
+
+<template id="check">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+</template>
+
+<section class="card card--read" data-card="read">
+  <div class="brand" data-logo>Markside</div>
+  <div class="copy">
+    <div class="kicker">LOCAL MARKDOWN · IN CHROME</div>
+    <h1>Read the doc.<br />Not the syntax.</h1>
+    <p class="lead">Open any local <strong>.md</strong> file and get a calm, rendered document instead of raw text.</p>
+    <ul class="pills">
+      <li data-check>Tables, code &amp; Mermaid</li>
+      <li data-check>Dark mode included</li>
+    </ul>
+  </div>
+  <div class="stage">
+    <img class="shot shot--note" src="images/read-comfortably-note.png" alt="" />
+    <img class="shot shot--diagram" src="images/read-comfortably-diagram.png" alt="" />
+    <img class="shot shot--code" src="images/read-comfortably-code.png" alt="" />
+  </div>
+</section>
+
+<section class="card card--review" data-card="review">
+  <div class="brand" data-logo>Markside</div>
+  <div class="copy">
+    <div class="kicker">INLINE COMMENTS</div>
+    <h1>Comment like in Google Docs.</h1>
+    <p class="lead">Select text, anchor the feedback, and hand your agent <strong>one structured review.</strong></p>
+    <ul class="pills">
+      <li data-check>Inline comments + overall note</li>
+      <li data-check>Humanize, Clarify, Condense presets</li>
+    </ul>
+  </div>
+  <div class="stage">
+    <img class="shot shot--comment" src="images/inline-comments-composer.png" alt="" />
+    <img class="shot shot--presets" src="images/inline-comments-presets.png" alt="" />
+  </div>
+</section>
+
+<section class="card card--edit" data-card="edit">
+  <div class="brand" data-logo>Markside</div>
+  <div class="copy">
+    <div class="kicker">EDIT INSTANTLY</div>
+    <h1>Fix the line.<br />Skip the prompt.</h1>
+    <p class="lead">When you know the change, just make it. <strong>No LLM roundtrip, no IDE.</strong></p>
+    <ul class="pills">
+      <li data-check>Live split preview</li>
+      <li data-check>Safe save when agents edit too</li>
+    </ul>
+  </div>
+  <div class="stage">
+    <img class="shot shot--split" src="images/edit-instantly-split-view.png" alt="" />
+    <img class="shot shot--source" src="images/edit-instantly-source-view.png" alt="" />
+    <img class="shot shot--code" src="images/edit-instantly-code-view.png" alt="" />
+  </div>
+</section>
+
+<section class="card card--navigate" data-card="navigate">
+  <div class="brand" data-logo>Markside</div>
+  <div class="copy">
+    <div class="kicker">NAVIGATE WITH EASE</div>
+    <h1>Find anything,<br />anywhere.</h1>
+    <p class="lead">Move through plans, specs, and source files <strong>without memorizing paths.</strong></p>
+    <ul class="pills">
+      <li data-check>Cmd+P fuzzy file search</li>
+      <li data-check>File tree + live outline</li>
+    </ul>
+  </div>
+  <div class="stage">
+    <img class="shot shot--workspace" src="images/navigate-file-tree-outline.png" alt="" />
+    <img class="shot shot--switcher" src="images/navigate-quick-switcher.png" alt="" />
+  </div>
+</section>
+
+<section class="card card--share" data-card="share">
+  <div class="brand" data-logo>Markside</div>
+  <div class="copy">
+    <div class="kicker">ONE-CLICK SHARE</div>
+    <h1>Open a link.<br />Ready to read.</h1>
+    <p class="lead">Turn a local file into one readable link. <strong>No&nbsp;install, no account</strong> for your teammate.</p>
+    <ul class="pills">
+      <li data-check>Copy or download the Markdown</li>
+      <li data-check>Encrypted Hosted Snapshots</li>
+    </ul>
+  </div>
+  <div class="stage">
+    <img class="shot shot--recipient" src="images/share-link-recipient.png" alt="" />
+    <img class="shot shot--dialog" src="images/share-link-dialog.png" alt="" />
+  </div>
+</section>
+
+<script>
+  const card = new URLSearchParams(location.search).get('card') || 'read'
+  document.querySelector(`[data-card="${card}"]`).classList.add('is-active')
+  const logo = document.getElementById('logo').innerHTML
+  const check = document.getElementById('check').innerHTML
+  document.querySelectorAll('[data-logo]').forEach((el) => el.insertAdjacentHTML('afterbegin', logo))
+  document.querySelectorAll('[data-check]').forEach((el) => el.insertAdjacentHTML('afterbegin', check))
+</script>
+</body>
+</html>

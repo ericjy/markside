@@ -433,9 +433,9 @@ export function ContentToolbar({
                 {isMdFile && previewVisible && (
                   <DropdownMenu.Sub>
                     <DropdownMenu.SubTrigger className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent">
-                      <Type size={14} className="w-3.5 shrink-0" />
+                      <Type size={14} className="mr-2 w-3.5 shrink-0" />
                       Typeface
-                      <span className="ml-auto text-xs text-muted-foreground">{TYPEFACES[typeface].label}</span>
+                      <span className="ml-auto pl-4 text-xs text-muted-foreground">{TYPEFACES[typeface].label}</span>
                       <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
                     </DropdownMenu.SubTrigger>
                     <DropdownMenu.Portal>
@@ -462,9 +462,9 @@ export function ContentToolbar({
                 {isMdFile && previewVisible && (
                   <DropdownMenu.Sub>
                     <DropdownMenu.SubTrigger className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent">
-                      <MoveHorizontal size={14} className="w-3.5 shrink-0" />
+                      <MoveHorizontal size={14} className="mr-2 w-3.5 shrink-0" />
                       Page width
-                      <span className="ml-auto text-xs text-muted-foreground">
+                      <span className="ml-auto pl-4 text-xs text-muted-foreground">
                         {previewWidth === "standard" ? "Standard" : previewWidth === "extended" ? "Extended" : "Full width"}
                       </span>
                       <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
@@ -504,7 +504,7 @@ export function ContentToolbar({
                       void chrome.storage.local.set({ numberHeadings: checked })
                     }}
                     className="group flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent">
-                    <span aria-hidden="true" className="w-3.5 shrink-0 text-center font-mono text-[10px] font-medium leading-none">1.2</span>
+                    <span aria-hidden="true" className="mr-2 w-3.5 shrink-0 text-center font-mono text-[10px] font-medium leading-none">1.2</span>
                     Number headings
                     <span className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border border-muted-foreground/50 transition-colors group-data-[state=checked]:border-foreground group-data-[state=checked]:bg-foreground group-data-[state=checked]:text-background">
                       <DropdownMenu.ItemIndicator><Check size={11} strokeWidth={3} /></DropdownMenu.ItemIndicator>
@@ -518,7 +518,7 @@ export function ContentToolbar({
                       void chrome.storage.local.set({ readabilityControlsVisible: checked })
                     }}
                     className="group flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent">
-                    <BookOpen size={14} aria-hidden="true" className="w-3.5 shrink-0" />
+                    <BookOpen size={14} aria-hidden="true" className="mr-2 w-3.5 shrink-0" />
                     Show readability buttons
                     <span className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border border-muted-foreground/50 transition-colors group-data-[state=checked]:border-foreground group-data-[state=checked]:bg-foreground group-data-[state=checked]:text-background">
                       <DropdownMenu.ItemIndicator><Check size={11} strokeWidth={3} /></DropdownMenu.ItemIndicator>
@@ -528,7 +528,7 @@ export function ContentToolbar({
                 <DropdownMenu.Item
                   className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
                   onSelect={() => setZenMode(!zenMode)}>
-                  {zenMode ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                  {zenMode ? <Minimize2 size={14} className="mr-2 shrink-0" /> : <Maximize2 size={14} className="mr-2 shrink-0" />}
                   {zenMode ? "Exit Zen mode" : "Zen mode"}
                   <kbd className="ml-auto pl-4 font-mono text-xs text-muted-foreground">{ZEN_MODE_SHORTCUT}</kbd>
                 </DropdownMenu.Item>
@@ -536,7 +536,7 @@ export function ContentToolbar({
                   <DropdownMenu.Item
                     className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
                     onSelect={() => void copyRenderedPreview()}>
-                    <Copy size={14} />
+                    <Copy size={14} className="mr-2 shrink-0" />
                     Copy rendered content
                   </DropdownMenu.Item>
                 )}
@@ -544,7 +544,7 @@ export function ContentToolbar({
                   <DropdownMenu.Item
                     className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
                     onSelect={requestPdfExport}>
-                    <Printer size={14} />
+                    <Printer size={14} className="mr-2 shrink-0" />
                     Print or save as PDF
                   </DropdownMenu.Item>
                 )}

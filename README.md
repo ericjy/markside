@@ -117,9 +117,7 @@ the URL fragment. Anyone with the complete link can read a snapshot. See the
 
 ## Build from source
 
-Install Node.js using the version in `.nvmrc` and pnpm 10.28.2. The build also
-needs `rsvg-convert` for the extension icon. On macOS, install it with
-`brew install librsvg`; on Debian or Ubuntu, use `sudo apt-get install librsvg2-bin`.
+Install Node.js using the version in `.nvmrc` and pnpm 10.28.2.
 
 ```bash
 git clone https://github.com/ericjy/markside.git

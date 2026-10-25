@@ -51,9 +51,6 @@ jobs:
           node-version-file: ".nvmrc"
           cache: "pnpm"
 
-      - name: Install librsvg (icon generation)
-        run: sudo apt-get update && sudo apt-get install -y librsvg2-bin
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 

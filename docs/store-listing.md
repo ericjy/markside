@@ -297,11 +297,13 @@ https://markside.app/privacy
 
 ### Store icon (128×128 PNG)
 
-`assets/icon.png` is generated at 512×512 for the extension build. The canonical
-Store icon is the tracked `assets/store-icon-128.png`. Regenerate it from the
-SVG when the logo changes:
+The extension build uses the tracked 512×512 `assets/icon.png`. The canonical
+Store icon is the tracked `assets/store-icon-128.png`. When the logo changes,
+regenerate both from the SVG with `rsvg-convert` (Homebrew `librsvg` or apt
+`librsvg2-bin`):
 
 ```bash
+rsvg-convert -w 512 -h 512 assets/icon.svg -o assets/icon.png
 rsvg-convert -w 128 -h 128 assets/icon.svg -o assets/store-icon-128.png
 ```
 

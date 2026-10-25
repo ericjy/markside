@@ -9,9 +9,7 @@ see the [development guide](docs/dev-guide.md).
 
 ## Set up and check a change
 
-Use the Node version in `.nvmrc` and pnpm 10.28.2. Builds require
-`rsvg-convert`, available from Homebrew's `librsvg` package on macOS or the
-`librsvg2-bin` apt package on Debian/Ubuntu.
+Use the Node version in `.nvmrc` and pnpm 10.28.2.
 
 ```bash
 nvm use

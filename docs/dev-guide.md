@@ -6,8 +6,7 @@ technical references used to build Markside.
 ## Set up the project
 
 Markside requires the Node version in `.nvmrc` and the pnpm version in
-`package.json`. The build uses `rsvg-convert` to generate the icon. Install
-`librsvg` with Homebrew on macOS or `librsvg2-bin` with apt on Debian/Ubuntu.
+`package.json`.
 
 Do not use Node 22: Plasmo can crash with a segmentation fault during
 `pnpm build`. Use the version in `.nvmrc` instead.

@@ -62,7 +62,7 @@ pull request or review response.
   document without numbered headings, the checkbox toggles numbering.
 - [ ] Open file actions → Zen mode, which shows `⌘.` or `Ctrl+.`. The toolbar,
   file tree, and Outline disappear at once; the word count stays and a hint
-  shows for about two seconds. Check the faint bar at the top center, which
+  shows at the top right for about two seconds. Check the faint bar at the top center, which
   darkens as the pointer nears the top; reach the edge or press Tab to reveal the toolbar over the
   document, clear of the first heading, with **Exit Zen mode** at its left end. Show the
   Outline and open Review from it; moving away hides the toolbar unless a menu

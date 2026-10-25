@@ -17,9 +17,10 @@ export function ContentZenModeEdge({ hintVisible, toolbarRevealed, pointerNearTo
         </div>
       )}
       {/* Only the hidden state transitions, so the hint appears at once and fades out. */}
-      <div aria-hidden="true" className="pointer-events-none absolute left-0 top-4 z-[60] flex justify-center print:hidden" style={{ right: rightInset }}>
-        <div className={`whitespace-nowrap rounded-full bg-foreground px-3 py-1.5 text-xs text-background shadow-md ${hintVisible ? "opacity-100" : "opacity-0 motion-safe:transition-opacity motion-safe:duration-300"}`}>
-          Press Esc to exit Zen mode, or move to the top for the toolbar
+      <div aria-hidden="true" className="pointer-events-none absolute top-4 z-[60] print:hidden" style={{ right: rightInset }}>
+        <div className={`whitespace-nowrap rounded-lg bg-foreground px-3.5 py-2.5 text-xs leading-5 text-background shadow-md ${hintVisible ? "opacity-100" : "opacity-0 motion-safe:transition-opacity motion-safe:duration-300"}`}>
+          <div className="font-medium">Press Esc to exit Zen mode</div>
+          <div className="text-background/70">Move to the top for the toolbar</div>
         </div>
       </div>
       <p role="status" className="sr-only">{hintVisible ? "Zen mode on. Press Escape to exit." : ""}</p>

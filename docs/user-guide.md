@@ -275,7 +275,7 @@ Choose **Zen mode** in the file actions (`…`) menu, or press `Cmd+.` (`Ctrl+.`
 
 A faint bar at the top center marks where the toolbar is; it darkens as the pointer nears the top, and reaching the edge shows the toolbar over the document. It hides again when you move away. From it you can open Review, show the Outline, or switch modes without leaving Zen mode. Showing the Outline in Zen mode doesn't change whether it shows normally.
 
-To leave, press Escape, press the shortcut again, or click **Exit Zen mode** at the left end of the toolbar. Escape first closes the Review panel, menus, dialogs, the quick file switcher, an expanded diagram, Source search, or multiple cursors. A short hint names these ways out each time Zen mode starts.
+To leave, press Escape, press the shortcut again, or click **Exit Zen mode** at the left end of the toolbar. Escape first closes the Review panel, menus, dialogs, the quick file switcher, an expanded diagram, Source search, or multiple cursors. A short hint at the top right names these ways out each time Zen mode starts.
 
 Zen mode stays on in the tab while you open other files, follow links, or reload the page. New tabs start with it off. It does not enter Chrome full screen; use Chrome's own shortcut for that.
 

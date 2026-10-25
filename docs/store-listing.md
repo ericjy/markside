@@ -321,12 +321,22 @@ exactly 1280×800 px.
 
 ### Small promotional tile (440×280, required)
 
-Use the Markside logo on a dark `#18181b` background with the tagline:
-"Markdown in your browser. No app switching."
+Lead with the search phrase, large enough to read in search results:
+
+- Headline: "Markdown Viewer & Editor", with "for your local files" on the
+  same line as "& Editor"
+- Three points: "Review with teammates or AI agents", "Free, open source,
+  privacy-first", and "GitHub-style, Mermaid, math, printable"
+- The Markside logo and name, small, above the headline
+
+Do not claim that files never leave the computer, because Share Links upload a
+snapshot. The source is `scripts/cws-promo/tile.html` in the private landing
+repository; its `render.sh` writes both tiles.
 
 ### Marquee promotional tile (1400×560, optional)
 
-Use the same visual direction as the small promotional tile.
+Use the same copy as the small promotional tile, with a document and comment
+illustration on the right.
 
 ## Official references
 

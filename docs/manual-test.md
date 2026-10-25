@@ -56,6 +56,10 @@ pull request or review response.
   another file to check persistence. Code blocks, Source, and PDF Export retain
   their own fonts. Source-only mode has no Typeface submenu, and Settings no
   longer has the old selector.
+- [ ] In a document whose headings start with numbers such as `2. Example`,
+  open file actions: **Number headings** is disabled, shows **Already
+  numbered**, and its tooltip says the document numbers its own headings. In a
+  document without numbered headings, the checkbox toggles numbering.
 - [ ] Open file actions → Zen mode, which shows `⌘.` or `Ctrl+.`. The toolbar,
   file tree, and Outline disappear at once; the word count stays and a hint
   shows for about two seconds. Check the faint bar at the top center, which

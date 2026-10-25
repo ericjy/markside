@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
-import { applyHeadingNumbers, headingNumbers } from "./heading-numbering"
+import { applyHeadingNumbers, hasAuthoredHeadingNumbers, headingNumbers } from "./heading-numbering"
 import { buildRenderedTextIndex } from "./review-dom"
 
 const headings = (levels: number[]) => levels.map((level, index) => ({ id: `h${index}`, text: `Heading ${index}`, level }))
@@ -19,6 +19,8 @@ describe("heading numbering", () => {
       expect(headingNumbers([{ id: "a", level: 2, text }, ...headings([2])])).toEqual(["", ""])
     }
     expect(headingNumbers([{ id: "a", level: 2, text: "2026 roadmap" }])).toEqual(["1"])
+    expect(hasAuthoredHeadingNumbers([{ id: "a", level: 2, text: "2. Example" }, ...headings([2])])).toBe(true)
+    expect(hasAuthoredHeadingNumbers([{ id: "a", level: 2, text: "2026 roadmap" }])).toBe(false)
   })
   it("toggles labels without changing rendered text, review anchors, or heading links", () => {
     const root = document.createElement("div")

@@ -22,7 +22,7 @@ function toolbarProps(): ComponentProps<typeof ContentToolbar> {
     reviewTriggerRef: { current: null }, reviewOverlayOpen: false, closeReviewOverlay: noop,
     setReviewOverlayOpen: noop, reviewItemCount: 2, chooseOutlineOpen: noop, outlineOpen: false,
     requestLinkSnapshot: noop, fileMenuTriggerRef: { current: null }, fileMenuPointerInteractionRef: { current: false },
-    typeface: "sans", previewWidth: "standard", setPreviewWidth: noop, numberHeadings: false, setNumberHeadings: noop,
+    typeface: "sans", previewWidth: "standard", setPreviewWidth: noop, numberHeadings: false, setNumberHeadings: noop, headingsAlreadyNumbered: false,
     readabilityControlsVisible: false, setReadabilityControlsVisible: noop, copyRenderedPreview: async () => {},
     isPdfExportable: true, requestPdfExport: noop, zenMode: false, setZenMode: noop,
   }
@@ -105,6 +105,45 @@ it.each(["preview", "split"] as const)("selects and remembers one Page width in 
   }
 })
 
+
+it("explains that Number headings has no effect when the document numbers its own headings", () => {
+  stubMatchMedia(false)
+  stubChromeStorage({})
+  const setNumberHeadings = vi.fn()
+  const props = { ...toolbarProps(), setNumberHeadings }
+  const container = document.createElement("div")
+  document.body.append(container)
+  const root = createRoot(container)
+  const item = () => Array.from(document.querySelectorAll<HTMLElement>('[role="menuitemcheckbox"]'))
+    .find(element => element.textContent?.includes("Number headings"))!
+  const openMenu = (headingsAlreadyNumbered: boolean) => {
+    act(() => root.render(createElement(SidebarProvider, null,
+      createElement(ContentToolbar, { ...props, headingsAlreadyNumbered }))))
+    act(() => {
+      container.querySelector<HTMLButtonElement>('[aria-label="File actions"]')!
+        .dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
+    })
+  }
+  try {
+    openMenu(true)
+    expect(item().textContent).toBe("1.2Number headingsAlready numbered")
+    expect(item().getAttribute("aria-disabled")).toBe("true")
+    expect(item().title).toBe("This document numbers its own headings.")
+    act(() => item().click())
+    expect(setNumberHeadings).not.toHaveBeenCalled()
+    act(() => root.render(createElement("div")))
+
+    openMenu(false)
+    expect(item().textContent).not.toContain("Already numbered")
+    expect(item().hasAttribute("aria-disabled")).toBe(false)
+    act(() => item().click())
+    expect(setNumberHeadings).toHaveBeenCalledWith(true)
+  } finally {
+    act(() => root.unmount())
+    container.remove()
+    vi.unstubAllGlobals()
+  }
+})
 
 it("restores Typeface in the file menu, applies a selection, and follows other tabs", async () => {
   stubMatchMedia(false)

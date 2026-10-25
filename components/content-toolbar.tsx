@@ -85,6 +85,7 @@ interface ContentToolbarProps {
   typeface: Typeface
   numberHeadings: boolean
   setNumberHeadings: React.Dispatch<React.SetStateAction<boolean>>
+  headingsAlreadyNumbered: boolean
   readabilityControlsVisible: boolean
   setReadabilityControlsVisible: React.Dispatch<React.SetStateAction<boolean>>
   copyRenderedPreview: () => Promise<void>
@@ -139,6 +140,7 @@ export function ContentToolbar({
   typeface,
   numberHeadings,
   setNumberHeadings,
+  headingsAlreadyNumbered,
   readabilityControlsVisible,
   setReadabilityControlsVisible,
   copyRenderedPreview,
@@ -498,17 +500,20 @@ export function ContentToolbar({
                   </DropdownMenu.Sub>
                 )}
                 {isMdFile && previewVisible && (
-                  <DropdownMenu.CheckboxItem checked={numberHeadings}
+                  <DropdownMenu.CheckboxItem checked={numberHeadings} disabled={headingsAlreadyNumbered}
+                    title={headingsAlreadyNumbered ? "This document numbers its own headings." : undefined}
                     onCheckedChange={(checked) => {
                       setNumberHeadings(checked)
                       void chrome.storage.local.set({ numberHeadings: checked })
                     }}
-                    className="group flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent">
+                    className="group flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[disabled]:cursor-default data-[disabled]:text-muted-foreground">
                     <span aria-hidden="true" className="mr-2 w-3.5 shrink-0 text-center font-mono text-[10px] font-medium leading-none">1.2</span>
                     Number headings
-                    <span className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border border-muted-foreground/50 transition-colors group-data-[state=checked]:border-foreground group-data-[state=checked]:bg-foreground group-data-[state=checked]:text-background">
-                      <DropdownMenu.ItemIndicator><Check size={11} strokeWidth={3} /></DropdownMenu.ItemIndicator>
-                    </span>
+                    {headingsAlreadyNumbered
+                      ? <span className="ml-auto pl-4 text-xs">Already numbered</span>
+                      : <span className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border border-muted-foreground/50 transition-colors group-data-[state=checked]:border-foreground group-data-[state=checked]:bg-foreground group-data-[state=checked]:text-background">
+                          <DropdownMenu.ItemIndicator><Check size={11} strokeWidth={3} /></DropdownMenu.ItemIndicator>
+                        </span>}
                   </DropdownMenu.CheckboxItem>
                 )}
                 {READABILITY_CHECK_ENABLED && isMdFile && previewVisible && (

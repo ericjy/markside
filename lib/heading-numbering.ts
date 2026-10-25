@@ -1,10 +1,12 @@
 import type { Heading } from "./headings"
 
 // Treat explicit section prefixes as author-controlled numbering for the whole document.
+export function hasAuthoredHeadingNumbers(headings: Heading[]): boolean {
+  return headings.some(({ text }) => /^(?:\d+[.)]|\d+(?:\.\d+)+[.)]?)\s/.test(text))
+}
+
 export function headingNumbers(headings: Heading[]): string[] {
-  if (headings.some(({ text }) => /^(?:\d+[.)]|\d+(?:\.\d+)+[.)]?)\s/.test(text))) {
-    return headings.map(() => "")
-  }
+  if (hasAuthoredHeadingNumbers(headings)) return headings.map(() => "")
   const hasTitle = headings[0]?.level === 1 && headings.filter(h => h.level === 1).length === 1
   const stack: { level: number; count: number }[] = []
   return headings.map((heading, index) => {

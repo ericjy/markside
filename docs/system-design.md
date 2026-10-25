@@ -222,7 +222,9 @@ The menu also includes **Number headings**, stored in `chrome.storage.local`
 and off by default. Heading numbering applies to Preview, Split Preview, Outline, and PDF Export.
 A sole opening H1 stays unnumbered as the title; nested sections use decimal
 numbers, compressing skipped heading levels. If any heading already has an
-explicit numeric section prefix, the entire document keeps its authored labels.
+explicit numeric section prefix, the entire document keeps its authored labels;
+the menu row is then disabled and shows **Already numbered**, with a tooltip
+explaining that the document numbers its own headings.
 Generated labels hang in Preview’s permanent five-rem left margin, including in
 full-width and Split views. Heading text aligns with body text, and toggling
 numbering never changes the content width. They use CSS content backed by heading

@@ -46,7 +46,7 @@ import { resolveUnsavedNavigationPolicy } from "~lib/auto-save"
 import { getContentFileSurfaces, getSavePathParts } from "~lib/content-app-policy"
 import { getFileHandle, indexActiveReview } from "~lib/db"
 import { classifyMarksideFileUrl } from "~lib/file-types"
-import { headingNumbers } from "~lib/heading-numbering"
+import { hasAuthoredHeadingNumbers, headingNumbers } from "~lib/heading-numbering"
 import { type Heading } from "~lib/headings"
 import { type QuestionCard } from "~lib/markdown"
 import {
@@ -815,6 +815,7 @@ export function FileRenderer({
         typeface={typeface}
         numberHeadings={numberHeadings}
         setNumberHeadings={setNumberHeadings}
+        headingsAlreadyNumbered={hasAuthoredHeadingNumbers(headings)}
         readabilityControlsVisible={readability.readabilityControlsVisible}
         setReadabilityControlsVisible={readability.setReadabilityControlsVisible}
         copyRenderedPreview={pdf.copyRenderedPreview}

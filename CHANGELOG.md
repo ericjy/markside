@@ -28,6 +28,7 @@ Store and GitHub Releases run independently and can diverge; see
 - Typeface and page width moved into the file menu.
 - The opened file is revealed in the file tree.
 - Heading anchors match GitHub's, so `#links` written for GitHub work in Markside.
+- **Number headings** shows **Already numbered** when a document numbers its own headings, instead of appearing to do nothing.
 - Images in Markdown stay inline, as on GitHub.
 - Hidden Outline and file tree stay hidden across reloads.
 - The popup marks pending Reviews whose file was moved or deleted, and counts only unresolved comments.

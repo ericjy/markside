@@ -15,7 +15,6 @@ This directory contains product fixtures for exercising Markside. The content is
 | `notes/` | Small documents for file-tree and quick-switcher testing |
 | `code/` and `data/` | Non-Markdown source-editor fixtures |
 | `screenshots/` | Fictional documents composed for product screenshots |
-| `explain/` | An explainer about the Review loop, with animated HTML Embeds |
-| `showcase/` | Explainers on familiar topics with animated HTML Embeds, for demo videos: sorting algorithms, how a language model picks words, git merge vs rebase, and a product spec (`offline-mode-spec.md`) whose embeds explain the sync model and prototype the proposed UX |
+| `html-embed/` | Documents with animated HTML Embeds, for demos: explainers on the Review loop, sorting algorithms, how a language model picks words, and git merge vs rebase, plus a product spec (`offline-mode-spec.md`) whose embeds explain the sync model and prototype the proposed UX |
 
 Some screenshot fixtures describe imaginary software. Their commands, API endpoints, and skill instructions are display content only.

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How long would it take?</title>
+<style>
+  :root { color-scheme: dark; --bg: #0b0f17; --panel: #111722; --line: #1e2633; --ink: #e6e9ef; --muted: #8a94a6; --accent: #7c9cff; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); }
+  body { padding: 18px 18px 14px; color: var(--ink); font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
+  .top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 20px; margin-bottom: 16px; }
+  .eyebrow { color: var(--muted); font-size: 12px; margin-bottom: 2px; }
+  .n { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .n small { font-size: 14px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-left: 4px; }
+  .slider { flex: 1; min-width: 220px; max-width: 420px; }
+  .slider input { width: 100%; accent-color: var(--accent); margin: 0; }
+  .slider-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin-top: 2px; padding: 0 2px; }
+  button { font: inherit; color: #0b0f17; background: var(--accent); border: 0; border-radius: 8px; padding: 7px 14px; font-weight: 650; cursor: pointer; }
+  button:hover { background: #95b0ff; }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .rows { display: grid; gap: 10px; }
+  .row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 150px; align-items: center; gap: 14px; }
+  @media (max-width: 600px) { .row { grid-template-columns: 110px minmax(0, 1fr); } .time { grid-column: 2; text-align: left !important; } }
+  .label b { display: block; font: 600 13px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--c); }
+  .label span { color: var(--muted); font-size: 12px; }
+  .track { position: relative; height: 26px; border-radius: 7px; background: var(--panel); border: 1px solid var(--line); overflow: hidden; }
+  .tick { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255, 255, 255, .06); }
+  .bar {
+    position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 6px;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--c) 20%, transparent), var(--c));
+    box-shadow: 0 0 18px -2px color-mix(in srgb, var(--c) 70%, transparent);
+    transition: width .3s cubic-bezier(.2, .8, .2, 1);
+  }
+  .sweeping .bar { transition: none; }
+  .bar::after { content: ""; position: absolute; right: 0; top: 3px; bottom: 3px; width: 3px; border-radius: 2px; background: #fff; opacity: .85; }
+  .row.beyond .bar { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { filter: brightness(1.35) saturate(1.2); } }
+  .time { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .time span { display: block; color: var(--muted); font-weight: 400; font-size: 11.5px; }
+  .row.beyond .time { color: #ff7b72; }
+  .axis { position: relative; height: 16px; margin: 4px 0 0; }
+  .axis-inner { position: absolute; left: 164px; right: 164px; top: 0; bottom: 0; }
+  @media (max-width: 600px) { .axis-inner { left: 124px; right: 0; } }
+  .axis span { position: absolute; transform: translateX(-50%); color: var(--muted); font-size: 10.5px; white-space: nowrap; }
+  @media (prefers-reduced-motion: reduce) { .bar { transition: none; } .row.beyond .bar { animation: none; } }
+</style>
+</head>
+<body>
+<div class="top">
+  <div>
+    <div class="eyebrow">If one step takes a nanosecond, how long for</div>
+    <div class="n" id="n">1,000<small>items</small></div>
+  </div>
+  <div class="slider">
+    <input id="slider" type="range" min="1" max="9" step="0.01" value="3" aria-label="Number of items, from 10 to 1 billion">
+    <div class="slider-labels"><span>10</span><span>1K</span><span>1M</span><span>1B</span></div>
+  </div>
+  <button id="sweep" type="button">Play</button>
+</div>
+<div class="rows" id="rows"></div>
+<div class="axis"><div class="axis-inner" id="axis"></div></div>
+
+<script>
+(() => {
+  const MIN = -9.3
+  const MAX = 19
+  const UNIVERSE = Math.log10(13.8e9 * 365.25 * 86400)
+  const ticks = [["1 µs", -6], ["1 ms", -3], ["1 s", 0], ["1 hour", Math.log10(3600)], ["1 year", Math.log10(31557600)], ["Age of the universe", UNIVERSE]]
+  const complexities = [
+    { o: "O(log n)", what: "Binary search", color: "#3fb950", steps: (n) => Math.log10(Math.max(1, Math.log2(n))) },
+    { o: "O(n)", what: "Read every item", color: "#39c5cf", steps: (n) => Math.log10(n) },
+    { o: "O(n log n)", what: "Merge sort", color: "#7c9cff", steps: (n) => Math.log10(n * Math.log2(n)) },
+    { o: "O(n²)", what: "Bubble sort", color: "#f0883e", steps: (n) => 2 * Math.log10(n) },
+    { o: "O(2ⁿ)", what: "Try every subset", color: "#ff5c5c", steps: (n) => n * Math.log10(2) },
+  ]
+  const position = (log) => Math.max(0, Math.min(1, (log - MIN) / (MAX - MIN))) * 100
+
+  const rowsEl = document.getElementById("rows")
+  const rows = complexities.map((c) => {
+    const row = document.createElement("div")
+    row.className = "row"
+    row.style.setProperty("--c", c.color)
+    row.innerHTML = `<div class="label"><b>${c.o}</b><span>${c.what}</span></div>
+      <div class="track">${ticks.map(([, log]) => `<i class="tick" style="left:${position(log)}%"></i>`).join("")}<div class="bar"></div></div>
+      <div class="time"></div>`
+    rowsEl.append(row)
+    return { c, row, bar: row.querySelector(".bar"), time: row.querySelector(".time") }
+  })
+  document.getElementById("axis").innerHTML = ticks
+    .map(([name, log], i) => `<span style="left:${position(log)}%;${i === ticks.length - 1 ? "transform:translateX(-85%)" : ""}">${name}</span>`)
+    .join("")
+
+  const superscript = (n) => String(n).replace(/[0-9-]/g, (d) => "⁰¹²³⁴⁵⁶⁷⁸⁹"["0123456789".indexOf(d)] ?? "⁻")
+  const big = (log, unit) => {
+    if (log < 6) return `${Math.round(10 ** log).toLocaleString()} ${unit}`
+    const exponent = Math.floor(log)
+    return `${(10 ** (log - exponent)).toFixed(1)} × 10${superscript(exponent)} ${unit}`
+  }
+
+  function formatTime(log) {
+    const seconds = 10 ** log
+    if (log < -6) return `${(seconds * 1e9).toPrecision(3).replace(/\.?0+$/, "")} ns`
+    if (log < -3) return `${(seconds * 1e6).toPrecision(3).replace(/\.?0+$/, "")} µs`
+    if (log < 0) return `${(seconds * 1e3).toPrecision(3).replace(/\.?0+$/, "")} ms`
+    if (seconds < 60) return `${seconds.toPrecision(3).replace(/\.?0+$/, "")} seconds`
+    if (seconds < 3600) return `${(seconds / 60).toFixed(1)} minutes`
+    if (seconds < 86400) return `${(seconds / 3600).toFixed(1)} hours`
+    if (seconds < 31557600) return `${(seconds / 86400).toFixed(1)} days`
+    return big(log - Math.log10(31557600), "years")
+  }
+
+  function formatN(n) {
+    if (n >= 1e9) return `${(n / 1e9).toFixed(n % 1e9 ? 1 : 0)} billion`
+    if (n >= 1e6) return `${(n / 1e6).toFixed(1).replace(/\.0$/, "")} million`
+    return Math.round(n).toLocaleString()
+  }
+
+  const slider = document.getElementById("slider")
+  const nEl = document.getElementById("n")
+  function update() {
+    const n = Math.round(10 ** Number(slider.value))
+    nEl.firstChild.textContent = formatN(n)
+    for (const { c, row, bar, time } of rows) {
+      const log = c.steps(n) - 9
+      const beyond = log > UNIVERSE
+      bar.style.width = `${position(log)}%`
+      row.classList.toggle("beyond", beyond)
+      time.innerHTML = beyond
+        ? `${big(log - UNIVERSE, "×")}<span>the age of the universe</span>`
+        : `${formatTime(log)}<span>${big(c.steps(n), "steps")}</span>`
+    }
+  }
+  slider.addEventListener("input", update)
+
+  const sweepButton = document.getElementById("sweep")
+  let sweeping = 0
+  function sweep() {
+    const id = ++sweeping
+    const start = performance.now()
+    const from = 1
+    const to = 9
+    const duration = 7000
+    document.body.classList.add("sweeping")
+    sweepButton.textContent = "Playing…"
+    const step = (now) => {
+      if (id !== sweeping) return
+      const t = Math.min(1, (now - start) / duration)
+      const eased = t < .5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2
+      slider.value = String(from + (to - from) * eased)
+      update()
+      if (t < 1) requestAnimationFrame(step)
+      else {
+        document.body.classList.remove("sweeping")
+        sweepButton.textContent = "Play"
+      }
+    }
+    requestAnimationFrame(step)
+  }
+  sweepButton.addEventListener("click", sweep)
+  slider.addEventListener("pointerdown", () => {
+    sweeping++
+    document.body.classList.remove("sweeping")
+    sweepButton.textContent = "Play"
+  })
+
+  update()
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    let started = false
+    new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started) {
+        started = true
+        sweep()
+      }
+    }, { threshold: 0.5 }).observe(rowsEl)
+  }
+})()
+</script>
+</body>
+</html>

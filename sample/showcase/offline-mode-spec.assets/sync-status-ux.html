@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proposed sync status UX</title>
+<style>
+  :root { --ink: #1f2328; --muted: #656d76; --line: #d0d7de; --soft: #f6f8fa; --accent: #0969da; --amber: #9a6700; --amber-bg: #fff8c5; --amber-line: #eac54f; --mark: #e5534b; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { padding: 18px; color: var(--ink); font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; background: #f3f5f8; }
+  button { font: inherit; cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  svg { stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .tabs { display: inline-flex; gap: 2px; padding: 3px; margin-bottom: 14px; border-radius: 10px; background: #e6e9ee; }
+  .tab { position: relative; overflow: hidden; height: 30px; padding: 0 14px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-weight: 600; transition: background .2s, color .2s, box-shadow .2s; }
+  .tab[aria-selected="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgb(31 35 40 / .12); }
+  .tab .progress { position: absolute; left: 0; bottom: 0; height: 2px; width: 0; background: var(--accent); }
+  .tab[aria-selected="true"] .progress.run { animation: progress var(--dwell) linear forwards; }
+  @keyframes progress { to { width: 100%; } }
+
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 18px; align-items: start; }
+  @media (max-width: 700px) { .layout { grid-template-columns: 1fr; } }
+
+  .window { position: relative; border-radius: 12px; background: #fff; border: 1px solid #d8dde3; box-shadow: 0 18px 40px -22px rgb(31 35 40 / .45), 0 2px 6px rgb(31 35 40 / .06); }
+  .chrome { display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 12px; border-bottom: 1px solid #eaeef2; border-radius: 12px 12px 0 0; background: #f8f9fb; }
+  .chrome i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; }
+  .chrome i:nth-child(2) { background: #febc2e; } .chrome i:nth-child(3) { background: #28c840; }
+  .chrome span { flex: 1; text-align: center; margin-right: 50px; color: var(--muted); font-size: 12px; font-weight: 600; }
+  .app { display: grid; grid-template-columns: 150px minmax(0, 1fr); min-height: 330px; }
+  .sidebar { display: flex; flex-direction: column; padding: 10px 8px; border-right: 1px solid #eaeef2; background: #fbfcfd; border-radius: 0 0 0 12px; }
+  .search { height: 28px; margin: 0 2px 10px; padding: 0 9px; display: flex; align-items: center; gap: 6px; border-radius: 7px; background: #eff2f5; color: #8c959f; font-size: 12px; }
+  .search svg { width: 13px; height: 13px; }
+  .note { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 8px; border-radius: 7px; font-size: 12.5px; color: #424a53; }
+  .note.active { background: #e7effa; color: var(--ink); font-weight: 600; }
+  .note .name { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .note .dot { width: 7px; height: 7px; border-radius: 50%; background: #8c959f; transform: scale(0); transition: transform .35s cubic-bezier(.2, 1.6, .4, 1), background .2s; }
+  .note.unsent .dot { transform: scale(1); }
+  .note .warn { display: none; width: 15px; height: 15px; color: #bf8700; }
+  .note.review .dot { display: none; }
+  .note.review .warn { display: block; animation: pop-plain .4s cubic-bezier(.2, 1.6, .4, 1); }
+  .sidebar-foot { margin-top: auto; padding: 8px 8px 2px; color: var(--muted); font-size: 11.5px; min-height: 26px; opacity: 0; transition: opacity .3s; }
+  .sidebar-foot.show { opacity: 1; }
+
+  .main { display: flex; flex-direction: column; min-width: 0; }
+  .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 44px; padding: 0 14px 0 20px; border-bottom: 1px solid #f0f2f4; }
+  .crumbs { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--muted); font-size: 12px; }
+  .crumbs b { color: var(--ink); font-weight: 600; }
+  .right { display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #a5d6ff, #0969da); }
+  .status {
+    display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 99px; border: 1px solid transparent;
+    color: var(--muted); font-size: 12px; font-weight: 550; white-space: nowrap; background: transparent;
+    transition: background .25s, color .25s, border-color .25s;
+  }
+  .status svg { width: 14px; height: 14px; flex: none; }
+  .status.offline { background: var(--soft); border-color: var(--line); }
+  .status.syncing { color: var(--accent); background: #ddf4ff; border-color: #b6e3ff; }
+  .status.review { color: var(--amber); background: var(--amber-bg); border-color: var(--amber-line); font-weight: 650; }
+  .status.review:hover { background: #fff1a8; }
+  .spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .status-text { display: inline-block; animation: fade-in .3s ease-out; }
+  @keyframes fade-in { from { opacity: 0; transform: translateY(3px); } }
+
+  .doc { padding: 18px 24px 22px; }
+  .doc h2 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.01em; }
+  .doc .p { position: relative; margin: 0 -8px 8px; padding: 6px 8px; border-radius: 7px; transition: background .3s, box-shadow .3s; }
+  .doc .p b { display: block; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 1px; }
+  .doc .p.conflict { background: var(--amber-bg); box-shadow: inset 3px 0 0 #d4a72c; }
+  .review-chip { display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); height: 24px; padding: 0 9px; border-radius: 6px; border: 1px solid var(--amber-line); background: #fff; color: var(--amber); font-size: 11.5px; font-weight: 650; }
+  .p.conflict .review-chip { display: inline-flex; align-items: center; gap: 5px; animation: pop .4s cubic-bezier(.2, 1.6, .4, 1); }
+  @keyframes pop { from { transform: translateY(-50%) scale(.5); opacity: 0; } }
+  @keyframes pop-plain { from { transform: scale(.4); opacity: 0; } }
+
+  .marker {
+    position: absolute; z-index: 3; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--mark); color: #fff; font-size: 11px; font-weight: 750; box-shadow: 0 0 0 3px #fff, 0 3px 10px rgb(229 83 75 / .45);
+    animation: marker .45s cubic-bezier(.2, 1.6, .4, 1) both; animation-delay: calc(var(--i) * 120ms + 150ms);
+  }
+  @keyframes marker { from { transform: scale(0); } }
+  .notes { display: grid; gap: 10px; }
+  .notes h3 { margin: 2px 0 2px; font-size: 14px; }
+  .notes .lede { margin: 0 0 4px; color: var(--muted); font-size: 12.5px; }
+  .notes ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .notes li { display: grid; grid-template-columns: 20px 1fr; gap: 9px; font-size: 12.5px; animation: fade-in .4s both; animation-delay: calc(var(--i) * 120ms + 150ms); }
+  .notes li span:first-child { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--mark); color: #fff; font-size: 11px; font-weight: 750; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="tabs" role="tablist" id="tabs"></div>
+<div class="layout">
+  <div class="window" id="window">
+    <div class="chrome"><i></i><i></i><i></i><span>Jot</span></div>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>Search</div>
+        <div class="note active" data-note="trip"><span class="name">Trip plan</span><i class="dot"></i><svg class="warn" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19z"/><path d="M12 10v4M12 17h.01"/></svg></div>
+        <div class="note" data-note="grocery"><span class="name">Groceries</span><i class="dot"></i></div>
+        <div class="note" data-note="q4"><span class="name">Q4 planning</span><i class="dot"></i></div>
+        <div class="note" data-note="books"><span class="name">Book notes</span><i class="dot"></i></div>
+        <div class="sidebar-foot" id="foot"></div>
+      </aside>
+      <section class="main">
+        <div class="toolbar">
+          <span class="crumbs">Notes / <b>Trip plan</b></span>
+          <div class="right"><span class="status" id="status"></span><span class="avatar"></span></div>
+        </div>
+        <div class="doc">
+          <h2>Trip plan</h2>
+          <div class="p" data-p="flights"><b>Flights</b>SFO → JFK, Fri 6:40</div>
+          <div class="p" data-p="hotel"><b>Hotel</b><span class="hotel-text">Ace Hotel, 3 nights</span>
+            <span class="review-chip"><svg viewBox="0 0 24 24" width="13" height="13"><path d="M8 7h10M8 12h10M8 17h6M4 7h.01M4 12h.01M4 17h.01"/></svg>2 versions · Review</span></div>
+          <div class="p" data-p="packing"><b>Packing</b>Charger, passport, umbrella</div>
+        </div>
+      </section>
+    </div>
+  </div>
+  <div class="notes" id="notes"></div>
+</div>
+
+<script>
+(() => {
+  const DWELL = 5200
+  const icon = {
+    check: '<svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+    offline: '<svg viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-1.2-8.84M9.5 6.1A6 6 0 0 1 18 8.5a4.5 4.5 0 0 1 2.2 7.6M3 3l18 18"/></svg>',
+    sync: '<svg viewBox="0 0 24 24" class="spin"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4h-4"/></svg>',
+    warn: '<svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19z"/><path d="M12 10v4M12 17h.01"/></svg>',
+  }
+  const states = [
+    {
+      id: "synced", label: "Synced",
+      title: "Everything is saved",
+      lede: "The normal case. Routine syncs never show a spinner.",
+      status: ["", icon.check, "Saved"],
+      unsent: [], review: false, foot: "",
+      notes: [["#status", "A quiet check and “Saved”. Nothing moves while you type.", "below"]],
+    },
+    {
+      id: "offline", label: "Offline",
+      title: "No connection",
+      lede: "Jot says what still works, not what broke. Editing is never blocked.",
+      status: ["offline", icon.offline, "Offline · saved on this device"],
+      unsent: ["trip", "grocery"], review: false, foot: "2 notes to sync",
+      notes: [
+        ["#status", "Reassures first: changes are safe on this device.", "below"],
+        [".note[data-note=grocery] .dot", "A dot marks each note with changes the cloud hasn't seen.", "right"],
+        ["#foot", "A count, so you know what will sync when you're back.", "above"],
+      ],
+    },
+    {
+      id: "syncing", label: "Syncing",
+      title: "Back online",
+      lede: "Shown only while catching up after being offline.",
+      status: ["syncing", icon.sync, "Syncing 2 notes…"],
+      unsent: ["trip", "grocery"], clearing: true, review: false, foot: "",
+      notes: [
+        ["#status", "A count instead of an endless spinner.", "below"],
+        [".note[data-note=trip] .dot", "Dots clear one by one as each note is confirmed.", "right"],
+      ],
+    },
+    {
+      id: "review", label: "Needs review",
+      title: "Two devices changed the same paragraph",
+      lede: "Everything else has merged. Jot asks about the one paragraph it can't decide.",
+      status: ["review", icon.warn, "1 note needs review"],
+      unsent: [], review: true, foot: "",
+      notes: [
+        ["#status", "Becomes a button that opens the first note to review.", "below"],
+        [".note[data-note=trip] .warn", "Marks which note, even when another note is open.", "right"],
+        [".p[data-p=hotel] .review-chip", "Only the conflicting paragraph is flagged. Review opens a side-by-side choice.", "above"],
+      ],
+    },
+  ]
+
+  const tabsEl = document.getElementById("tabs")
+  const windowEl = document.getElementById("window")
+  const statusEl = document.getElementById("status")
+  const notesEl = document.getElementById("notes")
+  const footEl = document.getElementById("foot")
+  let current = 0
+  let auto = true
+  let timer = 0
+  let clearTimer = 0
+
+  tabsEl.innerHTML = states.map((s, i) => `<button class="tab" role="tab" type="button" data-i="${i}">${s.label}<i class="progress" style="--dwell:${DWELL}ms"></i></button>`).join("")
+  const tabs = [...tabsEl.children]
+
+  let markers = []
+  function placeMarkers(state) {
+    markers.forEach(({ el }) => el.remove())
+    markers = state.notes.map(([selector, , place], i) => {
+      const el = document.createElement("span")
+      el.className = "marker"
+      el.style.setProperty("--i", i)
+      el.textContent = i + 1
+      windowEl.append(el)
+      return { el, selector, place }
+    })
+    positionMarkers()
+  }
+
+  function positionMarkers() {
+    const base = windowEl.getBoundingClientRect()
+    for (const { el, selector, place } of markers) {
+      const rect = windowEl.querySelector(selector)?.getBoundingClientRect()
+      if (!rect) continue
+      const x = place === "right" ? rect.right + 16 : place === "left" ? rect.left - 16 : rect.left + rect.width / 2
+      const y = place === "below" ? rect.bottom + 15 : place === "above" ? rect.top - 15 : rect.top + rect.height / 2
+      el.style.left = `${x - base.left}px`
+      el.style.top = `${y - base.top}px`
+    }
+  }
+
+  function show(index, fromUser) {
+    current = index
+    const state = states[index]
+    clearTimeout(clearTimer)
+    tabs.forEach((tab, i) => {
+      tab.setAttribute("aria-selected", String(i === index))
+      const bar = tab.querySelector(".progress")
+      bar.classList.remove("run")
+      if (i === index && auto) {
+        void bar.offsetWidth
+        bar.classList.add("run")
+      }
+    })
+    statusEl.className = `status ${state.status[0]}`
+    statusEl.innerHTML = `${state.status[1]}<span class="status-text">${state.status[2]}</span>`
+    windowEl.querySelectorAll(".note").forEach((note) => {
+      note.classList.toggle("unsent", state.unsent.includes(note.dataset.note))
+      note.classList.toggle("review", state.review && note.dataset.note === "trip")
+    })
+    windowEl.querySelector(".p[data-p=hotel]").classList.toggle("conflict", state.review)
+    footEl.textContent = state.foot
+    footEl.classList.toggle("show", Boolean(state.foot))
+    notesEl.innerHTML = `<h3>${state.title}</h3><p class="lede">${state.lede}</p><ol>${state.notes
+      .map(([, text], i) => `<li style="--i:${i}"><span>${i + 1}</span><span>${text}</span></li>`).join("")}</ol>`
+    requestAnimationFrame(() => placeMarkers(state))
+
+    if (state.clearing) {
+      const order = ["grocery", "trip"]
+      let left = 2
+      const clearNext = () => {
+        const id = order.shift()
+        if (!id) return
+        windowEl.querySelector(`.note[data-note=${id}]`).classList.remove("unsent")
+        left--
+        statusEl.querySelector(".status-text").textContent = left ? `Syncing ${left} note…` : "Saved"
+        if (!left) {
+          statusEl.className = "status"
+          statusEl.innerHTML = `${icon.check}<span class="status-text">Saved</span>`
+        }
+        requestAnimationFrame(positionMarkers)
+        clearTimer = setTimeout(clearNext, 1400)
+      }
+      clearTimer = setTimeout(clearNext, 1600)
+    }
+
+    clearTimeout(timer)
+    if (auto && !fromUser) timer = setTimeout(() => show((current + 1) % states.length), DWELL)
+  }
+
+  tabs.forEach((tab, i) => tab.addEventListener("click", () => {
+    auto = false
+    clearTimeout(timer)
+    show(i, true)
+  }))
+  new ResizeObserver(positionMarkers).observe(windowEl)
+
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches
+  if (reduceMotion) auto = false
+  show(0, true)
+  if (auto) {
+    let started = false
+    new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started) {
+        started = true
+        show(0)
+      }
+    }, { threshold: 0.5 }).observe(windowEl)
+  }
+})()
+</script>
+</body>
+</html>

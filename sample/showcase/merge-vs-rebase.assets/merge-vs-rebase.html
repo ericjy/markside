@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>git merge vs git rebase</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0f17; --panel: #111722; --line: #1e2633; --ink: #e6e9ef; --muted: #8a94a6; --accent: #7c9cff;
+    --main: #58a6ff; --feature: #d2a8ff; --merge: #3fb950;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); }
+  body { padding: 18px; color: var(--ink); font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  h1 { margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -0.01em; }
+  h1 span { color: var(--muted); font-weight: 500; }
+  button { font: inherit; color: #0b0f17; background: var(--accent); border: 0; border-radius: 8px; padding: 7px 14px; font-weight: 650; cursor: pointer; transition: background .15s, transform .1s; }
+  button:hover:not(:disabled) { background: #95b0ff; }
+  button:active:not(:disabled) { transform: scale(.97); }
+  button:disabled { opacity: .5; cursor: default; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } }
+  .panel { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); overflow: hidden; }
+  .panel-head { display: flex; align-items: baseline; justify-content: space-between; padding: 12px 14px 0; }
+  .panel-head b { font-size: 14px; }
+  .panel-head span { color: var(--muted); font-size: 12px; }
+  .term {
+    margin: 10px 14px 0; padding: 8px 11px; border-radius: 8px; background: #070a10; border: 1px solid #1a2130;
+    font: 12.5px ui-monospace, SFMono-Regular, Menlo, monospace; color: #c9d1d9; min-height: 35px; white-space: nowrap; overflow: hidden;
+  }
+  .term .ps { color: var(--merge); margin-right: 8px; }
+  .term .cur { display: inline-block; width: 7px; height: 14px; margin-left: 1px; vertical-align: -2px; background: #c9d1d9; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  svg { display: block; width: 100%; height: auto; }
+  .edge { fill: none; stroke-width: 2.5; stroke-linecap: round; transition: d .8s cubic-bezier(.5, 0, .2, 1), opacity .6s, stroke-dashoffset .6s ease-out; }
+  .edge.main { stroke: var(--main); }
+  .edge.feature { stroke: var(--feature); }
+  .edge.orphan { opacity: .25; stroke-dasharray: 3 5 !important; stroke-dashoffset: 0 !important; }
+  .commit { transition: transform .8s cubic-bezier(.5, 0, .2, 1), opacity .6s; }
+  .commit circle { fill: var(--panel); stroke-width: 2.5; }
+  .commit .letter { font: 700 11px -apple-system, BlinkMacSystemFont, sans-serif; text-anchor: middle; dominant-baseline: central; }
+  .commit .hash { font: 9.5px ui-monospace, SFMono-Regular, Menlo, monospace; fill: var(--muted); text-anchor: middle; }
+  .commit.main circle { stroke: var(--main); } .commit.main .letter { fill: var(--main); }
+  .commit.feature circle { stroke: var(--feature); } .commit.feature .letter { fill: var(--feature); }
+  .commit.merge circle { stroke: var(--merge); fill: color-mix(in srgb, var(--merge) 18%, var(--panel)); } .commit.merge .letter { fill: var(--merge); }
+  .commit.copy circle { fill: color-mix(in srgb, var(--feature) 16%, var(--panel)); }
+  .commit.orphan { opacity: .3; }
+  .commit.orphan circle { stroke-dasharray: 3 3; }
+  .pop { animation: pop .55s cubic-bezier(.2, 1.6, .4, 1) both; }
+  @keyframes pop { from { transform: scale(0); } }
+  .ref { transition: transform .8s cubic-bezier(.5, 0, .2, 1); }
+  .ref rect { rx: 5; }
+  .ref text { font: 600 10px ui-monospace, SFMono-Regular, Menlo, monospace; text-anchor: middle; dominant-baseline: central; fill: #0b0f17; }
+  .ref.main rect { fill: var(--main); } .ref.feature rect { fill: var(--feature); }
+  .caption { margin: 0; padding: 4px 14px 14px; min-height: 58px; color: #c4cbd7; transition: opacity .25s; }
+  .caption.fading { opacity: 0; }
+  .history { padding: 9px 14px; border-top: 1px solid var(--line); font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); min-height: 38px; }
+  .history b { color: var(--ink); font-weight: 600; }
+  @media (prefers-reduced-motion: reduce) { .edge, .commit, .ref { transition: none; } .pop { animation: none; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Same branches, two ways to combine them <span>· feature split off at B</span></h1>
+  <button id="play" type="button">Play</button>
+</header>
+<div class="grid">
+  <section class="panel" id="merge"></section>
+  <section class="panel" id="rebase"></section>
+</div>
+
+<script>
+(() => {
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, reduceMotion ? 0 : ms))
+  const SVG = "http://www.w3.org/2000/svg"
+  const MAIN_Y = 64
+  const FEATURE_Y = 134
+  const start = {
+    A: { x: 34, y: MAIN_Y, lane: "main", hash: "a1f3" },
+    B: { x: 86, y: MAIN_Y, lane: "main", hash: "b72c" },
+    C: { x: 138, y: MAIN_Y, lane: "main", hash: "c90e" },
+    F: { x: 190, y: MAIN_Y, lane: "main", hash: "f4d8" },
+    D: { x: 138, y: FEATURE_Y, lane: "feature", hash: "d4e1" },
+    E: { x: 190, y: FEATURE_Y, lane: "feature", hash: "e5b0" },
+  }
+  const startEdges = [["A", "B", "main"], ["B", "C", "main"], ["C", "F", "main"], ["B", "D", "feature"], ["D", "E", "feature"]]
+
+  const curve = (a, b) => {
+    const mid = (a.x + b.x) / 2
+    return `M ${a.x} ${a.y} C ${mid} ${a.y} ${mid} ${b.y} ${b.x} ${b.y}`
+  }
+  const el = (name, attrs = {}, parent) => {
+    const node = document.createElementNS(SVG, name)
+    for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value)
+    parent?.append(node)
+    return node
+  }
+
+  function createPanel(root, title, subtitle) {
+    root.innerHTML = `
+      <div class="panel-head"><b>${title}</b><span>${subtitle}</span></div>
+      <div class="term"><span class="ps">$</span><span class="cmd"></span><span class="cur"></span></div>`
+    const svg = el("svg", { viewBox: "0 0 360 190", role: "img", "aria-label": `${title} commit graph` }, root)
+    const edgesLayer = el("g", {}, svg)
+    const commitsLayer = el("g", {}, svg)
+    const refsLayer = el("g", {}, svg)
+    const caption = document.createElement("p")
+    caption.className = "caption"
+    const history = document.createElement("div")
+    history.className = "history"
+    root.append(caption, history)
+    const panel = { root, svg, edgesLayer, commitsLayer, refsLayer, caption, history, cmd: root.querySelector(".cmd"), commits: {}, edges: {}, refs: {} }
+    panel.reset = () => {
+      edgesLayer.replaceChildren()
+      commitsLayer.replaceChildren()
+      refsLayer.replaceChildren()
+      panel.commits = {}
+      panel.edges = {}
+      panel.refs = {}
+      panel.cmd.textContent = ""
+      for (const [name, c] of Object.entries(start)) addCommit(panel, name, c)
+      for (const [from, to, lane] of startEdges) addEdge(panel, from, to, lane)
+      addRef(panel, "main", "F")
+      addRef(panel, "feature", "E")
+      say(panel, "Two branches have moved apart: <b>main</b> gained C and F, <b>feature</b> gained D and E.", true)
+      showHistory(panel, ["A", "B", "C", "F"], "main")
+    }
+    return panel
+  }
+
+  function place(node, x, y) {
+    node.style.transform = `translate(${x}px, ${y}px)`
+  }
+
+  function addCommit(panel, name, { x, y, lane, hash, label = name, kind = lane }) {
+    const g = el("g", { class: `commit ${kind}` }, panel.commitsLayer)
+    const inner = el("g", {}, g)
+    el("circle", { r: 12 }, inner)
+    el("text", { class: "letter" }, inner).textContent = label
+    const hashText = el("text", { class: "hash", y: 26 }, inner)
+    hashText.textContent = hash
+    place(g, x, y)
+    panel.commits[name] = { g, inner, hashText, x, y }
+    return panel.commits[name]
+  }
+
+  function addEdge(panel, from, to, lane, draw = false) {
+    const path = el("path", { class: `edge ${lane}` }, panel.edgesLayer)
+    const a = panel.commits[from]
+    const b = panel.commits[to]
+    path.style.d = `path("${curve(a, b)}")`
+    panel.edges[`${from}-${to}`] = { path, from, to }
+    if (draw) {
+      const length = path.getTotalLength()
+      path.style.strokeDasharray = `${length}`
+      path.style.strokeDashoffset = `${length}`
+      path.getBoundingClientRect()
+      path.style.strokeDashoffset = "0"
+      setTimeout(() => path.style.removeProperty("stroke-dasharray"), reduceMotion ? 0 : 700)
+    }
+    return path
+  }
+
+  function refPosition(name, commit) {
+    return name === "main" ? [commit.x, commit.y - 30] : [commit.x, commit.y + 45]
+  }
+
+  function addRef(panel, name, at) {
+    const g = el("g", { class: `ref ${name}` }, panel.refsLayer)
+    const width = name.length * 6.6 + 14
+    el("rect", { x: -width / 2, y: -8, width, height: 16 }, g)
+    el("text", {}, g).textContent = name
+    panel.refs[name] = g
+    place(g, ...refPosition(name, panel.commits[at]))
+  }
+
+  function moveRef(panel, name, at) {
+    place(panel.refs[name], ...refPosition(name, panel.commits[at]))
+  }
+
+  function moveCommit(panel, name, x, y) {
+    const commit = panel.commits[name]
+    Object.assign(commit, { x, y })
+    place(commit.g, x, y)
+    for (const edge of Object.values(panel.edges)) {
+      if (edge.from === name || edge.to === name) edge.path.style.d = `path("${curve(panel.commits[edge.from], panel.commits[edge.to])}")`
+    }
+  }
+
+  async function say(panel, html, instant) {
+    if (!instant) {
+      panel.caption.classList.add("fading")
+      await sleep(220)
+    }
+    panel.caption.innerHTML = html
+    panel.caption.classList.remove("fading")
+  }
+
+  function showHistory(panel, list, ref) {
+    panel.history.innerHTML = `git log ${ref}: ${list.map((name) => `<b>${name}</b>`).join(" ")}`
+  }
+
+  async function type(panel, text) {
+    panel.cmd.textContent = ""
+    for (const char of text) {
+      panel.cmd.textContent += char
+      await sleep(38)
+    }
+    await sleep(350)
+  }
+
+  async function scramble(text, final) {
+    const hex = "0123456789abcdef"
+    for (let i = 0; i < 9; i++) {
+      text.textContent = Array.from(final, () => hex[Math.floor(Math.random() * 16)]).join("")
+      await sleep(55)
+    }
+    text.textContent = final
+  }
+
+  async function playMerge(panel) {
+    await sleep(500)
+    await type(panel, "git merge feature")
+    const m = addCommit(panel, "M", { x: 252, y: MAIN_Y, lane: "main", kind: "merge", hash: "7c1e" })
+    m.inner.classList.add("pop")
+    addEdge(panel, "F", "M", "main", true)
+    addEdge(panel, "E", "M", "feature", true)
+    await say(panel, "Git adds a new <b>merge commit M</b> with two parents: F and E.")
+    await sleep(1100)
+    moveRef(panel, "main", "M")
+    showHistory(panel, ["A", "B", "C", "D", "E", "F", "M"], "main")
+    await sleep(900)
+    await say(panel, "No existing commit changes. History keeps the fork, so you can see when the work was joined.")
+  }
+
+  async function playRebase(panel) {
+    await sleep(500)
+    await type(panel, "git rebase main")
+    await say(panel, "Git replays D and E on top of F. They become <b>new commits</b> with new hashes.")
+    for (const [name, x] of [["D", 252], ["E", 304]]) {
+      const original = panel.commits[name]
+      const copy = addCommit(panel, `${name}2`, { x: original.x, y: original.y, lane: "feature", kind: "feature copy", hash: original.hashText.textContent, label: `${name}′` })
+      copy.g.getBoundingClientRect()
+      moveCommit(panel, `${name}2`, x, FEATURE_Y)
+      await sleep(450)
+      addEdge(panel, name === "D" ? "F" : "D2", `${name}2`, "feature", true)
+      await scramble(copy.hashText, name === "D" ? "3b9a" : "8e27")
+    }
+    await sleep(400)
+    for (const name of ["D", "E"]) panel.commits[name].g.classList.add("orphan")
+    for (const key of ["B-D", "D-E"]) panel.edges[key].path.classList.add("orphan")
+    moveRef(panel, "feature", "E2")
+    await say(panel, "Nothing points to the old D and E anymore. Git eventually deletes them.")
+    await sleep(1800)
+    await type(panel, "git switch main && git merge feature")
+    moveCommit(panel, "D2", 242, MAIN_Y)
+    moveCommit(panel, "E2", 294, MAIN_Y)
+    panel.edges["F-D2"].path.classList.replace("feature", "main")
+    panel.edges["D2-E2"].path.classList.replace("feature", "main")
+    for (const name of ["D2", "E2"]) panel.commits[name].g.classList.replace("feature", "main")
+    await sleep(300)
+    moveRef(panel, "feature", "E2")
+    moveRef(panel, "main", "E2")
+    showHistory(panel, ["A", "B", "C", "F", "D′", "E′"], "main")
+    await say(panel, "main just moves forward. History is <b>one straight line</b>, as if the work started after F.")
+  }
+
+  const merge = createPanel(document.getElementById("merge"), "git merge", "keeps history as it happened")
+  const rebase = createPanel(document.getElementById("rebase"), "git rebase", "rewrites it into a line")
+  const button = document.getElementById("play")
+  let running = false
+
+  async function play() {
+    if (running) return
+    running = true
+    button.disabled = true
+    merge.reset()
+    rebase.reset()
+    await Promise.all([playMerge(merge), playRebase(rebase)])
+    running = false
+    button.disabled = false
+    button.textContent = "Replay"
+  }
+  button.addEventListener("click", play)
+
+  merge.reset()
+  rebase.reset()
+  if (!reduceMotion) {
+    let started = false
+    new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started) {
+        started = true
+        play()
+      }
+    }, { threshold: 0.4 }).observe(document.querySelector(".grid"))
+  }
+})()
+</script>
+</body>
+</html>

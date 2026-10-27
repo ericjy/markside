@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proposed conflict review</title>
+<style>
+  :root { --ink: #1f2328; --muted: #656d76; --line: #d0d7de; --soft: #f6f8fa; --accent: #0969da; --amber: #9a6700; --amber-bg: #fff8c5; --amber-line: #eac54f; --green: #1a7f37; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { padding: 22px 18px 16px; color: var(--ink); font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; background: #f3f5f8; }
+  button { font: inherit; cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  svg { stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .window { position: relative; max-width: 680px; margin: 0 auto; border-radius: 12px; background: #fff; border: 1px solid #d8dde3; box-shadow: 0 18px 40px -22px rgb(31 35 40 / .45), 0 2px 6px rgb(31 35 40 / .06); overflow: hidden; }
+  .toolbar { display: flex; align-items: center; justify-content: space-between; height: 46px; padding: 0 14px 0 16px; border-bottom: 1px solid #eaeef2; background: #fbfcfd; }
+  .back { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12.5px; }
+  .back svg { width: 15px; height: 15px; }
+  .back b { color: var(--ink); font-weight: 600; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 99px; font-size: 12px; font-weight: 650; border: 1px solid var(--amber-line); background: var(--amber-bg); color: var(--amber); transition: background .3s, color .3s, border-color .3s; }
+  .pill svg { width: 14px; height: 14px; }
+  .pill.done { background: #dafbe1; color: var(--green); border-color: #aceebb; }
+
+  .doc { padding: 20px 26px 26px; min-height: 540px; }
+  .doc h2 { margin: 0 0 12px; font-size: 21px; letter-spacing: -0.01em; }
+  .p { margin: 0 -8px 6px; padding: 6px 8px; border-radius: 7px; }
+  .p b { display: block; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .p.context { color: #57606a; }
+  .p.resolved { animation: resolved 1.8s ease-out; }
+  @keyframes resolved { 0%, 25% { background: #dafbe1; } }
+  .p .from { margin-left: 6px; color: var(--muted); font-size: 11.5px; }
+
+  .conflict { margin: 4px -8px 12px; padding: 14px; border-radius: 12px; background: #fffdf0; border: 1px solid var(--amber-line); animation: enter .45s cubic-bezier(.2, .8, .2, 1); }
+  @keyframes enter { from { opacity: 0; transform: translateY(6px) scale(.985); } }
+  .conflict.leaving { transition: opacity .3s, transform .3s; opacity: 0; transform: scale(.985); }
+  .c-head { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 4px; }
+  .c-head svg { width: 18px; height: 18px; color: #bf8700; flex: none; margin-top: 1px; }
+  .c-head b { display: block; font-size: 14px; }
+  .c-head span { color: var(--muted); font-size: 12.5px; }
+  .base { margin: 8px 0 12px 27px; color: var(--muted); font-size: 12.5px; }
+  .base s { text-decoration: none; padding: 1px 5px; border-radius: 5px; background: var(--soft); border: 1px solid #eaeef2; color: #424a53; }
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 520px) { .options { grid-template-columns: 1fr; } }
+  .option { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 10px; background: #fff; border: 1px solid var(--line); transition: transform .3s cubic-bezier(.2, .8, .2, 1), opacity .3s, border-color .2s, box-shadow .2s; }
+  .option:hover { border-color: #afb8c1; box-shadow: 0 4px 14px -8px rgb(31 35 40 / .3); }
+  .option.chosen { border-color: var(--green); box-shadow: 0 0 0 3px #aceebb; transform: scale(1.02); }
+  .option.dropped { opacity: .25; transform: scale(.97); }
+  .device { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; }
+  .device svg { width: 15px; height: 15px; color: var(--ink); }
+  .device b { color: var(--ink); font-weight: 600; }
+  .text { font-size: 15px; font-weight: 500; }
+  ins { text-decoration: none; padding: 0 2px; border-radius: 3px; background: #ccffd8; }
+  del { color: #a40e26; background: #ffebe9; border-radius: 3px; padding: 0 2px; }
+  .keep { align-self: flex-start; height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--soft); color: var(--ink); font-weight: 600; transition: background .15s, transform .1s; }
+  .keep:hover { background: #eef1f4; }
+  .keep:active, .keep.pressed { transform: scale(.96); }
+  .c-foot { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+  .both { height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-weight: 600; transition: transform .1s, background .15s; }
+  .both:hover { background: var(--soft); }
+  .both.pressed { transform: scale(.96); }
+  .later { color: var(--muted); font-size: 12.5px; }
+
+  .toast {
+    position: absolute; left: 50%; bottom: 16px; display: flex; align-items: center; gap: 14px; padding: 9px 10px 9px 14px; border-radius: 10px;
+    background: #1f2328; color: #fff; font-size: 12.5px; box-shadow: 0 10px 30px -10px rgb(0 0 0 / .5); white-space: nowrap;
+    transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: transform .35s cubic-bezier(.2, 1.3, .4, 1), opacity .25s;
+  }
+  .toast.show { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+  .toast svg { width: 15px; height: 15px; color: #4ac26b; }
+  .undo { height: 26px; padding: 0 10px; border: 0; border-radius: 6px; background: rgb(255 255 255 / .12); color: #fff; font-weight: 650; transition: transform .1s; }
+  .undo:hover { background: rgb(255 255 255 / .2); }
+  .undo.pressed { transform: scale(.94); }
+
+  .cursor { position: absolute; z-index: 10; left: 0; top: 0; width: 22px; height: 22px; pointer-events: none; opacity: 0; transition: opacity .3s; filter: drop-shadow(0 2px 3px rgb(0 0 0 / .3)); }
+  .cursor.show { opacity: 1; }
+  .cursor svg { stroke: #fff; stroke-width: 1.4; fill: #1f2328; transition: transform .12s; transform-origin: 3px 3px; }
+  .cursor.down svg { transform: scale(.82); }
+  .ripple { position: absolute; z-index: 9; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; background: rgb(9 105 218 / .35); pointer-events: none; animation: ripple .5s ease-out forwards; }
+  @keyframes ripple { from { transform: scale(.2); opacity: 1; } to { transform: scale(1.4); opacity: 0; } }
+
+  .below { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 12px; color: var(--muted); font-size: 12px; }
+  .below button { height: 28px; padding: 0 11px; border-radius: 7px; border: 1px solid var(--line); background: #fff; font-weight: 600; color: var(--ink); }
+  .below button:hover { background: var(--soft); }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="window" id="window">
+  <div class="toolbar">
+    <span class="back"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>Notes / <b>Trip plan</b></span>
+    <span class="pill" id="pill"></span>
+  </div>
+  <div class="doc">
+    <h2>Trip plan</h2>
+    <div class="p context"><b>Flights</b>SFO → JFK, Fri 6:40</div>
+    <div id="slot"></div>
+    <div class="p context"><b>Packing</b>Charger, passport, umbrella</div>
+  </div>
+  <div class="toast" id="toast" role="status"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span id="toast-text"></span><button class="undo" id="undo" type="button">Undo</button></div>
+  <div class="cursor" id="cursor"><svg viewBox="0 0 22 22"><path d="M3 2.5v15l4.2-3.8 2.7 6 2.6-1.1-2.6-6H16z"/></svg></div>
+</div>
+<div class="below"><button id="demo" type="button">Replay demo</button><span>Or try it: pick a version, then undo.</span></div>
+
+<script>
+(() => {
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+  const icons = {
+    warn: '<svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19z"/><path d="M12 10v4M12 17h.01"/></svg>',
+    check: '<svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+    phone: '<svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>',
+    laptop: '<svg viewBox="0 0 24 24"><rect x="4" y="4.5" width="16" height="11" rx="1.5"/><path d="M2 19.5h20"/></svg>',
+  }
+  const versions = {
+    phone: { device: "Your phone", when: "2 hours ago, while offline", text: "Ace Hotel, 3 nights", diff: "Ace Hotel, <del>2</del><ins>3</ins> nights" },
+    laptop: { device: "Laptop", when: "10 minutes ago", text: "Moxy, 3 nights", diff: "<del>Ace Hotel</del><ins>Moxy</ins>, <del>2</del><ins>3</ins> nights" },
+  }
+
+  const slot = document.getElementById("slot")
+  const pill = document.getElementById("pill")
+  const toast = document.getElementById("toast")
+  const toastText = document.getElementById("toast-text")
+  let toastTimer = 0
+
+  function setPill(done) {
+    pill.classList.toggle("done", done)
+    pill.innerHTML = done ? `${icons.check}All changes merged` : `${icons.warn}1 paragraph to review`
+  }
+
+  function showConflict() {
+    setPill(false)
+    slot.innerHTML = `
+      <div class="conflict">
+        <div class="c-head">${icons.warn}<div><b>Hotel was changed on two devices</b><span>Everything else in this note merged on its own. Pick what to keep.</span></div></div>
+        <div class="base">Before: <s>Ace Hotel, 2 nights</s></div>
+        <div class="options">${["phone", "laptop"].map((id) => `
+          <div class="option" data-id="${id}">
+            <span class="device">${icons[id]}<b>${versions[id].device}</b>· ${versions[id].when}</span>
+            <span class="text">${versions[id].diff}</span>
+            <button class="keep" type="button" data-keep="${id}">Keep this</button>
+          </div>`).join("")}</div>
+        <div class="c-foot"><button class="both" type="button" data-keep="both">Keep both</button><span class="later">or decide later. Both stay safe in the meantime.</span></div>
+      </div>`
+    slot.querySelectorAll("[data-keep]").forEach((button) => button.addEventListener("click", () => resolve(button.dataset.keep)))
+  }
+
+  async function resolve(choice) {
+    const block = slot.querySelector(".conflict")
+    if (!block || block.dataset.busy) return
+    block.dataset.busy = "1"
+    block.querySelectorAll(".option").forEach((option) => {
+      const chosen = choice === "both" || option.dataset.id === choice
+      option.classList.add(chosen ? "chosen" : "dropped")
+    })
+    await sleep(reduceMotion ? 0 : 650)
+    block.classList.add("leaving")
+    await sleep(reduceMotion ? 0 : 300)
+    if (choice === "both") {
+      slot.innerHTML = `<div class="p resolved"><b>Hotel</b>${versions.phone.text}<span class="from">from phone</span><br>${versions.laptop.text}<span class="from">from laptop</span></div>`
+      showToast("Kept both versions.")
+    } else {
+      slot.innerHTML = `<div class="p resolved"><b>Hotel</b>${versions[choice].text}</div>`
+      const otherDevice = choice === "phone" ? "laptop" : "phone"
+      showToast(`Kept the ${choice} version. The ${otherDevice} version is in note history.`)
+    }
+    setPill(true)
+  }
+
+  function showToast(text) {
+    toastText.textContent = text
+    toast.classList.add("show")
+    clearTimeout(toastTimer)
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 6000)
+  }
+
+  document.getElementById("undo").addEventListener("click", () => {
+    toast.classList.remove("show")
+    showConflict()
+  })
+
+  // Demo: a scripted cursor walks through the flow once.
+  const windowEl = document.getElementById("window")
+  const cursor = document.getElementById("cursor")
+  let demoId = 0
+  let cursorAt = { x: 0, y: 0 }
+
+  async function moveTo(element, id) {
+    const base = windowEl.getBoundingClientRect()
+    const rect = element.getBoundingClientRect()
+    const target = { x: rect.left - base.left + rect.width * 0.55, y: rect.top - base.top + rect.height * 0.6 }
+    const distance = Math.hypot(target.x - cursorAt.x, target.y - cursorAt.y)
+    await cursor.animate(
+      [{ transform: `translate(${cursorAt.x}px, ${cursorAt.y}px)` }, { transform: `translate(${target.x}px, ${target.y}px)` }],
+      { duration: Math.max(450, Math.min(1100, distance * 2.2)), easing: "cubic-bezier(.45, 0, .2, 1)", fill: "forwards" },
+    ).finished
+    cursorAt = target
+    return id === demoId
+  }
+
+  async function click(element, id) {
+    if (!(await moveTo(element, id))) return false
+    await sleep(180)
+    if (id !== demoId) return false
+    cursor.classList.add("down")
+    element.classList.add("pressed")
+    const ripple = document.createElement("span")
+    ripple.className = "ripple"
+    ripple.style.left = `${cursorAt.x + 3}px`
+    ripple.style.top = `${cursorAt.y + 3}px`
+    windowEl.append(ripple)
+    setTimeout(() => ripple.remove(), 600)
+    await sleep(140)
+    cursor.classList.remove("down")
+    element.classList.remove("pressed")
+    element.click()
+    return id === demoId
+  }
+
+  async function demo() {
+    const id = ++demoId
+    toast.classList.remove("show")
+    showConflict()
+    const base = windowEl.getBoundingClientRect()
+    cursorAt = { x: base.width - 60, y: base.height - 40 }
+    cursor.style.transform = `translate(${cursorAt.x}px, ${cursorAt.y}px)`
+    cursor.classList.add("show")
+    const steps = [
+      [900, () => slot.querySelector('[data-keep="laptop"]')],
+      [2600, () => document.getElementById("undo")],
+      [1300, () => slot.querySelector('[data-keep="both"]')],
+    ]
+    for (const [pause, find] of steps) {
+      await sleep(pause)
+      if (id !== demoId || !(await click(find(), id))) return
+    }
+    await sleep(1500)
+    if (id === demoId) cursor.classList.remove("show")
+  }
+
+  function stopDemo() {
+    demoId++
+    cursor.classList.remove("show")
+  }
+
+  windowEl.addEventListener("pointerdown", (event) => {
+    if (event.isTrusted) stopDemo()
+  })
+  document.getElementById("demo").addEventListener("click", demo)
+
+  showConflict()
+  if (!reduceMotion) {
+    let started = false
+    new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started) {
+        started = true
+        demo()
+      }
+    }, { threshold: 0.6 }).observe(windowEl)
+  }
+})()
+</script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sorting race</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0f17; --panel: #111722; --line: #1e2633; --ink: #e6e9ef; --muted: #8a94a6; --accent: #7c9cff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); }
+  body { padding: 18px; color: var(--ink); font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  h1 { margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -0.01em; }
+  h1 span { color: var(--muted); font-weight: 500; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  button, select {
+    font: inherit; color: var(--ink); background: #182030; border: 1px solid #263043; border-radius: 8px;
+    padding: 6px 12px; cursor: pointer; transition: background .15s, transform .1s;
+  }
+  button:hover, select:hover { background: #1f293b; }
+  button:active { transform: scale(.97); }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button.primary { min-width: 78px; background: var(--accent); border-color: transparent; color: #0b0f17; font-weight: 650; }
+  button.primary:hover { background: #95b0ff; }
+  label.speed { display: flex; gap: 8px; align-items: center; color: var(--muted); }
+  input[type="range"] { width: 90px; accent-color: var(--accent); }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+  .lane {
+    --rank: #7c9cff;
+    position: relative; padding: 12px 12px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel);
+    transition: border-color .5s, box-shadow .5s;
+  }
+  .lane.done {
+    border-color: color-mix(in srgb, var(--rank) 55%, var(--line));
+    box-shadow: 0 10px 34px -16px var(--rank), inset 0 0 0 1px color-mix(in srgb, var(--rank) 20%, transparent);
+  }
+  .lane-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; min-height: 22px; }
+  .name { font-weight: 620; font-size: 13.5px; }
+  .big-o { margin-left: 6px; color: var(--muted); font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .badge {
+    padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; letter-spacing: .02em;
+    color: var(--rank); background: color-mix(in srgb, var(--rank) 16%, transparent);
+    opacity: 0; transform: scale(.5); transition: opacity .25s, transform .5s cubic-bezier(.2, 1.7, .4, 1);
+  }
+  .lane.done .badge { opacity: 1; transform: none; }
+  canvas { display: block; width: 100%; height: 140px; }
+  .stats { display: flex; gap: 14px; margin-top: 8px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .stats b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Same 60 numbers, four algorithms <span>· one step per tick</span></h1>
+  <div class="controls">
+    <button class="primary" id="play" type="button">Play</button>
+    <button id="shuffle" type="button">Shuffle</button>
+    <select id="input" aria-label="Starting order">
+      <option value="random">Random</option>
+      <option value="nearly">Nearly sorted</option>
+      <option value="reversed">Reversed</option>
+      <option value="few">Few unique</option>
+    </select>
+    <label class="speed">Speed <input id="speed" type="range" min="1" max="24" value="5"></label>
+  </div>
+</header>
+<div class="grid" id="grid"></div>
+
+<script>
+(() => {
+  const N = 60
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches
+  const swap = (a, i, j) => { const t = a[i]; a[i] = a[j]; a[j] = t }
+
+  function* bubble(a) {
+    for (let end = a.length - 1; end > 0; end--) {
+      let swapped = false
+      for (let i = 0; i < end; i++) {
+        yield { compare: [i, i + 1] }
+        if (a[i] > a[i + 1]) {
+          swap(a, i, i + 1)
+          swapped = true
+          yield { write: [i, i + 1] }
+        }
+      }
+      if (!swapped) return
+    }
+  }
+
+  function* insertion(a) {
+    for (let i = 1; i < a.length; i++) {
+      for (let j = i; j > 0; j--) {
+        yield { compare: [j - 1, j] }
+        if (a[j - 1] <= a[j]) break
+        swap(a, j - 1, j)
+        yield { write: [j - 1, j] }
+      }
+    }
+  }
+
+  function* merge(a) {
+    function* sort(lo, hi) {
+      if (hi - lo < 2) return
+      const mid = (lo + hi) >> 1
+      yield* sort(lo, mid)
+      yield* sort(mid, hi)
+      const left = a.slice(lo, mid)
+      const right = a.slice(mid, hi)
+      let i = 0, j = 0, k = lo
+      while (i < left.length && j < right.length) {
+        yield { compare: [k, Math.min(mid + j, hi - 1)], range: [lo, hi] }
+        a[k] = left[i] <= right[j] ? left[i++] : right[j++]
+        yield { write: [k++], range: [lo, hi] }
+      }
+      while (i < left.length) { a[k] = left[i++]; yield { write: [k++], range: [lo, hi] } }
+      while (j < right.length) { a[k] = right[j++]; yield { write: [k++], range: [lo, hi] } }
+    }
+    yield* sort(0, a.length)
+  }
+
+  // Lomuto partition with the last element as pivot: fast on random input,
+  // quadratic on input that is already in order.
+  function* quick(a) {
+    function* sort(lo, hi) {
+      if (lo >= hi) return
+      const pivot = a[hi]
+      let i = lo
+      for (let j = lo; j < hi; j++) {
+        yield { compare: [j, hi], pivot: hi, range: [lo, hi + 1] }
+        if (a[j] < pivot) {
+          if (i !== j) {
+            swap(a, i, j)
+            yield { write: [i, j], pivot: hi, range: [lo, hi + 1] }
+          }
+          i++
+        }
+      }
+      swap(a, i, hi)
+      yield { write: [i, hi], range: [lo, hi + 1] }
+      yield* sort(lo, i - 1)
+      yield* sort(i + 1, hi)
+    }
+    yield* sort(0, a.length - 1)
+  }
+
+  const algorithms = [
+    { name: "Bubble sort", bigO: "O(n²)", run: bubble },
+    { name: "Insertion sort", bigO: "O(n²)", run: insertion },
+    { name: "Merge sort", bigO: "O(n log n)", run: merge },
+    { name: "Quicksort", bigO: "O(n log n)*", run: quick },
+  ]
+  const rankColors = ["#fbbf24", "#cbd5e1", "#e08a4b", "#7c879b"]
+  const rankNames = ["1st", "2nd", "3rd", "4th"]
+
+  function makeInput(kind) {
+    const values = Array.from({ length: N }, (_, i) => i + 1)
+    const shuffle = (list) => {
+      for (let i = list.length - 1; i > 0; i--) swap(list, i, Math.floor(Math.random() * (i + 1)))
+      return list
+    }
+    if (kind === "reversed") return values.reverse()
+    if (kind === "nearly") {
+      for (let k = 0; k < 6; k++) {
+        const i = Math.floor(Math.random() * (N - 3))
+        swap(values, i, i + 1 + Math.floor(Math.random() * 3))
+      }
+      return values
+    }
+    if (kind === "few") return shuffle(values.map((v) => Math.ceil(v / 12) * 12))
+    return shuffle(values)
+  }
+
+  const grid = document.getElementById("grid")
+  const lanes = algorithms.map((algorithm) => {
+    const el = document.createElement("section")
+    el.className = "lane"
+    el.innerHTML = `
+      <div class="lane-head"><div><span class="name">${algorithm.name}</span><span class="big-o">${algorithm.bigO}</span></div><span class="badge"></span></div>
+      <canvas role="img" aria-label="${algorithm.name} bars"></canvas>
+      <div class="stats"><span>Comparisons <b data-k="compares">0</b></span><span>Writes <b data-k="writes">0</b></span><span>Steps <b data-k="steps">0</b></span></div>`
+    grid.append(el)
+    const canvas = el.querySelector("canvas")
+    return {
+      algorithm, el, canvas, ctx: canvas.getContext("2d"), badge: el.querySelector(".badge"),
+      stats: Object.fromEntries([...el.querySelectorAll("[data-k]")].map((node) => [node.dataset.k, node])),
+      width: 0, height: 0,
+    }
+  })
+
+  function resize() {
+    const ratio = devicePixelRatio || 1
+    for (const lane of lanes) {
+      lane.width = lane.canvas.clientWidth
+      lane.height = lane.canvas.clientHeight
+      lane.canvas.width = Math.round(lane.width * ratio)
+      lane.canvas.height = Math.round(lane.height * ratio)
+      lane.ctx.setTransform(ratio, 0, 0, ratio, 0, 0)
+    }
+  }
+  new ResizeObserver(resize).observe(grid)
+
+  let playing = false
+  let finished = 0
+  const playButton = document.getElementById("play")
+  const inputSelect = document.getElementById("input")
+  const speedInput = document.getElementById("speed")
+
+  function reset() {
+    const input = makeInput(inputSelect.value)
+    finished = 0
+    for (const lane of lanes) {
+      lane.values = input.slice()
+      lane.run = lane.algorithm.run(lane.values)
+      Object.assign(lane, { compares: 0, writes: 0, steps: 0, done: false, op: null, sweep: -1, rank: -1 })
+      lane.el.classList.remove("done")
+      lane.el.style.removeProperty("--rank")
+    }
+    updateStats()
+  }
+
+  function setPlaying(next) {
+    playing = next
+    playButton.textContent = finished === lanes.length ? "Replay" : playing ? "Pause" : "Play"
+  }
+
+  function advance(lane) {
+    const result = lane.run.next()
+    if (result.done) {
+      lane.done = true
+      lane.op = null
+      lane.sweep = 0
+      lane.rank = finished++
+      lane.el.style.setProperty("--rank", rankColors[lane.rank])
+      lane.badge.textContent = `${rankNames[lane.rank]} · ${lane.steps.toLocaleString()} steps`
+      lane.el.classList.add("done")
+      if (finished === lanes.length) setPlaying(false)
+      return
+    }
+    lane.op = result.value
+    lane.steps++
+    if (result.value.compare) lane.compares++
+    if (result.value.write) lane.writes += result.value.write.length
+  }
+
+  function updateStats() {
+    for (const lane of lanes) {
+      lane.stats.compares.textContent = lane.compares.toLocaleString()
+      lane.stats.writes.textContent = lane.writes.toLocaleString()
+      lane.stats.steps.textContent = lane.steps.toLocaleString()
+    }
+  }
+
+  const hue = (v) => 250 - (v / N) * 235
+
+  function draw(lane) {
+    const { ctx, width, height, values, op } = lane
+    if (!width) return
+    ctx.clearRect(0, 0, width, height)
+    const gap = width > 360 ? 2 : 1.5
+    const barWidth = (width - gap * (N - 1)) / N
+    const floor = height - 9
+    const compare = new Set(op?.compare ?? [])
+    const write = new Set(op?.write ?? [])
+    const range = op?.range
+
+    if (range) {
+      ctx.fillStyle = "rgba(124, 156, 255, .07)"
+      ctx.fillRect(range[0] * (barWidth + gap) - gap / 2, 0, (range[1] - range[0]) * (barWidth + gap), floor)
+    }
+
+    for (let i = 0; i < N; i++) {
+      const v = values[i]
+      const barHeight = Math.max(3, (v / N) * (floor - 4))
+      const x = i * (barWidth + gap)
+      const y = floor - barHeight
+      const swept = lane.done && i <= lane.sweep
+      let fill = `hsl(${hue(v)} 78% ${lane.done && !swept ? 52 : swept ? 64 : 56}%)`
+      if (lane.done && Math.abs(i - lane.sweep) < 1.5) fill = "#ffffff"
+      if (write.has(i)) {
+        fill = "#ffffff"
+        ctx.shadowColor = `hsl(${hue(v)} 90% 65%)`
+        ctx.shadowBlur = 14
+      } else if (compare.has(i)) {
+        fill = "rgba(255, 255, 255, .78)"
+      }
+      ctx.fillStyle = fill
+      ctx.beginPath()
+      ctx.roundRect(x, y, barWidth, barHeight, [Math.min(2, barWidth / 2), Math.min(2, barWidth / 2), 0, 0])
+      ctx.fill()
+      ctx.shadowBlur = 0
+    }
+
+    if (op?.pivot !== undefined) {
+      const x = op.pivot * (barWidth + gap) + barWidth / 2
+      ctx.fillStyle = "#fbbf24"
+      ctx.beginPath()
+      ctx.moveTo(x, floor + 3)
+      ctx.lineTo(x - 4, floor + 9)
+      ctx.lineTo(x + 4, floor + 9)
+      ctx.fill()
+    }
+    if (lane.done && lane.sweep <= N + 2) lane.sweep += 1.2
+  }
+
+  let visible = true
+  let started = false
+  new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting
+    if (visible && !started && !reduceMotion) {
+      started = true
+      setPlaying(true)
+    }
+  }).observe(grid)
+
+  function frame() {
+    if (visible) {
+      if (playing) {
+        const speed = Number(speedInput.value)
+        for (let s = 0; s < speed; s++) {
+          for (const lane of lanes) if (!lane.done) advance(lane)
+        }
+        updateStats()
+      }
+      for (const lane of lanes) draw(lane)
+    }
+    requestAnimationFrame(frame)
+  }
+
+  playButton.addEventListener("click", () => {
+    if (finished === lanes.length) {
+      reset()
+      setPlaying(true)
+    } else {
+      setPlaying(!playing)
+    }
+  })
+  document.getElementById("shuffle").addEventListener("click", () => {
+    reset()
+    setPlaying(true)
+  })
+  inputSelect.addEventListener("change", () => {
+    reset()
+    setPlaying(true)
+  })
+
+  resize()
+  reset()
+  setPlaying(false)
+  requestAnimationFrame(frame)
+})()
+</script>
+</body>
+</html>

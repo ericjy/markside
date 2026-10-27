@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Jot syncs</title>
+<style>
+  :root {
+    --ink: #1f2328; --muted: #656d76; --line: #d0d7de; --soft: #f6f8fa; --accent: #0969da;
+    --amber: #9a6700; --amber-bg: #fff8c5; --amber-line: #d4a72c;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    padding: 20px 18px 16px; color: var(--ink); font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+    background: #fbfcfd radial-gradient(#e6e9ee 1px, transparent 1px) 0 0 / 16px 16px;
+  }
+  button { font: inherit; cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .stage { display: grid; grid-template-columns: minmax(0, 1fr) 60px minmax(0, .92fr) 60px minmax(0, 1fr); align-items: start; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 1px 2px rgb(31 35 40 / .04), 0 8px 24px -16px rgb(31 35 40 / .25); overflow: hidden; transition: border-color .3s, box-shadow .3s; }
+  .card.offline { border-style: dashed; box-shadow: none; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; height: 42px; padding: 0 10px 0 12px; border-bottom: 1px solid #eaeef2; }
+  .name { display: flex; align-items: center; gap: 7px; font-weight: 650; }
+  .name svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .net {
+    display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 8px; border-radius: 99px; border: 1px solid #b6e3c1;
+    background: #dafbe1; color: #116329; font-size: 11.5px; font-weight: 600; transition: background .2s, color .2s, border-color .2s;
+  }
+  .net svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+  .net[aria-pressed="false"] { background: var(--soft); color: var(--muted); border-color: var(--line); }
+  .server .card-head { background: var(--soft); }
+
+  .paras { list-style: none; margin: 0; padding: 4px 0; }
+  .para { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px; height: 50px; padding: 0 8px 0 12px; transition: background .4s; }
+  .para .k { display: flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c); }
+  .para .v { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 12.5px; margin-top: 1px; }
+  .para .unsent { width: 6px; height: 6px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 20%, transparent); opacity: 0; transition: opacity .2s; }
+  .para.pending .unsent { opacity: 1; }
+  .para .tag { font-size: 10.5px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .para.conflict { background: var(--amber-bg); }
+  .para.conflict .tag { color: var(--amber); }
+  .edit {
+    width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--muted);
+    transition: background .15s, color .15s, transform .1s;
+  }
+  .edit:hover { background: var(--soft); color: var(--ink); }
+  .edit:active { transform: scale(.92); }
+  .edit svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .flash { animation: flash 1s ease-out; }
+  @keyframes flash { from { background: color-mix(in srgb, var(--c) 18%, #fff); } }
+  .para.conflict.flash { animation: flash-amber 1.2s ease-out; }
+  @keyframes flash-amber { 0%, 30% { background: #ffe58f; } }
+
+  .outbox { display: flex; align-items: center; gap: 8px; height: 40px; padding: 8px 10px 8px 12px; border-top: 1px solid #eaeef2; background: var(--soft); }
+  .outbox .label { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
+  .chips { display: flex; gap: 4px; }
+  .chip {
+    width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 10.5px; font-weight: 800; color: #fff; background: var(--c);
+    animation: chip-in .35s cubic-bezier(.2, 1.5, .4, 1);
+  }
+  .chip.sending { animation: sending .7s ease-in-out infinite; }
+  @keyframes chip-in { from { transform: scale(.4); opacity: 0; } }
+  @keyframes sending { 50% { opacity: .45; } }
+
+  .link { position: relative; align-self: stretch; }
+  .wire { position: absolute; left: -1px; right: -1px; height: 0; border-top: 2px solid #c8d1da; transition: border-color .3s; }
+  .link.offline .wire { border-top: 2px dashed #d8dee4; }
+  .no-signal {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(.6); opacity: 0;
+    padding: 2px 6px; border-radius: 6px; background: #fff; white-space: nowrap; border: 1px solid var(--line); color: var(--muted); font-size: 10px; font-weight: 650;
+    transition: opacity .25s, transform .3s cubic-bezier(.2, 1.5, .4, 1);
+  }
+  .link.offline .no-signal { opacity: 1; transform: translate(-50%, -50%); }
+  .packet {
+    position: absolute; left: 0; width: 18px; height: 18px; margin-top: -9px; border-radius: 50%; display: grid; place-items: center;
+    color: #fff; font-size: 10px; font-weight: 800; background: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 20%, transparent), 0 2px 8px color-mix(in srgb, var(--c) 50%, transparent);
+  }
+
+  .story { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; margin-top: 16px; padding: 12px 14px; border-radius: 12px; background: #fff; border: 1px solid var(--line); min-height: 76px; }
+  .steps { display: flex; gap: 5px; }
+  .steps i { width: 7px; height: 7px; border-radius: 50%; background: #d0d7de; transition: background .3s, transform .3s; }
+  .steps i.on { background: var(--accent); transform: scale(1.25); }
+  .steps i.done { background: #8cb4ff; }
+  #caption { margin: 0; font-size: 13.5px; transition: opacity .25s; }
+  #caption.fading { opacity: 0; }
+  #caption b { font-weight: 650; }
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 12px; }
+  .controls button { height: 32px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--ink); font-weight: 550; }
+  .controls button:hover { background: var(--soft); }
+  .controls button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .controls button.primary:hover { background: #0860ca; }
+  .controls button:disabled { opacity: .5; cursor: default; }
+  .hint { color: var(--muted); font-size: 12px; }
+  body.playing .edit, body.playing .net { pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { .flash, .chip, .chip.sending { animation: none; } }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <section class="card device" id="phone"></section>
+  <div class="link" id="link-phone"><span class="no-signal">No signal</span></div>
+  <section class="card server" id="server"></section>
+  <div class="link" id="link-laptop"><span class="no-signal">No signal</span></div>
+  <section class="card device" id="laptop"></section>
+</div>
+<div class="story">
+  <div class="steps" id="steps"></div>
+  <p id="caption"></p>
+</div>
+<div class="controls">
+  <button class="primary" id="play" type="button">Play the airplane scenario</button>
+  <button id="reset" type="button">Reset</button>
+  <span class="hint">Or try it yourself: switch a device offline and press the pencil to edit.</span>
+</div>
+
+<script>
+(() => {
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, reduceMotion ? Math.min(ms, 200) : ms))
+  const icons = {
+    phone: '<svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>',
+    laptop: '<svg viewBox="0 0 24 24"><rect x="4" y="4.5" width="16" height="11" rx="1.5"/><path d="M2 19.5h20"/></svg>',
+    server: '<svg viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5a4.5 4.5 0 0 1-.5 9.5z"/></svg>',
+    wifi: '<svg viewBox="0 0 24 24"><path d="M2.5 8.5a14 14 0 0 1 19 0M5.5 12a9.5 9.5 0 0 1 13 0M8.5 15.5a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r=".6"/></svg>',
+    pencil: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg>',
+  }
+  const PARAS = [
+    { key: "Flights", color: "#0969da", options: ["SFO → JFK, Fri 8:05", "SFO → JFK, Fri 6:40", "SFO → EWR, Fri 7:15"] },
+    { key: "Hotel", color: "#8250df", options: ["The Jane, 2 nights", "Ace Hotel, 2 nights", "Ace Hotel, 3 nights", "Moxy, 3 nights"] },
+    { key: "Packing", color: "#bf3989", options: ["Charger, passport", "Charger, passport, umbrella", "Passport, umbrella, shoes"] },
+  ]
+
+  let server
+  const devices = {
+    phone: { id: "phone", name: "Phone", el: document.getElementById("phone"), link: document.getElementById("link-phone") },
+    laptop: { id: "laptop", name: "Laptop", el: document.getElementById("laptop"), link: document.getElementById("link-laptop") },
+  }
+  const other = (device) => (device.id === "phone" ? devices.laptop : devices.phone)
+  const serverEl = document.getElementById("server")
+  let inFlight = 0
+
+  function build() {
+    for (const device of Object.values(devices)) {
+      device.el.innerHTML = `
+        <div class="card-head"><span class="name">${icons[device.id]}${device.name}</span>
+          <button class="net" type="button" aria-pressed="true" aria-label="${device.name} Wi-Fi">${icons.wifi}<span>Online</span></button></div>
+        <ul class="paras">${PARAS.map((p, i) => `
+          <li class="para" style="--c:${p.color}"><div><span class="k">${p.key}<i class="unsent"></i></span><span class="v"></span></div>
+          <button class="edit" type="button" data-i="${i}" aria-label="Edit ${p.key} on ${device.name}">${icons.pencil}</button></li>`).join("")}</ul>
+        <div class="outbox"><span class="label">Waiting to send</span><span class="chips"></span></div>`
+      device.rows = [...device.el.querySelectorAll(".para")]
+      device.chips = device.el.querySelector(".chips")
+      device.outboxLabel = device.el.querySelector(".outbox .label")
+      device.net = device.el.querySelector(".net")
+      device.net.addEventListener("click", () => setOnline(device, !device.online))
+      device.el.querySelectorAll(".edit").forEach((button) => button.addEventListener("click", () => edit(device, Number(button.dataset.i))))
+    }
+    serverEl.innerHTML = `
+      <div class="card-head"><span class="name">${icons.server}Jot cloud</span></div>
+      <ul class="paras">${PARAS.map((p) => `<li class="para" style="--c:${p.color}"><div><span class="k">${p.key}</span><span class="v"></span></div><span class="tag"></span></li>`).join("")}</ul>`
+    server.rows = [...serverEl.querySelectorAll(".para")]
+  }
+
+  function layoutWires() {
+    for (const device of Object.values(devices)) {
+      device.link.querySelectorAll(".wire").forEach((wire) => wire.remove())
+      const top = device.link.getBoundingClientRect().top
+      device.lanes = device.rows.map((row) => {
+        const rect = row.getBoundingClientRect()
+        const y = rect.top + rect.height / 2 - top
+        const wire = document.createElement("i")
+        wire.className = "wire"
+        wire.style.top = `${y - 1}px`
+        device.link.prepend(wire)
+        return y
+      })
+      const noSignal = device.link.querySelector(".no-signal")
+      noSignal.style.top = `${device.lanes[1]}px`
+    }
+  }
+
+  function render() {
+    for (const device of Object.values(devices)) {
+      device.el.classList.toggle("offline", !device.online)
+      device.link.classList.toggle("offline", !device.online)
+      device.net.setAttribute("aria-pressed", String(device.online))
+      device.net.querySelector("span").textContent = device.online ? "Online" : "Offline"
+      device.paras.forEach((para, i) => {
+        const row = device.rows[i]
+        row.querySelector(".v").textContent = para.text
+        row.querySelector(".v").title = para.text
+        row.classList.toggle("pending", device.outbox.some((item) => item.i === i))
+        row.classList.toggle("conflict", para.conflict)
+      })
+      device.chips.innerHTML = device.outbox
+        .map((item) => `<span class="chip${item.sending ? " sending" : ""}" style="--c:${PARAS[item.i].color}" title="${PARAS[item.i].key}">${PARAS[item.i].key[0]}</span>`)
+        .join("")
+      device.outboxLabel.textContent = device.outbox.length ? "Waiting to send" : "All changes sent"
+    }
+    server.paras.forEach((para, i) => {
+      const row = server.rows[i]
+      row.querySelector(".v").textContent = para.conflict ? "2 versions kept" : para.text
+      row.querySelector(".tag").textContent = para.conflict ? "Conflict" : `v${para.v}`
+      row.classList.toggle("conflict", Boolean(para.conflict))
+    })
+  }
+
+  function flash(row) {
+    row.classList.remove("flash")
+    void row.offsetWidth
+    row.classList.add("flash")
+  }
+
+  async function packet(device, up, i) {
+    inFlight++
+    const dot = document.createElement("span")
+    dot.className = "packet"
+    dot.style.setProperty("--c", PARAS[i].color)
+    dot.style.top = `${device.lanes[i]}px`
+    dot.textContent = PARAS[i].key[0]
+    device.link.append(dot)
+    const travel = device.link.clientWidth - 18
+    const leftToRight = (device.id === "phone") === up
+    const [from, to] = leftToRight ? [0, travel] : [travel, 0]
+    await dot.animate(
+      [{ transform: `translateX(${from}px) scale(.6)` }, { transform: `translateX(${(from + to) / 2}px) scale(1.1)` }, { transform: `translateX(${to}px) scale(.6)` }],
+      { duration: reduceMotion ? 1 : 700, easing: "cubic-bezier(.45, 0, .25, 1)" },
+    ).finished
+    dot.remove()
+    inFlight--
+  }
+
+  function edit(device, i, text) {
+    const para = device.paras[i]
+    const options = PARAS[i].options
+    para.text = text ?? options[(options.indexOf(para.text) + 1) % options.length]
+    const queued = device.outbox.find((item) => item.i === i && !item.sending)
+    if (queued) queued.text = para.text
+    else device.outbox.push({ i, text: para.text, base: para.base })
+    flash(device.rows[i])
+    render()
+    pump(device)
+  }
+
+  async function pump(device) {
+    if (device.pumping) return
+    device.pumping = true
+    while (device.online && device.outbox.length) {
+      const item = device.outbox[0]
+      item.sending = true
+      render()
+      await packet(device, true, item.i)
+      device.outbox.shift()
+      receive(device, item)
+    }
+    device.pumping = false
+    render()
+  }
+
+  function receive(device, item) {
+    const para = server.paras[item.i]
+    if (para.conflict || item.base !== para.v) {
+      para.conflict = { ...(para.conflict ?? { [other(device).id]: para.text }), [device.id]: item.text }
+      device.paras[item.i].conflict = true
+    } else {
+      para.v++
+      para.text = item.text
+      device.paras[item.i].base = para.v
+      for (const queued of device.outbox) if (queued.i === item.i) queued.base = para.v
+    }
+    flash(server.rows[item.i])
+    render()
+    deliver(other(device), item.i)
+  }
+
+  async function deliver(device, i) {
+    const para = server.paras[i]
+    const local = device.paras[i]
+    const stale = local.base !== para.v || Boolean(para.conflict) !== local.conflict
+    if (!device.online || !stale || device.outbox.some((item) => item.i === i)) return
+    await packet(device, false, i)
+    if (device.outbox.some((item) => item.i === i)) return
+    if (!para.conflict) local.text = para.text
+    local.base = para.v
+    local.conflict = Boolean(para.conflict)
+    flash(device.rows[i])
+    render()
+  }
+
+  function setOnline(device, online) {
+    device.online = online
+    render()
+    if (!online) return
+    pump(device)
+    PARAS.forEach((_, i) => deliver(device, i))
+  }
+
+  async function idle() {
+    do await sleep(150)
+    while (inFlight || Object.values(devices).some((device) => device.pumping))
+    await sleep(250)
+  }
+
+  function reset() {
+    server.paras = PARAS.map((p) => ({ text: p.options[0], v: 1, conflict: null }))
+    for (const device of Object.values(devices)) {
+      Object.assign(device, { online: true, outbox: [], pumping: false })
+      device.paras = PARAS.map((p) => ({ text: p.options[0], base: 1, conflict: false }))
+    }
+    render()
+  }
+
+  const caption = document.getElementById("caption")
+  const stepsEl = document.getElementById("steps")
+  async function say(html, step) {
+    caption.classList.add("fading")
+    await sleep(200)
+    caption.innerHTML = html
+    caption.classList.remove("fading")
+    stepsEl.innerHTML = scenario.map((_, i) => `<i class="${i === step ? "on" : i < step ? "done" : ""}"></i>`).join("")
+  }
+
+  const phone = devices.phone
+  const laptop = devices.laptop
+  const scenario = [
+    ["Both devices are online. Change the hotel on the laptop and it reaches the phone <b>in about a second</b>.", async () => {
+      edit(laptop, 1, "Ace Hotel, 2 nights")
+      await idle()
+    }],
+    ["The phone goes into airplane mode. Jot keeps working: every edit is <b>saved on the phone</b> and waits in a queue.", async () => {
+      setOnline(phone, false)
+      await sleep(900)
+      edit(phone, 0, "SFO → JFK, Fri 6:40")
+      await sleep(900)
+      edit(phone, 2, "Charger, passport, umbrella")
+      await sleep(900)
+      edit(phone, 1, "Ace Hotel, 3 nights")
+      await sleep(600)
+    }],
+    ["Meanwhile someone changes the hotel on the laptop. The cloud accepts it, but the phone <b>can't hear about it yet</b>.", async () => {
+      edit(laptop, 1, "Moxy, 3 nights")
+      await idle()
+    }],
+    ["The phone lands and reconnects. Queued edits go out in order, and flights and packing <b>merge cleanly</b>.", async () => {
+      setOnline(phone, true)
+      await idle()
+    }],
+    ["Both devices changed the hotel, so Jot <b>keeps both versions</b> and asks you to choose. Nothing is lost.", async () => {
+      await sleep(400)
+    }],
+  ]
+
+  const playButton = document.getElementById("play")
+  let playing = false
+  async function play() {
+    if (playing) return
+    playing = true
+    document.body.classList.add("playing")
+    playButton.disabled = true
+    reset()
+    for (const [index, [text, run]] of scenario.entries()) {
+      await say(text, index)
+      await sleep(1300)
+      await run()
+      await sleep(900)
+    }
+    playing = false
+    document.body.classList.remove("playing")
+    playButton.disabled = false
+    playButton.textContent = "Replay the scenario"
+  }
+
+  server = {}
+  build()
+  reset()
+  layoutWires()
+  new ResizeObserver(layoutWires).observe(document.getElementById("stage"))
+  caption.innerHTML = "Two devices, one note. Each paragraph syncs on its own, so most offline edits merge without anyone noticing."
+  stepsEl.innerHTML = scenario.map(() => "<i></i>").join("")
+  playButton.addEventListener("click", play)
+  document.getElementById("reset").addEventListener("click", () => {
+    if (!playing) reset()
+  })
+  if (!reduceMotion) {
+    let started = false
+    new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started) {
+        started = true
+        setTimeout(play, 800)
+      }
+    }, { threshold: 0.5 }).observe(document.getElementById("stage"))
+  }
+})()
+</script>
+</body>
+</html>

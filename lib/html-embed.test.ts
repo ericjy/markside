@@ -132,6 +132,15 @@ describe("HTML Embed rendering", () => {
     await renderHtmlEmbeds(render("![x](./once.html)"), "file:///docs/guide.md", 4)
     expect(sendMessage).toHaveBeenCalledTimes(2)
   })
+
+  it("remembers a missing file until the next reload version", async () => {
+    sendMessage.mockImplementation((_message, callback) => callback({ error: "Not found" }))
+    await renderHtmlEmbeds(render("![x](./gone.html)"), "file:///docs/guide.md", 5)
+    await renderHtmlEmbeds(render("![x](./gone.html)"), "file:///docs/guide.md", 5)
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    await renderHtmlEmbeds(render("![x](./gone.html)"), "file:///docs/guide.md", 6)
+    expect(sendMessage).toHaveBeenCalledTimes(2)
+  })
 })
 
 describe("HTML Embeds in Snapshots", () => {

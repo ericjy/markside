@@ -232,8 +232,9 @@ export async function renderHtmlEmbeds(root: HTMLElement, fileUrl: string, reloa
     let load = fileCache.get(key)
     if (!load) {
       load = readHtmlEmbedFile(url)
+      // A failure is cached too, so a missing file's error does not flash
+      // while typing in Split. Reloading the doc reads it again.
       fileCache.set(key, load)
-      load.catch(() => fileCache.delete(key))
     }
     try {
       const frame = createFrame(key, await load, title)

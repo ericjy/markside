@@ -23,7 +23,12 @@ const HEIGHT_SCRIPT = `<script>(() => {
   let queued = false
   const post = () => {
     queued = false
-    const height = root.scrollHeight
+    // scrollHeight never reports less than the frame's own height, so content
+    // that fits is measured by where the body ends; otherwise a frame that was
+    // taller, such as an expanded one, could never shrink back.
+    const body = document.body
+    const bodyBottom = body ? body.getBoundingClientRect().bottom + scrollY + parseFloat(getComputedStyle(body).marginBottom) : 0
+    const height = root.scrollHeight > innerHeight ? root.scrollHeight : Math.ceil(bodyBottom)
     if (height === last) return
     last = height
     parent.postMessage({ ${HEIGHT_MESSAGE}: height }, "*")
@@ -33,7 +38,9 @@ const HEIGHT_SCRIPT = `<script>(() => {
     queued = true
     requestAnimationFrame(post)
   }
-  new ResizeObserver(queue).observe(root)
+  const observer = new ResizeObserver(queue)
+  observer.observe(root)
+  addEventListener("DOMContentLoaded", () => observer.observe(document.body))
   addEventListener("load", queue)
 })()</script>`
 

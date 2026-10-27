@@ -1,14 +1,14 @@
 ---
 date: 2026-10-25
-status: confirmed
+status: implemented
 intent: intent.md
 interview: grill.md
 ---
 
 # HTML embeds and explaining in Markside
 
-> Confirmed design, built on the `feat/html-embeds` branches of this repository
-> and the website repository, which holds the Snapshot viewer. Current behavior
+> Implemented in this repository and in the website repository, which holds
+> the Snapshot viewer. Current behavior
 > is in `docs/system-design.md`. This design supersedes [HTML diagrams](../2026-10-20-html-diagrams/spec.md).
 
 ## Requirements

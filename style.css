@@ -1874,6 +1874,19 @@ button.readability-score-filter {
   line-height: 1.7;
 }
 
+/* The cut-off line already shows that a block scrolls, so its scrollbar stays
+   invisible until the pointer or focus is in the block. Its space stays
+   reserved so the block does not shift when the scrollbar appears. */
+.prose pre {
+  scrollbar-color: transparent transparent;
+}
+
+.prose pre:hover,
+.prose .code-block:hover pre,
+.prose .code-block:focus-within pre {
+  scrollbar-color: hsl(var(--scrollbar-thumb)) transparent;
+}
+
 /* Override prose default pre styles inside our wrapper */
 .prose .code-block pre {
   margin: 0;

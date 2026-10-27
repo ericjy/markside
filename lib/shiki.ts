@@ -106,14 +106,15 @@ export async function highlightCodeBlocks(container: HTMLElement): Promise<void>
           ? pre.parentElement
           : null
       const wrapper = existingWrapper ?? document.createElement("div")
-      wrapper.className = "code-block"
+      const label = getCodeBlockLanguageLabel(lang)
+      wrapper.className = label ? "code-block" : "code-block code-block-plain"
 
       const header = document.createElement("div")
       header.className = "code-block-header"
 
       const langLabel = document.createElement("span")
       langLabel.className = "code-block-lang"
-      langLabel.textContent = getCodeBlockLanguageLabel(lang)
+      langLabel.textContent = label
 
       const copyBtn = document.createElement("button")
       copyBtn.className = "code-block-copy"

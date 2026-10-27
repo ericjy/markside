@@ -1865,11 +1865,45 @@ button.readability-score-filter {
   color: hsl(var(--accent-foreground));
 }
 
+/* A block without a language has nothing to label, so its actions sit in the
+   extra top padding and appear only while the pointer or focus is in it. */
+.prose .code-block-plain {
+  position: relative;
+  background: hsl(var(--muted) / 0.5);
+}
+
+.prose .code-block-plain .code-block-header {
+  position: absolute;
+  top: 0.125rem;
+  right: 0.375rem;
+  z-index: 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  opacity: 0;
+  transition: opacity 150ms;
+}
+
+.prose .code-block.code-block-plain pre {
+  padding-top: 1.5rem;
+}
+
+.prose .code-block-plain .code-block-lang {
+  display: none;
+}
+
+.prose .code-block-plain:hover .code-block-header,
+.prose .code-block-plain:focus-within .code-block-header {
+  opacity: 1;
+}
+
 /* ── Shiki pre block styling ── */
+/* The side space is margin, not padding, so a long line is cut off short of
+   the block's border instead of running into it. */
 .prose .code-block .shiki {
   border-radius: 0;
-  margin: 0;
-  padding: 1em 1.25em;
+  margin: 0 1.25em;
+  padding: 1em 0;
   overflow-x: auto;
   line-height: 1.7;
 }
@@ -1889,7 +1923,8 @@ button.readability-score-filter {
 
 /* Override prose default pre styles inside our wrapper */
 .prose .code-block pre {
-  margin: 0;
+  margin: 0 1.25em;
+  padding-inline: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -2609,6 +2644,8 @@ button.readability-score-filter {
   }
 
   .prose .code-block pre {
+    margin: 0 !important;
+    padding-inline: 1.25em !important;
     background: #f6f8fa !important;
     border: 1px solid #d0d7de !important;
   }

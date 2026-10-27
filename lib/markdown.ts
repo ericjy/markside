@@ -84,8 +84,9 @@ md.renderer.rules.fence = (tokens, idx, options, env, self) => {
   const sourceAttr = sourceLine ? ` data-source-line="${sourceLine}"` : ""
   const wrapped = getCodeBlockWrapPreference()
   const wrapLabel = wrapped ? "Don't wrap lines" : "Wrap lines"
+  const classes = `code-block${label ? "" : " code-block-plain"}${wrapped ? " code-block-wrapped" : ""}`
 
-  return `<div class="code-block${wrapped ? " code-block-wrapped" : ""}"${sourceAttr}><div class="code-block-header"><span class="code-block-lang">${label}</span><div class="code-block-actions"><button type="button" class="code-block-wrap" aria-label="${wrapLabel}" title="${wrapLabel}" aria-pressed="${wrapped}" disabled>${WRAP_ICON}</button><button type="button" class="code-block-copy" aria-label="Copy code" title="Copy code" disabled>${COPY_ICON}</button></div></div>${fence}</div>`
+  return `<div class="${classes}"${sourceAttr}><div class="code-block-header"><span class="code-block-lang">${label}</span><div class="code-block-actions"><button type="button" class="code-block-wrap" aria-label="${wrapLabel}" title="${wrapLabel}" aria-pressed="${wrapped}" disabled>${WRAP_ICON}</button><button type="button" class="code-block-copy" aria-label="Copy code" title="Copy code" disabled>${COPY_ICON}</button></div></div>${fence}</div>`
 }
 
 // Display math: `$$` opens a block that ends at the first line ending in `$$`.

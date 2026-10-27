@@ -93,6 +93,12 @@ describe("markdown renderer", () => {
     expect(html).toContain('class="code-block" data-source-line="1"')
   })
 
+  it("marks a code block without a language as plain", () => {
+    expect(md.render("```\nplain words\n```")).toContain('class="code-block code-block-plain"')
+    expect(md.render("```text\nplain words\n```")).toContain('class="code-block code-block-plain"')
+    expect(md.render("```bash\npnpm dev\n```")).not.toContain("code-block-plain")
+  })
+
   it("renders inline code spans", () => {
     const html = md.render("Use `npm install` to install")
     expect(html).toContain("<code>npm install</code>")

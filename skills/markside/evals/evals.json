@@ -150,6 +150,28 @@
         "Offers to fold the decisions into a doc or implement them, and waits for the user",
         "Does not edit code, build, run tests, or start implementing"
       ]
+    },
+    {
+      "id": 13,
+      "prompt": "Explain how Markside's Review loop works in Markside. Nothing about it is written yet. This is an evaluation: do not launch a process or edit files; describe the files you would write, the first lines of the Markdown, and what you would tell the user before waiting.",
+      "expected_output": "Write review-loop.explain.md at the repository root with HTML visuals in review-loop.explain.assets/, referenced with image syntax on their own lines, then open it with the Review workflow and tell the user how to comment.",
+      "files": [],
+      "expectations": [
+        "Writes review-loop.explain.md (or a similar kebab-case topic) at the repository root",
+        "Puts any HTML visuals in a review-loop.explain.assets/ folder and references each with image syntax on its own line, with descriptive alt text",
+        "Writes embeds without loading anything by URL",
+        "Starts the Review workflow and says comments can go on sentences or on a visual's comment button"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "During an explain Review of docs/spec.md, a comment quoting [HTML: ./spec.assets/request-flow.html] says: show what happens when the file is missing. This is an evaluation: do not launch a process or edit files; describe what you change and the exact reply you would send for the comment.",
+      "expected_output": "Edit docs/spec.assets/request-flow.html to add the missing-file path and reply naming that file.",
+      "files": [],
+      "expectations": [
+        "Edits docs/spec.assets/request-flow.html rather than only the Markdown",
+        "The reply names spec.assets/request-flow.html as changed"
+      ]
     }
   ]
 }

@@ -7,6 +7,7 @@ This directory contains product fixtures for exercising Markside. The content is
 | `rendering/common-mark.md` | Markdown elements, code fences, tables, footnotes, and long-block rendering |
 | `rendering/github-alerts.md` | GitHub-style Note, Important, Warning, Tip, and Caution alerts |
 | `rendering/mermaid-diagrams.md` | Supported Mermaid diagram shapes |
+| `rendering/html-embeds.md` | HTML Embeds: an interactive diagram, a sandbox check, a missing file, and an inline image that is not an embed |
 | `rendering/math-formulas.md` | KaTeX inline, display, and `math` fence formulas, currency false positives, and error output |
 | `rendering/multilingual.md` | Multilingual and CJK rendering examples |
 | `readability/` | Well-written (`good.md`), middling (`okay.md`), and poorly written (`bad.md`) documents on the same topic, for exercising Readability Check |

@@ -1,14 +1,15 @@
 ---
 date: 2026-10-25
-status: proposed
+status: confirmed
 intent: intent.md
 interview: grill.md
 ---
 
 # HTML embeds and explaining in Markside
 
-> Proposed design. Nothing here is implemented yet. Current behavior is in `docs/system-design.md`.
-> This design supersedes [HTML diagrams](../2026-10-20-html-diagrams/spec.md).
+> Confirmed design, built on the `feat/html-embeds` branches of this repository
+> and the website repository, which holds the Snapshot viewer. Current behavior
+> is in `docs/system-design.md`. This design supersedes [HTML diagrams](../2026-10-20-html-diagrams/spec.md).
 
 ## Requirements
 
@@ -24,7 +25,7 @@ reasons and the rejected options.
 | R1 | Image syntax whose path ends in `.html`, such as `![Request flow](./spec.assets/request-flow.html)`, renders the referenced file in place in Preview and Split. Other image syntax is unchanged. | [Q3](grill.md#q3-where-does-the-html-live), [Q6](grill.md#q6-how-does-the-markdown-reference-an-html-file), [confirmed detail](grill.md#confirmed-details) |
 | R2 | HTML always lives in its own file. There is no inline `html render` fence, and ```` ```html ```` blocks stay highlighted code. | [Q5](grill.md#q5-do-inline-html-render-fences-stay-as-a-second-form) |
 | R3 | An embed may reference any relative path, including `../`, resolved against the doc like a relative image. | [Q10](grill.md#q10-which-relative-paths-may-an-embed-reference) |
-| R4 | Each embed renders in a sandboxed frame with an isolated origin, sized to fit its content. Its scripts run, and every network request is blocked. | [Q11](grill.md#q11-which-decisions-from-the-html-diagrams-interview-carry-over) |
+| R4 | Each embed renders in a sandboxed frame with an isolated origin, sized to fit its content. Its scripts run. Every fetch, subresource, connection, and navigation is blocked; WebRTC, which Chrome cannot block, is a known gap. | [Q11](grill.md#q11-which-decisions-from-the-html-diagrams-interview-carry-over)<br>WebRTC gap: found in the [spike](#spike-findings); see [Revisions](#revisions) |
 | R5 | Embeds style themselves. Markside adds no theme variables or base stylesheet. | [Q11](grill.md#q11-which-decisions-from-the-html-diagrams-interview-carry-over) |
 | R6 | An embed's only Markside control is Expand. The embed handles its own interaction. | [Q11](grill.md#q11-which-decisions-from-the-html-diagrams-interview-carry-over) |
 | R7 | An embed whose file is missing or unreadable shows an error block naming the path, like a Mermaid diagram that cannot render. | [confirmed detail](grill.md#confirmed-details) |
@@ -53,14 +54,24 @@ then reads it through the background `fetch-file` relay. This runs on the
 deferred schedule that enhances Mermaid. Failures replace the placeholder with
 the existing error block and the path (R7).
 
-**The frame.** Markside builds a `srcdoc` from the file's HTML and prepends two
-things: a CSP `<meta>` allowing only inline scripts, inline styles, and `data:`
-images and fonts, and a small script that posts the content height to the
-parent. The frame has `sandbox="allow-scripts"` without `allow-same-origin`, so
-its origin is opaque (R4). Loading the file with `src="file://…"` instead would
-leave no way to inject the policy. Expand reuses the existing expanded view (R6).
-Rebuilding in Split compares each placeholder's `data-embed-src` with the
-previous render (R10).
+**The frame.** Markside builds a `srcdoc` from the file's HTML and inserts two
+things right after its `<head>` tag (after the doctype, or at the start, when
+there is no head): a CSP `<meta>` allowing only inline scripts, inline styles,
+and `data:` images, fonts, and media, and a small script that posts the content
+height to the parent once per animation frame when it changes. Anything before
+`<!doctype>` would switch the embed into quirks mode. The frame has
+`sandbox="allow-scripts"` without `allow-same-origin`, so its origin is opaque
+(R4). Loading the file with `src="file://…"` instead would leave no way to
+inject the policy. The content script also adds `frame-src 'none'` to the page:
+the embed's own policy cannot stop it navigating itself, but the embedder's
+`frame-src` can, and `srcdoc` frames are unaffected. Expand fills the window
+with the embed in place rather than moving it, so it keeps its state (R6).
+
+**Split.** Before Preview replaces its HTML, embed frames move to a hidden holder
+with `moveBefore`, which keeps their documents alive. Embeds whose file and
+reload version match take their frame back; the rest are discarded. File
+contents are cached per file and reload version, so typing reads nothing from
+disk (R10).
 
 **Review Comments.** The embed's comment button creates a whole-embed comment
 whose quote is `[HTML: <data-embed-src>]` and whose line is the placeholder's
@@ -78,7 +89,13 @@ which `parseEnvelope` accepts beside `f`, `m`, and `r`. Size checks run on the
 whole envelope, so the existing warning and limit cover embeds (R12).
 `lib/link-snapshot-resources.ts` skips image tokens whose path ends in `.html`
 (R13). The public viewer, in the separate website repository, fills
-`data-embed-src` placeholders from `e` and builds the same frame.
+`data-embed-src` placeholders from `e`. It cannot use `srcdoc`: a `srcdoc` frame
+inherits the viewer's CSP, whose `script-src 'self'` and `style-src 'self'`
+block every inline script and style in the embed. Instead the viewer loads each
+frame from a same-site route, such as `/embed-frame`, served with the embed
+policy as its CSP header; the route receives the HTML by `postMessage` and
+writes it into its own document. The viewer's `default-src 'self'` already
+stops the frame navigating elsewhere.
 
 **The skill.** `skills/markside/SKILL.md` gains an **Explain in Markside**
 section beside **Ask questions in Markside**. It covers recognizing the request,
@@ -109,27 +126,52 @@ needs layout, interaction, or shapes Mermaid cannot draw.
 
 ## Open questions from the intent
 
-- **Frame mechanism.** Carried forward. Verify that a `srcdoc` frame with
-  `sandbox="allow-scripts"` and a CSP `<meta>` blocks the network from the
-  content script on `file://` pages and on the Snapshot site, and whether the
-  frame inherits the embedder's CSP.
-- **PDF Export.** Carried forward. Confirm that Chrome's print flow captures
-  `srcdoc` frame contents (ADR-0003).
+- **Frame mechanism.** Answered by the [spike](#spike-findings). A `srcdoc`
+  frame works on `file://` pages, including from the real content script; the
+  Snapshot viewer needs the same-site route described under Snapshots.
+- **PDF Export.** Answered: Chrome's print output includes frame contents,
+  including content that scripts wrote.
 
 ## Further open questions
 
-- **Duplicate embeds.** If one doc embeds the same file twice, both share the
-  quote `[HTML: <path>]`. Decide whether the second becomes an Unanchored
-  Review Comment or the quote gains an occurrence suffix.
-- **Sizing script.** Markside injects the height script into the author's HTML.
-  Decide how it behaves when the author's code also changes the height
-  continuously, such as during an animation.
+- **Duplicate embeds.** Answered: a comment anchors to its caption by text,
+  prefix, and suffix (ADR-0005), so two embeds of the same file keep separate
+  comments, and the agent edits the same file either way.
+- **Sizing script.** Answered: the script posts only when the height changes,
+  at most once per animation frame. `min-height: 100vh` settles without growing.
+
+## Spike findings
+
+The [spike](spike.md) tested the frame in Chromium against a local server that
+logged every request.
+
+- The embed policy blocked fetch, XHR, `sendBeacon`, WebSocket, EventSource,
+  dynamic import, workers, external scripts, stylesheets, fonts, images, nested
+  frames, objects, and prefetch links. The sandbox blocked popups, forms, and
+  top navigation.
+- Self-navigation (`location.href`, `<meta http-equiv="refresh">`) got through
+  the embed policy; Chrome ignores `navigate-to`. The page's `frame-src 'none'`
+  blocks it.
+- WebRTC reached a STUN server under every policy; Chrome ignores the `webrtc`
+  directive. An embed can send only its own contents and the reader's IP
+  address, much as a remote image in Markdown reveals the IP address.
+- The built extension, loaded with file access, rendered embeds, blocked every
+  HTTP request and navigation from them, kept an embed's state while typing in
+  Split, and printed embeds to PDF.
 
 ## Areas of concern
 
 | Concern | Owner |
 |---|---|
+| WebRTC lets an embed contact a STUN or TURN server. Revisit if Chrome adds a policy that blocks it. | Eric Yang |
 | Older Snapshot viewers reject an envelope with an unknown key. Deploy the viewer that accepts `e` before the extension that writes it. | Eric Yang |
 | ADR-0007 rejected envelope changes, but only as a way to shrink links. Adding `e` carries new content, which that decision did not cover; record this in the system design. | Eric Yang |
 | Explaining an existing doc edits it (R14). If the user has an Unsaved Draft of that doc, the existing Reload and save conflict flow must handle the agent's change. | Eric Yang |
 | Most explanations with embeds exceed the comfortable Link Snapshot size and preselect a Hosted Snapshot. | Eric Yang |
+
+## Revisions
+
+- **WebRTC gap (R4).** The spike showed that Chrome cannot block WebRTC from a
+  frame whose scripts run. The agent recommended keeping scripts and recording
+  the gap rather than making embeds static. The user did not answer that
+  question directly; they asked to build the feature after seeing the finding.

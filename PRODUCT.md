@@ -34,7 +34,7 @@ assembling quotes and instructions in chat.
 
 | Capability | What the user can do |
 | --- | --- |
-| Read Markdown | Open `.md`, `.mdx`, and `.markdown` files in Preview with tables, task lists, alerts, frontmatter, math, highlighted code, and Mermaid diagrams. Navigate the outline and adjust the theme, typeface, width, and heading numbering. |
+| Read Markdown | Open `.md`, `.mdx`, and `.markdown` files in Preview with tables, task lists, alerts, frontmatter, math, highlighted code, Mermaid diagrams, and HTML Embeds: interactive local HTML files shown in place in isolated frames. Navigate the outline and adjust the theme, typeface, width, and heading numbering. |
 | Navigate local work | Authorize a folder, browse its file tree, follow relative links and wikilinks, or find a file with the quick switcher. Saved folders support separate projects in separate tabs. Create a new Markdown file in the open root folder. |
 | Edit and save | Use Source or Split, make changes, and save to the original file. Auto Save is optional and off by default. Other text files use Source; images use an image viewer. |
 | Prepare a Review | Add anchored Review Comments, exact Text Replacements, and a Review Note without modifying the document. Suggest Edits starts an editable instruction for the agent. Copy the whole Review or one comment as a prompt. |
@@ -71,8 +71,8 @@ See [agent Review setup and contract](docs/changes/2026-10-18-agent-review-loop/
 ## Sharing
 
 Snapshots capture saved Markdown at the time of sharing. They cannot change,
-synchronize the local file, include local assets, or support live collaborative
-editing. Users can include the current Review and import returned Review rounds
+synchronize the local file, include local assets other than HTML Embed files,
+or support live collaborative editing. Users can include the current Review and import returned Review rounds
 from a snapshot link.
 
 - A Link Snapshot carries content in the URL fragment without uploading it.

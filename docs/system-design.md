@@ -67,6 +67,7 @@ file:// Markdown page
 → markdown-it renders the body
 → DOMPurify sanitizes the HTML
 → relative image and document links are resolved against the current file
+→ HTML Embeds read their files through background.ts and load into sandboxed frames
 → Shiki enhances code blocks
 → Pele renders Mermaid diagram blocks
 → headings are extracted for the outline
@@ -187,6 +188,28 @@ error block with Pele's message and, for syntax errors, its line and column. Exp
 viewport-filling overlay and restores its inline position and view state on exit.
 Print and PDF Export ignore the screen's pan, zoom, and viewport height, sizing
 each inline SVG to the document column with its aspect ratio preserved.
+An image line that stands alone in its paragraph and names a relative `.html`
+path becomes an HTML Embed. markdown-it renders a `figure.html-embed` holding
+the alt text and a `[HTML: <path>]` caption; the caption is the Review Comment
+quote for the whole embed, and the embed's Comment control opens the comment
+composer on it. `lib/html-embed.ts` reads the file through the `fetch-file`
+relay, once per file and reload version, and loads it as the `srcdoc` of a
+frame with `sandbox="allow-scripts"`, so it has an opaque origin. Markside
+inserts a CSP `<meta>` after the embed's `<head>`, allowing only inline scripts
+and styles and `data:` images, fonts, and media, plus a script that posts the
+content height once per animation frame when it changes. The same script hides
+the embed's vertical overflow while it is inline, because a scrollbar would
+narrow content that scales with width and could keep it overflowing; Expand
+turns scrolling back on. The content script
+adds `frame-src 'none'` to the page, which stops an embed from navigating
+itself; `srcdoc` frames are unaffected. WebRTC cannot be blocked by either
+policy, so an embed can still reach a STUN or TURN server; it can send only
+its own contents and the reader's IP address. Before Split replaces the
+Preview's HTML, embed frames move aside with `moveBefore`, which keeps their
+documents alive, and return to matching embeds. Expanded view fills the window
+with the embed in place. An unreadable file shows an error block naming the
+path. Reload Comparison treats the embed as its caption text, so only a change
+to the reference is marked.
 Inside a Question Card, or a `<details>` whose summary is "Full question" (an
 archived question), a diagram only explains the choice: it shows only the
 Expand control, on hover or focus, until expanded.
@@ -397,7 +420,8 @@ Hosted snapshots expire on a sender-chosen 7, 30, or 90 day schedule.
 Unsaved drafts must be written successfully before the URL is copied. The
 existing save conflict and permission policies remain authoritative. `lib/link-snapshot-resources.ts`
 reports local images and document links that the standalone viewer cannot
-resolve.
+resolve. HTML Embed files travel in the envelope's optional `e` object, keyed by
+the path as written, so they count toward the same size checks.
 
 The public `/s` viewer is maintained in the separate website repository. It
 decodes and renders entirely in the browser, limits decompressed output to 256
@@ -625,7 +649,7 @@ Markside does not poll the filesystem or automatically reload external changes. 
 
 ### Rendering safety
 
-Markdown rendering allows raw HTML, such as inline SVG and `<details>`. DOMPurify sanitizes the generated HTML, stripping scripts and event handlers, and explicitly preserves the `data-wikilink` and `data-source-line` attributes used for local navigation and source mapping.
+Markdown rendering allows raw HTML, such as inline SVG and `<details>`. DOMPurify sanitizes the generated HTML, stripping scripts and event handlers, and explicitly preserves the `data-wikilink`, `data-source-line`, and `data-embed-src` attributes used for local navigation, source mapping, and HTML Embeds. HTML Embeds run their own scripts only inside sandboxed frames; see Loading and Rendering.
 
 ### Browser permissions
 

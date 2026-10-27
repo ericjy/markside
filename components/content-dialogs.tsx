@@ -12,17 +12,11 @@ import { ReviewPromptModal } from "~components/review-prompt-modal"
 import { SaveFolderDialog } from "~components/save-folder-dialog"
 import { Button } from "~components/ui/button"
 import type { FileNavigationTarget } from "~hooks/use-content-file-loading"
+import type { LinkSnapshotDialog } from "~hooks/use-content-snapshots"
 import {
   DEFAULT_EXPIRY_DAYS,
-  HOSTED_SNAPSHOT_URL_CHARACTERS,
-  type ExpiryDays
+  HOSTED_SNAPSHOT_URL_CHARACTERS
 } from "~lib/hosted-snapshot"
-import {
-  type LinkSnapshotCreation
-} from "~lib/link-snapshot"
-import {
-  type LinkSnapshotResources
-} from "~lib/link-snapshot-resources"
 import {
   type ReviewRound
 } from "~lib/review"
@@ -34,9 +28,9 @@ interface ContentDialogsProps {
   acceptReviewPrompt: () => void
   clipboardFallback: string | null
   setClipboardFallback: React.Dispatch<React.SetStateAction<string | null>>
-  linkSnapshotDialog: { markdown: string; creation: LinkSnapshotCreation; resources: LinkSnapshotResources; requiresSave: boolean; includeReview: boolean; reviewerName: string; kind: "link" | "hosted"; expiryDays: ExpiryDays; shareUrl: string | null; status: "confirm" | "copying" | "uploading" | "copied" | "copy-failed" | "save-failed" | "upload-failed"; } | null
+  linkSnapshotDialog: LinkSnapshotDialog | null
   closeLinkSnapshotDialog: () => void
-  setLinkSnapshotDialog: React.Dispatch<React.SetStateAction<{ markdown: string; creation: LinkSnapshotCreation; resources: LinkSnapshotResources; requiresSave: boolean; includeReview: boolean; reviewerName: string; kind: "link" | "hosted"; expiryDays: ExpiryDays; shareUrl: string | null; status: "confirm" | "copying" | "uploading" | "copied" | "copy-failed" | "save-failed" | "upload-failed"; } | null>>
+  setLinkSnapshotDialog: React.Dispatch<React.SetStateAction<LinkSnapshotDialog | null>>
   ownReviewItemCount: number
   updateLinkSnapshotReviewChoice: (includeReview: boolean, reviewerName: string) => void
   importedRoundCount: number

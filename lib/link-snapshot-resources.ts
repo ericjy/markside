@@ -1,6 +1,8 @@
 import type Token from "markdown-it/lib/token.mjs"
 import MarkdownIt from "markdown-it"
 
+import { isHtmlEmbedPath } from "./html-embed"
+
 const resourceMarkdown = new MarkdownIt({ html: true })
 resourceMarkdown.validateLink = () => true
 
@@ -25,7 +27,9 @@ function isLocalDocumentLink(target: string): boolean {
 function visitTokens(tokens: Token[], resources: LinkSnapshotResources): void {
   for (const token of tokens) {
     if (token.type === "image") {
-      if (!isRemoteImage(String(token.attrGet("src") ?? ""))) resources.localImages++
+      // An HTML Embed's file travels inside the Snapshot.
+      const src = String(token.attrGet("src") ?? "")
+      if (!isRemoteImage(src) && !isHtmlEmbedPath(src)) resources.localImages++
     } else if (token.type === "link_open") {
       if (isLocalDocumentLink(String(token.attrGet("href") ?? ""))) resources.localDocumentLinks++
     } else if (token.type === "wikilink_inline") {

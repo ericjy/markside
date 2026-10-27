@@ -105,4 +105,4 @@ and code examples may no longer match the current source tree.
 - [Plain Markdown interview source](2026-10-24-plain-question-source/spec.md)
 - [Render Mermaid diagrams with Pele](2026-10-24-pele-diagrams/spec.md)
 - [Calmer reading](2026-10-24-calmer-reading/spec.md)
-- [HTML embeds and explaining in Markside](2026-10-25-html-embeds/spec.md) (Proposed)
+- [HTML embeds and explaining in Markside](2026-10-25-html-embeds/spec.md) (Confirmed design)

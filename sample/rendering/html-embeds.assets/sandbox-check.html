@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 16px; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1f2328; }
+  li { margin: 4px 0; }
+  .ok { color: #078a52; } .bad { color: #cf222e; }
+  button { font: inherit; padding: 4px 10px; }
+</style>
+</head>
+<body>
+<p>Each line should read <strong class="ok">blocked</strong>.</p>
+<ul id="results"></ul>
+<button id="navigate">Try to navigate to example.com</button>
+<img src="https://example.com/pixel.png" alt="" width="1" height="1">
+<script>
+  const results = document.getElementById("results")
+  const report = (name, blocked) => {
+    const item = document.createElement("li")
+    item.innerHTML = `${name}: <strong class="${blocked ? "ok" : "bad"}">${blocked ? "blocked" : "reached the network"}</strong>`
+    results.append(item)
+  }
+  fetch("https://example.com/").then(() => report("fetch", false), () => report("fetch", true))
+  const image = new Image()
+  image.onload = () => report("image", false)
+  image.onerror = () => report("image", true)
+  image.src = "https://example.com/favicon.ico"
+  try {
+    const socket = new WebSocket("wss://example.com/")
+    socket.onopen = () => report("WebSocket", false)
+    socket.onerror = () => report("WebSocket", true)
+  } catch {
+    report("WebSocket", true)
+  }
+  document.getElementById("navigate").addEventListener("click", () => { location.href = "https://example.com/" })
+</script>
+</body>
+</html>

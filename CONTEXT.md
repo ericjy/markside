@@ -20,6 +20,10 @@ _Avoid_: Focus mode, full screen, distraction-free mode
 Edits in the source editor that have not been written to the local file. Leaving an unsaved draft requires the user to save it, discard it, or cancel navigation.
 _Avoid_: Dirty file, pending changes
 
+**HTML Embed**:
+A local HTML file that a Markdown document shows in place, referenced with image syntax on a line of its own. It runs in an isolated frame that cannot reach the document or the network, and a Review Comment on it covers the whole embed.
+_Avoid_: HTML diagram, iframe, widget
+
 **Review Comment**:
 A private annotation on a selected passage or UI element in a local Markdown document or localhost application. It leaves the reviewed content unchanged and may be revised or removed before handoff to an agent.
 _Avoid_: Agent comment, feedback

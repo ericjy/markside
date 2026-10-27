@@ -2235,7 +2235,8 @@ button.readability-score-filter {
   opacity: 1;
 }
 
-.mermaid-error {
+.mermaid-error,
+.html-embed-error {
   margin: 1.25em 0;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
@@ -2246,10 +2247,89 @@ button.readability-score-filter {
   font-family: ui-monospace, monospace;
 }
 
-.dark .mermaid-error {
+.dark .mermaid-error,
+.dark .html-embed-error {
   color: hsl(0 86% 68%);
   background: hsl(220 13% 13%);
   border-color: hsl(220 13% 20%);
+}
+
+/* HTML Embeds style themselves; the frame shows them on a page canvas, as a browser would. */
+.html-embed {
+  position: relative;
+  margin: 1.25em 0;
+}
+
+.html-embed-body {
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+}
+
+.html-embed-body[aria-hidden="true"] {
+  padding: 0.75rem 1rem;
+}
+
+.html-embed-frame {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: #fff;
+  color-scheme: light;
+}
+
+.html-embed-caption {
+  margin-top: 0.375rem;
+  color: hsl(var(--muted-foreground));
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+}
+
+.html-embed-controls {
+  position: absolute;
+  z-index: 1;
+  top: 0.5rem;
+  right: 0.5rem;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+
+.html-embed:hover .html-embed-controls,
+.html-embed:focus-within .html-embed-controls,
+.html-embed.is-expanded .html-embed-controls {
+  opacity: 1;
+}
+
+.html-embed.is-expanded {
+  position: fixed;
+  z-index: 2147483646;
+  inset: 0;
+  box-sizing: border-box;
+  display: flex;
+  margin: 0;
+  padding: 3.5rem 1rem 1rem;
+  flex-direction: column;
+  background: hsl(var(--background));
+}
+
+.html-embed.is-expanded .html-embed-controls {
+  top: 0.75rem;
+  right: 1rem;
+}
+
+.html-embed.is-expanded .html-embed-body {
+  min-height: 0;
+  flex: 1;
+}
+
+.html-embed.is-expanded .html-embed-frame {
+  height: 100% !important;
+}
+
+.html-embed.is-expanded .html-embed-caption {
+  display: none;
 }
 
 .pdf-export-title {
@@ -2261,6 +2341,11 @@ button.readability-score-filter {
 }
 
 @media print {
+  .html-embed-controls,
+  .html-embed-caption {
+    display: none !important;
+  }
+
   html.dark {
     --background: 0 0% 100%;
     --foreground: 224 71.4% 4.1%;

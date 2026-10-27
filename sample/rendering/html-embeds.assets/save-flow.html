@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  :root { --ink: #1f2328; --muted: #8b949e; --line: #d0d7de; --on: #078a52; --ask: #bf8700; }
+  body { margin: 0; padding: 16px; font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--ink); }
+  .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  button { font: inherit; padding: 6px 12px; border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: pointer; }
+  button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+  svg { width: 100%; height: auto; display: block; }
+  .box rect { fill: #fff; stroke: var(--line); stroke-width: 1.5; rx: 8; transition: all .25s; }
+  .box text { font-size: 13px; text-anchor: middle; fill: var(--muted); transition: fill .25s; }
+  .edge { stroke: var(--line); stroke-width: 2; fill: none; marker-end: url(#arrow); transition: stroke .25s; }
+  .active rect { stroke: var(--path); fill: color-mix(in srgb, var(--path) 8%, white); }
+  .active text { fill: var(--ink); font-weight: 600; }
+  .edge.active { stroke: var(--path); }
+  .note { margin-top: 10px; color: var(--muted); min-height: 2.8em; }
+</style>
+</head>
+<body>
+<div class="tabs">
+  <button data-path="saved" aria-pressed="true">File is inside a saved folder</button>
+  <button data-path="ask" aria-pressed="false">No saved folder contains it</button>
+</div>
+<svg viewBox="0 0 640 200" role="img" aria-label="Save flow">
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <g class="box both" transform="translate(10,75)"><rect width="120" height="50"/><text x="60" y="30">Cmd+S</text></g>
+  <g class="box both" transform="translate(175,75)"><rect width="140" height="50"/><text x="70" y="24">Find a saved folder</text><text x="70" y="40">containing the file</text></g>
+  <g class="box saved" transform="translate(370,20)"><rect width="120" height="50"/><text x="60" y="24">Walk folder</text><text x="60" y="40">to the file</text></g>
+  <g class="box saved" transform="translate(520,20)"><rect width="110" height="50"/><text x="55" y="30">Write file</text></g>
+  <g class="box ask" transform="translate(370,130)"><rect width="120" height="50"/><text x="60" y="24">Ask you to</text><text x="60" y="40">choose its folder</text></g>
+  <g class="box ask" transform="translate(520,130)"><rect width="110" height="50"/><text x="55" y="24">Save folder,</text><text x="55" y="40">then write</text></g>
+  <path class="edge both" d="M130,100 H173"/>
+  <path class="edge saved" d="M315,90 C340,90 340,45 368,45"/>
+  <path class="edge saved" d="M490,45 H518"/>
+  <path class="edge ask" d="M315,110 C340,110 340,155 368,155"/>
+  <path class="edge ask" d="M490,155 H518"/>
+</svg>
+<p class="note" id="note"></p>
+<script>
+  const notes = {
+    saved: "Markside walks from the saved folder handle down to the file and writes it. No dialog appears.",
+    ask: "Markside asks you to choose the file's folder once. It saves that folder, so later saves take the top path.",
+  }
+  function show(path) {
+    document.documentElement.style.setProperty("--path", path === "saved" ? "var(--on)" : "var(--ask)")
+    for (const el of document.querySelectorAll(".box, .edge")) {
+      el.classList.toggle("active", el.classList.contains("both") || el.classList.contains(path))
+    }
+    for (const b of document.querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.path === path))
+    document.getElementById("note").textContent = notes[path]
+  }
+  for (const b of document.querySelectorAll("button")) b.addEventListener("click", () => show(b.dataset.path))
+  show("saved")
+</script>
+</body>
+</html>

@@ -48,6 +48,7 @@ import { getFileHandle, indexActiveReview } from "~lib/db"
 import { classifyMarksideFileUrl } from "~lib/file-types"
 import { hasAuthoredHeadingNumbers, headingNumbers } from "~lib/heading-numbering"
 import { type Heading } from "~lib/headings"
+import { HTML_EMBED_COMMENT_EVENT } from "~lib/html-embed"
 import { type QuestionCard } from "~lib/markdown"
 import {
   resolveInitialSidebarState,
@@ -612,6 +613,17 @@ export function FileRenderer({
     if (!content || !contentRef.current || reload.changesVisible) return
     rerenderMermaidBlocks(contentRef.current)
   }, [typeface])
+
+  const composeEmbedCommentRef = useRef(reviewActions.composeEmbedComment)
+  composeEmbedCommentRef.current = reviewActions.composeEmbedComment
+  useEffect(() => {
+    const onEmbedComment = (event: Event) => {
+      const { caption, point } = (event as CustomEvent<{ caption: HTMLElement; point: { x: number; y: number } }>).detail
+      if (contentRef.current?.contains(caption)) composeEmbedCommentRef.current(caption, point)
+    }
+    document.addEventListener(HTML_EMBED_COMMENT_EVENT, onEmbedComment)
+    return () => document.removeEventListener(HTML_EMBED_COMMENT_EVENT, onEmbedComment)
+  }, [])
 
   useEffect(() => {
     if (content === null || !shouldSyncDraftFromContent({

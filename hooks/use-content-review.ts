@@ -547,6 +547,22 @@ export function useContentReview({
     setSelectedImportedCommentId(null)
   }
 
+  // An HTML Embed's comment anchors to its caption, which names the embedded file.
+  const composeEmbedComment = (caption: HTMLElement, point: { x: number; y: number }) => {
+    if (!isMdFile || !previewVisible || agentHandoff?.completed || agentHandoff?.sending || agentHandoff?.finishing || agentHandoff?.updatingCommentId != null) return
+    const embed = questionBlock(caption)
+    const range = embed && rangeFromOffsets(embed.index, embed.block.start, embed.block.end)
+    if (!embed || !range) return
+    const duplicate = findDuplicateReviewComment(embed.anchor)
+    if (duplicate) {
+      selectReviewComment(duplicate.id)
+      return
+    }
+    selection.openSelectionComposerAt(embed.anchor, range, point, "", false)
+    setSelectedReviewId(null)
+    setSelectedImportedCommentId(null)
+  }
+
   const questionComment = (target: HTMLElement) => {
     const block = questionSpan(renderedTextIndexRef.current, target)
     return block && resolvedReviewComments.find((candidate) =>
@@ -624,6 +640,7 @@ export function useContentReview({
     answerQuestion,
     clearQuestionAnswer,
     composeQuestionAnswer,
+    composeEmbedComment,
     questionAnswer,
     questionActionsBusy,
   }

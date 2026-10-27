@@ -12,6 +12,7 @@ import {
   getCodeBlockLanguageLabel,
   WRAP_ICON,
 } from "./code-block"
+import { htmlEmbedQuote, isHtmlEmbedPath } from "./html-embed"
 
 export const md = new MarkdownIt({
   html: true,
@@ -608,6 +609,37 @@ md.core.ruler.push("source_lines", (state) => {
     )
   }
 })
+
+// An image line that stands alone and names a local `.html` file becomes an
+// HTML Embed. Runs after source_lines so the paragraph's line carries over.
+md.core.ruler.push("html_embeds", (state) => {
+  const tokens = state.tokens
+  for (let index = 0; index + 2 < tokens.length; index++) {
+    const [open, inline, close] = tokens.slice(index, index + 3)
+    if (open.type !== "paragraph_open" || inline.type !== "inline" || close.type !== "paragraph_close") continue
+    const children = (inline.children ?? []).filter((child) => child.type !== "softbreak" && !(child.type === "text" && !child.content.trim()))
+    const image = children.length === 1 && children[0].type === "image" ? children[0] : null
+    const src = image?.attrGet("src") ?? ""
+    if (!image || !isHtmlEmbedPath(src)) continue
+    const embed = new state.Token("html_embed", "figure", 0)
+    embed.block = true
+    embed.map = open.map
+    embed.meta = { src, alt: image.content }
+    const sourceLine = open.attrGet("data-source-line")
+    if (sourceLine) embed.attrSet("data-source-line", sourceLine)
+    tokens.splice(index, 3, embed)
+  }
+})
+
+md.renderer.rules.html_embed = (tokens, idx) => {
+  const { src, alt } = tokens[idx].meta as { src: string; alt: string }
+  const sourceLine = tokens[idx].attrGet("data-source-line")
+  const sourceAttr = sourceLine ? ` data-source-line="${sourceLine}"` : ""
+  const escape = md.utils.escapeHtml
+  return `<figure class="html-embed not-prose" data-embed-src="${escape(src)}"${sourceAttr}>` +
+    `<div class="html-embed-body" aria-hidden="true">${escape(alt || src)}</div>` +
+    `<figcaption class="html-embed-caption">${escape(htmlEmbedQuote(src))}</figcaption></figure>\n`
+}
 
 // Wikilink support: [[note-name]] and [[note-name|display text]]
 md.inline.ruler.push("wikilink", (state, silent) => {

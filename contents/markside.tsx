@@ -17,6 +17,7 @@ import {
 import {
   getThemePreference
 } from "~lib/theme-preference"
+import { installHtmlEmbedNavigationPolicy } from "~lib/html-embed"
 import {
   readInitialFileContent
 } from "~lib/url"
@@ -117,6 +118,7 @@ async function bootstrap() {
   faviconEl.type = "image/svg+xml"
   faviconEl.href = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(iconSvg)
   document.head.appendChild(faviconEl)
+  installHtmlEmbedNavigationPolicy(document)
 
   const styleEl = document.createElement("style")
   styleEl.id = "markside-styles"

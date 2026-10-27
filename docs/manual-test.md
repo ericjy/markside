@@ -86,6 +86,17 @@ pull request or review response.
   dashes stay still. Zoom a diagram, switch between light and dark, and confirm
   colors change without losing the zoom. Change the typeface and confirm labels
   still fit their boxes. A diagram with a syntax error shows its line and column.
+- [ ] Open `sample/rendering/html-embeds.md`, which has an HTML Embed with a
+  script, a missing embed file, and an embed that tries `fetch`, a remote
+  image, a WebSocket, and navigating to example.com. The working embed renders at its
+  content height and responds to clicks; the missing one shows an error naming
+  its path; the network attempts fail and the page stays put. Comment on an
+  embed with its Comment control and confirm the Review quotes
+  `[HTML: <path>]`. Expand it, interact, and press Escape. Type in Split and
+  confirm the embed keeps its state. Edit the HTML file on disk, Reload, and
+  confirm the change appears. Print it and confirm the embed is in the PDF.
+- [ ] Share a document with an HTML Embed as a Link Snapshot and as a Hosted
+  Snapshot, and confirm the viewer shows the embed.
 - [ ] Print a document with a compact Mermaid sequence diagram and a wider
   flowchart. Each fills the document column without clipping or stretching,
   with no leftover blank viewport above or below. Zoom and pan on screen, then

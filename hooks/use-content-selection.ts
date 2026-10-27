@@ -129,12 +129,14 @@ export function useContentSelection({
     }
   }
 
-  // Opens the comment composer for a question card's answer, chosen by a control rather than a text selection.
-  const openSelectionComposerAt = (anchor: ReviewAnchor, range: Range, point: { x: number; y: number }, body = "") => {
+  // Opens the comment composer from a control rather than a text selection:
+  // a question card's answer, or a comment on an HTML Embed.
+  const openSelectionComposerAt = (anchor: ReviewAnchor, range: Range, point: { x: number; y: number }, body = "", question = true) => {
     const preview = previewScrollRef.current
     if (!preview) return
     clearSelectionActionTimeout()
-    setSelectionAction({ ...selectionActionAt(anchor, range, point, preview), question: true })
+    const action = selectionActionAt(anchor, range, point, preview)
+    setSelectionAction(question ? { ...action, question: true } : action)
     openSelectionComposer(body)
   }
 

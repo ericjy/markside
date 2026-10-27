@@ -3,6 +3,7 @@ import DOMPurify from "dompurify"
 import React,{ useEffect } from "react"
 import { parseFrontmatter,renderFrontmatterHTML } from "~lib/frontmatter"
 import { applyHeadingNumbers } from "~lib/heading-numbering"
+import { parkHtmlEmbedFrames,renderHtmlEmbeds } from "~lib/html-embed"
 import { headingIdFromHash,resolveActiveOutlineHeading,type Heading } from "~lib/headings"
 import { addDefaultDetailsSummaries,md,mountQuestionCard,type QuestionCard } from "~lib/markdown"
 import {
@@ -132,9 +133,10 @@ export function useContentPreview({
     const bodyStart = content.length - body.length
     const sourceLineOffset =
       content.slice(0, bodyStart).split("\n").length - 1
+    if (!changesVisible) parkHtmlEmbedFrames(contentRef.current)
     contentRef.current.innerHTML = DOMPurify.sanitize(
       fmHTML + md.render(body, { sourceLineOffset }),
-      { ADD_ATTR: ["data-wikilink", "data-source-line"] }
+      { ADD_ATTR: ["data-wikilink", "data-source-line", "data-embed-src"] }
     )
     addDefaultDetailsSummaries(contentRef.current)
     if (contentRef.current.querySelector(".katex")) injectKatexStyles()
@@ -152,6 +154,9 @@ export function useContentPreview({
     })
 
     const renderedContent = contentRef.current
+    // Embeds load now rather than with the deferred enhancements, so a frame
+    // kept across a Split update returns before the next paint.
+    if (!changesVisible) void renderHtmlEmbeds(renderedContent, fileUrl, imageReloadVersion)
     const scheduleEnhancement = () => {
       previewEnhancementRef.current = window.requestIdleCallback(
         () => {

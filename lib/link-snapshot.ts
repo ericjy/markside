@@ -12,6 +12,8 @@ export interface LinkSnapshot {
   filename: string
   markdown: string
   reviews?: ReviewRound[]
+  // HTML Embed files, keyed by the path as written in the Markdown.
+  embeds?: Record<string, string>
 }
 
 export type LinkSnapshotCreation =
@@ -149,16 +151,22 @@ function decodeReviewRound(value: unknown): ReviewRound {
   }
 }
 
+function parseEmbeds(value: unknown): Record<string, string> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Invalid embeds")
+  const entries = Object.entries(value)
+  if (!entries.length || entries.some(([, html]) => typeof html !== "string")) throw new Error("Invalid embeds")
+  return Object.fromEntries(entries) as Record<string, string>
+}
+
 function parseEnvelope(value: unknown): LinkSnapshot {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("Invalid envelope")
   }
   const keys = Object.keys(value)
-  const hasReviews = keys.includes("r")
-  const allowedKeys = hasReviews ? ["f", "m", "r"] : ["f", "m"]
   if (
-    keys.length !== allowedKeys.length ||
-    !allowedKeys.every((key) => keys.includes(key))
+    !keys.includes("f") ||
+    !keys.includes("m") ||
+    !keys.every((key) => ["f", "m", "r", "e"].includes(key))
   ) {
     throw new Error("Invalid envelope")
   }
@@ -167,21 +175,22 @@ function parseEnvelope(value: unknown): LinkSnapshot {
     throw new Error("Invalid envelope")
   }
   if (!isValidBasename(envelope.f)) throw new Error("Invalid basename")
-  if (!hasReviews) return { filename: envelope.f, markdown: envelope.m }
-  if (!Array.isArray(envelope.r)) throw new Error("Invalid reviews")
-  return {
-    filename: envelope.f,
-    markdown: envelope.m,
-    reviews: envelope.r.map(decodeReviewRound),
+  const snapshot: LinkSnapshot = { filename: envelope.f, markdown: envelope.m }
+  if ("r" in envelope) {
+    if (!Array.isArray(envelope.r)) throw new Error("Invalid reviews")
+    snapshot.reviews = envelope.r.map(decodeReviewRound)
   }
+  if ("e" in envelope) snapshot.embeds = parseEmbeds(envelope.e)
+  return snapshot
 }
 
 function snapshotEnvelopeJson(snapshot: LinkSnapshot): string {
-  return JSON.stringify(
-    snapshot.reviews && snapshot.reviews.length > 0
-      ? { f: snapshot.filename, m: snapshot.markdown, r: snapshot.reviews.map(encodeReviewRound) }
-      : { f: snapshot.filename, m: snapshot.markdown },
-  )
+  return JSON.stringify({
+    f: snapshot.filename,
+    m: snapshot.markdown,
+    ...(snapshot.reviews?.length ? { r: snapshot.reviews.map(encodeReviewRound) } : {}),
+    ...(snapshot.embeds && Object.keys(snapshot.embeds).length ? { e: snapshot.embeds } : {}),
+  })
 }
 
 // Shared with the hosted upload path so the envelope is DEFLATEd the same way

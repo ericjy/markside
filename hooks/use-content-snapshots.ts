@@ -13,6 +13,8 @@ import {
   decodeLinkSnapshotFragment,
   type LinkSnapshotCreation,
 } from "~lib/link-snapshot"
+import { findHtmlEmbedSources,readHtmlEmbedFile } from "~lib/html-embed"
+import { md } from "~lib/markdown"
 import {
   analyzeLinkSnapshotResources,
   type LinkSnapshotResources,
@@ -28,6 +30,7 @@ import {
 
 export type LinkSnapshotDialog = {
   markdown: string
+  embeds: Record<string, string>
   creation: LinkSnapshotCreation
   resources: LinkSnapshotResources
   requiresSave: boolean
@@ -96,17 +99,32 @@ export function useContentSnapshots({
     return [...importedRounds, created.round]
   }
 
-  const requestLinkSnapshot = () => {
+  // A missing embed file is left out; the viewer shows its error block.
+  const readSnapshotEmbeds = async (markdown: string) => {
+    const entries = await Promise.all(findHtmlEmbedSources(md.parse(markdown, {})).map(async (src) => {
+      try {
+        return [src, await readHtmlEmbedFile(new URL(src, fileUrlRef.current).href)] as const
+      } catch {
+        return null
+      }
+    }))
+    return Object.fromEntries(entries.filter((entry) => entry !== null))
+  }
+
+  const requestLinkSnapshot = async () => {
     const markdown = hasUnsavedDraftRef.current
       ? draftRef.current
       : diskContentRef.current ?? content ?? ""
+    const embeds = await readSnapshotEmbeds(markdown)
     const creation = createLinkSnapshot({
       filename: currentFileName,
       markdown,
       reviews: buildSnapshotReviews(false, ""),
+      embeds,
     })
     setLinkSnapshotDialog({
       markdown,
+      embeds,
       creation,
       resources: analyzeLinkSnapshotResources(markdown),
       requiresSave: hasUnsavedDraftRef.current,
@@ -130,6 +148,7 @@ export function useContentSnapshots({
           filename: currentFileName,
           markdown: current.markdown,
           reviews: buildSnapshotReviews(includeReview, reviewerName),
+          embeds: current.embeds,
         }),
       }
     })
@@ -148,15 +167,18 @@ export function useContentSnapshots({
       }
     }
     const markdown = diskContentRef.current ?? linkSnapshotDialog.markdown
+    const embeds = await readSnapshotEmbeds(markdown)
     const creation = createLinkSnapshot({
       filename: currentFileName,
       markdown,
       reviews: buildSnapshotReviews(includeReview, reviewerName),
+      embeds,
     })
     const resources = analyzeLinkSnapshotResources(markdown)
     if (creation.status !== "ready") {
       setLinkSnapshotDialog({
         markdown,
+        embeds,
         creation,
         resources,
         requiresSave: false,
@@ -177,6 +199,7 @@ export function useContentSnapshots({
           filename: currentFileName,
           markdown,
           reviews: buildSnapshotReviews(includeReview, reviewerName),
+          embeds,
         })
         const { key, blob } = await encryptSnapshotEnvelope(envelope)
         const id = await uploadHostedSnapshot(blob, expiryDays)
@@ -195,6 +218,7 @@ export function useContentSnapshots({
       await recordReviewPromptEvent("link-snapshot").catch(() => false)
       setLinkSnapshotDialog({
         markdown,
+        embeds,
         creation,
         resources,
         requiresSave: false,
@@ -208,6 +232,7 @@ export function useContentSnapshots({
     } catch {
       setLinkSnapshotDialog({
         markdown,
+        embeds,
         creation,
         resources,
         requiresSave: false,

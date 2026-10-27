@@ -1,6 +1,6 @@
 ---
 name: markside
-description: Open a local Markdown file in Markside using Google Chrome, wait for its Review Comments with /markside review, or run interviews (such as /grill-me) in Markside. Use this Beta skill when the user invokes /markside, asks to open a Markdown file specifically in Markside, asks to answer interview questions "in Markside", or asks for Markside setup. Do not trigger merely because Markdown was created or discussed.
+description: Open a local Markdown file in Markside using Google Chrome, wait for its Review Comments with /markside review, run interviews (such as /grill-me) in Markside, or explain something in Markside with interactive HTML visuals. Use this Beta skill when the user invokes /markside, asks to open a Markdown file specifically in Markside, asks to answer interview questions or to explain something "in Markside", or asks for Markside setup. Do not trigger merely because Markdown was created or discussed.
 compatibility: Requires Google Chrome plus POSIX shell on macOS/Linux or PowerShell on Windows. Markside must be installed separately with file URL access enabled. Opening and setup need no Node.js. Review mode requires Node.js 20+ and the Markside CLI.
 ---
 
@@ -278,6 +278,47 @@ section only decides how questions are asked and answered.
    decisions into the subject file or to implement them, and wait.
    Keep the interview doc as the record of how each decision was made; delete
    it, and its `<file>.review.json`, only when the user asks.
+
+## Explain in Markside
+
+Use this when the user asks to explain something in Markside, such as
+"explain how saving works in Markside" or `/markside explain docs/spec.md`.
+The request authorizes writing the explanation and opening Chrome. The user
+reads it, comments where it is unclear, and you revise it in place.
+
+1. Choose the doc. When the subject is an existing Markdown doc, explain inside
+   that doc: add wording and visuals to it. Otherwise write
+   `<topic>.explain.md` at the repository root, with a short kebab-case topic.
+2. Write the narrative in Markdown, so Review Comments can point at sentences.
+   Add a visual where it explains faster than prose. Prefer a table or a
+   Mermaid diagram when one is enough; use an HTML Embed when the visual needs
+   custom layout, shapes Mermaid cannot draw, or interaction such as toggling
+   between cases or stepping through a process.
+3. Write each HTML Embed as its own file in a `<doc-name>.assets/` folder
+   beside the doc, such as `spec.assets/request-flow.html` for `spec.md`, or
+   `<topic>.explain.assets/` for a new explanation. Reference it on a line of
+   its own with image syntax:
+
+   ```markdown
+   ![Request flow: the relay reads the file and the preview renders it](./spec.assets/request-flow.html)
+   ```
+
+   The alt text describes what the visual shows, because other Markdown tools
+   show only the alt text. Markside renders the file in a sandboxed frame,
+   sized to its content, with a `[HTML: <path>]` caption below it.
+4. Write embeds as plain HTML, CSS, SVG, and inline JavaScript. Markside blocks
+   every network request from an embed, so load nothing by URL: no CDN
+   libraries, web fonts, or remote images. Inline what you need or use `data:`
+   URLs, and do not paste in libraries. Style the embed yourself on a white
+   page; Markside adds no theme. Let the content set the height rather than
+   using `100vh`. Keep embeds small, because shared Snapshots carry them inside
+   their size limit.
+5. Run the Review workflow above on the doc. In the start message, add that the
+   user can comment on any sentence or use the comment button on a visual.
+6. A comment on a visual quotes `[HTML: <path>]`; edit that file. Reload
+   Comparison does not mark changes inside HTML files, so every reply names
+   each HTML file you changed, such as `Updated spec.assets/request-flow.html:
+   the relay step now shows the error path.`
 
 ## Choose the target
 

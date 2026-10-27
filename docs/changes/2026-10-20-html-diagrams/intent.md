@@ -8,6 +8,8 @@ design: spec.md
 
 # Intent: HTML diagrams in Markdown docs
 
+> Superseded by [HTML embeds](../2026-10-25-html-embeds/spec.md).
+
 ## Problem
 
 Markside docs can only draw diagrams with Mermaid, and Mermaid can't express

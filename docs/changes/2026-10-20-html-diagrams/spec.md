@@ -1,12 +1,14 @@
 ---
 date: 2026-10-20
-status: proposed
+status: historical
 intent: intent.md
 ---
 
 # HTML Diagrams
 
-> Proposed design. Nothing here is implemented yet. Current behavior is in `docs/system-design.md`.
+> Superseded by [HTML embeds](../2026-10-25-html-embeds/spec.md), which renders
+> HTML kept in separate files referenced from the Markdown. Nothing here was
+> implemented. Current behavior is in `docs/system-design.md`.
 
 ## Goal
 

@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "doc": "grill.md",
+  "docHash": "5b4d4893f0cbfd5460ad443b38a4a47b8ff7a26cfd33aaa6bd352948331fec14",
+  "status": "resolved",
+  "requestedAt": "2026-10-26T04:18:34.720Z",
+  "comments": [
+    {
+      "id": "adcba670-9214-4995-ad64-5913e87e86a5",
+      "quote": "Q4. What does this change cover?",
+      "line": null,
+      "body": "A, but we may not necessarily need /markside explain. help me choose the right user interaction",
+      "status": "resolved",
+      "reply": "Recorded A; the interaction is now Q12, recommending 'explain X in Markside' requests."
+    },
+    {
+      "id": "b683335a-f940-4542-b3dd-a0a95cf65be9",
+      "quote": "Q5. Do inline html render fences stay as a second form?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: referenced files only."
+    },
+    {
+      "id": "32b13df0-de6c-47fe-ad59-9e8747fde765",
+      "quote": "Q6. How does the Markdown reference an HTML file?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: image syntax."
+    },
+    {
+      "id": "0b8f174f-0f45-484d-9cee-7b515cb859e0",
+      "quote": "Q7. What do shared Snapshots show for an embed?",
+      "line": null,
+      "body": "Snapshot only has one file. How do we included the referenced HTML?",
+      "status": "resolved",
+      "reply": "Rewrote Q7: a Snapshot is one envelope; embeds would be an added path-to-HTML part. Added a diagram and the size tradeoff."
+    },
+    {
+      "id": "4a6d926f-2b12-46c9-8d45-cb4b46905b5e",
+      "quote": "Q8. How does Reload Comparison show a changed embed?",
+      "line": null,
+      "body": "B",
+      "status": "resolved",
+      "reply": "Recorded B: only reference-line changes are marked."
+    },
+    {
+      "id": "167a3ba1-e29e-4f7d-80ad-b4ed9fba7e41",
+      "quote": "Q9. What does a Review Comment on an embed record?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: quote records the file path."
+    },
+    {
+      "id": "3da84967-e1f3-4aad-84e2-7e9952a23059",
+      "quote": "Q10. Which relative paths may an embed reference?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: any relative path, like images."
+    },
+    {
+      "id": "de0ece9c-7ebd-42b2-bc51-19c5512f0fbc",
+      "quote": "Q11. Which decisions from the HTML diagrams interview carry over?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: other HTML diagrams decisions carry over."
+    },
+    {
+      "id": "e4f9f276-b570-45b8-a2f4-fe1f72f13634",
+      "quote": "Q7. What do shared Snapshots show for an embed?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: both Snapshot kinds carry embedded HTML."
+    },
+    {
+      "id": "325394de-0e77-4a43-a1c6-e1c35651c427",
+      "quote": "Q12. How does the user ask for an explanation?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: 'explain X in Markside' via the markside skill."
+    },
+    {
+      "id": "01da4976-5b6b-406f-b48c-ec69256371c0",
+      "quote": "Q13. Where does the guidance for writing embeds live?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: embed guidance only in the markside skill."
+    },
+    {
+      "id": "d59feb13-eedb-4dda-bd03-09b9ab34e770",
+      "quote": "Q14. Where does an explanation and its HTML go?",
+      "line": null,
+      "body": "A, but the file may not be explain.md right? it can be a normal grill.md or spec.md or whatever. the html should sit alongside that doc in the same folder. probably share the same prefix. <doc-name>.md.explain/ folder? what make sense?",
+      "status": "resolved",
+      "reply": "Agreed embeds belong to any doc. Rewrote Q14 as folder naming (recommend <doc-name>.assets/); explanation file location is now Q16."
+    },
+    {
+      "id": "6b17439d-3d29-474d-8bbb-66738f8d1632",
+      "quote": "Q15. How does the user see which visuals changed after a revision?",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: agent's reply names changed HTML files."
+    },
+    {
+      "id": "4d6e4f79-10b6-4e1c-aa48-d5e4d35cf8e4",
+      "quote": "Q14. Where do a doc’s HTML files go?",
+      "line": 8,
+      "body": "A",
+      "status": "resolved",
+      "reply": "Recorded A: <doc-name>.assets/ beside the doc."
+    },
+    {
+      "id": "166f11d2-49e4-4d01-a093-a6b26cfab516",
+      "quote": "Q16. Where does an explanation go when the user asks to explain something?",
+      "line": 28,
+      "body": "B",
+      "status": "resolved",
+      "reply": "Recorded B: explaining a doc edits it; topics get <topic>.explain.md."
+    }
+  ],
+  "sentAt": "2026-10-26T07:36:08.824Z",
+  "note": ""
+}

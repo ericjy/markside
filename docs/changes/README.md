@@ -89,7 +89,7 @@ and code examples may no longer match the current source tree.
 - [Local agent Review loop](2026-10-18-agent-review-loop/spec.md)
 - [Web Preview](2026-10-19-web-preview/spec.md) (Proposed)
 - [Diagram engines beyond Mermaid](2026-10-19-diagram-engines/spec.md) (Proposed)
-- [HTML diagrams](2026-10-20-html-diagrams/spec.md) (Proposed)
+- [HTML diagrams](2026-10-20-html-diagrams/spec.md) (Superseded by HTML embeds)
 - [Interviews in Markside](2026-10-20-grill-me-with-markside/spec.md) (Historical interview design)
 - [Pending decisions after 1.6.0](2026-10-20-pending-decisions/spec.md) (Historical interview decisions)
 - [Copy a link to a heading](2026-10-21-copy-heading-link/spec.md) (Confirmed design)
@@ -105,3 +105,4 @@ and code examples may no longer match the current source tree.
 - [Plain Markdown interview source](2026-10-24-plain-question-source/spec.md)
 - [Render Mermaid diagrams with Pele](2026-10-24-pele-diagrams/spec.md)
 - [Calmer reading](2026-10-24-calmer-reading/spec.md)
+- [HTML embeds and explaining in Markside](2026-10-25-html-embeds/spec.md) (Proposed)

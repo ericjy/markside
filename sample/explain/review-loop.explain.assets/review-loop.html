@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  :root {
+    --ink: #1f2328; --muted: #6e7781; --line: #d0d7de; --soft: #f6f8fa;
+    --green: #1a7f37; --blue: #0969da; --amber: #9a6700; --red: #cf222e;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px 16px 14px; background: #fff; color: var(--ink);
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  .stage { outline: none; border-radius: 10px; }
+  .stage:focus-visible { box-shadow: 0 0 0 2px var(--blue); }
+  svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+  .lane-title { font-size: 13px; font-weight: 600; fill: var(--ink); text-anchor: middle; }
+  .lane-sub { font-size: 11px; fill: var(--muted); text-anchor: middle; }
+  .card { fill: #fff; stroke: var(--line); stroke-width: 1.5; }
+  .terminal { fill: #0d1117; stroke: #30363d; stroke-width: 1.5; }
+  .mono { font: 10.5px ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre; }
+  .term-line { fill: #c9d1d9; }
+  .term-line.prompt { fill: #7ee787; }
+  .term-line.note { fill: #8b949e; }
+
+  .doc-line { fill: #d8dee4; transition: fill .45s ease; }
+  .doc-line.added { fill: #aceebb; }
+  .doc-line.removed { fill: #ffcecb; }
+  .highlight { fill: #fff8c5; opacity: 0; transition: opacity .3s ease; }
+  .highlight.on { opacity: 1; }
+
+  .pop { transform-box: fill-box; transform-origin: center;
+    transition: transform .4s cubic-bezier(.3, 1.6, .6, 1), opacity .25s ease; }
+  .pop.off { transform: scale(0); opacity: 0; }
+
+  .guide { fill: none; stroke: #eaeef2; stroke-width: 2; stroke-dasharray: 4 5; transition: stroke .3s ease; }
+  .guide.active { stroke: #c8d1da; }
+  .chip-text { font: 600 9.5px -apple-system, BlinkMacSystemFont, sans-serif; text-anchor: middle; }
+
+  .spinner { transform-box: fill-box; transform-origin: center; animation: spin 1s linear infinite; }
+  .spinner.off { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .controls { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  button { font: inherit; font-size: 13px; color: var(--ink); background: #fff; border: 1px solid var(--line);
+    border-radius: 6px; height: 30px; min-width: 30px; padding: 0 10px; cursor: pointer; }
+  button:hover { background: var(--soft); }
+  button.primary { background: var(--ink); border-color: var(--ink); color: #fff; min-width: 76px; }
+  .dots { display: flex; gap: 6px; margin-left: 4px; }
+  .dot { width: 22px; height: 22px; min-width: 0; padding: 0; border-radius: 999px; font-size: 11px; color: var(--muted); }
+  .dot[aria-current="step"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .caption { margin-top: 10px; min-height: 2.9em; }
+  .caption strong { font-weight: 600; }
+  .progress { height: 3px; background: #eaeef2; border-radius: 2px; overflow: hidden; margin-top: 8px; }
+  .progress > div { height: 100%; width: 0; background: var(--ink); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pop, .doc-line, .highlight, .guide { transition: none; }
+    .spinner { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="stage" tabindex="0" aria-label="Review loop animation. Use the left and right arrow keys to step, space to play or pause.">
+<svg viewBox="0 0 760 330" role="img" aria-labelledby="caption">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Lane titles -->
+  <text class="lane-title" x="130" y="22">You, in Markside</text>
+  <text class="lane-sub" x="130" y="38">plan.md</text>
+  <text class="lane-title" x="380" y="22">Review file</text>
+  <text class="lane-sub" x="380" y="38">plan.review.json</text>
+  <text class="lane-title" x="630" y="22">Agent</text>
+  <text class="lane-sub" x="630" y="38">markside review</text>
+
+  <!-- Paths a message travels along -->
+  <path id="p-you-file" class="guide" d="M 222 140 C 250 112, 262 112, 288 140"/>
+  <path id="p-file-agent" class="guide" d="M 472 140 C 500 112, 512 112, 538 140"/>
+  <path id="p-agent-file" class="guide" d="M 538 240 C 512 268, 500 268, 472 240"/>
+  <path id="p-file-you" class="guide" d="M 288 240 C 262 268, 250 268, 222 240"/>
+  <path id="p-agent-you" class="guide" d="M 630 66 C 600 44, 160 44, 130 66"/>
+
+  <!-- You: the rendered document -->
+  <rect class="card" x="40" y="70" width="180" height="230" rx="10"/>
+  <g id="reload-bar" class="pop off">
+    <rect x="52" y="80" width="156" height="22" rx="6" fill="#ddf4ff" stroke="#54aeff"/>
+    <text x="64" y="95" font-size="10.5" fill="#0969da">⟳ Reload · plan.md changed</text>
+  </g>
+  <g id="disk-chip" class="pop off">
+    <rect x="96" y="80" width="112" height="22" rx="11" fill="#fff8c5" stroke="#d4a72c"/>
+    <text class="chip-text" x="152" y="95" fill="#9a6700">Changed on disk</text>
+  </g>
+  <rect x="56" y="114" width="96" height="9" rx="3" fill="#8c959f"/>
+  <rect id="hl-1" class="highlight" x="52" y="133" width="152" height="15" rx="3"/>
+  <rect id="line-1" class="doc-line" x="56" y="136" width="140" height="8" rx="3"/>
+  <rect class="doc-line" x="56" y="154" width="124" height="8" rx="3"/>
+  <rect id="line-3" class="doc-line" x="56" y="172" width="132" height="8" rx="3"/>
+  <rect class="doc-line" x="56" y="190" width="104" height="8" rx="3"/>
+  <rect id="hl-2" class="highlight" x="52" y="205" width="152" height="15" rx="3"/>
+  <rect id="line-5" class="doc-line" x="56" y="208" width="136" height="8" rx="3"/>
+  <rect class="doc-line" x="56" y="226" width="118" height="8" rx="3"/>
+  <rect id="line-7" class="doc-line" x="56" y="244" width="128" height="8" rx="3"/>
+  <rect class="doc-line" x="56" y="262" width="90" height="8" rx="3"/>
+  <g id="bubble-1" class="pop off">
+    <circle cx="206" cy="140" r="10" fill="#0969da"/>
+    <text id="bubble-1-glyph" x="206" y="144" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+  </g>
+  <g id="bubble-2" class="pop off">
+    <circle cx="206" cy="212" r="10" fill="#0969da"/>
+    <text id="bubble-2-glyph" x="206" y="216" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+  </g>
+
+  <!-- Review file -->
+  <rect class="card" x="290" y="70" width="180" height="230" rx="10" fill="#fff"/>
+  <text class="mono" x="304" y="96" fill="#6e7781">{</text>
+  <text class="mono" x="314" y="116" fill="#1f2328">"status":</text>
+  <g id="status-chip">
+    <rect id="status-bg" x="376" y="104" width="76" height="17" rx="8.5" fill="#f6f8fa" stroke="#d0d7de"/>
+    <text id="status-text" class="chip-text" x="414" y="116" fill="#6e7781">none</text>
+  </g>
+  <text class="mono" x="314" y="146" fill="#1f2328">"comments": [</text>
+  <g id="c1" class="pop off">
+    <rect x="322" y="156" width="136" height="40" rx="7" fill="#f6f8fa" stroke="#d0d7de"/>
+    <text class="mono" x="332" y="172" fill="#1f2328">#1 "Clarify step 2"</text>
+    <rect id="c1-bg" x="332" y="178" width="62" height="13" rx="6.5" fill="#ddf4ff"/>
+    <text id="c1-text" class="chip-text" x="363" y="188" fill="#0969da">open</text>
+  </g>
+  <g id="c2" class="pop off">
+    <rect x="322" y="204" width="136" height="40" rx="7" fill="#f6f8fa" stroke="#d0d7de"/>
+    <text class="mono" x="332" y="220" fill="#1f2328">#2 [HTML: flow]</text>
+    <rect id="c2-bg" x="332" y="226" width="62" height="13" rx="6.5" fill="#ddf4ff"/>
+    <text id="c2-text" class="chip-text" x="363" y="236" fill="#0969da">open</text>
+  </g>
+  <text class="mono" x="314" y="264" fill="#1f2328">]</text>
+  <text class="mono" x="304" y="284" fill="#6e7781">}</text>
+
+  <!-- Agent terminal -->
+  <rect class="terminal" x="540" y="70" width="180" height="230" rx="10"/>
+  <circle cx="556" cy="84" r="3.5" fill="#ff5f57"/><circle cx="568" cy="84" r="3.5" fill="#febc2e"/><circle cx="580" cy="84" r="3.5" fill="#28c840"/>
+  <g id="term"></g>
+  <path id="spinner" class="spinner off" d="M 700 286 a 6 6 0 1 1 -6 -6" fill="none" stroke="#8b949e" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- The travelling message -->
+  <g id="token" opacity="0">
+    <circle r="11" fill="#0969da" opacity=".18"/>
+    <circle id="token-core" r="6" fill="#0969da" filter="url(#glow)"/>
+  </g>
+</svg>
+
+<div class="progress" aria-hidden="true"><div id="progress"></div></div>
+<p class="caption" id="caption" aria-live="polite"></p>
+<div class="controls">
+  <button id="prev" aria-label="Previous step">←</button>
+  <button id="play" class="primary">▶ Play</button>
+  <button id="next" aria-label="Next step">→</button>
+  <div class="dots" id="dots" role="group" aria-label="Steps"></div>
+</div>
+</div>
+
+<script>
+(() => {
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches
+  const STEP_MS = 3400
+  const TRAVEL_MS = reduceMotion ? 0 : 1100
+  const $ = (id) => document.getElementById(id)
+
+  const waiting = ["$ markside review plan.md", { text: "Waiting for review…", kind: "note" }]
+  const steps = [
+    {
+      title: "You comment.",
+      text: "Select a passage, or use a visual's comment button, and write what is unclear. Nothing leaves Markside yet.",
+      state: { bubbles: "open", file: "none", comments: [], agent: waiting, waiting: true },
+    },
+    {
+      title: "You send the Review.",
+      text: "Send review to agent writes your comments to plan.review.json, next to the document.",
+      token: { path: "p-you-file", color: "#0969da" },
+      state: { bubbles: "open", file: "sent", comments: ["open", "open"], agent: waiting, waiting: true },
+    },
+    {
+      title: "The agent wakes up.",
+      text: "Its waiting command sees the file change and prints your comments, quote and line included.",
+      token: { path: "p-file-agent", color: "#0969da" },
+      state: { bubbles: "open", file: "sent", comments: ["open", "open"], waiting: false,
+        agent: [...waiting, "Got 2 comments for plan.md", { text: "#1 Clarify step 2", kind: "note" }, { text: "#2 [HTML: flow]", kind: "note" }] },
+    },
+    {
+      title: "The agent edits the files.",
+      text: "It rewrites the passage in plan.md and updates the embedded diagram's HTML file. Markside is not told yet.",
+      token: { path: "p-agent-you", color: "#9a6700" },
+      state: { bubbles: "open", file: "sent", comments: ["open", "open"], disk: true, waiting: false,
+        agent: ["Got 2 comments for plan.md", "Editing plan.md", "Editing flow.html"] },
+    },
+    {
+      title: "It replies to each comment.",
+      text: "markside address marks each comment addressed with a one-line reply, then waits again.",
+      token: { path: "p-agent-file", color: "#1a7f37" },
+      state: { bubbles: "open", file: "sent", comments: ["addressed", "addressed"], disk: true, waiting: true,
+        agent: ["Editing flow.html", "$ markside address … #1", "$ markside address … #2", "$ markside review plan.md", { text: "    --continue", kind: "prompt" }, { text: "Waiting for review…", kind: "note" }] },
+    },
+    {
+      title: "You reload and compare.",
+      text: "Markside sees the reply and offers Reload. Reload Comparison marks added and removed text.",
+      token: { path: "p-file-you", color: "#1a7f37" },
+      state: { bubbles: "open", reload: true, diff: true, file: "sent", comments: ["addressed", "addressed"], waiting: true,
+        agent: ["$ markside address … #1", "$ markside address … #2", "$ markside review plan.md", { text: "    --continue", kind: "prompt" }, { text: "Waiting for review…", kind: "note" }] },
+    },
+    {
+      title: "You resolve, or go again.",
+      text: "Resolve what you accept and finish the Review. A new comment starts another round from step 1.",
+      state: { bubbles: "resolved", diff: true, file: "finished", comments: ["resolved", "resolved"], waiting: false,
+        agent: ["$ markside review plan.md", { text: "    --continue", kind: "prompt" }, "Review resolved.", { text: "Agent continues the task.", kind: "note" }] },
+    },
+  ]
+
+  const statusStyle = {
+    none: ["none", "#f6f8fa", "#d0d7de", "#6e7781"],
+    sent: ["sent", "#ddf4ff", "#54aeff", "#0969da"],
+    finished: ["finished", "#dafbe1", "#4ac26b", "#1a7f37"],
+  }
+  const commentStyle = {
+    open: ["open", "#ddf4ff", "#0969da"],
+    addressed: ["addressed", "#fff8c5", "#9a6700"],
+    resolved: ["resolved", "#dafbe1", "#1a7f37"],
+  }
+
+  function setClass(el, name, on) { el.classList.toggle(name, on) }
+
+  function render(state) {
+    for (const n of [1, 2]) {
+      setClass($(`bubble-${n}`), "off", !state.bubbles)
+      $(`bubble-${n}`).querySelector("circle").setAttribute("fill", state.bubbles === "resolved" ? "#1a7f37" : "#0969da")
+      $(`bubble-${n}-glyph`).textContent = state.bubbles === "resolved" ? "✓" : String(n)
+      setClass($(`hl-${n}`), "on", state.bubbles === "open" && !state.diff)
+    }
+    setClass($("disk-chip"), "off", !state.disk)
+    setClass($("reload-bar"), "off", !state.reload)
+    setClass($("line-1"), "added", !!state.diff)
+    setClass($("line-3"), "removed", !!state.diff)
+    setClass($("line-5"), "added", !!state.diff)
+    setClass($("line-7"), "added", !!state.diff)
+
+    const [label, bg, stroke, ink] = statusStyle[state.file]
+    $("status-text").textContent = label
+    $("status-text").setAttribute("fill", ink)
+    $("status-bg").setAttribute("fill", bg)
+    $("status-bg").setAttribute("stroke", stroke)
+    ;[1, 2].forEach((n, i) => {
+      const status = state.comments[i]
+      setClass($(`c${n}`), "off", !status)
+      if (!status) return
+      const [text, fill, color] = commentStyle[status]
+      $(`c${n}-text`).textContent = text
+      $(`c${n}-text`).setAttribute("fill", color)
+      $(`c${n}-bg`).setAttribute("fill", fill)
+    })
+
+    const term = $("term")
+    term.replaceChildren()
+    state.agent.slice(-9).forEach((line, i) => {
+      const entry = typeof line === "string" ? { text: line, kind: line.startsWith("$") ? "prompt" : "" } : line
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text")
+      text.setAttribute("class", `mono term-line ${entry.kind}`)
+      text.setAttribute("x", "552")
+      text.setAttribute("y", String(110 + i * 19))
+      text.textContent = entry.text
+      term.append(text)
+    })
+    setClass($("spinner"), "off", !state.waiting)
+  }
+
+  const dots = steps.map((step, i) => {
+    const dot = document.createElement("button")
+    dot.className = "dot"
+    dot.textContent = String(i + 1)
+    dot.setAttribute("aria-label", `Step ${i + 1}: ${step.title}`)
+    dot.addEventListener("click", () => go(i))
+    $("dots").append(dot)
+    return dot
+  })
+
+  let index = 0
+  let stepStart = performance.now()
+  let applied = false
+  let playing = false
+
+  function previousState(i) {
+    return i === 0 ? { bubbles: null, file: "none", comments: [], agent: waiting, waiting: true } : steps[i - 1].state
+  }
+
+  function go(i) {
+    index = (i + steps.length) % steps.length
+    stepStart = performance.now()
+    applied = !steps[index].token || TRAVEL_MS === 0
+    render(applied ? steps[index].state : previousState(index))
+    const step = steps[index]
+    $("caption").innerHTML = `<strong>${index + 1}. ${step.title}</strong> ${step.text}`
+    dots.forEach((dot, n) => dot.setAttribute("aria-current", n === index ? "step" : "false"))
+    document.querySelectorAll(".guide").forEach((path) => path.classList.toggle("active", step.token?.path === path.id))
+    $("token").setAttribute("opacity", "0")
+  }
+
+  function setPlaying(next) {
+    playing = next
+    $("play").textContent = playing ? "❚❚ Pause" : "▶ Play"
+    if (playing) stepStart = performance.now() - (applied ? TRAVEL_MS : 0)
+  }
+
+  const ease = (t) => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+
+  function frame(now) {
+    const step = steps[index]
+    const elapsed = now - stepStart
+    if (step.token && !applied) {
+      const path = $(step.token.path)
+      const t = Math.min(1, elapsed / TRAVEL_MS)
+      const point = path.getPointAtLength(ease(t) * path.getTotalLength())
+      $("token").setAttribute("transform", `translate(${point.x} ${point.y})`)
+      $("token").setAttribute("opacity", t < 1 ? "1" : "0")
+      $("token-core").setAttribute("fill", step.token.color)
+      $("token").firstElementChild.setAttribute("fill", step.token.color)
+      if (t >= 1) {
+        applied = true
+        render(step.state)
+      }
+    }
+    $("progress").style.width = playing ? `${Math.min(100, (elapsed / STEP_MS) * 100)}%` : applied ? "100%" : "0%"
+    if (playing && elapsed >= STEP_MS) go(index + 1)
+    requestAnimationFrame(frame)
+  }
+
+  $("play").addEventListener("click", () => setPlaying(!playing))
+  $("next").addEventListener("click", () => go(index + 1))
+  $("prev").addEventListener("click", () => go(index - 1))
+  $("stage").addEventListener("keydown", (event) => {
+    if (event.key === "ArrowRight") go(index + 1)
+    else if (event.key === "ArrowLeft") go(index - 1)
+    else if (event.key === " ") setPlaying(!playing)
+    else return
+    event.preventDefault()
+  })
+
+  go(0)
+  requestAnimationFrame(frame)
+})()
+</script>
+</body>
+</html>

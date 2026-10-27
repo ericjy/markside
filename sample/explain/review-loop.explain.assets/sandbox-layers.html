@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  :root { --ink: #1f2328; --muted: #6e7781; --line: #d0d7de; --soft: #f6f8fa; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; background: #fff; color: var(--ink);
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  .layers { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .layer { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 8px; border: 1px solid var(--line);
+    border-radius: 999px; cursor: pointer; user-select: none; font-size: 13px; transition: background .2s, border-color .2s, opacity .2s; }
+  .layer input { appearance: none; width: 28px; height: 16px; border-radius: 999px; background: #d0d7de; position: relative;
+    margin: 0; cursor: pointer; transition: background .2s; }
+  .layer input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%;
+    background: #fff; transition: transform .2s; box-shadow: 0 1px 2px rgb(0 0 0 / .2); }
+  .layer input:checked { background: var(--swatch); }
+  .layer input:checked::after { transform: translateX(12px); }
+  .layer:has(input:not(:checked)) { opacity: .65; border-style: dashed; }
+  .layer input:focus-visible { outline: 2px solid #0969da; outline-offset: 2px; }
+  canvas { display: block; width: 100%; height: 300px; border-radius: 10px; background: #fbfcfd; border: 1px solid #eaeef2; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12.5px; }
+  th { text-align: left; font-weight: 600; color: var(--muted); font-size: 11.5px; padding: 0 8px 6px; border-bottom: 1px solid var(--line); }
+  td { padding: 6px 8px; border-bottom: 1px solid #eaeef2; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; width: 70px; }
+  th.num { text-align: right; }
+  .swatch { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; vertical-align: 0; }
+  .escaped { color: #cf222e; font-weight: 600; }
+  .note { margin: 10px 0 0; color: var(--muted); font-size: 12.5px; }
+</style>
+</head>
+<body>
+<div class="layers" id="layers"></div>
+<canvas id="canvas" aria-label="Animated requests leaving an embed and stopping at its protective layers"></canvas>
+<table>
+  <thead><tr><th>Request from the embed</th><th>Stopped by</th><th class="num">Blocked</th><th class="num">Escaped</th></tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+<p class="note">Escaped requests can carry only what the embed already contains. The embed cannot read the document, Markside, or your files.</p>
+
+<script>
+(() => {
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches
+  const layers = [
+    { id: "csp", name: "Content policy", color: "#0969da", on: true },
+    { id: "sandbox", name: "Sandbox", color: "#8250df", on: true },
+    { id: "frame", name: "Page frame policy", color: "#1a7f37", on: true },
+  ]
+  const types = [
+    { id: "fetch", name: "fetch()", color: "#0969da", layer: "csp" },
+    { id: "image", name: "Remote image", color: "#218bff", layer: "csp" },
+    { id: "socket", name: "WebSocket", color: "#54aeff", layer: "csp" },
+    { id: "popup", name: "Pop-up window", color: "#8250df", layer: "sandbox" },
+    { id: "top", name: "Navigate the whole tab", color: "#a475f9", layer: "sandbox" },
+    { id: "self", name: "Navigate the embed itself", color: "#1a7f37", layer: "frame" },
+    { id: "webrtc", name: "WebRTC", color: "#cf222e", layer: null },
+  ]
+  const counts = Object.fromEntries(types.map((type) => [type.id, { blocked: 0, escaped: 0 }]))
+
+  const layerBox = document.getElementById("layers")
+  for (const layer of layers) {
+    const label = document.createElement("label")
+    label.className = "layer"
+    label.style.setProperty("--swatch", layer.color)
+    const input = document.createElement("input")
+    input.type = "checkbox"
+    input.checked = true
+    input.setAttribute("role", "switch")
+    input.addEventListener("change", () => { layer.on = input.checked })
+    label.append(input, document.createTextNode(layer.name))
+    layerBox.append(label)
+  }
+
+  const rows = document.getElementById("rows")
+  const cells = {}
+  for (const type of types) {
+    const row = document.createElement("tr")
+    const layer = layers.find((candidate) => candidate.id === type.layer)
+    row.innerHTML = `<td><span class="swatch" style="background:${type.color}"></span>${type.name}</td>` +
+      `<td>${layer ? layer.name : "Nothing Chrome offers"}</td><td class="num">0</td><td class="num">0</td>`
+    rows.append(row)
+    cells[type.id] = { blocked: row.children[2], escaped: row.children[3] }
+  }
+
+  const canvas = document.getElementById("canvas")
+  const context = canvas.getContext("2d")
+  let width = 0
+  let height = 0
+  const resize = () => {
+    const ratio = devicePixelRatio || 1
+    width = canvas.clientWidth
+    height = canvas.clientHeight
+    canvas.width = Math.round(width * ratio)
+    canvas.height = Math.round(height * ratio)
+    context.setTransform(ratio, 0, 0, ratio, 0, 0)
+  }
+  new ResizeObserver(resize).observe(canvas)
+  resize()
+
+  // Half sizes of the embed box and each ring around it, innermost first.
+  const geometry = () => {
+    const boxW = 58
+    const boxH = 26
+    const stepX = Math.max(34, (width / 2 - boxW - 34) / 3)
+    const stepY = Math.max(22, (height / 2 - boxH - 22) / 3)
+    return { boxW, boxH, rings: layers.map((layer, i) => ({ layer, w: boxW + stepX * (i + 1), h: boxH + stepY * (i + 1) })) }
+  }
+
+  const particles = []
+  const bursts = []
+  let lastSpawn = 0
+  const speed = reduceMotion ? 0.035 : 0.11
+
+  function spawn(now) {
+    const { boxW, boxH } = geometry()
+    const type = types[Math.floor(Math.random() * types.length)]
+    const angle = Math.random() * Math.PI * 2
+    const dx = Math.cos(angle)
+    const dy = Math.sin(angle)
+    const scale = Math.min(boxW / Math.abs(dx || 1e-6), boxH / Math.abs(dy || 1e-6))
+    particles.push({ type, x: dx * scale, y: dy * scale, vx: dx, vy: dy, born: now, crossed: 0 })
+  }
+
+  function roundRect(cx, cy, w, h, r) {
+    context.beginPath()
+    context.roundRect(cx - w, cy - h, w * 2, h * 2, r)
+  }
+
+  function draw(now, dt) {
+    const cx = width / 2
+    const cy = height / 2
+    const { boxW, boxH, rings } = geometry()
+    context.clearRect(0, 0, width, height)
+
+    context.font = "600 10.5px -apple-system, BlinkMacSystemFont, sans-serif"
+    for (let i = rings.length - 1; i >= 0; i--) {
+      const { layer, w, h } = rings[i]
+      roundRect(cx, cy, w, h, 14 + i * 6)
+      context.setLineDash(layer.on ? [] : [5, 6])
+      context.lineWidth = layer.on ? 2 : 1.25
+      context.strokeStyle = layer.on ? layer.color : "#c8d1da"
+      context.globalAlpha = layer.on ? 1 : 0.8
+      context.stroke()
+      context.globalAlpha = 1
+      context.setLineDash([])
+      context.fillStyle = layer.on ? layer.color : "#8c959f"
+      context.textAlign = "left"
+      context.fillText(layer.name.toUpperCase(), cx - w + 10, cy - h + 14)
+    }
+
+    roundRect(cx, cy, boxW, boxH, 8)
+    context.fillStyle = "#1f2328"
+    context.fill()
+    context.fillStyle = "#fff"
+    context.textAlign = "center"
+    context.font = "600 12px -apple-system, BlinkMacSystemFont, sans-serif"
+    context.fillText("Embed", cx, cy + 4)
+
+    const spawnEvery = reduceMotion ? 700 : 170
+    if (now - lastSpawn > spawnEvery && particles.length < 70) {
+      lastSpawn = now
+      spawn(now)
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const particle = particles[i]
+      particle.x += particle.vx * speed * dt
+      particle.y += particle.vy * speed * dt
+      while (particle.crossed < rings.length) {
+        const ring = rings[particle.crossed]
+        if (Math.abs(particle.x) < ring.w && Math.abs(particle.y) < ring.h) break
+        if (ring.layer.on && ring.layer.id === particle.type.layer) {
+          counts[particle.type.id].blocked++
+          if (!reduceMotion) bursts.push({ x: particle.x, y: particle.y, color: ring.layer.color, born: now })
+          particles.splice(i, 1)
+          break
+        }
+        particle.crossed++
+      }
+      if (particles[i] !== particle) continue
+      if (Math.abs(particle.x) > width / 2 || Math.abs(particle.y) > height / 2) {
+        counts[particle.type.id].escaped++
+        bursts.push({ x: particle.x, y: particle.y, color: "#cf222e", born: now, escaped: true })
+        particles.splice(i, 1)
+        continue
+      }
+      const free = particle.crossed >= rings.length
+      context.beginPath()
+      context.arc(cx + particle.x, cy + particle.y, free ? 4.5 : 3.5, 0, Math.PI * 2)
+      context.fillStyle = particle.type.color
+      context.fill()
+      if (free) {
+        context.lineWidth = 1.5
+        context.strokeStyle = "rgba(207, 34, 46, .35)"
+        context.stroke()
+      }
+    }
+
+    for (let i = bursts.length - 1; i >= 0; i--) {
+      const burst = bursts[i]
+      const age = (now - burst.born) / (burst.escaped ? 700 : 420)
+      if (age >= 1) {
+        bursts.splice(i, 1)
+        continue
+      }
+      context.beginPath()
+      context.arc(cx + burst.x, cy + burst.y, 3 + age * (burst.escaped ? 18 : 10), 0, Math.PI * 2)
+      context.strokeStyle = burst.color
+      context.globalAlpha = 1 - age
+      context.lineWidth = 2
+      context.stroke()
+      context.globalAlpha = 1
+    }
+  }
+
+  function updateTable() {
+    for (const type of types) {
+      cells[type.id].blocked.textContent = counts[type.id].blocked
+      cells[type.id].escaped.textContent = counts[type.id].escaped
+      cells[type.id].escaped.classList.toggle("escaped", counts[type.id].escaped > 0)
+    }
+  }
+
+  // Animate only while the embed is on screen.
+  let visible = true
+  new IntersectionObserver(([entry]) => { visible = entry.isIntersecting }).observe(canvas)
+
+  let previous = performance.now()
+  let lastTable = 0
+  function frame(now) {
+    const dt = Math.min(48, now - previous)
+    previous = now
+    if (visible && document.visibilityState === "visible") {
+      draw(now, dt)
+      if (now - lastTable > 250) {
+        lastTable = now
+        updateTable()
+      }
+    }
+    requestAnimationFrame(frame)
+  }
+  requestAnimationFrame(frame)
+})()
+</script>
+</body>
+</html>

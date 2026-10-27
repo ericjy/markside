@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify"
 import MarkdownIt from "markdown-it"
 import type StateCore from "markdown-it/lib/rules_core/state_core.mjs"
 import type Token from "markdown-it/lib/token.mjs"
@@ -609,6 +610,16 @@ md.core.ruler.push("source_lines", (state) => {
     )
   }
 })
+
+// A <style> in a document, even inside an inline SVG, applies to the whole page
+// and would restyle Markside itself, so rendered Markdown drops it. GitHub drops
+// it as well; styled visuals belong in an HTML Embed.
+export function sanitizeRenderedMarkdown(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ADD_ATTR: ["data-wikilink", "data-source-line", "data-embed-src"],
+    FORBID_TAGS: ["style"],
+  })
+}
 
 // An image line that stands alone and names a local `.html` file becomes an
 // HTML Embed. Runs after source_lines so the paragraph's line carries over.

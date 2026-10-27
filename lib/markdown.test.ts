@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
 import { buildRenderedTextIndex } from "./review-dom"
-import { hasQuestionCard, md, mountQuestionCard } from "./markdown"
+import { hasQuestionCard, md, mountQuestionCard, sanitizeRenderedMarkdown } from "./markdown"
 
 describe("markdown renderer", () => {
   it("adds an id attribute to H1 headings", () => {
@@ -584,5 +584,23 @@ describe("math rendering", () => {
   it("renders math inside table cells and list items", () => {
     expect(md.render("| A |\n| --- |\n| $x$ |")).toContain('<span class="katex">')
     expect(md.render("- $y$")).toContain('<span class="katex">')
+  })
+})
+
+describe("Rendered Markdown sanitizing", () => {
+  it("drops <style>, including inside inline SVG, and keeps embed attributes", () => {
+    const html = sanitizeRenderedMarkdown(md.render([
+      "# Title",
+      "",
+      "<style>main { max-width: 300px; }</style>",
+      "",
+      '<svg viewBox="0 0 10 10"><style>main { color: red; }</style><rect width="10" height="10"/></svg>',
+      "",
+      "![Flow](./flow.html)",
+    ].join("\n")))
+    expect(html).not.toContain("<style")
+    expect(html).toContain("<rect")
+    expect(html).toContain('data-embed-src="./flow.html"')
+    expect(html).toContain("data-source-line")
   })
 })

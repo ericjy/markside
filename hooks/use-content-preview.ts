@@ -1,11 +1,10 @@
 import katexCssText from "data-text:~lib/katex-bundle.css"
-import DOMPurify from "dompurify"
 import React,{ useEffect } from "react"
 import { parseFrontmatter,renderFrontmatterHTML } from "~lib/frontmatter"
 import { applyHeadingNumbers } from "~lib/heading-numbering"
 import { parkHtmlEmbedFrames,renderHtmlEmbeds } from "~lib/html-embed"
 import { headingIdFromHash,resolveActiveOutlineHeading,type Heading } from "~lib/headings"
-import { addDefaultDetailsSummaries,md,mountQuestionCard,type QuestionCard } from "~lib/markdown"
+import { addDefaultDetailsSummaries,md,mountQuestionCard,sanitizeRenderedMarkdown,type QuestionCard } from "~lib/markdown"
 import {
   resolveModeTransition,
   setMarkdownMode,
@@ -138,10 +137,7 @@ export function useContentPreview({
     const sourceLineOffset =
       content.slice(0, bodyStart).split("\n").length - 1
     if (!changesVisible) parkHtmlEmbedFrames(contentRef.current)
-    contentRef.current.innerHTML = DOMPurify.sanitize(
-      fmHTML + md.render(body, { sourceLineOffset }),
-      { ADD_ATTR: ["data-wikilink", "data-source-line", "data-embed-src"] }
-    )
+    contentRef.current.innerHTML = sanitizeRenderedMarkdown(fmHTML + md.render(body, { sourceLineOffset }))
     addDefaultDetailsSummaries(contentRef.current)
     if (contentRef.current.querySelector(".katex")) injectKatexStyles()
 
@@ -176,7 +172,7 @@ export function useContentPreview({
     if (changesVisible) {
       const beforeRoot = document.createElement("div")
       const previous = parseFrontmatter(reloadComparison!.before)
-      beforeRoot.innerHTML = DOMPurify.sanitize(renderFrontmatterHTML(previous.data) + md.render(previous.body))
+      beforeRoot.innerHTML = sanitizeRenderedMarkdown(renderFrontmatterHTML(previous.data) + md.render(previous.body))
       addDefaultDetailsSummaries(beforeRoot)
       if (beforeRoot.querySelector(".katex")) injectKatexStyles()
       showReloadChanges(renderedContent, beforeRoot)

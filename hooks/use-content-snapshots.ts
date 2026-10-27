@@ -31,6 +31,8 @@ import {
 export type LinkSnapshotDialog = {
   markdown: string
   embeds: Record<string, string>
+  // Paths of embeds whose files could not be read, so the link leaves them out.
+  missingEmbeds: string[]
   creation: LinkSnapshotCreation
   resources: LinkSnapshotResources
   requiresSave: boolean
@@ -101,21 +103,23 @@ export function useContentSnapshots({
 
   // A missing embed file is left out; the viewer shows its error block.
   const readSnapshotEmbeds = async (markdown: string) => {
-    const entries = await Promise.all(findHtmlEmbedSources(md.parse(markdown, {})).map(async (src) => {
+    const embeds: Record<string, string> = {}
+    const missingEmbeds: string[] = []
+    await Promise.all(findHtmlEmbedSources(md.parse(markdown, {})).map(async (src) => {
       try {
-        return [src, await readHtmlEmbedFile(new URL(src, fileUrlRef.current).href)] as const
+        embeds[src] = await readHtmlEmbedFile(new URL(src, fileUrlRef.current).href)
       } catch {
-        return null
+        missingEmbeds.push(src)
       }
     }))
-    return Object.fromEntries(entries.filter((entry) => entry !== null))
+    return { embeds, missingEmbeds }
   }
 
   const requestLinkSnapshot = async () => {
     const markdown = hasUnsavedDraftRef.current
       ? draftRef.current
       : diskContentRef.current ?? content ?? ""
-    const embeds = await readSnapshotEmbeds(markdown)
+    const { embeds, missingEmbeds } = await readSnapshotEmbeds(markdown)
     const creation = createLinkSnapshot({
       filename: currentFileName,
       markdown,
@@ -125,6 +129,7 @@ export function useContentSnapshots({
     setLinkSnapshotDialog({
       markdown,
       embeds,
+      missingEmbeds,
       creation,
       resources: analyzeLinkSnapshotResources(markdown),
       requiresSave: hasUnsavedDraftRef.current,
@@ -167,7 +172,7 @@ export function useContentSnapshots({
       }
     }
     const markdown = diskContentRef.current ?? linkSnapshotDialog.markdown
-    const embeds = await readSnapshotEmbeds(markdown)
+    const { embeds, missingEmbeds } = await readSnapshotEmbeds(markdown)
     const creation = createLinkSnapshot({
       filename: currentFileName,
       markdown,
@@ -179,6 +184,7 @@ export function useContentSnapshots({
       setLinkSnapshotDialog({
         markdown,
         embeds,
+        missingEmbeds,
         creation,
         resources,
         requiresSave: false,
@@ -219,6 +225,7 @@ export function useContentSnapshots({
       setLinkSnapshotDialog({
         markdown,
         embeds,
+        missingEmbeds,
         creation,
         resources,
         requiresSave: false,
@@ -233,6 +240,7 @@ export function useContentSnapshots({
       setLinkSnapshotDialog({
         markdown,
         embeds,
+        missingEmbeds,
         creation,
         resources,
         requiresSave: false,

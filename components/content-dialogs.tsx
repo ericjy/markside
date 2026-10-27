@@ -1,5 +1,6 @@
 import type { FolderError } from "~hooks/use-persisted-directory"
 import {
+  AlertTriangle,
   Check,
   Copy,
   ExternalLink,
@@ -258,6 +259,20 @@ export function ContentDialogs({
                 <Info size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
                 <p>
                   {linkSnapshotDialog.resources.localImages} local image{linkSnapshotDialog.resources.localImages === 1 ? "" : "s"} and {linkSnapshotDialog.resources.localDocumentLinks} local document link{linkSnapshotDialog.resources.localDocumentLinks === 1 ? "" : "s"} are not included in the shared link, keeping the shared content limited to this Markdown and leaving the referenced local files on your device.
+                </p>
+              </div>
+            ) : null}
+            {linkSnapshotDialog.missingEmbeds.length > 0 ? (
+              <div role="note" className="mt-3 flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
+                <p>
+                  Markside could not read {linkSnapshotDialog.missingEmbeds.length === 1 ? "this HTML Embed" : "these HTML Embeds"}, so the shared link will show {linkSnapshotDialog.missingEmbeds.length === 1 ? "it" : "them"} as missing:{" "}
+                  {linkSnapshotDialog.missingEmbeds.map((src, index) => (
+                    <React.Fragment key={src}>
+                      {index > 0 ? ", " : ""}
+                      <code className="break-all">{src}</code>
+                    </React.Fragment>
+                  ))}
                 </p>
               </div>
             ) : null}

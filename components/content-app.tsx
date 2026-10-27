@@ -437,6 +437,7 @@ export function FileRenderer({
 
   const { selectMode } = useContentPreview({
     mode,
+    isMdFile,
     cancelPreviewUpdate,
     pendingDraftSyncRef,
     draftRef,

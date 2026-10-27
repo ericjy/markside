@@ -33,6 +33,7 @@ function injectKatexStyles() {
 
 interface UseContentPreviewOptions {
   mode: MarkdownMode
+  isMdFile: boolean
   cancelPreviewUpdate: () => void
   pendingDraftSyncRef: React.MutableRefObject<boolean>
   draftRef: React.MutableRefObject<string>
@@ -67,6 +68,7 @@ interface UseContentPreviewOptions {
 
 export function useContentPreview({
   mode,
+  isMdFile,
   cancelPreviewUpdate,
   pendingDraftSyncRef,
   draftRef,
@@ -120,7 +122,9 @@ export function useContentPreview({
   useEffect(() => {
     if (!contentRef.current) return
     cancelPreviewEnhancement()
-    if (content === null) {
+    // Only Markdown is rendered; other files would otherwise run as raw HTML in
+    // the hidden Preview, where an HTML file's <style> restyles Markside itself.
+    if (content === null || !isMdFile) {
       contentRef.current.replaceChildren()
       setHeadings([])
       setReadabilityMounts([])

@@ -1,4 +1,5 @@
 export const AUTO_SAVE_STORAGE_KEY = "autoSaveEnabled"
+export const AUTO_SAVE_DELAY_MS = 1500
 
 export function resolveAutoSaveEnabled(value: unknown): boolean {
   return value === true

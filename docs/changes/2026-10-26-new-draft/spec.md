@@ -23,13 +23,17 @@ marks a detail proposed in this spec that still needs confirming in Review.
 | R2 | **New draft** opens the draft tab, `tabs/draft.html`, as a new active tab. If a draft tab whose draft has never been saved is already open, the popup focuses it instead. | [Q3](grill.md#q3-does-the-file-exist-before-the-user-writes)<br>focusing: proposed here |
 | R3 | The draft tab opens in Split when the window fits two 320 px panes, otherwise in Source, with the editor focused so typing or pasting works at once. An empty draft shows "Write or paste Markdown…" in the editor and a quiet Preview label in the Preview pane. The toolbar offers Preview, Source, and Split in the same control as a Markdown document; Split is an even, fixed split. `Ctrl+E` switches between Source and Preview. | [Confirmed details](grill.md#confirmed-details)<br>Split, and opening in Split: requested after implementation |
 | R4 | Until its first save, the draft's content is stored in `chrome.storage.local` as the user types. Opening the draft tab restores it. Only one unsaved draft is kept. | [Confirmed details](grill.md#confirmed-details) |
-| R5 | Before the first save, **Discard** empties the editor and the stored draft after confirmation. | proposed here |
-| R6 | The first `Cmd/Ctrl+S` or **Save** opens the system save dialog. It suggests the first heading's text, with characters invalid in filenames removed, plus `.md`, or `Untitled.md` when there is no heading. The user may save anywhere. | [Q2](grill.md#q2-where-is-the-draft-saved), [Q4](grill.md#q4-how-does-a-saved-draft-become-a-normal-markside-document) |
-| R7 | After the first save the stored draft is cleared, the tab title becomes the filename, and editing continues in the tab. Later saves write to the same file without a dialog. | [Q5](grill.md#q5-can-the-user-keep-editing-in-the-draft-tab-after-saving) |
-| R8 | After the first save, a notice reads: "Saved as **name.md**. To use the file tree, Reviews, and relative images, open it with ⌘O or from its folder." It can be dismissed. | [Q4](grill.md#q4-how-does-a-saved-draft-become-a-normal-markside-document) |
+| R5 | Before the first save, a draft with text offers **Discard**, which empties the editor and the stored draft after confirmation. | proposed here |
+| R6 | Save is disabled while the draft is empty, and `Cmd/Ctrl+S` does nothing. Otherwise the first `Cmd/Ctrl+S` or **Save** opens the system save dialog. It suggests the first heading as lowercase words joined by hyphens, such as `rate-limits-rfc.md`, or `untitled.md` when there is no heading. The user may save anywhere. | [Q2](grill.md#q2-where-is-the-draft-saved), [Q4](grill.md#q4-how-does-a-saved-draft-become-a-normal-markside-document) |
+| R7 | After the first save the stored draft is cleared, the tab title becomes the filename, and editing continues in the tab. Later saves write to the same file without a dialog. Reloading the tab reopens the saved file; if Chrome needs permission again, the tab offers **Reopen**, and a moved or deleted file offers **Start a new draft**. | [Q5](grill.md#q5-can-the-user-keep-editing-in-the-draft-tab-after-saving)<br>reload: requested after implementation |
+| R8 | After the first save, a notice reads: "Saved as name.md · Reopen it with ⌘O to use all Markside features." It can be dismissed. | [Q4](grill.md#q4-how-does-a-saved-draft-become-a-normal-markside-document) |
 | R9 | Closing or reloading the draft tab with edits not yet written to the saved file shows the browser's leave-page warning. Before the first save, no warning is shown, because R4 already keeps the content. | proposed here |
-| R10 | The draft tab has no file tree, Outline, Review, Readability Check, snapshots, PDF Export, Auto Save, or relative images, links, and HTML Embeds. | [Confirmed details](grill.md#confirmed-details) |
-| R11 | The draft tab follows the saved theme and Typeface preferences. | proposed here |
+| R10 | The draft tab has no file tree, Outline, Review, Readability Check, snapshots, PDF Export, or relative images, links, and HTML Embeds. | [Confirmed details](grill.md#confirmed-details) |
+| R11 | The draft tab follows the saved theme and Typeface preferences, and its header has the document toolbar's theme toggle, which changes the same saved preference. | proposed here<br>toggle: requested after implementation |
+| R13 | While the draft is empty, the Preview pane offers **Insert sample**, which fills the editor with a short document from `lib/draft-sample.md` showing alerts, task lists, a table, code, math, and a Mermaid diagram. It uses nothing that needs a file location. Undo removes it. | requested after implementation |
+| R14 | While an unsaved draft has content, the popup card reads **Continue draft** with the draft's first heading or first line and when it was last edited. | requested after implementation |
+| R15 | On the draft tab, the popup names the tab in its context pill. Before the first save it shows only the save shortcut, without the New draft card or the ways to open a file; after saving it shows the filename and the New draft card. | requested after implementation |
+| R16 | After the first save, the draft tab follows the Auto Save preference: when it is on, edits are written to the file 1.5 seconds after typing stops. Before the first save there is no file, so R4 keeps the text instead. | requested after implementation |
 | R12 | No new extension permission is added. | [Q4](grill.md#q4-how-does-a-saved-draft-become-a-normal-markside-document) |
 
 ## Design
@@ -62,9 +66,10 @@ written after a short pause in typing. The page writes it only while the draft
 has never been saved; the first successful save removes it.
 
 **Saving.** `showSaveFilePicker({ suggestedName, types: [Markdown] })`, then
-`createWritable()`. The returned handle stays in component state; it is not
-stored, so reloading the tab after a save starts an empty draft (R9 warns first
-if there are unwritten edits). A cancelled dialog changes nothing.
+`createWritable()`. The first save adds `?file=<uuid>` to the tab's URL and
+stores the handle under that URL in the extension's IndexedDB with
+`setFileHandle`, so a reload reads the file back (R7). A cancelled dialog
+changes nothing.
 
 **Conflicts with current documentation.**
 

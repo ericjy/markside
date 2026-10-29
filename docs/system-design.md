@@ -396,7 +396,11 @@ preference. The original tab and its Unsaved Draft remain untouched.
 
 **New draft** in the popup opens the draft tab, `tabs/draft.html`, from any
 tab. If the tab still editing an unsaved New Draft is open, found with
-`chrome.runtime.getContexts`, the popup focuses it instead. The draft tab
+`chrome.runtime.getContexts`, the popup focuses it instead. While
+the stored draft has content, the popup's card reads **Continue draft** with its
+first heading or first line and edit time. On the draft tab itself the popup
+shows the tab's state instead: the save shortcut before the first save, or the
+saved filename, which the draft tab records in `chrome.storage.session`. The draft tab
 opens in Split with the editor focused, or in Source when the window is narrower
 than two 320 px panes. The toolbar offers Preview, Source, and
 Split, with an even split and no divider; `Ctrl+E` switches between Source and
@@ -405,16 +409,18 @@ images, links, or HTML Embeds.
 
 Until the first save, the text and the editing tab's id are mirrored to
 `chrome.storage.local` under `newDraft`, so a closed tab restores it. Only one
-New Draft is kept. **Discard** empties it after confirmation.
+New Draft is kept. **Discard** empties it after confirmation. An empty draft's
+Preview offers **Insert sample**, which loads `lib/draft-sample.md`.
 
-The first save uses `showSaveFilePicker`, suggesting the first heading as the
-filename, or `Untitled.md`. The File System Access API never reveals the saved
-file's path, so the tab cannot become a `file://` document. It keeps the file
-handle in memory, clears the stored draft, and shows a notice to reopen the
-file with `Cmd+O` or from its folder for the file tree, Reviews, and relative
-images. Later saves write to the same handle without a dialog; closing the tab
-with unwritten edits shows the browser's leave-page warning. Auto Save, the
-Outline, and Reviews are not available in the draft tab.
+The first save uses `showSaveFilePicker`, suggesting the first heading as a
+lowercase, hyphenated filename such as `rate-limits-rfc.md`, or `untitled.md`. The File System Access API never reveals the saved
+file's path, so the tab cannot become a `file://` document. It adds
+`?file=<uuid>` to its URL, stores the handle under that URL in the extension's
+IndexedDB, clears the stored draft, and shows a notice to reopen the file with
+`Cmd+O` for the file tree and Reviews. Reloading the tab reads the saved file
+again, asking for permission with **Reopen** when Chrome requires it. Later saves write to the same handle without a dialog; closing the tab
+with unwritten edits shows the browser's leave-page warning. After the first save the tab follows the
+Auto Save preference. The Outline and Reviews are not available in the draft tab.
 
 ## Snapshots
 

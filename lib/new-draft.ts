@@ -12,6 +12,21 @@ export interface StoredDraft {
   tabId: number | null
 }
 
+// The draft tab records its saved filename for the popup; the handle never
+// reveals a path, and session storage ends with the browser session.
+function savedDraftKey(tabId: number) {
+  return `savedDraft:${tabId}`
+}
+
+export async function recordSavedDraft(tabId: number, fileName: string): Promise<void> {
+  await chrome.storage.session.set({ [savedDraftKey(tabId)]: fileName })
+}
+
+export async function readSavedDraftName(tabId: number): Promise<string | null> {
+  const name = (await chrome.storage.session.get(savedDraftKey(tabId)))[savedDraftKey(tabId)]
+  return typeof name === "string" ? name : null
+}
+
 export async function readStoredDraft(): Promise<StoredDraft | null> {
   const stored = (await chrome.storage.local.get(NEW_DRAFT_STORAGE_KEY))[NEW_DRAFT_STORAGE_KEY]
   if (!stored || typeof stored.content !== "string") return null
@@ -30,21 +45,29 @@ export async function clearStoredDraft(): Promise<void> {
   await chrome.storage.local.remove(NEW_DRAFT_STORAGE_KEY)
 }
 
+// The draft's first heading, or its first line without Markdown markers.
+export function describeDraftTitle(content: string): string {
+  const { body } = parseFrontmatter(content)
+  const heading = extractHeadings(body)[0]?.text
+  if (heading) return heading
+  const line = body.split("\n").map((text) => text.trim()).find(Boolean) ?? ""
+  return line.replace(/^(?:[#>*+-]|\d+[.)]|\[[ xX]\])\s*/g, "").replace(/[*_`]/g, "").trim()
+}
+
 // Split when both panes get their minimum width; otherwise the editor alone.
 export function initialDraftMode(windowWidth: number): MarkdownMode {
   return windowWidth >= 2 * MIN_SPLIT_PANE_WIDTH ? "split" : "source"
 }
 
+// Lowercase words joined by hyphens, as file names in repositories usually are.
 export function suggestDraftFileName(content: string): string {
   const heading = extractHeadings(parseFrontmatter(content).body)[0]?.text ?? ""
   const name = heading
-    .replace(/[\\/:*?"<>|\u0000-\u001f]/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/^\.+|\.+$/g, "")
-    .slice(0, 100)
-    .trim()
-  return `${name || "Untitled"}.md`
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .slice(0, 80)
+    .replace(/^-+|-+$/g, "")
+  return `${name || "untitled"}.md`
 }
 
 // Focuses the tab still editing the unsaved draft, or opens a draft tab.

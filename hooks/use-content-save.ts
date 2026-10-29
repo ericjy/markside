@@ -1,5 +1,5 @@
 import React,{ useEffect,useRef } from "react"
-import { getAutoSaveEnabled,watchAutoSaveEnabled } from "~lib/auto-save"
+import { AUTO_SAVE_DELAY_MS,getAutoSaveEnabled,watchAutoSaveEnabled } from "~lib/auto-save"
 import { queryHandlePermission,requestHandlePermission,tryHandleFromDirectory,type PermissionCapableHandle } from "~lib/content-file-access"
 import {
   setFileHandle
@@ -147,7 +147,7 @@ export function useContentSave({
       void doSave(draftRef.current, fileUrlRef.current, {
         allowFolderPrompt: false,
       })
-    }, 1500)
+    }, AUTO_SAVE_DELAY_MS)
   }
 
   useEffect(() => {

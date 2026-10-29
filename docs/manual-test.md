@@ -146,7 +146,8 @@ pull request or review response.
 - [ ] On an ordinary web page, choose New draft in the popup. Confirm the
   editor has focus, paste Markdown with code, math, and a Mermaid diagram, and
   check Preview. Close the tab, choose New draft again, and confirm the text
-  returns; with the tab open, confirm New draft focuses it. Check Discard.
+  returns; with the tab open, confirm New draft focuses it. Check Discard. In an
+  empty draft, choose Insert sample and confirm every block renders; undo it.
 - [ ] Save a New Draft. Confirm the save dialog suggests the first heading,
   the notice appears, and the file on disk matches. Edit, save again without a
   dialog, then edit and close the tab to see the leave-page warning. Open the

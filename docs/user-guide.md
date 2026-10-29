@@ -30,11 +30,12 @@ Press `Cmd+O` / `Ctrl+O` to open Chrome's file picker, then select any supported
 Click the Markside toolbar icon on any tab and choose **New draft**. A Markside
 tab opens in Split, or Source in a narrow window, where you can type or paste
 Markdown immediately, and switch
-between Preview, Source, and Split as in any Markdown file. The draft is kept if you close the tab, and **New
-draft** brings it back. **Discard** clears it.
+between Preview, Source, and Split as in any Markdown file. The draft is kept if you close the tab; the popup then shows **Continue draft**
+with its title and when you last edited it. **Discard** clears it. In an empty draft, **Insert sample** in the Preview fills
+in a short document that shows what Markside renders.
 
-Press `Cmd+S` / `Ctrl+S` to choose where to save it. Markside suggests the first
-heading as the filename. You can keep editing and saving in the same tab. To use
+Press `Cmd+S` / `Ctrl+S` to choose where to save it. Markside suggests a filename
+from the first heading, such as `rate-limits-rfc.md`. You can keep editing and saving in the same tab. To use
 the file tree, Reviews, and relative images, open the saved file with `Cmd+O` /
 `Ctrl+O` or from its folder. If you edit the file in both tabs, the later save
 wins.
@@ -201,6 +202,8 @@ Auto Save is off by default. Enable it in the extension options page to save aut
 
 - **Auto Save off:** switching files while a draft is unsaved shows a Save / Discard / Cancel prompt. Closing or reloading the page triggers Chrome's standard unsaved-changes warning.
 - **Auto Save on:** switching files flushes any pending save and navigates only after the write succeeds.
+
+A New Draft follows Auto Save once you have saved it the first time; before that, Markside keeps the draft in the browser.
 
 ## Share Link
 

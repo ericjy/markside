@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { initialDraftMode, NEW_DRAFT_STORAGE_KEY, openNewDraft, suggestDraftFileName } from "./new-draft"
+import { describeDraftTitle, initialDraftMode, NEW_DRAFT_STORAGE_KEY, openNewDraft, suggestDraftFileName } from "./new-draft"
 
 const DRAFT_URL = "chrome-extension://markside/tabs/draft.html"
 
@@ -29,26 +29,46 @@ afterEach(() => {
 })
 
 describe("suggestDraftFileName", () => {
-  it("uses the first heading", () => {
-    expect(suggestDraftFileName("Intro line\n\n## Rate limits RFC\n\n# Later")).toBe("Rate limits RFC.md")
+  it("turns the first heading into lowercase words joined by hyphens", () => {
+    expect(suggestDraftFileName("Intro line\n\n## Rate limits RFC\n\n# Later")).toBe("rate-limits-rfc.md")
+    expect(suggestDraftFileName("# Markside sample")).toBe("markside-sample.md")
   })
 
-  it("falls back to Untitled without a heading", () => {
-    expect(suggestDraftFileName("")).toBe("Untitled.md")
-    expect(suggestDraftFileName("Just a note")).toBe("Untitled.md")
+  it("falls back to untitled without a heading", () => {
+    expect(suggestDraftFileName("")).toBe("untitled.md")
+    expect(suggestDraftFileName("Just a note")).toBe("untitled.md")
   })
 
   it("ignores headings inside frontmatter and code fences", () => {
-    expect(suggestDraftFileName("---\ntitle: x\n---\n```\n# not this\n```\n# Plan")).toBe("Plan.md")
+    expect(suggestDraftFileName("---\ntitle: x\n---\n```\n# not this\n```\n# Plan")).toBe("plan.md")
   })
 
-  it("removes characters that filenames cannot contain", () => {
-    expect(suggestDraftFileName("# Q3: plan / review?")).toBe("Q3 plan review.md")
-    expect(suggestDraftFileName("# . / .")).toBe("Untitled.md")
+  it("replaces punctuation and characters that filenames cannot contain", () => {
+    expect(suggestDraftFileName("# Q3: plan / review?")).toBe("q3-plan-review.md")
+    expect(suggestDraftFileName("# . / .")).toBe("untitled.md")
   })
 
   it("keeps the text of inline code and emphasis", () => {
-    expect(suggestDraftFileName("# Use `fetch` **now**")).toBe("Use fetch now.md")
+    expect(suggestDraftFileName("# Use `fetch` **now**")).toBe("use-fetch-now.md")
+  })
+
+  it("keeps letters from other scripts", () => {
+    expect(suggestDraftFileName("# 速率 限制 v2")).toBe("速率-限制-v2.md")
+  })
+})
+
+describe("describeDraftTitle", () => {
+  it("prefers the first heading", () => {
+    expect(describeDraftTitle("intro\n\n## Rate limits RFC")).toBe("Rate limits RFC")
+  })
+
+  it("falls back to the first line without list or quote markers", () => {
+    expect(describeDraftTitle("\n- **Buy** milk\n- eggs")).toBe("Buy milk")
+    expect(describeDraftTitle("> quoted `text`")).toBe("quoted text")
+  })
+
+  it("is empty for an empty draft", () => {
+    expect(describeDraftTitle("  \n\n")).toBe("")
   })
 })
 

@@ -13,6 +13,7 @@ import type { PlasmoCSConfig } from "plasmo"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createRoot, type Root } from "react-dom/client"
 
+import { useInterfaceLanguage } from "~hooks/use-interface-language"
 import {
   LOCALHOST_REVIEW_STYLES,
   LocalhostReviewPanel,
@@ -142,6 +143,8 @@ function LocalhostReviewApp({
   host: HTMLElement
   onClose: () => void
 }) {
+  const { language: interfaceLanguage } = useInterfaceLanguage()
+  useEffect(() => { host.lang = interfaceLanguage }, [host, interfaceLanguage])
   const [review, setReview] = useState<LocalhostReview>(() => createEmptyLocalhostReview(origin))
   const [pageUrl, setPageUrl] = useState(() => getLocalhostPageUrl(location.href))
   const [selectedId, setSelectedId] = useState<string | null>(null)

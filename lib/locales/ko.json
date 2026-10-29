@@ -826,5 +826,10 @@
   "Review status: Open": "열림",
   "Compact": "좁게",
   "Wide": "넓게",
-  "Why {0}?": "왜 {0}인가요?"
+  "Why {0}?": "왜 {0}인가요?",
+  "Language": "언어",
+  "Interface language": "인터페이스 언어",
+  "Choose the language used by Markside.": "Markside에서 사용할 언어를 선택하세요.",
+  "Follow browser language": "브라우저 언어 따르기",
+  "Could not save the language. Please try again.": "언어 설정을 저장하지 못했습니다. 다시 시도해 주세요."
 }

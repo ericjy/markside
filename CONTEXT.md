@@ -6,8 +6,9 @@ Markside is a browser-based viewer and editor for local text files, with rich re
 
 **Interface language**:
 The language used by Markside's controls, help and errors. It follows the
-browser interface language, with English as the fallback. It does not change
-the user's document or Review content.
+browser interface language by default, with English as the fallback, or the
+user can choose a supported language in Settings. It does not change the
+user's document or Review content.
 
 **Auto Save**:
 A preference that writes an edited file after a short period without input. It is disabled by default.

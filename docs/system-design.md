@@ -2,13 +2,20 @@
 
 ## Interface language
 
-The extension selects English, Simplified Chinese, Traditional Chinese, Korean,
-Japanese, or Spanish from the browser's UI language. Unsupported languages use
-English. Interface strings and substitutions are stored locally in
-`lib/locales/` and selected through `lib/i18n.ts`; there is no translation
+The Interface language can be chosen in Settings, even before local-file access
+is enabled. It defaults to following the browser's UI language and supports
+English, Simplified Chinese, Traditional Chinese, Korean, Japanese, and Spanish.
+Unsupported browser languages use English. The choice is saved in local extension
+storage and propagated to open Markside surfaces without reloading files or
+discarding unsaved edits. Interface strings and substitutions are stored locally
+in `lib/locales/` and selected through `lib/i18n.ts`; there is no translation
 request at runtime. `locales/` holds browser-native translations of the
-extension name and description. React UI, accessible names, CodeMirror
-controls, and Markside-generated diagram controls use localized strings.
+extension name and description, which follow the browser's UI language. React UI,
+accessible names, CodeMirror controls, and Markside-generated diagram controls use
+localized strings.
+The file-access guide shows the browser's setting name alongside the selected
+Interface language when they differ, and its illustration follows the browser
+language, so users can find the setting in their browser.
 Generated alert labels keep their original text in the Review index so a
 language change does not shift existing Review anchors. User-authored Markdown,
 Review text, filenames, commands and agent instructions are not translated.

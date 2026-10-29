@@ -2,7 +2,8 @@ import katexCssText from "data-text:~lib/katex-bundle.css"
 import { useEffect, useRef } from "react"
 
 import { parseFrontmatter, renderFrontmatterHTML } from "~lib/frontmatter"
-import { addDefaultDetailsSummaries, md, sanitizeRenderedMarkdown } from "~lib/markdown"
+import { addDefaultDetailsSummaries, getDetailsOpenStates, md, restoreDetailsOpenStates, sanitizeRenderedMarkdown } from "~lib/markdown"
+import { getInterfaceLanguage, type InterfaceLanguage } from "~lib/i18n"
 import { renderMermaidBlocks } from "~lib/mermaid"
 import { highlightCodeBlocks } from "~lib/shiki"
 
@@ -14,13 +15,20 @@ interface Props {
 // Embeds have nothing to resolve against.
 export function MarkdownRenderer({ content }: Props) {
   const ref = useRef<HTMLDivElement>(null)
+  const interfaceLanguage = getInterfaceLanguage()
+  const previousRenderRef = useRef<{ content: string; language: InterfaceLanguage } | null>(null)
 
   useEffect(() => {
     const container = ref.current
     if (!container) return
+    const previous = previousRenderRef.current
+    const detailsOpenStates = previous?.content === content && previous.language !== interfaceLanguage
+      ? getDetailsOpenStates(container) : null
+    previousRenderRef.current = { content, language: interfaceLanguage }
     const { data, body } = parseFrontmatter(content)
     container.innerHTML = sanitizeRenderedMarkdown(renderFrontmatterHTML(data) + md.render(body))
     addDefaultDetailsSummaries(container)
+    if (detailsOpenStates) restoreDetailsOpenStates(container, detailsOpenStates)
     if (container.querySelector(".katex") && !document.getElementById("markside-katex-styles")) {
       const style = document.createElement("style")
       style.id = "markside-katex-styles"
@@ -29,7 +37,7 @@ export function MarkdownRenderer({ content }: Props) {
     }
     void highlightCodeBlocks(container)
     void renderMermaidBlocks(container)
-  }, [content])
+  }, [content, interfaceLanguage])
 
   return (
     <div

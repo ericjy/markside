@@ -826,5 +826,10 @@
   "Review status: Open": "未解決",
   "Compact": "コンパクト",
   "Wide": "広い",
-  "Why {0}?": "なぜ {0}？"
+  "Why {0}?": "なぜ {0}？",
+  "Language": "言語",
+  "Interface language": "インターフェース言語",
+  "Choose the language used by Markside.": "Markside で使用する言語を選択します。",
+  "Follow browser language": "ブラウザーの言語に合わせる",
+  "Could not save the language. Please try again.": "言語設定を保存できませんでした。もう一度お試しください。"
 }

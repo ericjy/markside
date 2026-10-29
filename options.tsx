@@ -1,13 +1,14 @@
-import { getInterfaceLanguage, t, tRich } from "~lib/i18n"
+import { INTERFACE_LANGUAGES, parseInterfaceLanguagePreference, setInterfaceLanguagePreference, t, tRich } from "~lib/i18n"
 import { Check, ChevronRight, Copy, FileDown, Mail, Star, X } from "lucide-react"
 import { useEffect, useState } from "react"
 
+import { useInterfaceLanguage } from "~hooks/use-interface-language"
 import {
   getAutoSaveEnabled,
   setAutoSaveEnabled as persistAutoSaveEnabled,
   watchAutoSaveEnabled,
 } from "~lib/auto-save"
-import { FileAccessDemo, FILE_ACCESS_DEMO_CSS } from "~lib/file-access-demo"
+import { FileAccessDemo, FileAccessSettingLabel, FILE_ACCESS_DEMO_CSS } from "~lib/file-access-demo"
 import { FILE_ACCESS_SETUP_KEY } from "~lib/file-access-setup"
 import {
   CHROME_WEB_STORE_REVIEW_URL,
@@ -82,7 +83,9 @@ function openExtensionSettings() {
 }
 
 export default function Options() {
-  useEffect(() => { document.documentElement.lang = getInterfaceLanguage() }, [])
+  const { preference: languagePreference, language, ready: languageReady } = useInterfaceLanguage()
+  useEffect(() => { document.documentElement.lang = language }, [language])
+  const [languageError, setLanguageError] = useState(false)
   const [hasFileAccess, setHasFileAccess] = useState<boolean | null>(null)
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(false)
   const [openedSettings, setOpenedSettings] = useState(false)
@@ -113,6 +116,8 @@ export default function Options() {
       unwatchAutoSave()
     }
   }, [])
+
+  if (!languageReady) return null
 
   return (
     <>
@@ -194,6 +199,8 @@ export default function Options() {
         .row-note { font-size: 13px; color: var(--muted); margin-top: 2px; }
         .row-control { display: inline-flex; align-items: center; gap: 12px; flex-shrink: 0; }
         .row-control-stacked { flex-direction: column; align-items: flex-end; gap: 4px; }
+        .language-select { max-width: 100%; min-height: 36px; padding: 5px 32px 5px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); }
+        .language-error { color: #a32222; }
 
         .state { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink); }
         .state-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
@@ -247,6 +254,8 @@ export default function Options() {
           .opt-shell { padding: 28px 16px 40px; }
           .setup { padding: 22px; gap: 20px; }
           .row { flex-wrap: wrap; gap: 8px 16px; }
+          .language-row { align-items: stretch; flex-direction: column; }
+          .language-row .language-select { width: 100%; }
           .row-control { flex-shrink: 1; }
           .key-group { justify-content: flex-start; }
         }
@@ -274,6 +283,30 @@ export default function Options() {
             <h1>{t("Markside Settings")}</h1>
           </header>
 
+          <Group title={t("Language")}>
+            <div className="row language-row">
+              <div className="row-text">
+                <label htmlFor="interface-language" className="row-label">{t("Interface language")}</label>
+                <p className="row-desc">{t("Choose the language used by Markside.")}</p>
+                {languageError && <p className="row-note language-error" role="alert">{t("Could not save the language. Please try again.")}</p>}
+              </div>
+              <select
+                id="interface-language"
+                className="language-select"
+                value={languagePreference}
+                onChange={(event) => {
+                  setLanguageError(false)
+                  void setInterfaceLanguagePreference(parseInterfaceLanguagePreference(event.target.value))
+                    .catch(() => setLanguageError(true))
+                }}>
+                <option value="auto">{t("Follow browser language")}</option>
+                {INTERFACE_LANGUAGES.map(({ value, name }) => (
+                  <option key={value} value={value} lang={value}>{name}</option>
+                ))}
+              </select>
+            </div>
+          </Group>
+
           {hasFileAccess === false && (
             <section className="setup" aria-labelledby="setup-title">
               <div>
@@ -282,7 +315,7 @@ export default function Options() {
                 <ol>
                   {[
                     <>{t("Click ")}<strong>{t("Open Extension Details")}</strong> {t(" to go to Markside's page in Chrome.")}</>,
-                    <>{t("Scroll down and turn on ")}<strong>{t("Allow access to file URLs")}</strong>.</>,
+                    <>{t("Scroll down and turn on ")}<strong><FileAccessSettingLabel /></strong>.</>,
                     <>{t("Come back to this tab. Markside checks for the change automatically.")}</>,
                   ].map((step, index) => {
                     const current = openedSettings ? 1 : 0
@@ -295,7 +328,7 @@ export default function Options() {
                   })}
                 </ol>
                 {openedSettings && returnedStillOff && (
-                  <p className="still-off" role="status">{tRich("File access is still off. On the Markside details page, scroll to {0} and make sure the switch turns blue.", <strong>{t("Allow access to file URLs")}</strong>)}</p>
+                  <p className="still-off" role="status">{tRich("File access is still off. On the Markside details page, scroll to {0} and make sure the switch turns blue.", <strong><FileAccessSettingLabel /></strong>)}</p>
                 )}
                 <button
                   type="button"
@@ -345,7 +378,7 @@ export default function Options() {
                   <div className="row">
                     <div className="row-text">
                       <p className="row-label">{t("File access")}</p>
-                      <p className="row-desc">{tRich("Chrome's {0} is on, so Markside can open local files.", <strong>{t("Allow access to file URLs")}</strong>)}</p>
+                      <p className="row-desc">{tRich("Chrome's {0} is on, so Markside can open local files.", <strong><FileAccessSettingLabel /></strong>)}</p>
                     </div>
                     <div className="row-control row-control-stacked">
                       <span className="state"><span className="state-dot" />{t("On")}</span>

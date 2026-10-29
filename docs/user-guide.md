@@ -122,10 +122,17 @@ Expanded folders remain expanded when you navigate between files.
 
 ## Interface language
 
-Markside follows your browser's interface language. English, Simplified Chinese,
-Traditional Chinese, Korean, Japanese, and Spanish are supported. Other browser
-languages use English. Changing the interface language does not translate your
-Markdown, Review Comments, or text sent to your agent.
+Markside follows your browser's interface language by default. To choose a
+different language, open the Markside popup, select **Settings**, and choose an
+option under **Language**. You can return to **Follow browser language** at any
+time. Settings is available even before file access is enabled.
+
+English, Simplified Chinese, Traditional Chinese, Korean, Japanese, and Spanish
+are supported. Other browser languages use English when following the browser.
+The selection applies to open Markside pages without reloading your file or
+discarding unsaved edits. It does not translate your Markdown, Review Comments,
+or text sent to your agent. The extension name and description shown by the
+browser continue to use the browser's language.
 
 ## Supported File Types
 

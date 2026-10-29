@@ -19,7 +19,7 @@ import {
   getThemePreference
 } from "~lib/theme-preference"
 import { installHtmlEmbedNavigationPolicy } from "~lib/html-embed"
-import { getInterfaceLanguage } from "~lib/i18n"
+import { getInterfaceLanguage, loadInterfaceLanguagePreference } from "~lib/i18n"
 import {
   readInitialFileContent
 } from "~lib/url"
@@ -145,7 +145,9 @@ async function bootstrap() {
     getOutlineOpenPreference().catch(() => null),
     getLeftOpenPreference().catch(() => true),
     chrome.runtime.sendMessage({ type: "consume-new-markdown-file" }).catch(() => null),
+    loadInterfaceLanguagePreference().catch(() => "auto" as const),
   ])
+  mount.lang = getInterfaceLanguage()
   createRoot(mount).render(React.createElement(FileRenderer, {
     initialContent,
     initialMode: newFile?.created ? "source" : initialMode,

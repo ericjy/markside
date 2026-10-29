@@ -1,4 +1,4 @@
-import { t, tPresetChip } from "~lib/i18n"
+import { getInterfaceLanguage, t, tPresetChip } from "~lib/i18n"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import {
   BadgeCheck,
@@ -260,9 +260,10 @@ export function ContentView({
     ? sourceVisible ? draft : content
     : null
   const previewWidthClass = previewWidth === "full" ? "max-w-none" : previewWidth === "extended" ? "mx-auto max-w-5xl" : "mx-auto max-w-3xl"
+  const interfaceLanguage = getInterfaceLanguage()
   const documentStats = React.useMemo(
     () => statsSource === null ? null : formatDocumentStats(statsSource),
-    [statsSource],
+    [statsSource, interfaceLanguage],
   )
   const composerAgent = agentHandoff?.completed ? undefined : agentHandoff
   const composerSending = !!composerAgent && (composerAgent.sending || composerAgent.updatingCommentId != null)

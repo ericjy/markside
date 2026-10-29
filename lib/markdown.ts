@@ -33,6 +33,16 @@ export const md = new MarkdownIt({
 // (`--` stays two hyphens), so capture it before those core rules run.
 const headingSlugText = new WeakMap<Token[], string>()
 
+export function getDetailsOpenStates(root: ParentNode): boolean[] {
+  return Array.from(root.querySelectorAll("details"), (details) => details.open)
+}
+
+export function restoreDetailsOpenStates(root: ParentNode, states: boolean[]) {
+  root.querySelectorAll("details").forEach((details, index) => {
+    if (index < states.length) details.open = states[index]
+  })
+}
+
 function collectHeadingText(tokens: Token[]) {
   return tokens
     .filter((token) => ["text", "text_special", "code_inline"].includes(token.type))

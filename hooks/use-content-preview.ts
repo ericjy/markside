@@ -4,7 +4,8 @@ import { parseFrontmatter,renderFrontmatterHTML } from "~lib/frontmatter"
 import { applyHeadingNumbers } from "~lib/heading-numbering"
 import { parkHtmlEmbedFrames,renderHtmlEmbeds } from "~lib/html-embed"
 import { headingIdFromHash,resolveActiveOutlineHeading,type Heading } from "~lib/headings"
-import { addDefaultDetailsSummaries,md,mountQuestionCard,sanitizeRenderedMarkdown,type QuestionCard } from "~lib/markdown"
+import type { InterfaceLanguage } from "~lib/i18n"
+import { addDefaultDetailsSummaries,getDetailsOpenStates,md,mountQuestionCard,restoreDetailsOpenStates,sanitizeRenderedMarkdown,type QuestionCard } from "~lib/markdown"
 import {
   resolveModeTransition,
   setMarkdownMode,
@@ -31,6 +32,7 @@ function injectKatexStyles() {
 }
 
 interface UseContentPreviewOptions {
+  interfaceLanguage: InterfaceLanguage
   mode: MarkdownMode
   isMdFile: boolean
   cancelPreviewUpdate: () => void
@@ -66,6 +68,7 @@ interface UseContentPreviewOptions {
 }
 
 export function useContentPreview({
+  interfaceLanguage,
   mode,
   isMdFile,
   cancelPreviewUpdate,
@@ -99,6 +102,14 @@ export function useContentPreview({
   setActiveHeadingId,
   headings,
 }: UseContentPreviewOptions) {
+  const previousRenderRef = React.useRef<{
+    content: string
+    fileUrl: string
+    interfaceLanguage: InterfaceLanguage
+    changesVisible: boolean
+    reloadComparison: UseContentPreviewOptions["reloadComparison"]
+    imageReloadVersion: number
+  } | null>(null)
   const selectMode = (nextMode: MarkdownMode) => {
     if (nextMode === mode) return
     cancelPreviewUpdate()
@@ -125,11 +136,19 @@ export function useContentPreview({
     // the hidden Preview, where an HTML file's <style> restyles Markside itself.
     if (content === null || !isMdFile) {
       contentRef.current.replaceChildren()
+      previousRenderRef.current = null
       setHeadings([])
       setReadabilityMounts([])
       setQuestionCards([])
       return
     }
+    const previous = previousRenderRef.current
+    const onlyLanguageChanged = previous && previous.interfaceLanguage !== interfaceLanguage &&
+      previous.content === content && previous.fileUrl === fileUrl &&
+      previous.changesVisible === changesVisible && previous.reloadComparison === reloadComparison &&
+      previous.imageReloadVersion === imageReloadVersion
+    const detailsOpenStates = onlyLanguageChanged ? getDetailsOpenStates(contentRef.current) : null
+    previousRenderRef.current = { content, fileUrl, interfaceLanguage, changesVisible, reloadComparison, imageReloadVersion }
     const isNewFile = renderedFileUrlRef.current !== fileUrl
     const { data, body } = parseFrontmatter(content)
     const fmHTML = renderFrontmatterHTML(data)
@@ -139,6 +158,7 @@ export function useContentPreview({
     if (!changesVisible) parkHtmlEmbedFrames(contentRef.current)
     contentRef.current.innerHTML = sanitizeRenderedMarkdown(fmHTML + md.render(body, { sourceLineOffset }))
     addDefaultDetailsSummaries(contentRef.current)
+    if (detailsOpenStates) restoreDetailsOpenStates(contentRef.current, detailsOpenStates)
     if (contentRef.current.querySelector(".katex")) injectKatexStyles()
 
     // Re-resolve image src attributes against the rendered file's directory.
@@ -271,11 +291,11 @@ export function useContentPreview({
         }
       }
     }
-  }, [content, fileUrl, isMdFile, changesVisible, reloadComparison, imageReloadVersion])
+  }, [content, fileUrl, isMdFile, changesVisible, reloadComparison, imageReloadVersion, interfaceLanguage])
 
   useEffect(() => {
     if (contentRef.current) applyHeadingNumbers(contentRef.current, numberHeadings)
-  }, [content, fileUrl, isMdFile, numberHeadings, changesVisible, reloadComparison])
+  }, [content, fileUrl, isMdFile, numberHeadings, changesVisible, reloadComparison, interfaceLanguage])
 
   useEffect(() => {
     const scroller = previewScrollRef.current

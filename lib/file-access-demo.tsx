@@ -1,5 +1,16 @@
 import { ChevronRight } from "lucide-react"
-import { t } from "~lib/i18n"
+import { getBrowserInterfaceLanguage, getInterfaceLanguage, localize } from "~lib/i18n"
+
+export function FileAccessSettingLabel() {
+  const browserLanguage = getBrowserInterfaceLanguage()
+  const interfaceLanguage = getInterfaceLanguage()
+  const browserLabel = localize("Allow access to file URLs", browserLanguage)
+  const interfaceLabel = localize("Allow access to file URLs", interfaceLanguage)
+  return <>
+    <span lang={browserLanguage}>{browserLabel}</span>
+    {browserLabel !== interfaceLabel && <span lang={interfaceLanguage}> ({interfaceLabel})</span>}
+  </>
+}
 
 // A miniature of the Markside details page in chrome://extensions, replaying the
 // scroll to the file access row and the click that turns it on.
@@ -14,14 +25,15 @@ const DEMO_ROWS: { label: string; kind: "link" | "toggle" | "target" }[] = [
 ]
 
 export function FileAccessDemo() {
+  const browserLanguage = getBrowserInterfaceLanguage()
   return (
-    <div className="demo-window" aria-hidden="true">
+    <div className="demo-window" aria-hidden="true" lang={browserLanguage}>
       <div className="demo-bar"><span>chrome://extensions/?id={chrome.runtime.id}</span></div>
       <div className="demo-viewport">
         <div className="demo-list">
           {DEMO_ROWS.map(row => (
             <div key={row.label} className={`demo-row${row.kind === "target" ? " target" : ""}`}>
-              <span>{t(row.label)}</span>
+              <span>{localize(row.label, browserLanguage)}</span>
               {row.kind === "link" ? <ChevronRight size={16} /> : <span className="demo-toggle"><span /></span>}
             </div>
           ))}

@@ -6,7 +6,38 @@ import korean from "./locales/ko.json"
 import japanese from "./locales/ja.json"
 import spanish from "./locales/es.json"
 
-export type InterfaceLanguage = "en" | "zh-CN" | "zh-TW" | "ko" | "ja" | "es"
+export const INTERFACE_LANGUAGES = [
+  { value: "en", name: "English" },
+  { value: "zh-CN", name: "简体中文" },
+  { value: "zh-TW", name: "繁體中文" },
+  { value: "ko", name: "한국어" },
+  { value: "ja", name: "日本語" },
+  { value: "es", name: "Español" },
+] as const
+
+export type InterfaceLanguage = typeof INTERFACE_LANGUAGES[number]["value"]
+export type InterfaceLanguagePreference = "auto" | InterfaceLanguage
+export const INTERFACE_LANGUAGE_STORAGE_KEY = "interfaceLanguage"
+
+let interfaceLanguagePreference: InterfaceLanguagePreference = "auto"
+
+export function parseInterfaceLanguagePreference(value: unknown): InterfaceLanguagePreference {
+  return INTERFACE_LANGUAGES.find((language) => language.value === value)?.value ?? "auto"
+}
+
+export function applyInterfaceLanguagePreference(value: unknown): InterfaceLanguagePreference {
+  interfaceLanguagePreference = parseInterfaceLanguagePreference(value)
+  return interfaceLanguagePreference
+}
+
+export async function loadInterfaceLanguagePreference(): Promise<InterfaceLanguagePreference> {
+  const stored = await chrome.storage.local.get(INTERFACE_LANGUAGE_STORAGE_KEY)
+  return applyInterfaceLanguagePreference(stored[INTERFACE_LANGUAGE_STORAGE_KEY])
+}
+
+export async function setInterfaceLanguagePreference(value: InterfaceLanguagePreference): Promise<void> {
+  await chrome.storage.local.set({ [INTERFACE_LANGUAGE_STORAGE_KEY]: value })
+}
 
 const translations: Record<Exclude<InterfaceLanguage, "en">, Record<string, string>> = {
   "zh-CN": simplifiedChinese,
@@ -28,11 +59,17 @@ export function resolveInterfaceLanguage(locale: string): InterfaceLanguage {
   return "en"
 }
 
-export function getInterfaceLanguage(): InterfaceLanguage {
+export function getBrowserInterfaceLanguage(): InterfaceLanguage {
   const locale = typeof chrome !== "undefined" && chrome.i18n?.getUILanguage
     ? chrome.i18n.getUILanguage()
     : typeof navigator !== "undefined" ? navigator.language : "en"
   return resolveInterfaceLanguage(locale)
+}
+
+export function getInterfaceLanguage(): InterfaceLanguage {
+  return interfaceLanguagePreference === "auto"
+    ? getBrowserInterfaceLanguage()
+    : interfaceLanguagePreference
 }
 
 export function localize(source: string, language: InterfaceLanguage): string {

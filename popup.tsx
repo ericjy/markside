@@ -1,4 +1,5 @@
-import { getInterfaceLanguage, t, tRich } from "~lib/i18n"
+import { t, tRich } from "~lib/i18n"
+import { useInterfaceLanguage } from "~hooks/use-interface-language"
 import {
   ArrowUpRight,
   Bot,
@@ -22,7 +23,7 @@ import {
   isLocalhostReviewPanelOpen,
   setLocalhostReviewPanelOpen,
 } from "~lib/localhost-review-storage"
-import { FileAccessDemo, FILE_ACCESS_DEMO_CSS } from "~lib/file-access-demo"
+import { FileAccessDemo, FileAccessSettingLabel, FILE_ACCESS_DEMO_CSS } from "~lib/file-access-demo"
 import { FILE_ACCESS_SETUP_KEY } from "~lib/file-access-setup"
 import { classifyMarksideFileUrl } from "~lib/file-types"
 import {
@@ -75,6 +76,7 @@ async function fileExists(url: string) {
 }
 
 export default function Popup() {
+  const { language, ready: languageReady } = useInterfaceLanguage()
   const [hasFileAccess, setHasFileAccess] = useState<boolean | null>(null)
   const [localhostOrigin, setLocalhostOrigin] = useState<string | null>(null)
   const [documentUrl, setDocumentUrl] = useState<string | null>(null)
@@ -174,6 +176,8 @@ export default function Popup() {
     : localhostOrigin ? localhostOrigin.replace(/^https?:\/\//, "") : tabLabel
   const editingUnsavedDraft = draftTab !== null && draftTab.savedName === null
 
+  if (!languageReady) return null
+
   return (
     <>
       <style>{`
@@ -264,7 +268,7 @@ export default function Popup() {
         @media (prefers-reduced-motion: reduce) { .primary-button, .draft-icon, .draft-arrow { transition: none; } .draft-card:hover .draft-arrow { transform: none; } }
       `}</style>
 
-      <div className="popup-root" lang={getInterfaceLanguage()}>
+      <div className="popup-root" lang={language}>
         <a
           className="popup-brand"
           href="https://markside.app"
@@ -313,7 +317,7 @@ export default function Popup() {
           {hasFileAccess === false ? (
             <>
               <h2 className="setup-title">{t("One last step to set up Markside")}</h2>
-              <p className="setup-copy">{tRich("Click Open Extension Details, then turn on {0}.", <strong>{t("Allow access to file URLs")}</strong>)}</p>
+              <p className="setup-copy">{tRich("Click Open Extension Details, then turn on {0}.", <strong><FileAccessSettingLabel /></strong>)}</p>
               <div className="setup-demo"><FileAccessDemo /></div>
               <button
                 className="primary-button"

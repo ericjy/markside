@@ -826,5 +826,10 @@
   "Review status: Open": "待處理",
   "Compact": "精簡",
   "Wide": "寬",
-  "Why {0}?": "為什麼選 {0}？"
+  "Why {0}?": "為什麼選 {0}？",
+  "Language": "語言",
+  "Interface language": "介面語言",
+  "Choose the language used by Markside.": "選擇 Markside 使用的語言。",
+  "Follow browser language": "依照瀏覽器語言",
+  "Could not save the language. Please try again.": "無法儲存語言設定，請再試一次。"
 }

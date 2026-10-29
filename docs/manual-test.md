@@ -11,6 +11,11 @@ pull request or review response.
   `pnpm test`, and `pnpm build`.
 - [ ] Open `chrome://extensions`, enable Developer mode, choose **Load unpacked**,
   and select `build/chrome-mv3-prod`. Reload an existing unpacked installation.
+- [ ] With file access still off, open Settings and confirm **Language** is
+  available. Choose each Interface language, reopen Settings, and confirm the
+  choice is remembered. Select **Follow browser language** and confirm it uses
+  the browser's language (English for an unsupported language). When the two
+  languages differ, confirm the guide shows the file-access setting in both.
 - [ ] In Markside's Details, enable **Allow access to file URLs**. Check that
   the popup explains setup while access is off and reports readiness when on.
 - [ ] Prepare a folder containing two Markdown files, a nested folder, an image,
@@ -24,6 +29,13 @@ pull request or review response.
   errors, diagram controls, CodeMirror search, keyboard labels, and narrow
   layouts. Check that filenames, Markdown, Review content and agent instructions
   stay unchanged. With an unsupported language, check the English fallback.
+- [ ] Keep a Markdown file open in Split with unsaved edits and an active Review.
+  Change the Interface language from a separate Settings tab. Check that the
+  toolbar, document statistics, generated labels, diagram controls, and editor
+  search use the selected language, while the draft, open or closed details,
+  and Review anchors remain intact. Repeat with a New Draft, then reopen the
+  popup and the file to check the preference persists. Browser-owned extension
+  metadata continues to follow the browser language.
 
 - [ ] Open a local `.md` file in Chrome. With fresh preferences, it opens in
   Preview. Check headings, code highlighting, diagrams, math, links, and images.

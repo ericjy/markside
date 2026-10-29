@@ -1,4 +1,4 @@
-import { t } from "~lib/i18n"
+import { getInterfaceLanguage, t } from "~lib/i18n"
 // components/raw-editor.tsx
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
@@ -268,6 +268,8 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
   const langCompartmentRef = useRef(new Compartment())
   const wrapCompartmentRef = useRef(new Compartment())
   const shortcutCompartmentRef = useRef(new Compartment())
+  const interfaceCompartmentRef = useRef(new Compartment())
+  const interfaceLanguage = getInterfaceLanguage()
   const isMarkdown = treatAsMarkdown || isMdFileName(fileName)
   const [lineWrap, setLineWrap] = useState(() => isMarkdown)
   const [copied, setCopied] = useState(false)
@@ -287,7 +289,10 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
         extensions: [
           basicSetup,
           EditorView.contentAttributes.of({ lang: "" }),
-          EditorState.phrases.of(Object.fromEntries(codeMirrorPhrases.map((phrase) => [phrase, t(phrase)]))),
+          interfaceCompartmentRef.current.of([
+            EditorState.phrases.of(Object.fromEntries(codeMirrorPhrases.map((phrase) => [phrase, t(phrase)]))),
+            placeholder ? editorPlaceholder(placeholder) : [],
+          ]),
           langCompartmentRef.current.of(getLanguage(fileName, isMarkdown)),
           wrapCompartmentRef.current.of(lineWrap ? EditorView.lineWrapping : []),
           shortcutCompartmentRef.current.of(
@@ -297,7 +302,6 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
           ),
           baseTheme,
           revealedEditorLineExtension,
-          placeholder ? editorPlaceholder(placeholder) : [],
           compartment.of(dark
             ? [oneDark, darkOverride, inlineCodeHighlighting, headingHighlighting, darkHeadingTheme]
             : [lightTheme, defaultHighlighting, inlineCodeHighlighting, headingHighlighting, headingTheme]),
@@ -343,6 +347,16 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
         : [lightTheme, defaultHighlighting, inlineCodeHighlighting, headingHighlighting, headingTheme]),
     })
   }, [dark])
+
+  useEffect(() => {
+    if (!viewRef.current) return
+    viewRef.current.dispatch({
+      effects: interfaceCompartmentRef.current.reconfigure([
+        EditorState.phrases.of(Object.fromEntries(codeMirrorPhrases.map((phrase) => [phrase, t(phrase)]))),
+        placeholder ? editorPlaceholder(placeholder) : [],
+      ]),
+    })
+  }, [interfaceLanguage, placeholder])
 
   // Hot-swap language when file changes
   useEffect(() => {

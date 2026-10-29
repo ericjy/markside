@@ -8,6 +8,7 @@ import { RawEditor } from "~components/raw-editor"
 import { SplitDivider } from "~components/split-divider"
 import { Button } from "~components/ui/button"
 import { useContentPreferences } from "~hooks/use-content-preferences"
+import { useInterfaceLanguage } from "~hooks/use-interface-language"
 import { useSplitPercent } from "~hooks/use-content-split-pane"
 import { AUTO_SAVE_DELAY_MS, getAutoSaveEnabled, watchAutoSaveEnabled } from "~lib/auto-save"
 import { getFileHandle, setFileHandle } from "~lib/db"
@@ -56,7 +57,8 @@ async function readSavedFile(handle: FileSystemFileHandle): Promise<DraftStart> 
 }
 
 export default function DraftTab() {
-  useEffect(() => { document.documentElement.lang = getInterfaceLanguage() }, [])
+  const { language, ready: languageReady } = useInterfaceLanguage()
+  useEffect(() => { document.documentElement.lang = language }, [language])
   const [preferences, setPreferences] = useState<{ theme: boolean | null; splitPercent: number } | null>(null)
   const [start, setStart] = useState<DraftStart | null>(null)
 
@@ -68,7 +70,7 @@ export default function DraftTab() {
     void loadDraftStart().then(setStart)
   }, [])
 
-  if (!preferences || !start) return null
+  if (!preferences || !start || !languageReady) return null
   const theme = preferences.theme
   if (start.kind === "draft" || start.kind === "file") {
     return (
@@ -131,6 +133,7 @@ function DraftEditor({
   initialFile: FileSystemFileHandle | null
   initialSplitPercent: number
 }) {
+  const interfaceLanguage = getInterfaceLanguage()
   const { dark, setDark, followsSystemThemeRef } = useContentPreferences(initialThemePreference)
   const [content, setContent] = useState(initialContent)
   const split = useSplitPercent(initialSplitPercent)
@@ -280,8 +283,8 @@ function DraftEditor({
   }, [])
 
   useEffect(() => {
-    document.title = file ? file.name : "New draft"
-  }, [file])
+    document.title = file ? file.name : t("New draft")
+  }, [file, interfaceLanguage])
 
   const unsaved = file !== null && content !== savedContent
   const saved = file !== null && !unsaved && !error

@@ -826,5 +826,10 @@
   "Review status: Open": "Abierto",
   "Compact": "Compacto",
   "Wide": "Ancho",
-  "Why {0}?": "¿Por qué {0}?"
+  "Why {0}?": "¿Por qué {0}?",
+  "Language": "Idioma",
+  "Interface language": "Idioma de la interfaz",
+  "Choose the language used by Markside.": "Elige el idioma de Markside.",
+  "Follow browser language": "Usar el idioma del navegador",
+  "Could not save the language. Please try again.": "No se pudo guardar el idioma. Inténtalo de nuevo."
 }

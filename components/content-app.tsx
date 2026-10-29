@@ -25,6 +25,7 @@ import {
 } from "~hooks/use-content-file-loading"
 import { useContentPdfExport } from "~hooks/use-content-pdf-export"
 import { useContentPreferences } from "~hooks/use-content-preferences"
+import { useInterfaceLanguage } from "~hooks/use-interface-language"
 import { useContentPreview } from "~hooks/use-content-preview"
 import { useContentReadability } from "~hooks/use-content-readability"
 import { useContentReload } from "~hooks/use-content-reload"
@@ -96,6 +97,11 @@ export function FileRenderer({
   initialLeftOpen: boolean
   focusSource?: boolean
 }) {
+  const { language: interfaceLanguage } = useInterfaceLanguage()
+  useEffect(() => {
+    const mount = document.getElementById("markside-mount")
+    if (mount) mount.lang = interfaceLanguage
+  }, [interfaceLanguage])
   const [content, setContent] = useState<string | null>(initialContent)
   const [error, setError] = useState<string | null>(null)
   const [headings, setHeadings] = useState<Heading[]>([])
@@ -439,6 +445,7 @@ export function FileRenderer({
   }
 
   const { selectMode } = useContentPreview({
+    interfaceLanguage,
     mode,
     isMdFile,
     cancelPreviewUpdate,

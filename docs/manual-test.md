@@ -29,6 +29,10 @@ pull request or review response.
   errors, diagram controls, CodeMirror search, keyboard labels, and narrow
   layouts. Check that filenames, Markdown, Review content and agent instructions
   stay unchanged. With an unsupported language, check the English fallback.
+- [ ] Create a Share Link for a file with local images and links. In each
+  Interface language, check the link length, expiry, image and link warnings,
+  and Review counts. Include both one and multiple items; the text should use
+  the selected language's word order and contain no English plural suffixes.
 - [ ] Keep a Markdown file open in Split with unsaved edits and an active Review.
   Change the Interface language from a separate Settings tab. Check that the
   toolbar, document statistics, generated labels, diagram controls, and editor

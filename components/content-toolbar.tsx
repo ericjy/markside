@@ -365,7 +365,7 @@ export function ContentToolbar({
               }}
               className={`relative h-7 w-7 ${reviewOverlayOpen ? "bg-accent" : ""}`}
               aria-label={reviewNotice ? t("Toggle Review, {0}", [t(reviewNotice.message)]) : reviewItemCount > 0
-                ? t("Toggle Review, {0} {1}", [reviewItemCount, reviewItemCount === 1 ? t("item") : t("items")])
+                ? t("Toggle Review, {0}", [t(reviewItemCount === 1 ? "{0} item" : "{0} items", [reviewItemCount])])
                 : t("Toggle Review")}
               aria-pressed={reviewOverlayOpen}
               aria-expanded={reviewOverlayOpen}

@@ -341,7 +341,7 @@ export default function Popup() {
                   <span className="review-head">
                     <span className="review-name" title={entry.key}>{entry.label}</span>
                     <span className="review-count">
-                      {entry.itemCount} {entry.itemCount === 1 ? t("item") : t("items")}
+                      {t(entry.itemCount === 1 ? "{0} item" : "{0} items", [entry.itemCount])}
                     </span>
                   </span>
                   <span className="review-meta">
@@ -368,7 +368,7 @@ export default function Popup() {
                       {entry.label}
                     </span>
                     <span className="review-count">
-                      {entry.itemCount} {entry.itemCount === 1 ? t("item") : t("items")}
+                      {t(entry.itemCount === 1 ? "{0} item" : "{0} items", [entry.itemCount])}
                     </span>
                   </span>
                   <span className="review-meta">

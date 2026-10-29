@@ -197,7 +197,7 @@ export function ContentDialogs({
                         <span className="font-medium">{t("Keep content in the link")}</span>
                       </span>
                       <span className="shrink-0 tabular-nums text-xs text-muted-foreground">
-                        {linkSnapshotDialog.creation.characters.toLocaleString()}{t("-character link")}</span>
+                        {t("{0}-character link", [linkSnapshotDialog.creation.characters.toLocaleString()])}</span>
                     </span>
                     <span className="text-muted-foreground">
                       {t("No upload. The link never expires, but it can be long.")}</span>
@@ -229,10 +229,10 @@ export function ContentDialogs({
                         <span className="font-medium">{t("Upload an encrypted copy")}</span>
                       </span>
                       <span className="shrink-0 tabular-nums text-xs text-muted-foreground">
-                        {HOSTED_SNAPSHOT_URL_CHARACTERS.toLocaleString()}{t("-character link")}</span>
+                        {t("{0}-character link", [HOSTED_SNAPSHOT_URL_CHARACTERS.toLocaleString()])}</span>
                     </span>
                     <span className="text-muted-foreground">
-                      {t("Encrypted before upload. The decryption key stays in the link, and Markside can't read the copy. Expires in ")}{linkSnapshotDialog.expiryDays} {t(" days.")}</span>
+                      {t("Encrypted before upload. The decryption key stays in the link, and Markside can't read the copy. Expires in {0} days.", [linkSnapshotDialog.expiryDays])}</span>
                   </label>
                 </div>
               </fieldset>
@@ -240,34 +240,44 @@ export function ContentDialogs({
 
             {linkSnapshotDialog.kind === "link" && linkSnapshotDialog.creation.status === "too-large" ? (
               <p className="mt-4 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
-                {t("This document is ")}{Math.round(linkSnapshotDialog.creation.bytes / 1024).toLocaleString()} {t(" KB, above the")}{" "}
-                {Math.round(linkSnapshotDialog.creation.maxBytes / 1024).toLocaleString()} {t(" KB limit a recipient's browser can open. Shorten the document or send the Markdown file directly instead.")}</p>
+                {t("This document is {0} KB, above the {1} KB limit a recipient's browser can open. Shorten the document or send the Markdown file directly instead.", [
+                  Math.round(linkSnapshotDialog.creation.bytes / 1024).toLocaleString(),
+                  Math.round(linkSnapshotDialog.creation.maxBytes / 1024).toLocaleString(),
+                ])}</p>
             ) : null}
             {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && (
               <div className="mt-4 space-y-2">
                 {linkSnapshotDialog.kind === "hosted" && Object.keys(linkSnapshotDialog.images).length > 0 && (
                   <p className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
                     <Check size={14} className="mt-0.5 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
-                    <span>{Object.keys(linkSnapshotDialog.images).length} {t(" local image")}{Object.keys(linkSnapshotDialog.images).length === 1 ? "" : "s"} {t(" included in the encrypted copy.")}</span>
+                    <span>{t(Object.keys(linkSnapshotDialog.images).length === 1
+                      ? "{0} local image included in the encrypted copy."
+                      : "{0} local images included in the encrypted copy.", [Object.keys(linkSnapshotDialog.images).length])}</span>
                   </p>
                 )}
                 {linkSnapshotDialog.kind === "link" && linkSnapshotDialog.resources.localImages > 0 && (
                   <p role="note" className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
                     <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
-                    <span>{linkSnapshotDialog.resources.localImages} {t(" image")}{linkSnapshotDialog.resources.localImages === 1 ? "" : "s"} {t(" won't be included in this copy.")}</span>
+                    <span>{t(linkSnapshotDialog.resources.localImages === 1
+                      ? "{0} image won't be included in this copy."
+                      : "{0} images won't be included in this copy.", [linkSnapshotDialog.resources.localImages])}</span>
                   </p>
                 )}
                 {linkSnapshotDialog.resources.localDocumentLinks > 0 && (
                   <p role="note" className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
                     <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
-                    <span>{linkSnapshotDialog.resources.localDocumentLinks} {t(" link")}{linkSnapshotDialog.resources.localDocumentLinks === 1 ? "" : "s"} {t(" to local files won't work for the recipient.")}</span>
+                    <span>{t(linkSnapshotDialog.resources.localDocumentLinks === 1
+                      ? "{0} link to a local file won't work for the recipient."
+                      : "{0} links to local files won't work for the recipient.", [linkSnapshotDialog.resources.localDocumentLinks])}</span>
                   </p>
                 )}
                 {linkSnapshotDialog.kind === "hosted" && linkSnapshotDialog.missingImages.length > 0 && (
                   <div role="note" className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
                     <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
                     <div className="min-w-0">
-                      <p>{t("Couldn't read ")}{linkSnapshotDialog.missingImages.length === 1 ? t("this image") : t("these images")}{t(". You can still share without ")}{linkSnapshotDialog.missingImages.length === 1 ? t("it") : t("them")}:</p>
+                      <p>{linkSnapshotDialog.missingImages.length === 1
+                        ? t("Couldn't read this image. You can still share without it:")
+                        : t("Couldn't read these images. You can still share without them:")}</p>
                       <ul className="mt-1 list-inside list-disc break-all font-mono">
                         {linkSnapshotDialog.missingImages.map(src => <li key={src}>{src}</li>)}
                       </ul>
@@ -297,7 +307,9 @@ export function ContentDialogs({
               <div role="note" className="mt-3 flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                 <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
                 <p>
-                  {t("Markside could not read ")}{linkSnapshotDialog.missingEmbeds.length === 1 ? t("this HTML Embed") : t("these HTML Embeds")}{t(", so the shared link will show ")}{linkSnapshotDialog.missingEmbeds.length === 1 ? t("it") : t("them")} {t(" as missing:")}{" "}
+                  {linkSnapshotDialog.missingEmbeds.length === 1
+                    ? t("Markside could not read this HTML Embed, so the shared link will show it as missing:")
+                    : t("Markside could not read these HTML Embeds, so the shared link will show them as missing:")}{" "}
                   {linkSnapshotDialog.missingEmbeds.map((src, index) => (
                     <React.Fragment key={src}>
                       {index > 0 ? ", " : ""}
@@ -320,7 +332,9 @@ export function ContentDialogs({
                     )}
                   />
                   <span>
-                    {t("Include my Review (")}{ownReviewItemCount} {t(" item")}{ownReviewItemCount === 1 ? "" : "s"}{t(") in this link")}</span>
+                    {t(ownReviewItemCount === 1
+                      ? "Include my Review ({0} item) in this link"
+                      : "Include my Review ({0} items) in this link", [ownReviewItemCount])}</span>
                 </label>
                 {linkSnapshotDialog.includeReview && (
                   <input
@@ -335,7 +349,9 @@ export function ContentDialogs({
             )}
             {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && importedRoundCount > 0 && (
               <p className="mt-3 text-xs text-muted-foreground">
-                {importedRoundCount} {t(" previously imported Review Round")}{importedRoundCount === 1 ? "" : "s"} {t(" will also travel with this link.")}</p>
+                {t(importedRoundCount === 1
+                  ? "{0} previously imported Review Round will also be included in this link."
+                  : "{0} previously imported Review Rounds will also be included in this link.", [importedRoundCount])}</p>
             )}
 
             {linkSnapshotDialog.status === "save-failed" && (
@@ -466,10 +482,11 @@ export function ContentDialogs({
                 <ul className="mt-4 space-y-1.5 text-sm">
                   {importReviewDialog.rounds.map((round, index) => (
                     <li key={round.id} className="rounded-md border px-3 py-2">
-                      {t("Round ")}{index + 1} — {round.reviewerName || t("Reviewer")}{" "}
+                      {t("Round {0} — {1}", [index + 1, round.reviewerName || t("Reviewer")])}{" "}
                       <span className="text-muted-foreground">
-                        ({round.comments.length} {t(" comment")}{round.comments.length === 1 ? "" : "s"}
-                        {round.note.trim() ? t(", 1 note") : ""})
+                        {round.note.trim()
+                          ? t(round.comments.length === 1 ? "({0} comment, 1 note)" : "({0} comments, 1 note)", [round.comments.length])
+                          : t(round.comments.length === 1 ? "({0} comment)" : "({0} comments)", [round.comments.length])}
                       </span>
                     </li>
                   ))}
@@ -484,7 +501,9 @@ export function ContentDialogs({
             {importReviewDialog.status === "imported" && (
               <>
                 <p role="status" className="mt-4 flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                  <Check size={14} /> {t(" Imported ")}{importReviewDialog.rounds.length} {t(" Review Round")}{importReviewDialog.rounds.length === 1 ? "" : "s"}.
+                  <Check size={14} /> {t(importReviewDialog.rounds.length === 1
+                    ? "Imported {0} Review Round."
+                    : "Imported {0} Review Rounds.", [importReviewDialog.rounds.length])}
                 </p>
                 <div className="mt-4 flex justify-end">
                   <Button onClick={closeImportReviewDialog}>{t("Done")}</Button>

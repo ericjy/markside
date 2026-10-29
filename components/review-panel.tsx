@@ -674,7 +674,7 @@ export function ReviewPanel({
               {importedRounds.map((round, index) => (
                 <div key={round.id}>
                   <div className="flex items-baseline justify-between gap-2 px-1">
-                    <span className="text-sm font-semibold text-foreground">{t("Round ")}{index + 1}</span>
+                    <span className="text-sm font-semibold text-foreground">{t("Round {0}", [index + 1])}</span>
                     <span className="text-xs text-muted-foreground">
                       {t("by {0} on {1}", [round.reviewerName || t("Reviewer"), round.createdAt.slice(0, 10)])}
                     </span>

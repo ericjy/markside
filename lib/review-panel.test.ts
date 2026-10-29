@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ReviewPanel } from "../components/review-panel"
 import { TooltipProvider } from "../components/ui/tooltip"
+import { applyInterfaceLanguagePreference } from "./i18n"
 import type { ActiveReview, ResolvedReviewComment } from "./review"
 
 ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean })
@@ -1049,6 +1050,22 @@ describe("ReviewPanel", () => {
     expect(container.textContent).toContain("by Alex on 2026-08-16")
     expect(container.textContent).toContain("Overall looks good.")
     expect(container.textContent).toContain("Nice catch.")
+  })
+
+  it("names imported Review Rounds correctly in Simplified Chinese", () => {
+    applyInterfaceLanguagePreference("zh-CN")
+    try {
+      renderPanel({
+        review: {
+          ...review,
+          importedRounds: [{ id: "round-1", reviewerName: "Alex", note: "", comments: [], createdAt: "2026-08-16T10:00:00.000Z" }],
+        },
+      })
+      expect(container.textContent).toContain("第 1 轮")
+      expect(container.textContent).not.toContain("圆形")
+    } finally {
+      applyInterfaceLanguagePreference("auto")
+    }
   })
 
   it("omits the Review History section when there are no imported Review Rounds", () => {

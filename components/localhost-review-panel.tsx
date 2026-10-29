@@ -614,7 +614,7 @@ export function LocalhostReviewPanel({
         <span className="mrp-heading-row">
           <h2 className="mrp-title">{t("Review")}</h2>
           <span className="mrp-count">
-            {itemCount} {itemCount === 1 ? t("item") : t("items")}
+            {t(itemCount === 1 ? "{0} item" : "{0} items", [itemCount])}
           </span>
         </span>
         <button

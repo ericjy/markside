@@ -181,7 +181,7 @@ export function ContentReviewOverlay({
                 <h2 id="markside-review-overlay-title" className="text-sm font-semibold">
                   {t("Review")}</h2>
                 <span className="text-xs tabular-nums text-muted-foreground">
-                  {reviewItemCount} {reviewItemCount === 1 ? t("item") : t("items")}
+                  {t(reviewItemCount === 1 ? "{0} item" : "{0} items", [reviewItemCount])}
                 </span>
               </div>
               <div className="flex items-center gap-1">

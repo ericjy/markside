@@ -9,8 +9,14 @@ Store and GitHub Releases run independently and can diverge; see
 
 ### Added
 
+- Start a New Draft from the extension popup on any tab. Write in Source or Split, then choose where to save it; the draft stays available if you close its tab before saving.
 - Embed local HTML files in Markdown to show interactive visuals in Preview and Split. Expand an HTML Embed, comment on it, and include it in Snapshots and PDF Export.
 - Ask the Markside Agent Skill to explain a topic or document with interactive visuals, then review the explanation in Markside.
+
+### Improved
+
+- Hosted Snapshots can include local images, encrypted with the document. Markside identifies unreadable images and offers compression when a Snapshot is too large.
+- Dark mode separates the document's appearance from the surrounding interface.
 
 ### Fixed
 

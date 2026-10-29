@@ -2,7 +2,7 @@
   "name": "markside",
   "displayName": "Markside: Markdown Viewer & Editor",
   "version": "1.8.0",
-  "description": "Preview, edit, comment & share local Markdown. AI Review, GitHub-flavored, Mermaid, math, code highlighting, dark mode, PDF export.",
+  "description": "Markdown viewer and editor for local .md files. Comment on Markdown, review it with AI agents. Mermaid, math, and PDF export.",
   "author": "Jing Yang",
   "license": "MIT",
   "scripts": {
@@ -12,6 +12,7 @@
     "package": "plasmo package",
     "webstore": "node scripts/webstore-release.mjs",
     "webstore:prepare": "node scripts/webstore-release.mjs prepare",
+    "webstore:rank": "node scripts/webstore-rank.mjs",
     "store-promo": "bash scripts/store-promo/render.sh",
     "test": "node scripts/bundle-codemirror.mjs && vitest run",
     "test:watch": "node scripts/bundle-codemirror.mjs && vitest",

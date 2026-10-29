@@ -172,111 +172,85 @@ Set by `displayName` in `package.json`. Keep the exact search phrase "Markdown V
 ## Short description (132 chars max)
 
 ```
-Preview, edit, comment & share local Markdown. AI Review, GitHub-flavored, Mermaid, math, code highlighting, dark mode, PDF export.
+Markdown viewer and editor for local .md files. Comment on Markdown, review it with AI agents. Mermaid, math, and PDF export.
 ```
+
+Set by `description` in `package.json`, so a change reaches the Store only with
+the next uploaded package. Lead with "Markdown viewer and editor" and write a
+sentence, not a feature list.
 
 ## Full description
 
+Keep it near 300 words and about the product: say "Markdown" naturally and often,
+and name third-party products only where needed. The Store treats irrelevant
+keywords and third-party brand names as spam, which can lower search rank. The
+full description can be edited in the Dashboard without uploading a package.
+
 ```
-Review beautifully rendered local Markdown files. Make quick direct edits without chat. Add inline comments like in Google Docs and send them to your agent. Share Markdown as a link your team can review instantly. Works with Claude Code, ChatGPT, Cursor, OpenClaw, and more.
+Markside is a Markdown viewer and editor for local Markdown files in Chrome. Open any .md file to read it beautifully rendered, edit it in place, comment on passages, and send your review to an AI coding agent.
 
-❗ After installing, enable "Allow access to file URLs" in the extension details page.
-❗ Supports local files only. Files on the web are not supported, yet.
+❗ After installing, enable "Allow access to file URLs" on the extension's details page.
+❗ Markside opens local Markdown files only. Markdown files on the web are not supported yet.
 
-Free to use. No account required. Learn more at https://markside.app.
+Free and open source. No account required. Learn more at https://markside.app.
 
-READ
+READ MARKDOWN
 
-• Instant rendering — Open a Markdown file and it renders immediately
-• Document outline — Browse an automatically generated right-side table of contents
-• Rich Markdown — Support headings, lists, tables, images, code, and common Markdown syntax
-• Extended syntax — Render task lists, footnotes, wikilinks, and linked URLs
-• Syntax highlighting — See highlighted code blocks for major languages
-• Mermaid diagrams — Render flowcharts, sequence diagrams, and more; zoom, pan, or expand them
-• Math formulas — Render inline and display math with KaTeX
-• YAML frontmatter — Display document metadata, including in SKILL.md files
-• GitHub alerts — Render Note, Tip, Important, Warning, and Caution callouts
-• Numbered headings — Optionally add section numbers without changing the file
+• GitHub-flavored Markdown with tables, task lists, footnotes, and alerts
+• Syntax-highlighted code, Mermaid diagrams, and KaTeX math
+• Document outline, YAML frontmatter, themes, and Zen mode
 
-REVIEW
+REVIEW MARKDOWN
 
-• Inline comments — Select text and leave a comment, like commenting in a Google Doc
-• Quick comment presets — Instantly save a preset comment such as Clarify, Verify, or Condense
-• Review History — See a reviewer's comments alongside your own, each anchored to its passage
-• Agent-ready prompts — Copy any comment as a prompt for your coding agent
+• Select text and leave inline comments, with one-click presets such as Clarify or Verify
+• Copy any comment as a prompt for your coding agent
+• Send a whole review to Claude Code, Codex, or another agent with the free Markside Agent Skill, and read its replies beside each comment (Beta): npx skills add ericjy/markside --skill markside -g
+• See additions and removals after the agent changes the file
 
-WORK WITH YOUR CODING AGENT (BETA)
+EDIT MARKDOWN
 
-Install the free Markside Agent Skill for Claude Code, Codex, Cursor, and other agents: npx skills add ericjy/markside --skill markside -g
+• Start a New Draft from the extension popup, even when no Markdown file is open
+• Preview, Source, and live Split view
+• Formatting toolbar, keyboard shortcuts, and undo history
+• Save to disk with Cmd+S / Ctrl+S, or turn on Auto Save
+• Open a folder to browse its files and switch between them with Cmd+P / Ctrl+P
 
-• Open from your agent — Run /markside to open the file your agent just wrote, without finding its path
-• Review loop — Run /markside review PLAN.md, comment in Markside, and click Send review to agent. The agent addresses each comment and replies until you finish the review
-• Interviews — Let your agent's questioning skill, such as /grill-me, ask its questions as cards in Markside. Pick an option or answer in your own words
-• Local by design — Comments travel through a file beside your document. No server, no account
-• Review loop and interviews require Node.js 20+. Learn more at https://markside.app/skill
+SHARE MARKDOWN
 
-SHARE
-
-• Link Snapshot — Turn a saved local file into a readable link, with the content encoded in the URL and no upload
-• Hosted Snapshot — Encrypt saved Markdown in your browser and create a shorter link that expires in 30 days
-• Bring your review along — Optionally include your comments so feedback travels with the link
-• Reviewed Snapshots — Recipients can add their own feedback and share it back as a new link
-
-EDIT
-
-• In-place editing — Make quick changes without leaving Chrome
-• Three modes — Choose Preview, Source, or live Split view
-• Live preview — Edit beside a responsive rendered document
-• CodeMirror editor — Syntax highlighting, autocompletion, keyboard shortcuts, and undo history
-• Formatting toolbar — Insert tables, images, and links without remembering syntax
-• Emoji insert — Add common symbols to Markdown documents
-• Manual or Auto Save — Save with Cmd+S / Ctrl+S or enable Auto Save
-• Conflict protection — Review changes before overwriting a file modified on disk
-• Reload comparison — See additions and removals after reloading a Markdown file, and comment on removed passages
-
-NAVIGATE
-
-• Folder browsing — Open a local folder to explore your project
-• More than Markdown — Browse code, images, and other files in the tree
-• Quick switcher — Press Cmd+P / Ctrl+P to find a file in the open folder
-• Smart matching — Connect each local file to the right saved folder automatically
-• Relative links — Follow links between nearby local documents
-• Compact breadcrumbs — Browse the current file path without crowding the toolbar
-• Fuzzy search — Search across the open folder as you type
-• New Markdown file — Create a file in the open folder and start editing it in a new tab
-
-OTHER
-
-• PDF export — Create a clean, light-theme document through Chrome's Save to PDF workflow
-• CJK support — Export documents containing Chinese, Japanese, and Korean text
-• Source files — View supported text and code files directly in the editor
-• Image viewer — Open local images without leaving Markside
-• Theme toggle — Switch themes without reloading the page
-• Full width — Expand the document across the available browser space
-• Zen mode — Hide the toolbar, file tree, and outline to focus on the document
-• Word count — See word count and reading time at the top of Preview
-• Free access — Use every local feature with no account required
-
-WHAT'S NEW IN 1.8.0
-
-• Embed interactive HTML visuals in Markdown, comment on them, and share them in Snapshots
-• Ask the Markside Agent Skill to explain a topic or document with interactive visuals
-• Import a reviewer's Hosted Snapshot link into Review History
+• Turn a Markdown file into a link, optionally with your comments
+• Export a clean PDF
 
 SET UP IN 30 SECONDS
 
-1. Install Markside from the Chrome Web Store. It's free, with no account required.
+1. Install Markside.
 2. In extension settings, enable "Allow access to file URLs."
 3. Open any .md file in Chrome. Markside renders it automatically.
 
 PRIVACY
 
-Markside is privacy-first. Local files and reviews stay in your local browser during ordinary use. A Link Snapshot carries its content in the URL and not uploaded to Markside server. If you explicitly create a Hosted Snapshot, Markside extension encrypts it locally before upload, so Markside server stores ciphertext only. The decryption key stays in the URL fragment and not visible to Markside server. Directory and file handles are stored in your browser's IndexedDB. No analytics or telemetry.
+Local files and reviews stay in your browser during ordinary use. A Link Snapshot carries its content in the URL. A Hosted Snapshot is encrypted in your browser before upload, so Markside's server stores only ciphertext. No analytics or telemetry.
 
-COMPATIBILITY
+WHAT'S NEW IN 1.8.0
 
-Chrome and Chromium-based browsers such as Edge, Brave, and Arc are supported. Firefox and Safari are not supported.
+• Start a New Draft from any tab and save it where you choose
+• Embed interactive HTML visuals in Markdown and review them with your agent
+• Include local images in encrypted Hosted Snapshots
+
+Works in Chrome and Chromium-based browsers such as Edge, Brave, and Arc.
 ```
+
+### Search rank
+
+Measure the listing's position before and after a listing change:
+
+```bash
+pnpm webstore:rank
+pnpm webstore:rank "markdown viewer" "markdown reader"
+```
+
+Rank updates can lag a listing change by days, and results vary by region, so
+change one thing at a time and compare runs made from the same place a week
+apart.
 
 ---
 

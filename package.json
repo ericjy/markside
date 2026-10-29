@@ -2,7 +2,7 @@
   "name": "markside",
   "displayName": "Markside: Markdown Viewer & Editor",
   "version": "1.8.0",
-  "description": "Markdown viewer and editor for local .md files. Comment on Markdown, review it with AI agents. Mermaid, math, and PDF export.",
+  "description": "Review local Markdown with inline comments and AI agents. Mermaid, math, and PDF export included.",
   "author": "Jing Yang",
   "license": "MIT",
   "scripts": {

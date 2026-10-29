@@ -172,12 +172,12 @@ Set by `displayName` in `package.json`. Keep the exact search phrase "Markdown V
 ## Short description (132 chars max)
 
 ```
-Markdown viewer and editor for local .md files. Comment on Markdown, review it with AI agents. Mermaid, math, and PDF export.
+Review local Markdown with inline comments and AI agents. Mermaid, math, and PDF export included.
 ```
 
 Set by `description` in `package.json`, so a change reaches the Store only with
-the next uploaded package. Lead with "Markdown viewer and editor" and write a
-sentence, not a feature list.
+the next uploaded package. Lead with the local Markdown Review workflow and
+write a sentence, not a feature list.
 
 ## Full description
 
@@ -187,12 +187,10 @@ keywords and third-party brand names as spam, which can lower search rank. The
 full description can be edited in the Dashboard without uploading a package.
 
 ```
-Markside is a Markdown viewer and editor for local Markdown files in Chrome. Open any .md file to read it beautifully rendered, edit it in place, comment on passages, and send your review to an AI coding agent.
+Open a local .md file in Chrome to read it beautifully rendered or edit it in place. Leave feedback directly on the text, send your review to an AI agent, or share the document with teammates. Free, with no account required. Learn more at https://markside.app
 
 ❗ After installing, enable "Allow access to file URLs" on the extension's details page.
-❗ Markside opens local Markdown files only. Markdown files on the web are not supported yet.
-
-Free and open source. No account required. Learn more at https://markside.app.
+❗ Markside opens local Markdown files only.
 
 READ MARKDOWN
 
@@ -235,8 +233,6 @@ WHAT'S NEW IN 1.8.0
 • Start a New Draft from any tab and save it where you choose
 • Embed interactive HTML visuals in Markdown and review them with your agent
 • Include local images in encrypted Hosted Snapshots
-
-Works in Chrome and Chromium-based browsers such as Edge, Brave, and Arc.
 ```
 
 ### Search rank

@@ -858,5 +858,11 @@
   "{0} items": "{0} 項",
   "{0} review item": "{0} 則審閱項目",
   "{0} review items": "{0} 則審閱項目",
-  "In the folder picker, press:": "在資料夾選擇視窗中依序按下："
+  "In the folder picker, press:": "在資料夾選擇視窗中依序按下：",
+  "Open the {0} folder": "開啟「{0}」資料夾",
+  "Choose {0} or a parent folder so Markside can browse and save files.": "選擇「{0}」或其上層資料夾，讓 Markside 能瀏覽和儲存檔案。",
+  "Choose this folder or a parent folder so Markside can browse and save files.": "選擇此資料夾或其上層資料夾，讓 Markside 能瀏覽和儲存檔案。",
+  "Choose {0}…": "選擇「{0}」…",
+  "Choose folder…": "選擇資料夾…",
+  "Opening the folder picker copies the folder path.": "開啟資料夾選擇視窗時會複製資料夾路徑。"
 }

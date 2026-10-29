@@ -858,5 +858,11 @@
   "{0} items": "{0} elementos",
   "{0} review item": "{0} elemento de revisión",
   "{0} review items": "{0} elementos de revisión",
-  "In the folder picker, press:": "En la ventana de selección de carpetas, pulsa estas teclas en orden:"
+  "In the folder picker, press:": "En la ventana de selección de carpetas, pulsa estas teclas en orden:",
+  "Open the {0} folder": "Abrir la carpeta {0}",
+  "Choose {0} or a parent folder so Markside can browse and save files.": "Elige {0} o una carpeta superior para que Markside pueda explorar y guardar archivos.",
+  "Choose this folder or a parent folder so Markside can browse and save files.": "Elige esta carpeta o una carpeta superior para que Markside pueda explorar y guardar archivos.",
+  "Choose {0}…": "Elegir {0}…",
+  "Choose folder…": "Elegir carpeta…",
+  "Opening the folder picker copies the folder path.": "Al abrir el selector de carpetas, se copia la ruta de la carpeta."
 }

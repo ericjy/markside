@@ -858,5 +858,11 @@
   "{0} items": "{0} 件",
   "{0} review item": "レビュー項目 {0} 件",
   "{0} review items": "レビュー項目 {0} 件",
-  "In the folder picker, press:": "フォルダー選択画面で次のキーを順に押してください："
+  "In the folder picker, press:": "フォルダー選択画面で次のキーを順に押してください：",
+  "Open the {0} folder": "「{0}」フォルダーを開く",
+  "Choose {0} or a parent folder so Markside can browse and save files.": "Markside でファイルの閲覧と保存ができるように、「{0}」またはその親フォルダーを選択してください。",
+  "Choose this folder or a parent folder so Markside can browse and save files.": "Markside でファイルの閲覧と保存ができるように、このフォルダーまたはその親フォルダーを選択してください。",
+  "Choose {0}…": "「{0}」を選択…",
+  "Choose folder…": "フォルダーを選択…",
+  "Opening the folder picker copies the folder path.": "フォルダー選択画面を開くと、フォルダーのパスがコピーされます。"
 }

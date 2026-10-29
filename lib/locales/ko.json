@@ -858,5 +858,11 @@
   "{0} items": "항목 {0}개",
   "{0} review item": "리뷰 항목 {0}개",
   "{0} review items": "리뷰 항목 {0}개",
-  "In the folder picker, press:": "폴더 선택 창에서 다음 키를 순서대로 누르세요:"
+  "In the folder picker, press:": "폴더 선택 창에서 다음 키를 순서대로 누르세요:",
+  "Open the {0} folder": "‘{0}’ 폴더 열기",
+  "Choose {0} or a parent folder so Markside can browse and save files.": "Markside에서 파일을 탐색하고 저장할 수 있도록 ‘{0}’ 또는 상위 폴더를 선택하세요.",
+  "Choose this folder or a parent folder so Markside can browse and save files.": "Markside에서 파일을 탐색하고 저장할 수 있도록 이 폴더 또는 상위 폴더를 선택하세요.",
+  "Choose {0}…": "‘{0}’ 선택…",
+  "Choose folder…": "폴더 선택…",
+  "Opening the folder picker copies the folder path.": "폴더 선택 창을 열면 폴더 경로가 복사됩니다."
 }

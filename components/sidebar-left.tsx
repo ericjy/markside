@@ -222,12 +222,14 @@ export function SidebarLeft({
             <div className="flex max-w-60 flex-col gap-3">
               <div className="space-y-1.5">
                 <p className="text-sm font-medium leading-snug text-sidebar-foreground">
-                  {parentFolderName ? t("Open {0}", [parentFolderName]) : t("Open this file's folder")}
+                  {parentFolderName ? t("Open the {0} folder", [parentFolderName]) : t("Open this file's folder")}
                 </p>
                 <p className="text-[13px] leading-relaxed text-sidebar-foreground/75">
                   {folderError
                     ? tRich("You chose {0}. Please choose {1}, or a parent folder.", <strong className="font-medium text-sidebar-foreground">{folderError.picked}</strong>, <strong className="font-medium text-sidebar-foreground">{folderError.expected ?? parentFolderName}</strong>)
-                    : t("Choose this folder so Markside can browse and save files in it.")}
+                    : parentFolderName
+                      ? t("Choose {0} or a parent folder so Markside can browse and save files.", [parentFolderName])
+                      : t("Choose this folder or a parent folder so Markside can browse and save files.")}
                 </p>
                 {folderError && (
                   <p className="text-[13px] leading-relaxed text-sidebar-foreground/75">
@@ -242,8 +244,8 @@ export function SidebarLeft({
                   void openDirectory()
                 }}
                 className="flex items-center justify-center gap-1.5 rounded-md bg-sidebar-primary px-3 py-2 text-[13px] font-medium text-sidebar-primary-foreground hover:opacity-90">
-                <FolderOpen className="h-3.5 w-3.5" aria-hidden="true" />
-                {t("Choose folder")}</button>
+                <FolderOpen className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span className="min-w-0 break-words">{parentFolderName ? t("Choose {0}…", [parentFolderName]) : t("Choose folder…")}</span></button>
               <FolderPickerTip copied={copiedFolderPath === folderPath} className="text-[13px] leading-relaxed text-sidebar-foreground/65" />
             </div>
           </div>

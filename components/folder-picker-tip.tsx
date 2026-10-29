@@ -14,7 +14,7 @@ export function FolderPickerTip({ copied, className }: { copied: boolean; classN
         <span role="status" className={copied ? "font-semibold" : undefined}>
           {copied
             ? <><Check className="inline h-4 w-4 align-[-3px]" aria-hidden="true" /> {t("Folder path copied.")}</>
-            : t("Choose folder copies its path.")}
+            : t("Opening the folder picker copies the folder path.")}
         </span>{" "}
         {t("In the folder picker, press:")}{" "}
         <span className="whitespace-nowrap">

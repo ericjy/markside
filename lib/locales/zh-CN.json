@@ -858,5 +858,11 @@
   "{0} items": "{0} 项",
   "{0} review item": "{0} 条审阅内容",
   "{0} review items": "{0} 条审阅内容",
-  "In the folder picker, press:": "在文件夹选择窗口中依次按："
+  "In the folder picker, press:": "在文件夹选择窗口中依次按：",
+  "Open the {0} folder": "打开“{0}”文件夹",
+  "Choose {0} or a parent folder so Markside can browse and save files.": "选择“{0}”或其上级文件夹，以便 Markside 浏览和保存文件。",
+  "Choose this folder or a parent folder so Markside can browse and save files.": "选择此文件夹或其上级文件夹，以便 Markside 浏览和保存文件。",
+  "Choose {0}…": "选择“{0}”…",
+  "Choose folder…": "选择文件夹…",
+  "Opening the folder picker copies the folder path.": "打开文件夹选择窗口时会复制文件夹路径。"
 }

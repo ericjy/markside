@@ -49,7 +49,7 @@
   "Checking…": "正在检查…",
   "Choose another app": "选择另一个应用程序",
   "Choose folder": "选择文件夹",
-  "Choose folder copies its path.": "选择文件夹复制其路径。",
+  "Choose folder copies its path.": "点击“选择文件夹”时会复制路径。",
   "Choose this folder so Markside can browse and save files in it.": "选择此文件夹，以便 Markside 可以浏览并保存其中的文件。",
   "Chrome needs you to select this file's folder before Markside can save the file. After you select the folder once, Markside can save files in that folder in the future.": "Chrome 需要您先选择该文件的文件夹，然后 Markside 才能保存该文件。选择一次文件夹后，Markside 将来可以将文件保存在该文件夹中。",
   "Chrome needs your permission to open": "Chrome 需要您的许可才能打开",
@@ -170,7 +170,7 @@
   "Finish review": "完成审阅",
   "Finishing review…": "审核完毕……",
   "Float Review": "浮动审阅面板",
-  "Folder path copied.": "复制的文件夹路径。",
+  "Folder path copied.": "已复制文件夹路径。",
   "Full width": "全宽",
   "General": "一般",
   "Get Info": "获取信息",
@@ -857,5 +857,6 @@
   "{0} item": "{0} 项",
   "{0} items": "{0} 项",
   "{0} review item": "{0} 条审阅内容",
-  "{0} review items": "{0} 条审阅内容"
+  "{0} review items": "{0} 条审阅内容",
+  "In the folder picker, press:": "在文件夹选择窗口中依次按："
 }

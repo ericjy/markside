@@ -13,10 +13,10 @@ export function FolderPickerTip({ copied, className }: { copied: boolean; classN
       <span className={copied ? "text-emerald-800 dark:text-emerald-300" : undefined}>
         <span role="status" className={copied ? "font-semibold" : undefined}>
           {copied
-            ? <><Check className="inline h-4 w-4 align-[-3px]" aria-hidden="true" /> {t(" Folder path copied.")}</>
+            ? <><Check className="inline h-4 w-4 align-[-3px]" aria-hidden="true" /> {t("Folder path copied.")}</>
             : t("Choose folder copies its path.")}
         </span>{" "}
-        {copied ? t("To jump right to it") : t("To jump to it")} {t(" in the picker, press")}{" "}
+        {t("In the folder picker, press:")}{" "}
         <span className="whitespace-nowrap">
           {keys.map((key, index) => (
             <React.Fragment key={key}>

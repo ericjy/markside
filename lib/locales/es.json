@@ -49,7 +49,7 @@
   "Checking…": "Comprobando…",
   "Choose another app": "Elige otra aplicación",
   "Choose folder": "Elige carpeta",
-  "Choose folder copies its path.": "Elija la carpeta copia su ruta.",
+  "Choose folder copies its path.": "Al pulsar «Elige carpeta» se copia la ruta.",
   "Choose this folder so Markside can browse and save files in it.": "Elija esta carpeta para que Markside pueda buscar y guardar archivos en ella.",
   "Chrome needs you to select this file's folder before Markside can save the file. After you select the folder once, Markside can save files in that folder in the future.": "Chrome necesita que seleccione la carpeta de este archivo antes de que Markside pueda guardarlo. Después de seleccionar la carpeta una vez, Markside puede guardar archivos en esa carpeta en el futuro.",
   "Chrome needs your permission to open": "Chrome necesita tu permiso para abrirse",
@@ -857,5 +857,6 @@
   "{0} item": "{0} elemento",
   "{0} items": "{0} elementos",
   "{0} review item": "{0} elemento de revisión",
-  "{0} review items": "{0} elementos de revisión"
+  "{0} review items": "{0} elementos de revisión",
+  "In the folder picker, press:": "En la ventana de selección de carpetas, pulsa estas teclas en orden:"
 }

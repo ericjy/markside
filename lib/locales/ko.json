@@ -49,7 +49,7 @@
   "Checking…": "확인 중…",
   "Choose another app": "다른 앱 선택",
   "Choose folder": "폴더 선택",
-  "Choose folder copies its path.": "폴더를 선택하면 해당 경로가 복사됩니다.",
+  "Choose folder copies its path.": "‘폴더 선택’을 누르면 경로가 복사됩니다.",
   "Choose this folder so Markside can browse and save files in it.": "Markside가 해당 폴더에서 파일을 탐색하고 저장할 수 있도록 이 폴더를 선택하세요.",
   "Chrome needs you to select this file's folder before Markside can save the file. After you select the folder once, Markside can save files in that folder in the future.": "Chrome에서는 Markside가 파일을 저장하기 전에 이 파일의 폴더를 선택해야 합니다. 폴더를 한 번 선택하면 Markside는 나중에 해당 폴더에 파일을 저장할 수 있습니다.",
   "Chrome needs your permission to open": "Chrome을 열려면 권한이 필요합니다.",
@@ -170,7 +170,7 @@
   "Finish review": "검토 완료",
   "Finishing review…": "검토를 마치는 중…",
   "Float Review": "검토 패널 띄우기",
-  "Folder path copied.": "폴더 경로가 복사되었습니다.",
+  "Folder path copied.": "폴더 경로를 복사했습니다.",
   "Full width": "전폭",
   "General": "일반",
   "Get Info": "정보 얻기",
@@ -857,5 +857,6 @@
   "{0} item": "항목 {0}개",
   "{0} items": "항목 {0}개",
   "{0} review item": "리뷰 항목 {0}개",
-  "{0} review items": "리뷰 항목 {0}개"
+  "{0} review items": "리뷰 항목 {0}개",
+  "In the folder picker, press:": "폴더 선택 창에서 다음 키를 순서대로 누르세요:"
 }

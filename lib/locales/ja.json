@@ -49,7 +49,7 @@
   "Checking…": "確認中…",
   "Choose another app": "別のアプリを選択してください",
   "Choose folder": "フォルダーを選択してください",
-  "Choose folder copies its path.": "フォルダーを選択すると、そのパスがコピーされます。",
+  "Choose folder copies its path.": "「フォルダーを選択してください」を押すと、パスがコピーされます。",
   "Choose this folder so Markside can browse and save files in it.": "このフォルダーを選択すると、Markside がそのフォルダー内のファイルを参照して保存できるようになります。",
   "Chrome needs you to select this file's folder before Markside can save the file. After you select the folder once, Markside can save files in that folder in the future.": "Chrome では、Markside がファイルを保存する前に、このファイルのフォルダーを選択する必要があります。一度フォルダーを選択すると、Markside は今後そのフォルダーにファイルを保存できるようになります。",
   "Chrome needs your permission to open": "Chrome を開くには許可が必要です",
@@ -170,7 +170,7 @@
   "Finish review": "レビューを完了",
   "Finishing review…": "レビューを終了しています…",
   "Float Review": "レビューパネルをフロート表示",
-  "Folder path copied.": "フォルダーパスがコピーされました。",
+  "Folder path copied.": "フォルダーのパスをコピーしました。",
   "Full width": "全幅",
   "General": "一般",
   "Get Info": "情報を得る",
@@ -857,5 +857,6 @@
   "{0} item": "{0} 件",
   "{0} items": "{0} 件",
   "{0} review item": "レビュー項目 {0} 件",
-  "{0} review items": "レビュー項目 {0} 件"
+  "{0} review items": "レビュー項目 {0} 件",
+  "In the folder picker, press:": "フォルダー選択画面で次のキーを順に押してください："
 }

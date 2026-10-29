@@ -111,7 +111,7 @@
   "Checking…": "正在檢查…",
   "Choose another app": "選擇另一個應用程式",
   "Choose folder": "選擇資料夾",
-  "Choose folder copies its path.": "選擇資料夾複製其路徑。",
+  "Choose folder copies its path.": "按下「選擇資料夾」時會複製路徑。",
   "Choose the folder containing this document, then send again.": "選擇包含此文件的資料夾，然後再次傳送。",
   "Choose this folder so Markside can browse and save files in it.": "選擇此資料夾，以便 Markside 可以瀏覽並儲存其中的檔案。",
   "Chrome blocked navigation to the selected local file.": "Chrome 阻止開啟所選的本機檔案。",
@@ -307,7 +307,7 @@
   "Fold line": "折疊行",
   "folded code": "已折疊的程式碼",
   "Folded lines": "折疊線",
-  "Folder path copied.": "複製的資料夾路徑。",
+  "Folder path copied.": "已複製資料夾路徑。",
   "Footnote": "註腳",
   "Format Fit": "格式適合",
   "Full width": "全寬",
@@ -857,5 +857,6 @@
   "{0} item": "{0} 項",
   "{0} items": "{0} 項",
   "{0} review item": "{0} 則審閱項目",
-  "{0} review items": "{0} 則審閱項目"
+  "{0} review items": "{0} 則審閱項目",
+  "In the folder picker, press:": "在資料夾選擇視窗中依序按下："
 }

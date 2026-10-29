@@ -172,12 +172,11 @@ Set by `displayName` in `package.json`. Keep the exact search phrase "Markdown V
 ## Short description (132 chars max)
 
 ```
-Review local Markdown with inline comments and AI agents. Mermaid, math, and PDF export included.
+Read, edit and collaborate on Markdown with your teammate and AI agents. Inline comment, Mermaid. Math, PDF export, and more.
 ```
 
 Set by `description` in `package.json`, so a change reaches the Store only with
-the next uploaded package. Lead with the local Markdown Review workflow and
-write a sentence, not a feature list.
+the next uploaded package.
 
 ## Full description
 
@@ -187,7 +186,7 @@ keywords and third-party brand names as spam, which can lower search rank. The
 full description can be edited in the Dashboard without uploading a package.
 
 ```
-Open a local .md file in Chrome to read it beautifully rendered or edit it in place. Leave feedback directly on the text, send your review to an AI agent, or share the document with teammates. Free, with no account required. Learn more at https://markside.app
+Open any .md file to read it beautifully rendered, edit it in place, comment inline, send review to your AI agent, and share it with teammate. Free and no account required. Learn more at https://markside.app
 
 ❗ After installing, enable "Allow access to file URLs" on the extension's details page.
 ❗ Markside opens local Markdown files only.

@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import {
   Bot,
   BookOpen,
@@ -157,7 +158,7 @@ function TreeNode({
             <span className="truncate text-sm">{node.name}</span>
             {reviewCount > 0 && (
               <span
-                title={`${reviewCount} review item${reviewCount === 1 ? "" : "s"}`}
+                title={t("{0} review item{1}", [reviewCount, reviewCount === 1 ? "" : "s"])}
                 className="ml-auto min-w-4 rounded-full bg-amber-400/25 px-1 text-center text-[10px] font-semibold text-amber-700 dark:text-amber-300">
                 {reviewCount}
               </span>

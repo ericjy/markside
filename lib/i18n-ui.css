@@ -1,0 +1,17 @@
+.prose .markdown-alert-question .question-option-recommended[data-markside-recommended]::before {
+  content: attr(data-markside-recommended);
+}
+
+.markside-localized-label {
+  display: inline-grid;
+}
+
+.markside-localized-label > span {
+  grid-area: 1 / 1;
+  visibility: hidden;
+}
+
+.markside-localized-label::after {
+  grid-area: 1 / 1;
+  content: attr(data-markside-label);
+}

@@ -1,3 +1,4 @@
+import { t, tRich } from "~lib/i18n"
 // components/sidebar-left.tsx
 import { FilePlus2, FolderOpen, Search } from "lucide-react"
 import React, { useEffect, useRef } from "react"
@@ -103,7 +104,7 @@ export function SidebarLeft({
       await openNewMarkdownTab(url)
       setNewFileOpen(false)
     } catch (error) {
-      setNewFileError(error instanceof Error ? error.message : "Could not create the file.")
+      setNewFileError(error instanceof Error ? error.message : t("Could not create the file."))
     } finally {
       setCreatingFile(false)
     }
@@ -197,12 +198,12 @@ export function SidebarLeft({
             <path d="M109 99 L118 108 L109 117"/>
           </g>
         </svg>
-        <span className="font-semibold text-base tracking-tight">Markside</span>
+        <span className="font-semibold text-base tracking-tight">{t("Markside")}</span>
         {extensionVersion && (
           <span
             className="text-[10px] font-medium tabular-nums text-sidebar-foreground/40"
-            aria-label={`Version ${extensionVersion}${buildChannel === "DEV" ? ", development build" : ""}`}
-            title={`Version ${extensionVersion}${buildChannel === "DEV" ? ", development build" : ""}`}>
+            aria-label={t("Version {0}{1}", [extensionVersion, buildChannel === "DEV" ? ", development build" : ""])}
+            title={t("Version {0}{1}", [extensionVersion, buildChannel === "DEV" ? ", development build" : ""])}>
             v{extensionVersion}
           </span>
         )}
@@ -210,8 +211,7 @@ export function SidebarLeft({
           <span
             className="rounded bg-amber-500/15 px-1 py-0.5 text-[9px] font-semibold leading-none tracking-wide text-amber-700 dark:text-amber-400"
             aria-hidden="true">
-            DEV
-          </span>
+            {t("DEV")}</span>
         )}
       </SidebarHeader>
       <SidebarContent ref={contentRef} className="file-tree-scroll">
@@ -222,16 +222,16 @@ export function SidebarLeft({
             <div className="flex max-w-60 flex-col gap-3">
               <div className="space-y-1.5">
                 <p className="text-sm font-medium leading-snug text-sidebar-foreground">
-                  {parentFolderName ? <>Open {parentFolderName}</> : "Open this file's folder"}
+                  {parentFolderName ? t("Open {0}", [parentFolderName]) : t("Open this file's folder")}
                 </p>
                 <p className="text-[13px] leading-relaxed text-sidebar-foreground/75">
                   {folderError
-                    ? <>You chose <strong className="font-medium text-sidebar-foreground">{folderError.picked}</strong>. Please choose <strong className="font-medium text-sidebar-foreground">{folderError.expected ?? parentFolderName}</strong>, or a parent folder.</>
-                    : "Choose this folder so Markside can browse and save files in it."}
+                    ? tRich("You chose {0}. Please choose {1}, or a parent folder.", <strong className="font-medium text-sidebar-foreground">{folderError.picked}</strong>, <strong className="font-medium text-sidebar-foreground">{folderError.expected ?? parentFolderName}</strong>)
+                    : t("Choose this folder so Markside can browse and save files in it.")}
                 </p>
                 {folderError && (
                   <p className="text-[13px] leading-relaxed text-sidebar-foreground/75">
-                    Want to browse <strong className="font-medium text-sidebar-foreground">{folderError.picked}</strong>? Open a file from it first ({openFileShortcut}).
+                    {tRich("Want to browse {0}? Open a file from it first ({1}).", <strong className="font-medium text-sidebar-foreground">{folderError.picked}</strong>, openFileShortcut)}
                   </p>
                 )}
               </div>
@@ -243,8 +243,7 @@ export function SidebarLeft({
                 }}
                 className="flex items-center justify-center gap-1.5 rounded-md bg-sidebar-primary px-3 py-2 text-[13px] font-medium text-sidebar-primary-foreground hover:opacity-90">
                 <FolderOpen className="h-3.5 w-3.5" aria-hidden="true" />
-                Choose folder
-              </button>
+                {t("Choose folder")}</button>
               <FolderPickerTip copied={copiedFolderPath === folderPath} className="text-[13px] leading-relaxed text-sidebar-foreground/65" />
             </div>
           </div>
@@ -254,12 +253,11 @@ export function SidebarLeft({
           <>
             {status === "prompt" && (
               <div className="mx-2 mt-2 rounded-md bg-yellow-500/10 px-3 py-2 text-xs text-yellow-600 dark:text-yellow-400">
-                Access needed.{" "}
+                {t("Access needed.")}{" "}
                 <button
                   onClick={reauthorize}
                   className="underline hover:no-underline">
-                  Re-authorize
-                </button>
+                  {t("Re-authorize")}</button>
               </div>
             )}
 <SidebarGroup>
@@ -267,15 +265,15 @@ export function SidebarLeft({
                 <span className="truncate font-medium text-sidebar-foreground/80">{handle?.name}</span>
                 <button
                   onClick={() => setFolderInfoOpen(true)}
-                  aria-label="How to change folder"
+                  aria-label={t("How to change folder")}
                   className="ml-1 shrink-0 p-1 text-sidebar-foreground/30 hover:text-sidebar-foreground/60 transition-colors rounded">
                   <FolderOpen className="h-3 w-3" />
                 </button>
                 <div className="ml-auto flex shrink-0 items-center gap-1">
                   {handle && rootUrl && status === "granted" && (
                     <button type="button"
-                      aria-label="New Markdown file"
-                      title="New Markdown file"
+                      aria-label={t("New Markdown file")}
+                      title={t("New Markdown file")}
                       onClick={() => {
                         setNewFileName("Untitled.md")
                         setCreatedFileUrl(null)
@@ -288,7 +286,7 @@ export function SidebarLeft({
                   )}
                 <button
                   onClick={onOpenPalette}
-                  aria-label="Find file"
+                  aria-label={t("Find file")}
                   className="p-1 text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors rounded">
                   <Search className="h-3 w-3" />
                 </button>
@@ -322,21 +320,21 @@ export function SidebarLeft({
             filenameInputRef.current?.focus()
             filenameInputRef.current?.setSelectionRange(0, "Untitled".length)
           }} className="fixed left-1/2 top-1/2 z-[101] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-background p-5 text-foreground shadow-2xl">
-            <Dialog.Title className="text-base font-semibold">New Markdown file</Dialog.Title>
+            <Dialog.Title className="text-base font-semibold">{t("New Markdown file")}</Dialog.Title>
             <Dialog.Description className="mt-2 break-all text-xs text-muted-foreground">
-              Create in {rootUrl ? decodeURIComponent(new URL(rootUrl).pathname) : "the opened folder"}
+              {t("Create in ")}{rootUrl ? decodeURIComponent(new URL(rootUrl).pathname) : t("the opened folder")}
             </Dialog.Description>
             <form onSubmit={event => void createFile(event)}>
-              <label htmlFor="new-markdown-name" className="mt-4 block text-sm">Filename</label>
+              <label htmlFor="new-markdown-name" className="mt-4 block text-sm">{t("Filename")}</label>
               <input ref={filenameInputRef} id="new-markdown-name" value={newFileName}
                 onChange={event => setNewFileName(event.target.value)}
                 disabled={creatingFile || Boolean(createdFileUrl)}
                 className="mt-2 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-              {newFileError && <p role="alert" className="mt-3 text-sm text-destructive">{newFileError}</p>}
+              {newFileError && <p role="alert" className="mt-3 text-sm text-destructive">{t(newFileError)}</p>}
               <div className="mt-5 flex justify-end gap-2">
-                <Dialog.Close asChild><button type="button" disabled={creatingFile} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button></Dialog.Close>
+                <Dialog.Close asChild><button type="button" disabled={creatingFile} className="rounded-md border px-3 py-1.5 text-sm">{t("Cancel")}</button></Dialog.Close>
                 <button type="submit" disabled={creatingFile || !newFileName.trim()} className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-50">
-                  {creatingFile ? "Creating…" : createdFileUrl ? "Open file" : "Create file"}
+                  {creatingFile ? t("Creating…") : createdFileUrl ? t("Open file") : t("Create file")}
                 </button>
               </div>
             </form>
@@ -357,23 +355,20 @@ export function SidebarLeft({
               className="w-full max-w-lg rounded-lg border bg-background p-5 shadow-2xl"
               style={{ backgroundColor: "hsl(var(--background))" }}
               onClick={(e) => e.stopPropagation()}>
-              <h2 id="folder-info-title" className="text-sm font-semibold">Switch to a different folder</h2>
+              <h2 id="folder-info-title" className="text-sm font-semibold">{t("Switch to a different folder")}</h2>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Because of how Chrome handles folder access, you need to open a file in that folder before Markside can open the folder. To switch:
-              </p>
+                {t("Because of how Chrome handles folder access, you need to open a file in that folder before Markside can open the folder. To switch:")}</p>
               <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm leading-relaxed text-muted-foreground">
-                <li>Open any file from that folder. Press {openFileShortcut}, or drag the file into Chrome.</li>
-                <li>In the sidebar, click “Choose folder” and select the folder.</li>
+                <li>{t("Open any file from that folder. Press ")}{openFileShortcut}{t(", or drag the file into Chrome.")}</li>
+                <li>{t("In the sidebar, click “Choose folder” and select the folder.")}</li>
               </ol>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                If you've chosen that folder before, the sidebar shows it right away.
-              </p>
+                {t("If you've chosen that folder before, the sidebar shows it right away.")}</p>
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={() => setFolderInfoOpen(false)}
                   className="rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent transition-colors">
-                  Got it
-                </button>
+                  {t("Got it")}</button>
               </div>
             </div>
           </div>,

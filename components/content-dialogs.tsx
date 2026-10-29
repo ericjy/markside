@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import type { FolderError } from "~hooks/use-persisted-directory"
 import {
   AlertTriangle,
@@ -120,8 +121,8 @@ export function ContentDialogs({
       {clipboardFallback && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 p-4" role="presentation">
           <div role="dialog" aria-modal="true" aria-labelledby="copy-review-fallback-title" className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-lg border bg-background p-5 shadow-2xl">
-            <h2 id="copy-review-fallback-title" className="text-base font-semibold">Copy prompt manually</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Clipboard access failed. Select and copy the complete prompt below.</p>
+            <h2 id="copy-review-fallback-title" className="text-base font-semibold">{t("Copy prompt manually")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t("Clipboard access failed. Select and copy the complete prompt below.")}</p>
             <textarea
               readOnly
               autoFocus
@@ -130,7 +131,7 @@ export function ContentDialogs({
               className="mt-4 min-h-80 w-full flex-1 resize-y rounded-md border bg-muted/30 p-3 font-mono text-xs"
             />
             <div className="mt-4 flex justify-end">
-              <Button onClick={() => setClipboardFallback(null)}>Done</Button>
+              <Button onClick={() => setClipboardFallback(null)}>{t("Done")}</Button>
             </div>
           </div>
         </div>
@@ -147,19 +148,18 @@ export function ContentDialogs({
                 <div className="flex items-center gap-2">
                   <h2 id="link-snapshot-title" className="flex items-center gap-2 text-base font-semibold" aria-live="polite">
                     {linkSnapshotDialog.status === "copied" && <Check size={17} className="text-emerald-700 dark:text-emerald-400" aria-hidden="true" />}
-                    {linkSnapshotDialog.status === "copied" ? "Link copied" : linkSnapshotDialog.status === "copy-failed" ? "Link ready to copy" : "Create Share Link"}
+                    {linkSnapshotDialog.status === "copied" ? t("Link copied") : linkSnapshotDialog.status === "copy-failed" ? t("Link ready to copy") : t("Create Share Link")}
                   </h2>
                   {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && (
                     <span className="rounded-full border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      Beta
-                    </span>
+                      {t("Beta")}</span>
                   )}
                 </div>
                 {linkSnapshotDialog.status !== "copied" && (
                   <p className="mt-1 text-sm text-muted-foreground">
                     {linkSnapshotDialog.status === "copy-failed"
-                      ? "The link was created, but couldn't be copied automatically. Copy it below."
-                      : "Anyone with the link can view this copy. Changes to the file won't update it."}
+                      ? t("The link was created, but couldn't be copied automatically. Copy it below.")
+                      : t("Anyone with the link can view this copy. Changes to the file won't update it.")}
                   </p>
                 )}
               </div>
@@ -167,7 +167,7 @@ export function ContentDialogs({
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7"
-                aria-label="Close"
+                aria-label={t("Close")}
                 onClick={closeLinkSnapshotDialog}>
                 <X size={14} />
               </Button>
@@ -175,7 +175,7 @@ export function ContentDialogs({
 
             {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && (
               <fieldset className="mt-4">
-                <legend className="mb-2 text-sm font-medium">How to share</legend>
+                <legend className="mb-2 text-sm font-medium">{t("How to share")}</legend>
 
                 <div className="grid gap-2">
                   <label
@@ -194,22 +194,19 @@ export function ContentDialogs({
                           onChange={() => setLinkSnapshotDialog((current) =>
                             current && { ...current, kind: "link", status: "confirm", imageNotice: null, images: current.originalImages, compressed: false })}
                         />
-                        <span className="font-medium">Keep content in the link</span>
+                        <span className="font-medium">{t("Keep content in the link")}</span>
                       </span>
                       <span className="shrink-0 tabular-nums text-xs text-muted-foreground">
-                        {linkSnapshotDialog.creation.characters.toLocaleString()}-character link
-                      </span>
+                        {linkSnapshotDialog.creation.characters.toLocaleString()}{t("-character link")}</span>
                     </span>
                     <span className="text-muted-foreground">
-                      No upload. The link never expires, but it can be long.
-                    </span>
+                      {t("No upload. The link never expires, but it can be long.")}</span>
                     {linkSnapshotDialog.creation.status === "too-large" && (
-                      <span className="mt-1 text-xs text-muted-foreground">This document is too large for a link. Choose the encrypted copy.</span>
+                      <span className="mt-1 text-xs text-muted-foreground">{t("This document is too large for a link. Choose the encrypted copy.")}</span>
                     )}
                     {linkSnapshotDialog.kind === "link" && linkSnapshotDialog.creation.status === "ready" && linkSnapshotDialog.creation.oversized && (
                       <span className="mt-1 rounded border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
-                        Chat clients like Slack may refuse to send links past 4,000 characters.
-                      </span>
+                        {t("Chat clients like Slack may refuse to send links past 4,000 characters.")}</span>
                     )}
                   </label>
 
@@ -229,16 +226,13 @@ export function ContentDialogs({
                           onChange={() => setLinkSnapshotDialog((current) =>
                             current && { ...current, kind: "hosted", status: "confirm", imageNotice: null })}
                         />
-                        <span className="font-medium">Upload an encrypted copy</span>
+                        <span className="font-medium">{t("Upload an encrypted copy")}</span>
                       </span>
                       <span className="shrink-0 tabular-nums text-xs text-muted-foreground">
-                        {HOSTED_SNAPSHOT_URL_CHARACTERS.toLocaleString()}-character link
-                      </span>
+                        {HOSTED_SNAPSHOT_URL_CHARACTERS.toLocaleString()}{t("-character link")}</span>
                     </span>
                     <span className="text-muted-foreground">
-                      Encrypted before upload. The decryption key stays in the link, and Markside can't read the copy.
-                      Expires in {linkSnapshotDialog.expiryDays} days.
-                    </span>
+                      {t("Encrypted before upload. The decryption key stays in the link, and Markside can't read the copy. Expires in ")}{linkSnapshotDialog.expiryDays} {t(" days.")}</span>
                   </label>
                 </div>
               </fieldset>
@@ -246,36 +240,34 @@ export function ContentDialogs({
 
             {linkSnapshotDialog.kind === "link" && linkSnapshotDialog.creation.status === "too-large" ? (
               <p className="mt-4 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
-                This document is {Math.round(linkSnapshotDialog.creation.bytes / 1024).toLocaleString()} KB, above the{" "}
-                {Math.round(linkSnapshotDialog.creation.maxBytes / 1024).toLocaleString()} KB limit a recipient's
-                browser can open. Shorten the document or send the Markdown file directly instead.
-              </p>
+                {t("This document is ")}{Math.round(linkSnapshotDialog.creation.bytes / 1024).toLocaleString()} {t(" KB, above the")}{" "}
+                {Math.round(linkSnapshotDialog.creation.maxBytes / 1024).toLocaleString()} {t(" KB limit a recipient's browser can open. Shorten the document or send the Markdown file directly instead.")}</p>
             ) : null}
             {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && (
               <div className="mt-4 space-y-2">
                 {linkSnapshotDialog.kind === "hosted" && Object.keys(linkSnapshotDialog.images).length > 0 && (
                   <p className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
                     <Check size={14} className="mt-0.5 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
-                    <span>{Object.keys(linkSnapshotDialog.images).length} local image{Object.keys(linkSnapshotDialog.images).length === 1 ? "" : "s"} included in the encrypted copy.</span>
+                    <span>{Object.keys(linkSnapshotDialog.images).length} {t(" local image")}{Object.keys(linkSnapshotDialog.images).length === 1 ? "" : "s"} {t(" included in the encrypted copy.")}</span>
                   </p>
                 )}
                 {linkSnapshotDialog.kind === "link" && linkSnapshotDialog.resources.localImages > 0 && (
                   <p role="note" className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
                     <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
-                    <span>{linkSnapshotDialog.resources.localImages} image{linkSnapshotDialog.resources.localImages === 1 ? "" : "s"} won't be included in this copy.</span>
+                    <span>{linkSnapshotDialog.resources.localImages} {t(" image")}{linkSnapshotDialog.resources.localImages === 1 ? "" : "s"} {t(" won't be included in this copy.")}</span>
                   </p>
                 )}
                 {linkSnapshotDialog.resources.localDocumentLinks > 0 && (
                   <p role="note" className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
                     <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
-                    <span>{linkSnapshotDialog.resources.localDocumentLinks} link{linkSnapshotDialog.resources.localDocumentLinks === 1 ? "" : "s"} to local files won't work for the recipient.</span>
+                    <span>{linkSnapshotDialog.resources.localDocumentLinks} {t(" link")}{linkSnapshotDialog.resources.localDocumentLinks === 1 ? "" : "s"} {t(" to local files won't work for the recipient.")}</span>
                   </p>
                 )}
                 {linkSnapshotDialog.kind === "hosted" && linkSnapshotDialog.missingImages.length > 0 && (
                   <div role="note" className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
                     <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
                     <div className="min-w-0">
-                      <p>Couldn't read {linkSnapshotDialog.missingImages.length === 1 ? "this image" : "these images"}. You can still share without {linkSnapshotDialog.missingImages.length === 1 ? "it" : "them"}:</p>
+                      <p>{t("Couldn't read ")}{linkSnapshotDialog.missingImages.length === 1 ? t("this image") : t("these images")}{t(". You can still share without ")}{linkSnapshotDialog.missingImages.length === 1 ? t("it") : t("them")}:</p>
                       <ul className="mt-1 list-inside list-disc break-all font-mono">
                         {linkSnapshotDialog.missingImages.map(src => <li key={src}>{src}</li>)}
                       </ul>
@@ -286,14 +278,14 @@ export function ContentDialogs({
                   <div role="alert" className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
                     {linkSnapshotDialog.compressed ? (
                       <>
-                        <p className="font-medium">Still too large to share</p>
+                        <p className="font-medium">{t("Still too large to share")}</p>
                         <p className="mt-1 break-words">{linkSnapshotDialog.imageNotice}</p>
-                        <p className="mt-1">Make the images smaller yourself, then try again.</p>
+                        <p className="mt-1">{t("Make the images smaller yourself, then try again.")}</p>
                       </>
                     ) : (
                       <>
                         <p className="font-medium">{linkSnapshotDialog.imageNotice}</p>
-                        <p className="mt-1">Compress images to continue, or make them smaller yourself. Original files, animations, and SVGs won't change.</p>
+                        <p className="mt-1">{t("Compress images to continue, or make them smaller yourself. Original files, animations, and SVGs won't change.")}</p>
                       </>
                     )}
                   </div>
@@ -305,7 +297,7 @@ export function ContentDialogs({
               <div role="note" className="mt-3 flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                 <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
                 <p>
-                  Markside could not read {linkSnapshotDialog.missingEmbeds.length === 1 ? "this HTML Embed" : "these HTML Embeds"}, so the shared link will show {linkSnapshotDialog.missingEmbeds.length === 1 ? "it" : "them"} as missing:{" "}
+                  {t("Markside could not read ")}{linkSnapshotDialog.missingEmbeds.length === 1 ? t("this HTML Embed") : t("these HTML Embeds")}{t(", so the shared link will show ")}{linkSnapshotDialog.missingEmbeds.length === 1 ? t("it") : t("them")} {t(" as missing:")}{" "}
                   {linkSnapshotDialog.missingEmbeds.map((src, index) => (
                     <React.Fragment key={src}>
                       {index > 0 ? ", " : ""}
@@ -328,15 +320,14 @@ export function ContentDialogs({
                     )}
                   />
                   <span>
-                    Include my Review ({ownReviewItemCount} item{ownReviewItemCount === 1 ? "" : "s"}) in this link
-                  </span>
+                    {t("Include my Review (")}{ownReviewItemCount} {t(" item")}{ownReviewItemCount === 1 ? "" : "s"}{t(") in this link")}</span>
                 </label>
                 {linkSnapshotDialog.includeReview && (
                   <input
                     type="text"
                     value={linkSnapshotDialog.reviewerName}
                     onChange={(event) => updateLinkSnapshotReviewChoice(true, event.currentTarget.value)}
-                    placeholder="Your name (optional)"
+                    placeholder={t("Your name (optional)")}
                     className="review-input mt-2 w-full rounded-md border px-2.5 py-1.5 text-sm outline outline-2 outline-offset-1 outline-transparent placeholder:text-muted-foreground focus-visible:outline-ring"
                   />
                 )}
@@ -344,28 +335,23 @@ export function ContentDialogs({
             )}
             {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && importedRoundCount > 0 && (
               <p className="mt-3 text-xs text-muted-foreground">
-                {importedRoundCount} previously imported Review Round
-                {importedRoundCount === 1 ? "" : "s"} will also travel with this link.
-              </p>
+                {importedRoundCount} {t(" previously imported Review Round")}{importedRoundCount === 1 ? "" : "s"} {t(" will also travel with this link.")}</p>
             )}
 
             {linkSnapshotDialog.status === "save-failed" && (
               <p role="alert" className="mt-4 text-sm font-medium text-red-600 dark:text-red-400">
-                Link not created because the latest changes were not saved. Resolve the save issue and try again.
-              </p>
+                {t("Link not created because the latest changes were not saved. Resolve the save issue and try again.")}</p>
             )}
             {linkSnapshotDialog.status === "uploading" && (
-              <p className="mt-4 text-sm text-muted-foreground">Encrypting and uploading…</p>
+              <p className="mt-4 text-sm text-muted-foreground">{t("Encrypting and uploading…")}</p>
             )}
             {linkSnapshotDialog.status === "upload-failed" && (
               <p role="alert" className="mt-4 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
-                Couldn’t upload the encrypted copy. Your document is unchanged. Try again, or choose
-                “Keep content in the link” to share without uploading.
-              </p>
+                {t("Couldn’t upload the encrypted copy. Your document is unchanged. Try again, or choose “Keep content in the link” to share without uploading.")}</p>
             )}
             {(linkSnapshotDialog.status === "copied" || linkSnapshotDialog.status === "copy-failed") && (linkSnapshotDialog.creation.status === "ready" || linkSnapshotDialog.shareUrl) && (
               <div className="mt-4">
-                <label htmlFor="link-snapshot-url" className="text-xs font-medium text-muted-foreground">Share link</label>
+                <label htmlFor="link-snapshot-url" className="text-xs font-medium text-muted-foreground">{t("Share link")}</label>
                 <textarea
                   id="link-snapshot-url"
                   readOnly
@@ -381,14 +367,13 @@ export function ContentDialogs({
                     size="sm"
                     className="h-8 text-xs"
                     onClick={() => openLinkSnapshotUrl(linkSnapshotDialog.shareUrl ?? (linkSnapshotDialog.creation.status === "ready" ? linkSnapshotDialog.creation.url : ""))}>
-                    <ExternalLink size={14} /> Open link
-                  </Button>
+                    <ExternalLink size={14} /> {t(" Open link")}</Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     className="h-8 text-xs"
                     onClick={() => void copyBackupUrl()}>
-                    {backupUrlCopyState === "copied" ? <Check size={14} /> : <Copy size={14} />} {backupUrlCopyState === "copied" ? "Copied" : "Copy link"}
+                    {backupUrlCopyState === "copied" ? <Check size={14} /> : <Copy size={14} />} {backupUrlCopyState === "copied" ? t("Copied") : t("Copy link")}
                   </Button>
                 </div>
               </div>
@@ -396,21 +381,21 @@ export function ContentDialogs({
 
             <div className="mt-5 flex justify-end gap-2">
               <Button variant="ghost" onClick={closeLinkSnapshotDialog}>
-                {linkSnapshotDialog.status === "copied" || linkSnapshotDialog.status === "copy-failed" ? "Done" : "Cancel"}
+                {linkSnapshotDialog.status === "copied" || linkSnapshotDialog.status === "copy-failed" ? t("Done") : t("Cancel")}
               </Button>
               {linkSnapshotDialog.status === "too-large" && !linkSnapshotDialog.compressed ? (
-                <Button onClick={() => void compressLinkSnapshotImages()}>Compress images</Button>
+                <Button onClick={() => void compressLinkSnapshotImages()}>{t("Compress images")}</Button>
               ) : linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && linkSnapshotDialog.status !== "too-large" && (
                 <Button
                   disabled={(linkSnapshotDialog.kind === "link" && linkSnapshotDialog.creation.status !== "ready") || ["copying", "uploading", "compressing"].includes(linkSnapshotDialog.status)}
                   onClick={() => void confirmLinkSnapshot()}>
                   {linkSnapshotDialog.status === "compressing"
-                    ? "Compressing…"
+                    ? t("Compressing…")
                     : linkSnapshotDialog.status === "copying" || linkSnapshotDialog.status === "uploading"
-                      ? "Creating…"
+                      ? t("Creating…")
                       : linkSnapshotDialog.requiresSave
-                        ? "Save and create link"
-                        : "Create and copy link"}
+                        ? t("Save and create link")
+                        : t("Create and copy link")}
                 </Button>
               )}
             </div>
@@ -426,12 +411,11 @@ export function ContentDialogs({
             className="w-full max-w-lg rounded-lg border bg-background p-5 shadow-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 id="import-review-title" className="text-base font-semibold">Import Review from link</h2>
+                <h2 id="import-review-title" className="text-base font-semibold">{t("Import Review from link")}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Paste a reviewer's link to add their comments to Review History. Markside's servers never see its contents.
-                </p>
+                  {t("Paste a reviewer's link to add their comments to Review History. Markside's servers never see its contents.")}</p>
               </div>
-              <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Close" onClick={closeImportReviewDialog}>
+              <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t("Close")} onClick={closeImportReviewDialog}>
                 <X size={14} />
               </Button>
             </div>
@@ -452,30 +436,26 @@ export function ContentDialogs({
                 />
                 {importReviewDialog.status === "invalid" && (
                   <p role="alert" className="mt-2 text-sm text-red-600 dark:text-red-400">
-                    That link isn't a valid Markside Share Link.
-                  </p>
+                    {t("That link isn't a valid Markside Share Link.")}</p>
                 )}
                 {importReviewDialog.status === "unavailable" && (
                   <p role="alert" className="mt-2 text-sm text-red-600 dark:text-red-400">
-                    That link has expired or was removed.
-                  </p>
+                    {t("That link has expired or was removed.")}</p>
                 )}
                 {importReviewDialog.status === "load-failed" && (
                   <p role="alert" className="mt-2 text-sm text-red-600 dark:text-red-400">
-                    Couldn't download that link. Check your connection and try again.
-                  </p>
+                    {t("Couldn't download that link. Check your connection and try again.")}</p>
                 )}
                 {importReviewDialog.status === "empty" && (
                   <p role="alert" className="mt-2 text-sm text-amber-700 dark:text-amber-300">
-                    That link doesn't include a Review yet.
-                  </p>
+                    {t("That link doesn't include a Review yet.")}</p>
                 )}
                 <div className="mt-4 flex justify-end gap-2">
-                  <Button variant="ghost" onClick={closeImportReviewDialog}>Cancel</Button>
+                  <Button variant="ghost" onClick={closeImportReviewDialog}>{t("Cancel")}</Button>
                   <Button
                     disabled={!importReviewDialog.input.trim() || importReviewDialog.status === "loading"}
                     onClick={() => void decodeImportReviewInput()}>
-                    {importReviewDialog.status === "loading" ? "Decoding…" : "Decode"}
+                    {importReviewDialog.status === "loading" ? t("Decoding…") : t("Decode")}
                   </Button>
                 </div>
               </>
@@ -486,17 +466,17 @@ export function ContentDialogs({
                 <ul className="mt-4 space-y-1.5 text-sm">
                   {importReviewDialog.rounds.map((round, index) => (
                     <li key={round.id} className="rounded-md border px-3 py-2">
-                      Round {index + 1} — {round.reviewerName || "Reviewer"}{" "}
+                      {t("Round ")}{index + 1} — {round.reviewerName || t("Reviewer")}{" "}
                       <span className="text-muted-foreground">
-                        ({round.comments.length} comment{round.comments.length === 1 ? "" : "s"}
-                        {round.note.trim() ? ", 1 note" : ""})
+                        ({round.comments.length} {t(" comment")}{round.comments.length === 1 ? "" : "s"}
+                        {round.note.trim() ? t(", 1 note") : ""})
                       </span>
                     </li>
                   ))}
                 </ul>
                 <div className="mt-4 flex justify-end gap-2">
-                  <Button variant="ghost" onClick={closeImportReviewDialog}>Cancel</Button>
-                  <Button onClick={confirmImportReview}>Import into this file's Review</Button>
+                  <Button variant="ghost" onClick={closeImportReviewDialog}>{t("Cancel")}</Button>
+                  <Button onClick={confirmImportReview}>{t("Import into this file's Review")}</Button>
                 </div>
               </>
             )}
@@ -504,11 +484,10 @@ export function ContentDialogs({
             {importReviewDialog.status === "imported" && (
               <>
                 <p role="status" className="mt-4 flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                  <Check size={14} /> Imported {importReviewDialog.rounds.length} Review Round
-                  {importReviewDialog.rounds.length === 1 ? "" : "s"}.
+                  <Check size={14} /> {t(" Imported ")}{importReviewDialog.rounds.length} {t(" Review Round")}{importReviewDialog.rounds.length === 1 ? "" : "s"}.
                 </p>
                 <div className="mt-4 flex justify-end">
-                  <Button onClick={closeImportReviewDialog}>Done</Button>
+                  <Button onClick={closeImportReviewDialog}>{t("Done")}</Button>
                 </div>
               </>
             )}
@@ -525,18 +504,14 @@ export function ContentDialogs({
             aria-labelledby="unsaved-draft-title"
             className="w-full max-w-sm rounded-lg border bg-background p-5 shadow-2xl">
             <h2 id="unsaved-draft-title" className="text-base font-semibold">
-              Save changes before switching files?
-            </h2>
+              {t("Save changes before switching files?")}</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              This file has an unsaved draft. You can save it, discard it, or
-              stay on the current file.
-            </p>
+              {t("This file has an unsaved draft. You can save it, discard it, or stay on the current file.")}</p>
             <div className="mt-5 flex justify-end gap-2">
               <Button
                 variant="ghost"
                 onClick={() => setPendingNavigation(null)}>
-                Cancel
-              </Button>
+                {t("Cancel")}</Button>
               <Button
                 variant="outline"
                 onClick={() => {
@@ -544,8 +519,7 @@ export function ContentDialogs({
                   setPendingNavigation(null)
                   void performFileNavigation(target)
                 }}>
-                Discard
-              </Button>
+                {t("Discard")}</Button>
               <Button
                 disabled={saveState === "saving"}
                 onClick={() => {
@@ -558,8 +532,7 @@ export function ContentDialogs({
                     }
                   )
                 }}>
-                Save
-              </Button>
+                {t("Save")}</Button>
             </div>
           </div>
         </div>
@@ -574,18 +547,13 @@ export function ContentDialogs({
             aria-labelledby="pdf-export-tip-title"
             className="w-full max-w-sm rounded-lg border bg-background p-5 shadow-2xl">
             <h2 id="pdf-export-tip-title" className="text-base font-semibold">
-              Export a clean PDF
-            </h2>
+              {t("Export a clean PDF")}</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Chrome will open its print dialog. Choose Save to PDF, then under
-              More settings turn off Headers and footers to remove the local
-              path and timestamp.
-            </p>
+              {t("Chrome will open its print dialog. Choose Save to PDF, then under More settings turn off Headers and footers to remove the local path and timestamp.")}</p>
             <div className="mt-5 flex justify-end gap-2">
               <Button variant="ghost" onClick={dismissPdfExportTip}>
-                Cancel
-              </Button>
-              <Button onClick={continuePdfExport}>Continue</Button>
+                {t("Cancel")}</Button>
+              <Button onClick={continuePdfExport}>{t("Continue")}</Button>
             </div>
           </div>
         </div>
@@ -618,24 +586,19 @@ export function ContentDialogs({
             aria-labelledby="reload-confirm-title"
             className="w-full max-w-sm rounded-lg border bg-background p-5 shadow-2xl">
             <h2 id="reload-confirm-title" className="text-base font-semibold">
-              Reload from disk?
-            </h2>
+              {t("Reload from disk?")}</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              This file has an unsaved draft. Reloading will discard it and
-              show the latest version from disk.
-            </p>
+              {t("This file has an unsaved draft. Reloading will discard it and show the latest version from disk.")}</p>
             <div className="mt-5 flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setReloadConfirmOpen(false)}>
-                Cancel
-              </Button>
+                {t("Cancel")}</Button>
               <Button
                 variant="destructive"
                 onClick={() => {
                   setReloadConfirmOpen(false)
                   void handleReloadFromDisk()
                 }}>
-                Reload and discard
-              </Button>
+                {t("Reload and discard")}</Button>
             </div>
           </div>
         </div>
@@ -647,9 +610,9 @@ export function ContentDialogs({
           aria-live="polite"
           className="fixed left-1/2 top-4 z-[100] flex -translate-x-1/2 items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm font-medium text-foreground shadow-lg">
           {renderedCopyStatus === "copied" ? (
-            <><Check size={14} className="text-emerald-600 dark:text-emerald-400" /> Rendered content copied</>
+            <><Check size={14} className="text-emerald-600 dark:text-emerald-400" /> {t(" Rendered content copied")}</>
           ) : (
-            "Couldn’t copy rendered content"
+            t("Couldn’t copy rendered content")
           )}
         </div>
       )}

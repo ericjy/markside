@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import { currentAgentReview, clearReviewDrafts, getReviewCommentStatus } from "~lib/agent-review"
 import React,{ useEffect,useRef } from "react"
 import type { AgentReviewHandoff } from "~hooks/use-content-agent-review"
@@ -310,7 +311,7 @@ export function useContentReview({
     if (copyPolicy.type !== "check-copy") return false
     if (copyPolicy.outcome === "blocked" && copyPolicy.reason === "verification-failed") {
       allowUnverified = window.confirm(
-        `Markside could not verify the source on disk. Copy an unverified ${commentId ? "Review Comment" : "Review"} anyway?`,
+        t("Markside could not verify the source on disk. Copy an unverified {0} anyway?", [commentId ? "Review Comment" : "Review"]),
       )
       if (allowUnverified) {
         copyPolicy = resolveReviewPolicy({
@@ -332,12 +333,12 @@ export function useContentReview({
       }
       const messages = {
         empty: "Add a Review Note or Review Comment before copying.",
-        "unsaved-draft": `Save the Unsaved Draft before copying this ${commentId ? "Review Comment" : "Review"}.`,
+        "unsaved-draft": t("Save the Unsaved Draft before copying this {0}.", [commentId ? t("Review Comment") : t("Review")]),
         "verification-failed": "The source could not be verified.",
       }
       setCopyReviewStatus({
         kind: "error",
-        message: messages[copyPolicy.reason],
+        message: t(messages[copyPolicy.reason]),
         commentId,
       })
       return false
@@ -369,7 +370,7 @@ export function useContentReview({
       setClipboardFallback(exported.markdown)
       setCopyReviewStatus({
         kind: "error",
-        message: "Clipboard access failed. Copy the generated prompt from the dialog.",
+        message: t("Clipboard access failed. Copy the generated prompt from the dialog."),
         commentId,
       })
       return false

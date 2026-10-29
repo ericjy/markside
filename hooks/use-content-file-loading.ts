@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import React,{ useEffect,useState } from "react"
 import {
   classifyMarksideFileUrl,
@@ -70,7 +71,7 @@ export function useContentFileLoading({
     const initialUrl = window.location.href.split("#")[0]
     try {
       chrome.runtime.sendMessage({ type: "fetch-file", url: initialUrl }, (res) => {
-        if (chrome.runtime.lastError || !res) { setError("Reload the page to reconnect Markside."); return }
+        if (chrome.runtime.lastError || !res) { setError(t("Reload the page to reconnect Markside.")); return }
         const result = resolveFetchedFileContent(res)
         if (result.content !== null) {
           diskContentRef.current = result.content
@@ -79,7 +80,7 @@ export function useContentFileLoading({
         }
         else setError(result.error)
       })
-    } catch { setError("Reload the page to reconnect Markside.") }
+    } catch { setError(t("Reload the page to reconnect Markside.")) }
   }, [initialContent])
 
 
@@ -120,7 +121,7 @@ export function useContentFileLoading({
       setImageReloadVersion((version) => version + 1)
       setFileUrl(target.url)
     } catch (err) {
-      setError((err as Error).message ?? "Failed to read file")
+      setError((err as Error).message ?? t("Failed to read file"))
     }
   }
 
@@ -167,7 +168,7 @@ export function useWikilinkNavigation({
         })
         if (loaded) return
       }
-      setError(`No file found for [[${name}]].`)
+      setError(t("No file found for [[{0}]].", [name]))
     }
 
     el.addEventListener("click", handler)

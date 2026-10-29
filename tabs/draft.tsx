@@ -1,3 +1,4 @@
+import { getInterfaceLanguage, t } from "~lib/i18n"
 import draftSample from "data-text:~lib/draft-sample.md"
 import { Check, Columns2, Eye, FileText, Moon, Pencil, Sun, Trash2, X } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -23,6 +24,7 @@ import {
 import { getThemePreference, setThemePreference } from "~lib/theme-preference"
 
 import "~style.css"
+import "~lib/i18n-ui.css"
 
 const STORE_DELAY_MS = 300
 const OPEN_KEYS = [/Mac/.test(navigator.platform) ? "⌘" : "Ctrl", "O"]
@@ -54,6 +56,7 @@ async function readSavedFile(handle: FileSystemFileHandle): Promise<DraftStart> 
 }
 
 export default function DraftTab() {
+  useEffect(() => { document.documentElement.lang = getInterfaceLanguage() }, [])
   const [preferences, setPreferences] = useState<{ theme: boolean | null; splitPercent: number } | null>(null)
   const [start, setStart] = useState<DraftStart | null>(null)
 
@@ -101,17 +104,16 @@ function DraftNotice({
     <div className="flex h-screen flex-col items-center justify-center gap-4 bg-background px-8 text-center text-foreground">
       {start.kind === "reopen" ? (
         <>
-          <p className="text-sm text-muted-foreground">Chrome needs your permission to open {name} again.</p>
-          <Button onClick={() => void reopen()} className="h-8 px-3 text-xs">Reopen {name}</Button>
+          <p className="text-sm text-muted-foreground">{t("Chrome needs your permission to open ")}{name} {t(" again.")}</p>
+          <Button onClick={() => void reopen()} className="h-8 px-3 text-xs">{t("Reopen ")}{name}</Button>
         </>
       ) : (
         <>
           <p className="text-sm text-muted-foreground">
-            {name ? `${name} was moved or deleted.` : "This saved draft can no longer be found."}
+            {name ? t("{0} was moved or deleted.", [name]) : t("This saved draft can no longer be found.")}
           </p>
           <Button variant="outline" onClick={() => location.assign(location.pathname)} className="h-8 px-3 text-xs">
-            Start a new draft
-          </Button>
+            {t("Start a new draft")}</Button>
         </>
       )}
     </div>
@@ -232,7 +234,7 @@ function DraftEditor({
       setError(null)
     } catch (caught) {
       if (caught instanceof DOMException && caught.name === "AbortError") return
-      setError(caught instanceof Error ? caught.message : "Could not save the file.")
+      setError(caught instanceof Error ? caught.message : t("Could not save the file."))
     } finally {
       savingRef.current = false
       setSaving(false)
@@ -244,7 +246,7 @@ function DraftEditor({
   }
 
   const discard = () => {
-    if (!window.confirm("Discard this draft?")) return
+    if (!window.confirm(t("Discard this draft?"))) return
     cancelPersist()
     contentRef.current = ""
     setContent("")
@@ -297,14 +299,13 @@ function DraftEditor({
           </g>
         </svg>
         <h1 className="min-w-0 truncate text-sm font-semibold">
-          {file ? file.name : "New draft"}
-          {unsaved && !saving && <span className="ml-2 text-xs font-normal text-muted-foreground">Unsaved</span>}
+          {file ? file.name : t("New draft")}
+          {unsaved && !saving && <span className="ml-2 text-xs font-normal text-muted-foreground">{t("Unsaved")}</span>}
         </h1>
         <div className="ml-auto flex items-center gap-1">
           {!file && content.trim() && (
             <Button variant="ghost" onClick={discard} className="h-8 shrink-0 gap-1.5 px-2 text-xs">
-              <Trash2 size={14} /> Discard
-            </Button>
+              <Trash2 size={14} /> {t(" Discard")}</Button>
           )}
           <button
             type="button"
@@ -319,11 +320,11 @@ function DraftEditor({
                     ? "border-emerald-500/40 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
                     : "border-zinc-900 bg-zinc-900 text-white hover:bg-zinc-800 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200"
             }`}>
-            {saving ? "Saving…" : error ? "Retry" : saved ? <><Check size={12} />Saved</> : "Save"}
+            {saving ? t("Saving…") : error ? t("Retry") : saved ? <><Check size={12} />{t("Saved")}</> : t("Save")}
           </button>
           <div
             role="group"
-            aria-label="Markdown display mode"
+            aria-label={t("Markdown display mode")}
             className="mr-1 flex items-center overflow-hidden rounded-md border text-xs font-medium">
             {([
               ["preview", "Preview", Eye],
@@ -334,8 +335,8 @@ function DraftEditor({
                 key={nextMode}
                 type="button"
                 onClick={() => setMode(nextMode)}
-                title={label}
-                aria-label={`${label} mode`}
+                title={t(label)}
+                aria-label={t("{0} mode", [t(label)])}
                 aria-pressed={mode === nextMode}
                 className={`flex items-center gap-1.5 px-2.5 py-1 transition-colors ${
                   index > 0 ? "border-l" : ""
@@ -345,7 +346,7 @@ function DraftEditor({
                     : "hover:bg-accent/50"
                 }`}>
                 <Icon size={13} strokeWidth={1.8} />
-                <span className="hidden lg:inline">{label}</span>
+                <span className="hidden lg:inline">{t(label)}</span>
               </button>
             ))}
           </div>
@@ -364,7 +365,7 @@ function DraftEditor({
               )
             }}
             className="h-7 w-7"
-            aria-label="Toggle theme">
+            aria-label={t("Toggle theme")}>
             {dark ? <Sun size={14} /> : <Moon size={14} />}
           </Button>
         </div>
@@ -375,18 +376,17 @@ function DraftEditor({
           <div className="flex items-center gap-2 border-b bg-muted px-4 py-2 text-xs">
             <Check size={14} className="shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
             <span className="min-w-0">
-              <span className="font-medium text-foreground">Saved as {file.name}</span>
+              <span className="font-medium text-foreground">{t("Saved as ")}{file.name}</span>
               <span className="text-muted-foreground">
-                {" · "}Reopen it with{" "}
+                {" · "}{t("Reopen it with")}{" "}
                 {OPEN_KEYS.map((key) => (
                   <kbd key={key} className="mr-0.5 inline-block min-w-[18px] rounded border border-b-2 bg-background px-1 text-center font-sans text-[11px] font-semibold text-foreground">{key}</kbd>
                 ))}
-                {" "}to use all Markside features.
-              </span>
+                {" "}{t("to use all Markside features.")}</span>
             </span>
             <button
               className="ml-auto rounded p-1 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Dismiss"
+              aria-label={t("Dismiss")}
               onClick={() => setNoticeOpen(false)}>
               <X size={14} />
             </button>
@@ -395,7 +395,7 @@ function DraftEditor({
       </div>
       {error && (
         <p role="alert" className="shrink-0 border-b px-4 py-2 text-xs text-destructive">
-          Could not save: {error}
+          {t("Could not save: ")}{error}
         </p>
       )}
 
@@ -413,10 +413,9 @@ function DraftEditor({
               ) : (
                 <div className="flex h-full flex-col items-center justify-center px-8 text-center">
                   <Eye size={22} strokeWidth={1.5} className="text-muted-foreground/60" aria-hidden="true" />
-                  <p className="mt-3 text-sm text-muted-foreground">Nothing to preview yet</p>
+                  <p className="mt-3 text-sm text-muted-foreground">{t("Nothing to preview yet")}</p>
                   <Button variant="outline" onClick={insertSample} className="mt-4 h-8 gap-1.5 px-3 text-xs">
-                    <FileText size={14} /> Insert sample
-                  </Button>
+                    <FileText size={14} /> {t(" Insert sample")}</Button>
                 </div>
               )}
             </div>
@@ -433,7 +432,7 @@ function DraftEditor({
                   fullWidth={sourceFullWidth}
                   onToggleFullWidth={() => setSourceFullWidth((current) => !current)}
                   autoFocus
-                  placeholder="Write or paste Markdown…"
+                  placeholder={t("Write or paste Markdown…")}
                   onChange={handleChange}
                 />
               </div>

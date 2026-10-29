@@ -1,4 +1,5 @@
 import { PeleError, render } from "pele"
+import { getInterfaceLanguage, t } from "./i18n"
 
 let idCounter = 0
 
@@ -187,7 +188,7 @@ function updateExpandControl(wrapper: HTMLElement, expanded: boolean): void {
     "[data-mermaid-action='expand']"
   )
   if (!button) return
-  const label = expanded ? "Close expanded diagram" : "Expand diagram"
+  const label = expanded ? t("Close expanded diagram") : t("Expand diagram")
   button.innerHTML = expanded ? CLOSE_ICON : EXPAND_ICON
   button.setAttribute("aria-label", label)
   button.setAttribute("aria-pressed", String(expanded))
@@ -228,7 +229,7 @@ function expandDiagram(wrapper: HTMLElement): void {
   wrapper.classList.add("is-expanded")
   wrapper.setAttribute("role", "dialog")
   wrapper.setAttribute("aria-modal", "true")
-  wrapper.setAttribute("aria-label", "Expanded Mermaid diagram")
+  wrapper.setAttribute("aria-label", t("Expanded Mermaid diagram"))
   if (background) background.inert = true
   document.documentElement.style.overflow = "hidden"
   fitViewportToDefaultScale(wrapper)
@@ -273,9 +274,9 @@ function createButton(
   button.type = "button"
   button.className = "mermaid-control"
   button.dataset.mermaidAction = action
-  button.setAttribute("aria-label", label)
-  button.title = label
-  button.textContent = text
+  button.setAttribute("aria-label", t(label))
+  button.title = t(label)
+  button.textContent = text === "Reset" ? t(text) : text
   return button
 }
 
@@ -410,7 +411,7 @@ function setMermaidSvg(
     navigationControls.className =
       "mermaid-controls mermaid-navigation-controls"
     navigationControls.setAttribute("role", "group")
-    navigationControls.setAttribute("aria-label", "Diagram interaction mode")
+    navigationControls.setAttribute("aria-label", t("Diagram interaction mode"))
     const selectButton = createButton("select", "Select diagram text", "")
     selectButton.classList.add("mermaid-control-icon", "mermaid-mode-control")
     selectButton.innerHTML = SELECT_ICON
@@ -421,8 +422,7 @@ function setMermaidSvg(
     selectTooltip.id = selectTooltipId
     selectTooltip.className = "mermaid-mode-tooltip"
     selectTooltip.setAttribute("role", "tooltip")
-    selectTooltip.textContent =
-      "Select diagram text. You can still Shift-drag to reposition the diagram."
+    selectTooltip.textContent = t("Select diagram text. You can still Shift-drag to reposition the diagram.")
     selectButton.setAttribute("aria-describedby", selectTooltipId)
 
     const panButton = createButton("pan", "Pan diagram", "")
@@ -435,7 +435,7 @@ function setMermaidSvg(
     panTooltip.id = panTooltipId
     panTooltip.className = "mermaid-mode-tooltip"
     panTooltip.setAttribute("role", "tooltip")
-    panTooltip.textContent = "Drag to reposition the diagram."
+    panTooltip.textContent = t("Drag to reposition the diagram.")
     panButton.setAttribute("aria-describedby", panTooltipId)
     navigationControls.append(
       selectButton,
@@ -447,7 +447,7 @@ function setMermaidSvg(
     const zoomControls = document.createElement("div")
     zoomControls.className = "mermaid-controls mermaid-zoom-controls"
     zoomControls.setAttribute("role", "group")
-    zoomControls.setAttribute("aria-label", "Diagram zoom")
+    zoomControls.setAttribute("aria-label", t("Diagram zoom"))
     zoomControls.append(
       createButton("zoom-out", "Zoom out", "−"),
       createButton("zoom-in", "Zoom in", "+"),
@@ -457,7 +457,7 @@ function setMermaidSvg(
     const expandControls = document.createElement("div")
     expandControls.className = "mermaid-controls mermaid-expand-controls"
     expandControls.setAttribute("role", "group")
-    expandControls.setAttribute("aria-label", "Diagram display")
+    expandControls.setAttribute("aria-label", t("Diagram display"))
     const expandButton = createButton("expand", "Expand diagram", "")
     expandButton.classList.add("mermaid-control-icon")
     expandButton.innerHTML = EXPAND_ICON
@@ -466,6 +466,7 @@ function setMermaidSvg(
 
     const toolbar = document.createElement("div")
     toolbar.className = "mermaid-toolbar"
+    toolbar.lang = getInterfaceLanguage()
     toolbar.append(navigationControls, zoomControls, expandControls)
 
     viewport = document.createElement("div")
@@ -473,7 +474,7 @@ function setMermaidSvg(
     viewport.tabIndex = 0
     viewport.setAttribute(
       "aria-label",
-      "Interactive Mermaid diagram. Use the Pan control, hold Shift while dragging, or use arrow keys to pan; hold Control or Command while scrolling, or use plus and minus to zoom."
+      t("Interactive Mermaid diagram. Use the Pan control, hold Shift while dragging, or use arrow keys to pan; hold Control or Command while scrolling, or use plus and minus to zoom.")
     )
     diagram = document.createElement("div")
     diagram.className = "mermaid-diagram"
@@ -490,9 +491,9 @@ function setMermaidSvg(
 
 function errorMessage(error: unknown): string {
   if (error instanceof PeleError && error.line > 0) {
-    return `Mermaid error at line ${error.line}, column ${error.column}: ${error.message}`
+    return t("Mermaid error at line {0}, column {1}: {2}", [error.line, error.column, error.message])
   }
-  return `Mermaid error: ${error instanceof Error ? error.message : String(error)}`
+  return t("Mermaid error: {0}", [error instanceof Error ? error.message : String(error)])
 }
 
 export async function renderMermaidBlocks(container: HTMLElement): Promise<void> {

@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 // components/SidebarRight.tsx
 import { ChevronRight, X } from "lucide-react"
 import React, { useRef } from "react"
@@ -239,7 +240,7 @@ export function SidebarRight({
       {open && (
         <button
           type="button"
-          aria-label="Close outline"
+          aria-label={t("Close outline")}
           onClick={onClose}
           className="fixed inset-0 z-40 bg-foreground/15 backdrop-blur-[1px] print:hidden xl:hidden"
         />
@@ -253,20 +254,18 @@ export function SidebarRight({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close outline"
+          aria-label={t("Close outline")}
           className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring xl:hidden">
           <X size={15} />
         </button>
         <SidebarContent className="gap-0 px-3 pt-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden xl:pl-4 xl:pr-8">
           {headings.length === 0 ? (
             <div className="px-2 py-8 text-xs text-muted-foreground">
-              No headings found
-            </div>
+              {t("No headings found")}</div>
           ) : (
             <SidebarGroup className="p-0 pb-10">
               <SidebarGroupLabel className="mb-2 h-7 px-3 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-sidebar-foreground/45">
-                On this page
-              </SidebarGroupLabel>
+                {t("On this page")}</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu className="gap-0.5">
                   {groups.map((group, gi) => renderGroup(group, gi))}

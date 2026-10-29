@@ -1,3 +1,4 @@
+import { getInterfaceLanguage, t, tRich } from "~lib/i18n"
 import { Check, ChevronRight, Copy, FileDown, Mail, Star, X } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -62,8 +63,8 @@ function CopyCommand({ command }: { command: string }) {
       <button
         type="button"
         className="icon-btn"
-        aria-label={copied ? "Copied" : "Copy command"}
-        title={copied ? "Copied" : "Copy command"}
+        aria-label={copied ? t("Copied") : t("Copy command")}
+        title={copied ? t("Copied") : t("Copy command")}
         onClick={() => {
           void navigator.clipboard.writeText(command).then(() => {
             setCopied(true)
@@ -81,6 +82,7 @@ function openExtensionSettings() {
 }
 
 export default function Options() {
+  useEffect(() => { document.documentElement.lang = getInterfaceLanguage() }, [])
   const [hasFileAccess, setHasFileAccess] = useState<boolean | null>(null)
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(false)
   const [openedSettings, setOpenedSettings] = useState(false)
@@ -269,19 +271,19 @@ export default function Options() {
                 <path d="M109 99 L118 108 L109 117"/>
               </g>
             </svg>
-            <h1>Markside Settings</h1>
+            <h1>{t("Markside Settings")}</h1>
           </header>
 
           {hasFileAccess === false && (
             <section className="setup" aria-labelledby="setup-title">
               <div>
-                <h2 id="setup-title">One more step before Markside can open your files</h2>
-                <p className="setup-lede">To open Markdown files on your computer, Markside needs one Chrome permission. You only turn it on once, and your files never leave your device.</p>
+                <h2 id="setup-title">{t("One more step before Markside can open your files")}</h2>
+                <p className="setup-lede">{t("To open Markdown files on your computer, Markside needs one Chrome permission. You only turn it on once, and your files never leave your device.")}</p>
                 <ol>
                   {[
-                    <>Click <strong>Open Extension Details</strong> to go to Markside's page in Chrome.</>,
-                    <>Scroll down and turn on <strong>Allow access to file URLs</strong>.</>,
-                    <>Come back to this tab. Markside checks for the change automatically.</>,
+                    <>{t("Click ")}<strong>{t("Open Extension Details")}</strong> {t(" to go to Markside's page in Chrome.")}</>,
+                    <>{t("Scroll down and turn on ")}<strong>{t("Allow access to file URLs")}</strong>.</>,
+                    <>{t("Come back to this tab. Markside checks for the change automatically.")}</>,
                   ].map((step, index) => {
                     const current = openedSettings ? 1 : 0
                     return (
@@ -293,9 +295,7 @@ export default function Options() {
                   })}
                 </ol>
                 {openedSettings && returnedStillOff && (
-                  <p className="still-off" role="status">
-                    File access is still off. On the Markside details page, scroll to <strong>Allow access to file URLs</strong> and make sure the switch turns blue.
-                  </p>
+                  <p className="still-off" role="status">{tRich("File access is still off. On the Markside details page, scroll to {0} and make sure the switch turns blue.", <strong>{t("Allow access to file URLs")}</strong>)}</p>
                 )}
                 <button
                   type="button"
@@ -305,12 +305,11 @@ export default function Options() {
                     setReturnedStillOff(false)
                     openExtensionSettings()
                   }}>
-                  Open Extension Details →
-                </button>
+                  {t("Open Extension Details →")}</button>
               </div>
               <figure className="setup-figure">
                 <FileAccessDemo />
-                <figcaption>The switch is near the bottom of the Markside details page.</figcaption>
+                <figcaption>{t("The switch is near the bottom of the Markside details page.")}</figcaption>
               </figure>
             </section>
           )}
@@ -322,19 +321,18 @@ export default function Options() {
                 <path d="M12.5 20.5l5 5 10-11" fill="none" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <div>
-                <h2 id="done-title">Markside can open your files now</h2>
-                <p>Try it with any Markdown file.</p>
+                <h2 id="done-title">{t("Markside can open your files now")}</h2>
+                <p>{t("Try it with any Markdown file.")}</p>
                 {/* Chrome opens a file dropped anywhere on the tab; this only makes the target visible. */}
                 <div
                   className={draggingFile ? "drop-zone dragging" : "drop-zone"}
                   onDragEnter={() => setDraggingFile(true)}
                   onDragLeave={() => setDraggingFile(false)}>
                   <FileDown size={20} />
-                  Drop a <Code>.md</Code> file on any tab, like this one
-                </div>
-                <p className="drop-alt">or press <Keys keys={IS_MAC ? ["⌘", "O"] : ["Ctrl", "O"]} /> to pick one</p>
+                  {t("Drop a ")}<Code>.md</Code> {t(" file on any tab, like this one")}</div>
+                <p className="drop-alt">{tRich("or press {0} to pick one", <Keys keys={IS_MAC ? ["⌘", "O"] : ["Ctrl", "O"]} />)}</p>
               </div>
-              <button type="button" className="icon-btn" aria-label="Dismiss" title="Dismiss" onClick={() => setSetupJustFinished(false)}>
+              <button type="button" className="icon-btn" aria-label={t("Dismiss")} title={t("Dismiss")} onClick={() => setSetupJustFinished(false)}>
                 <X size={16} />
               </button>
             </section>
@@ -343,22 +341,22 @@ export default function Options() {
           {hasFileAccess && (
             <>
               <div className={setupJustFinished ? "groups arrive" : "groups"}>
-                <Group title="General">
+                <Group title={t("General")}>
                   <div className="row">
                     <div className="row-text">
-                      <p className="row-label">File access</p>
-                      <p className="row-desc">Chrome's <strong>Allow access to file URLs</strong> is on, so Markside can open local files.</p>
+                      <p className="row-label">{t("File access")}</p>
+                      <p className="row-desc">{tRich("Chrome's {0} is on, so Markside can open local files.", <strong>{t("Allow access to file URLs")}</strong>)}</p>
                     </div>
                     <div className="row-control row-control-stacked">
-                      <span className="state"><span className="state-dot" />On</span>
-                      <button type="button" className="link-btn" onClick={openExtensionSettings}>Change</button>
+                      <span className="state"><span className="state-dot" />{t("On")}</span>
+                      <button type="button" className="link-btn" onClick={openExtensionSettings}>{t("Change")}</button>
                     </div>
                   </div>
                   <div className="row">
                     <div className="row-text">
-                      <p id="auto-save-label" className="row-label">Auto Save</p>
-                      <p className="row-desc">Save your changes to disk 1.5 seconds after you stop typing.</p>
-                      <p className="row-note">When off, save with <Keys keys={["⌘", "S"]} /> or <span style={{ whiteSpace: 'nowrap' }}><Keys keys={["Ctrl", "S"]} />.</span></p>
+                      <p id="auto-save-label" className="row-label">{t("Auto Save")}</p>
+                      <p className="row-desc">{t("Save your changes to disk 1.5 seconds after you stop typing.")}</p>
+                      <p className="row-note">{tRich("When off, save with {0} or {1}.", <Keys keys={["⌘", "S"]} />, <span style={{ whiteSpace: 'nowrap' }}><Keys keys={["Ctrl", "S"]} /></span>)}</p>
                     </div>
                     <button
                       type="button"
@@ -377,17 +375,17 @@ export default function Options() {
                   </div>
                 </Group>
 
-                <Group title="Ways to open a Markdown file">
+                <Group title={t("Ways to open a Markdown file")}>
                   {[
-                    ["Drag", <>Drop the file onto any Chrome tab.</>],
-                    ["File picker", <>Press <Keys keys={["⌘", "O"]} /> on Mac or <Keys keys={["Ctrl", "O"]} /> on Windows.</>],
-                    ["Address bar", <>Paste a path such as <Code>/path/to/file.md</Code>.</>],
-                    ["Terminal", <>Run <Code>open -a "Google Chrome" file.md</Code> on Mac.</>],
-                    ["Ask your agent", <>Tell Claude Code, Codex, or another coding agent to “open plan.md in Chrome”.</>],
+                    ["Drag", <>{t("Drop the file onto any Chrome tab.")}</>],
+                    ["File picker", <>{tRich("Press {0} on Mac or {1} on Windows.", <Keys keys={["⌘", "O"]} />, <Keys keys={["Ctrl", "O"]} />)}</>],
+                    ["Address bar", <>{tRich("Paste a path such as {0}.", <Code>/path/to/file.md</Code>)}</>],
+                    ["Terminal", <>{tRich("Run {0} on Mac.", <Code>open -a "Google Chrome" file.md</Code>)}</>],
+                    ["Ask your agent", <>{t("Tell Claude Code, Codex, or another coding agent to “open plan.md in Chrome”.")}</>],
                   ].map(([label, desc]) => (
                     <div className="row" key={label as string}>
                       <div className="row-text">
-                        <p className="row-label">{label}</p>
+                        <p className="row-label">{t(String(label))}</p>
                         <p className="row-desc">{desc}</p>
                       </div>
                     </div>
@@ -395,53 +393,53 @@ export default function Options() {
                   <details>
                     <summary>
                       <span className="row-text">
-                        <span className="row-label">Double-click to open in Chrome</span>
-                        <span className="row-desc" style={{ display: 'block' }}>Make Chrome the default app for .md files.</span>
+                        <span className="row-label">{t("Double-click to open in Chrome")}</span>
+                        <span className="row-desc" style={{ display: 'block' }}>{t("Make Chrome the default app for .md files.")}</span>
                       </span>
                       <ChevronRight className="chev" size={16} />
                     </summary>
                     <div>
                       <ul>
-                        <li><strong>Mac:</strong> Right-click a file → <strong>Get Info</strong> → <strong>Open With</strong> → choose Chrome → <strong>Change All</strong>.</li>
-                        <li><strong>Windows:</strong> Right-click a file → <strong>Open with</strong> → <strong>Choose another app</strong> → select Chrome → check <strong>Always use this app</strong> → <strong>OK</strong>.</li>
+                        <li>{tRich("{0} Right-click a file → {1} → {2} → choose Chrome → {3}.", <strong>{t("Mac:")}</strong>, <strong>{t("Get Info")}</strong>, <strong>{t("Open With")}</strong>, <strong>{t("Change All")}</strong>)}</li>
+                        <li>{tRich("{0} Right-click a file → {1} → {2} → select Chrome → check {3} → {4}.", <strong>{t("Windows:")}</strong>, <strong>{t("Open with")}</strong>, <strong>{t("Choose another app")}</strong>, <strong>{t("Always use this app")}</strong>, <strong>{t("OK")}</strong>)}</li>
                       </ul>
                     </div>
                   </details>
                   <details>
                     <summary>
                       <span className="row-text">
-                        <span className="row-label">A <Code>markside</Code> terminal command</span>
-                        <span className="row-desc" style={{ display: 'block' }}>Open files from any terminal on Mac.</span>
+                        <span className="row-label">{tRich("A {0} terminal command", <Code>markside</Code>)}</span>
+                        <span className="row-desc" style={{ display: 'block' }}>{t("Open files from any terminal on Mac.")}</span>
                       </span>
                       <ChevronRight className="chev" size={16} />
                     </summary>
                     <div>
-                      <p>Add this alias to <Code>~/.zshrc</Code> or <Code>~/.bashrc</Code>:</p>
+                      <p>{tRich("Add this alias to {0} or {1}:", <Code>~/.zshrc</Code>, <Code>~/.bashrc</Code>)}</p>
                       <CopyCommand command={TERMINAL_ALIAS} />
-                      <p style={{ marginTop: '8px' }}>Then run <Code>markside /path/to/file.md</Code>.</p>
+                      <p style={{ marginTop: '8px' }}>{tRich("Then run {0}.", <Code>markside /path/to/file.md</Code>)}</p>
                     </div>
                   </details>
                 </Group>
 
-                <Group title="Keyboard shortcuts">
+                <Group title={t("Keyboard shortcuts")}>
                   <div className="row">
-                    <span className="row-label">Toggle preview and source</span>
+                    <span className="row-label">{t("Toggle preview and source")}</span>
                     <span className="key-group">
-                      <span className="keys"><Keys keys={["Ctrl", "E"]} /><span className="keys-os">Mac and Windows</span></span>
+                      <span className="keys"><Keys keys={["Ctrl", "E"]} /><span className="keys-os">{t("Mac and Windows")}</span></span>
                     </span>
                   </div>
                   <div className="row">
-                    <span className="row-label">Find a file in the open folder</span>
+                    <span className="row-label">{t("Find a file in the open folder")}</span>
                     <span className="key-group">
-                      <span className="keys"><Keys keys={["⌘", "P"]} /><span className="keys-os">Mac</span></span>
-                      <span className="keys"><Keys keys={["Ctrl", "P"]} /><span className="keys-os">Windows</span></span>
+                      <span className="keys"><Keys keys={["⌘", "P"]} /><span className="keys-os">{t("Mac")}</span></span>
+                      <span className="keys"><Keys keys={["Ctrl", "P"]} /><span className="keys-os">{t("Windows")}</span></span>
                     </span>
                   </div>
                 </Group>
               </div>
 
               <footer className="opt-footer">
-                <span>Markside {chrome.runtime.getManifest().version}</span>
+                <span>{t("Markside ")}{chrome.runtime.getManifest().version}</span>
                 <div className="footer-links">
                   <button
                     type="button"
@@ -450,11 +448,9 @@ export default function Options() {
                       void stopAutomaticReviewPrompts().catch(() => undefined)
                       void chrome.tabs.create({ url: CHROME_WEB_STORE_REVIEW_URL })
                     }}>
-                    <Star size={14} /> Rate on Chrome Web Store
-                  </button>
+                    <Star size={14} /> {t(" Rate on Chrome Web Store")}</button>
                   <a className="footer-link" href={MARKSIDE_FEEDBACK_URL} title={MARKSIDE_FEEDBACK_EMAIL}>
-                    <Mail size={14} /> Email feedback
-                  </a>
+                    <Mail size={14} /> {t(" Email feedback")}</a>
                 </div>
               </footer>
             </>

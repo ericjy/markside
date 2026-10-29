@@ -1,3 +1,5 @@
+import { getInterfaceLanguage, t } from "./i18n"
+
 // HTML Embeds: image syntax pointing at a local `.html` file renders that file
 // in a sandboxed frame. See docs/changes/2026-10-25-html-embeds/spec.md.
 
@@ -136,8 +138,8 @@ function createButton(action: string, label: string, icon: string) {
   button.type = "button"
   button.className = "mermaid-control mermaid-control-icon"
   button.dataset.embedAction = action
-  button.setAttribute("aria-label", label)
-  button.title = label
+  button.setAttribute("aria-label", t(label))
+  button.title = t(label)
   button.innerHTML = icon
   return button
 }
@@ -147,7 +149,7 @@ function setExpanded(figure: HTMLElement, expanded: boolean) {
   figure.querySelector("iframe")?.contentWindow?.postMessage({ [EXPANDED_MESSAGE]: expanded }, "*")
   const button = figure.querySelector<HTMLButtonElement>("[data-embed-action='expand']")
   if (!button) return
-  const label = expanded ? "Close expanded embed" : "Expand embed"
+  const label = expanded ? t("Close expanded embed") : t("Expand embed")
   button.innerHTML = expanded ? CLOSE_ICON : EXPAND_ICON
   button.setAttribute("aria-label", label)
   button.title = label
@@ -157,8 +159,9 @@ function setExpanded(figure: HTMLElement, expanded: boolean) {
 function installControls(figure: HTMLElement) {
   const controls = document.createElement("div")
   controls.className = "mermaid-controls html-embed-controls"
+  controls.lang = getInterfaceLanguage()
   controls.setAttribute("role", "group")
-  controls.setAttribute("aria-label", "Embed controls")
+  controls.setAttribute("aria-label", t("Embed controls"))
   const comment = createButton("comment", "Comment on this embed", COMMENT_ICON)
   const expand = createButton("expand", "Expand embed", EXPAND_ICON)
   expand.setAttribute("aria-pressed", "false")
@@ -187,7 +190,7 @@ function showError(figure: HTMLElement, src: string) {
   if (!body) return
   const message = document.createElement("div")
   message.className = "html-embed-error"
-  message.textContent = `Could not open ${src}. Check that the file exists.`
+  message.textContent = t("Could not open {0}. Check that the file exists.", [src])
   body.replaceWith(message)
 }
 

@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import { AlertTriangle, Check, Copy, Crosshair, GripVertical, LogOut, MessageSquare, Pencil, Plus, Trash2 } from "lucide-react"
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type Ref } from "react"
 
@@ -601,52 +602,51 @@ export function LocalhostReviewPanel({
       className="mrp-panel"
       data-dragging={dragging}
       style={{ left: position.left, top: position.top }}
-      aria-label="Markside Review">
+      aria-label={t("Markside Review")}>
       <header className="mrp-chrome mrp-header" onPointerDown={onDragStart}>
         <button
           type="button"
           className="mrp-icon-button mrp-grip"
-          aria-label="Move Review panel. Use the arrow keys to reposition it."
+          aria-label={t("Move Review panel. Use the arrow keys to reposition it.")}
           onKeyDown={onDragKeyDown}>
           <GripVertical size={15} />
         </button>
         <span className="mrp-heading-row">
-          <h2 className="mrp-title">Review</h2>
+          <h2 className="mrp-title">{t("Review")}</h2>
           <span className="mrp-count">
-            {itemCount} {itemCount === 1 ? "item" : "items"}
+            {itemCount} {itemCount === 1 ? t("item") : t("items")}
           </span>
         </span>
         <button
           type="button"
           className="mrp-exit"
-          title="Stop reviewing this page"
+          title={t("Stop reviewing this page")}
           onClick={onClose}>
-          <LogOut size={12} /> Exit Review Mode
-        </button>
+          <LogOut size={12} /> {t(" Exit Review Mode")}</button>
       </header>
 
       <div className="mrp-scroll">
         <div className="mrp-note-field">
           {editingNote ? (
             <>
-              <span className="mrp-section-label">Overall feedback</span>
+              <span className="mrp-section-label">{t("Overall feedback")}</span>
               <textarea
                 className="mrp-note"
                 autoFocus
-                aria-label="Overall feedback for this Review"
+                aria-label={t("Overall feedback for this Review")}
                 value={review.note}
-                placeholder="Feedback that applies to everything you reviewed"
+                placeholder={t("Feedback that applies to everything you reviewed")}
                 onBlur={() => setEditingNote(false)}
                 onChange={(event) => onNoteChange(event.target.value)}
               />
             </>
           ) : review.note.trim() ? (
             <>
-              <span className="mrp-section-label">Overall feedback</span>
+              <span className="mrp-section-label">{t("Overall feedback")}</span>
               <button
                 type="button"
                 className="mrp-note-preview"
-                aria-label="Edit the overall feedback"
+                aria-label={t("Edit the overall feedback")}
                 onClick={() => setEditingNote(true)}>
                 {review.note}
               </button>
@@ -656,40 +656,37 @@ export function LocalhostReviewPanel({
               type="button"
               className="mrp-add-note"
               onClick={() => setEditingNote(true)}>
-              <Plus size={14} /> Add overall feedback
-            </button>
+              <Plus size={14} /> {t(" Add overall feedback")}</button>
           )}
         </div>
 
         <div className="mrp-list">
         <div className="mrp-list-header">
           <div className="mrp-list-header-row">
-            <span className="mrp-section-label">Comments</span>
+            <span className="mrp-section-label">{t("Comments")}</span>
             <button
               type="button"
               className="mrp-pick"
               aria-pressed={pickMode}
               onClick={onTogglePickMode}>
-              <Crosshair size={12} /> {pickMode ? "Picking..." : "Pick element"}
+              <Crosshair size={12} /> {pickMode ? t("Picking...") : t("Pick element")}
             </button>
           </div>
           {pickMode && (
-            <p className="mrp-hint">Click an element on the page. Escape cancels.</p>
+            <p className="mrp-hint">{t("Click an element on the page. Escape cancels.")}</p>
           )}
         </div>
 
         {pages.length === 0 && (
           <p className="mrp-empty">
-            Select text on the page to add a comment. Use Pick element for an image, a button, or
-            anything without selectable text.
-          </p>
+            {t("Select text on the page to add a comment. Use Pick element for an image, a button, or anything without selectable text.")}</p>
         )}
 
         {pages.map((page) => (
           <section key={page.url}>
             <div className="mrp-page-heading">
               <span className="mrp-page-label" title={page.url}>{page.url}</span>
-              {page.url === currentPageUrl && <span className="mrp-page-current">This page</span>}
+              {page.url === currentPageUrl && <span className="mrp-page-current">{t("This page")}</span>}
             </div>
             <div className="mrp-cards">
               {page.annotations.map((annotation) => {
@@ -720,7 +717,7 @@ export function LocalhostReviewPanel({
                         : isDeletion
                           ? <Trash2 size={12} />
                           : <Pencil size={12} />}
-                      <span>{isDeletion ? "Deletion" : KIND_LABEL[annotation.kind]}</span>
+                      <span>{isDeletion ? t("Deletion") : KIND_LABEL[annotation.kind]}</span>
                       <span className="mrp-card-number">{displayNumbers.get(annotation.id)}</span>
                     </div>
                     <button
@@ -731,15 +728,14 @@ export function LocalhostReviewPanel({
                     </button>
                     {missing && (
                       <p className="mrp-missing">
-                        <AlertTriangle size={12} /> Target not found
-                      </p>
+                        <AlertTriangle size={12} /> {t(" Target not found")}</p>
                     )}
                     {selectedId === annotation.id ? (
                       <>
                         {/* A deletion's empty box is its finished state, so the
                             card says so before offering the box. */}
                         {isDeletion && (
-                          <p className="mrp-deletion">Requests deleting the selected text.</p>
+                          <p className="mrp-deletion">{t("Requests deleting the selected text.")}</p>
                         )}
                         <textarea
                           className="mrp-input"
@@ -747,10 +743,10 @@ export function LocalhostReviewPanel({
                           aria-label={KIND_LABEL[annotation.kind]}
                           placeholder={
                             annotation.kind === "comment"
-                              ? "What should change here?"
+                              ? t("What should change here?")
                               : isDeletion
-                                ? "Type a replacement to change it instead of deleting it"
-                                : "The text that should appear instead"
+                                ? t("Type a replacement to change it instead of deleting it")
+                                : t("The text that should appear instead")
                           }
                           value={getLocalhostAnnotationText(annotation)}
                           onFocus={() => onSelectAnnotation(annotation.id)}
@@ -763,13 +759,13 @@ export function LocalhostReviewPanel({
                             className="mrp-item-copy"
                             onClick={() => onCopyAnnotation(annotation.id)}>
                             {copiedAnnotationId === annotation.id
-                              ? <><Check className="mrp-check" size={12} strokeWidth={2.5} /> Copied</>
-                              : <><Copy size={12} /> Copy prompt</>}
+                              ? <><Check className="mrp-check" size={12} strokeWidth={2.5} /> {t(" Copied")}</>
+                              : <><Copy size={12} /> {t(" Copy prompt")}</>}
                           </button>
                           <button
                             type="button"
                             className="mrp-icon-button mrp-danger"
-                            aria-label={`Delete ${KIND_LABEL[annotation.kind]}`}
+                            aria-label={t("Delete {0}", [KIND_LABEL[annotation.kind]])}
                             onClick={() => onDeleteAnnotation(annotation.id)}>
                             <Trash2 size={13} />
                           </button>
@@ -778,7 +774,7 @@ export function LocalhostReviewPanel({
                     ) : (
                       <p className="mrp-body">
                         {isDeletion
-                          ? "Requests deleting the selected text."
+                          ? t("Requests deleting the selected text.")
                           : getLocalhostAnnotationText(annotation)}
                       </p>
                     )}
@@ -800,7 +796,7 @@ export function LocalhostReviewPanel({
             disabled={itemCount === 0}
             onClick={onCopy}>
             {copied ? <Check className="mrp-check" size={14} strokeWidth={2.5} /> : <Copy size={14} />}
-            {copied ? "Review copied" : "Copy review as prompt"}
+            {copied ? t("Review copied") : t("Copy review as prompt")}
           </button>
           {itemCount > 0 && (
             <button
@@ -818,8 +814,8 @@ export function LocalhostReviewPanel({
               }}>
               <Trash2 size={13} />
               <span style={{ display: "grid", textAlign: "left" }}>
-                <span aria-hidden="true" style={{ gridArea: "1 / 1", visibility: "hidden" }}>Confirm clear</span>
-                <span style={{ gridArea: "1 / 1" }}>{clearArmed ? "Confirm clear" : "Clear all"}</span>
+                <span aria-hidden="true" style={{ gridArea: "1 / 1", visibility: "hidden" }}>{t("Confirm clear")}</span>
+                <span style={{ gridArea: "1 / 1" }}>{clearArmed ? t("Confirm clear") : t("Clear all")}</span>
               </span>
             </button>
           )}

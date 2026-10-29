@@ -1,6 +1,6 @@
 ---
 date: 2026-10-28
-status: confirmed
+status: implemented
 intent: intent.md
 interview: grill.md
 ---

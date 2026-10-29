@@ -1,3 +1,4 @@
+import { t, tPresetChip } from "~lib/i18n"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import {
   BadgeCheck,
@@ -317,7 +318,7 @@ export function ContentView({
             <div className="h-full overflow-y-auto px-8 py-10">
               <div className="flex h-full items-center justify-center">
                 {error ? (
-                  <p className="text-destructive text-sm">{error}</p>
+                  <p className="text-destructive text-sm">{t(error)}</p>
                 ) : imageObjectUrl ? (
                   <img
                     src={imageObjectUrl}
@@ -325,7 +326,7 @@ export function ContentView({
                     className="max-h-full max-w-full object-contain"
                   />
                 ) : (
-                  <p className="text-muted-foreground text-sm">Loading…</p>
+                  <p className="text-muted-foreground text-sm">{t("Loading…")}</p>
                 )}
               </div>
             </div>
@@ -362,9 +363,9 @@ export function ContentView({
                     }`}>
                     <div className={`h-full ${sourceFullWidth ? "" : "mx-auto max-w-5xl"}`}>
                       {error ? (
-                        <p className="text-destructive text-sm">{error}</p>
+                        <p className="text-destructive text-sm">{t(error)}</p>
                       ) : content === null ? (
-                        <p className="text-muted-foreground text-sm">Loading…</p>
+                        <p className="text-muted-foreground text-sm">{t("Loading…")}</p>
                       ) : (
                         <RawEditor
                           ref={rawEditorRef}
@@ -458,15 +459,15 @@ export function ContentView({
                             <TooltipTrigger asChild>
                               <button
                                 type="button"
-                                aria-label={`${preset.chip}. ${preset.name}`}
+                                aria-label={`${tPresetChip(preset.chip)}. ${t(preset.name)}`}
                                 className="flex h-7 items-center rounded-md border px-2.5 text-xs font-medium text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:bg-accent hover:text-foreground focus-visible:outline-ring active:bg-accent/80"
                                 onMouseDown={(event) => event.preventDefault()}
                                 onClick={() => insertSelectionComposerPreset(preset.instruction)}>
-                                {preset.chip}
+                                {tPresetChip(preset.chip)}
                               </button>
                             </TooltipTrigger>
                             <TooltipContent side="top" sideOffset={6} className="text-xs">
-                              {preset.name}
+                              {t(preset.name)}
                             </TooltipContent>
                           </Tooltip>
                         ))}
@@ -500,13 +501,12 @@ export function ContentView({
                             }
                           }
                         }}
-                        placeholder={selectionAction.question ? "Your answer or question, or pick one above. You can also combine options or push back." : "Add a comment"}
+                        placeholder={selectionAction.question ? t("Your answer or question, or pick one above. You can also combine options or push back.") : t("Add a comment")}
                         className="review-input mt-2 min-h-[7.5rem] w-full resize-y rounded-md border px-3 py-2.5 text-sm leading-relaxed outline outline-2 outline-offset-1 outline-transparent placeholder:text-muted-foreground focus-visible:outline-ring"
                       />
                       {composerAgent?.folderToChoose && (
                         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                          To send, allow access to this document's folder when Chrome asks.
-                        </p>
+                          {t("To send, allow access to this document's folder when Chrome asks.")}</p>
                       )}
                       <div className="mt-2 flex items-center justify-between gap-2">
                         <ReviewPresetPicker
@@ -523,8 +523,7 @@ export function ContentView({
                         />
                         <div className="flex items-center gap-2">
                           <Button className="h-9" variant="ghost" size="sm" onClick={closeSelectionComposer}>
-                            Cancel
-                          </Button>
+                            {t("Cancel")}</Button>
                           <Button
                             className="h-9"
                             variant="outline"
@@ -532,7 +531,7 @@ export function ContentView({
                             disabled={!selectionComposerBody.trim() || selectionComposerCopyState === "copying"}
                             onClick={() => void copySelectionComposerComment()}>
                             {selectionComposerCopyState === "copied" ? <Check size={14} /> : <Copy size={14} />}{" "}
-                            {selectionComposerCopyState === "copied" ? "Copied" : "Save & copy prompt"}
+                            {selectionComposerCopyState === "copied" ? t("Copied") : t("Save & copy prompt")}
                           </Button>
                           <div className="flex items-center">
                             <Button
@@ -540,15 +539,14 @@ export function ContentView({
                               size="sm"
                               disabled={!selectionComposerBody.trim() || selectionComposerCopyState === "copying"}
                               onClick={saveSelectionComposerComment}>
-                              Save
-                            </Button>
+                              {t("Save")}</Button>
                             {composerAgent && (
                               <DropdownMenu.Root>
                                 <DropdownMenu.Trigger asChild>
                                   <Button
                                     className="h-9 w-8 rounded-l-none border-l border-primary-foreground/20 px-0"
                                     size="sm"
-                                    aria-label="More save options"
+                                    aria-label={t("More save options")}
                                     disabled={!selectionComposerBody.trim() || selectionComposerCopyState === "copying" || composerSending}>
                                     <ChevronDown size={14} />
                                   </Button>
@@ -563,8 +561,8 @@ export function ContentView({
                                     <DropdownMenu.Item
                                       onSelect={() => void sendSelectionComposerComment()}
                                       className="flex cursor-pointer select-none flex-col rounded-md px-2 py-2 text-sm leading-5 outline-none data-[highlighted]:bg-[hsl(var(--review-card-hover))]">
-                                      <span className="flex items-center gap-2 font-medium"><Send size={14} aria-hidden="true" />Save & send review</span>
-                                      <span className="pl-[22px] text-xs text-muted-foreground">Sends all comments and overall feedback</span>
+                                      <span className="flex items-center gap-2 font-medium"><Send size={14} aria-hidden="true" />{t("Save & send review")}</span>
+                                      <span className="pl-[22px] text-xs text-muted-foreground">{t("Sends all comments and overall feedback")}</span>
                                     </DropdownMenu.Item>
                                   </DropdownMenu.Content>
                                 </DropdownMenu.Portal>
@@ -583,7 +581,7 @@ export function ContentView({
                       onMouseUp={(event) => event.stopPropagation()}>
                       <button
                         type="button"
-                        aria-label="Add comment"
+                        aria-label={t("Add comment")}
                         className="flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 outline outline-2 -outline-offset-1 outline-transparent hover:bg-accent focus-visible:outline-ring"
                         onMouseDown={(event) => event.preventDefault()}
                         onClick={(event) => {
@@ -591,8 +589,7 @@ export function ContentView({
                           activateReviewSelection()
                         }}>
                         <MessageSquarePlus size={14} aria-hidden="true" />
-                        Comment
-                      </button>
+                        {t("Comment")}</button>
                       <DropdownMenu.Root
                         open={quickCommentMenuOpen}
                         onOpenChange={(open) => {
@@ -605,7 +602,7 @@ export function ContentView({
                               <button
                                 ref={quickCommentTriggerRef}
                                 type="button"
-                                aria-label="Quick comment"
+                                aria-label={t("Quick comment")}
                                 className="flex w-9 shrink-0 items-center justify-center border-l outline outline-2 -outline-offset-1 outline-transparent hover:bg-accent focus-visible:outline-ring"
                                 onMouseDown={(event) => event.preventDefault()}
                                 onClick={(event) => event.stopPropagation()}>
@@ -614,8 +611,7 @@ export function ContentView({
                             </DropdownMenu.Trigger>
                           </TooltipTrigger>
                           <TooltipContent side="top" sideOffset={6} className="text-xs">
-                            Quick comment
-                          </TooltipContent>
+                            {t("Quick comment")}</TooltipContent>
                         </Tooltip>
                         <DropdownMenu.Portal>
                           <DropdownMenu.Content
@@ -638,12 +634,12 @@ export function ContentView({
                               return (
                                 <DropdownMenu.Item
                                   key={preset.id}
-                                  aria-label={`${preset.chip}. ${preset.name}`}
+                                  aria-label={`${tPresetChip(preset.chip)}. ${t(preset.name)}`}
                                   onSelect={() => activateQuickComment(preset.instruction)}
                                   className="col-span-3 grid cursor-pointer select-none grid-cols-subgrid items-baseline whitespace-nowrap rounded-md px-2 py-2 text-sm leading-5 outline-none hover:bg-[hsl(var(--review-card-hover))] focus:bg-[hsl(var(--review-card-hover))] data-[highlighted]:bg-[hsl(var(--review-card-hover))]">
                                   <Icon className="self-center text-muted-foreground" size={15} aria-hidden="true" />
-                                  <span className="font-medium">{preset.chip}</span>
-                                  <span className="text-muted-foreground">{preset.name}</span>
+                                  <span className="font-medium">{tPresetChip(preset.chip)}</span>
+                                  <span className="text-muted-foreground">{t(preset.name)}</span>
                                 </DropdownMenu.Item>
                               )
                             })}
@@ -655,7 +651,7 @@ export function ContentView({
                           <TooltipTrigger asChild>
                             <button
                               type="button"
-                              aria-label="Reveal in Source"
+                              aria-label={t("Reveal in Source")}
                               className="flex w-9 shrink-0 items-center justify-center border-l outline outline-2 -outline-offset-1 outline-transparent hover:bg-accent focus-visible:outline-ring"
                               onMouseDown={(event) => event.preventDefault()}
                               onClick={(event) => {
@@ -666,20 +662,20 @@ export function ContentView({
                             </button>
                           </TooltipTrigger>
                           <TooltipContent side="top" sideOffset={6} className="text-xs">
-                            Reveal in Source
-                          </TooltipContent>
+                            {t("Reveal in Source")}</TooltipContent>
                         </Tooltip>
                       )}
                     </div>
                   )}
                   {content === null && !error && (
-                    <p className="text-muted-foreground">Loading…</p>
+                    <p className="text-muted-foreground">{t("Loading…")}</p>
                   )}
                   {error && (
-                    <p className="text-destructive">Error: {error}</p>
+                    <p className="text-destructive">{t("Error: ")}{t(error)}</p>
                   )}
                   <div
                     ref={contentRef}
+                    lang={document.documentElement.lang || ""}
                     className={`prose prose-neutral dark:prose-invert ${!readabilityControlsVisible ? "readability-controls-hidden" : ""} ${
                       previewWidthClass
                     }`}
@@ -760,8 +756,8 @@ export function ContentView({
                       className={`review-badge review-badge-approximate absolute z-[80] ${
                         selectedReviewId === badge.id ? "review-badge-selected" : ""
                       }`}
-                      title="Approximate location — the reviewed text was edited"
-                      aria-label={`Review comment ${badge.displayNumber}, approximate location`}>
+                      title={t("Approximate location — the reviewed text was edited")}
+                      aria-label={t("Review comment {0}, approximate location", [badge.displayNumber])}>
                       ?
                     </button>
                   ))}

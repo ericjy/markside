@@ -1,3 +1,4 @@
+import { getInterfaceLanguage, t } from "~lib/i18n"
 import * as Dialog from "@radix-ui/react-dialog"
 import { AlertTriangle, Bot, Check, ChevronDown, Copy, FileText, FolderOpen, MessageSquareText, Plus, RefreshCw, Send, Trash2 } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -314,7 +315,7 @@ export function ReviewPanel({
     <div role="alert" className="rounded-md border border-red-700/20 bg-red-700/5 px-3 py-2 text-xs leading-relaxed text-red-700 dark:border-red-300/20 dark:bg-red-300/5 dark:text-red-300">
       <p className="flex items-start gap-2">
         <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
-        <span><strong>Not copied.</strong> {copyError.message}</span>
+        <span><strong>{t("Not copied.")}</strong> {t(copyError.message)}</span>
       </p>
     </div>
   )
@@ -379,7 +380,7 @@ export function ReviewPanel({
       <>
         {!integrationBacked && !resolved && <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Delete Review Comment"
+            <Button variant="ghost" size="icon" aria-label={t("Delete Review Comment")}
               disabled={agentHandoff?.sending || agentHandoff?.updatingCommentId != null}
               className="h-9 w-9 text-muted-foreground hover:text-destructive"
               onClick={() => {
@@ -387,27 +388,27 @@ export function ReviewPanel({
                 setUndoDelete(() => undo ?? null)
               }}><Trash2 size={14} /></Button>
           </TooltipTrigger>
-          <TooltipContent side="top">Delete comment</TooltipContent>
+          <TooltipContent side="top">{t("Delete comment")}</TooltipContent>
         </Tooltip>}
-        {changeStatus && finished && <Button variant="ghost" size="sm" aria-label={`Reopen comment ${comment.displayNumber}`}
+        {changeStatus && finished && <Button variant="ghost" size="sm" aria-label={t("Reopen comment {0}", [comment.displayNumber])}
           disabled={agentHandoff?.sending || agentHandoff?.updatingCommentId != null}
-          onClick={() => changeStatus(comment.id, "open")}>Reopen</Button>}
-        {canWithdraw && <Button variant="ghost" size="sm" aria-label={`Withdraw comment ${comment.displayNumber}`}
-          title="Close this comment without waiting for your agent"
+          onClick={() => changeStatus(comment.id, "open")}>{t("Reopen")}</Button>}
+        {canWithdraw && <Button variant="ghost" size="sm" aria-label={t("Withdraw comment {0}", [comment.displayNumber])}
+          title={t("Close this comment without waiting for your agent")}
           className="text-muted-foreground"
           disabled={agentHandoff?.sending || agentHandoff?.updatingCommentId != null}
-          onClick={() => changeStatus(comment.id, "resolved")}>Withdraw</Button>}
+          onClick={() => changeStatus(comment.id, "resolved")}>{t("Withdraw")}</Button>}
         {/* A labeled dark Resolve only when it's the reviewer's turn: the agent says Addressed. */}
-        {canResolve && (addressed ? <Button size="sm" aria-label={`Resolve comment ${comment.displayNumber}`}
+        {canResolve && (addressed ? <Button size="sm" aria-label={t("Resolve comment {0}", [comment.displayNumber])}
           disabled={agentHandoff?.sending || agentHandoff?.updatingCommentId != null}
-          onClick={() => changeStatus(comment.id, "resolved")}>Resolve</Button> : <Tooltip>
+          onClick={() => changeStatus(comment.id, "resolved")}>{t("Resolve")}</Button> : <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label={`Resolve comment ${comment.displayNumber}`}
+            <Button variant="ghost" size="icon" aria-label={t("Resolve comment {0}", [comment.displayNumber])}
               className="h-9 w-9 text-muted-foreground hover:text-foreground"
               disabled={agentHandoff?.sending || agentHandoff?.updatingCommentId != null}
               onClick={() => changeStatus(comment.id, "resolved")}><Check size={14} /></Button>
           </TooltipTrigger>
-          <TooltipContent side="top">Resolve comment</TooltipContent>
+          <TooltipContent side="top">{t("Resolve comment")}</TooltipContent>
         </Tooltip>)}
       </>
     ) : null
@@ -429,7 +430,7 @@ export function ReviewPanel({
         }`}>
         <button
           type="button"
-          aria-label={collapsed ? "Expand Review Comment" : "Collapse Review Comment"}
+          aria-label={collapsed ? t("Expand Review Comment") : t("Collapse Review Comment")}
           aria-expanded={!collapsed}
           aria-controls={detailsId}
           onClick={() => {
@@ -447,11 +448,11 @@ export function ReviewPanel({
         </button>
         <div className="mt-2 flex items-center gap-2">
           <span className={`inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium ${resolved ? "text-green-700 dark:text-green-300" : "text-muted-foreground"}`}>
-            {finished && <Check size={12} aria-hidden="true" />}{status}
+            {finished && <Check size={12} aria-hidden="true" />}{status === "Open" && getInterfaceLanguage() !== "en" ? t("Review status: Open") : t(status)}
           </span>
         </div>
         {comment.anchor.removed && (
-          <p className="mt-2 pl-1 text-[11px] text-muted-foreground">Comment on removed text</p>
+          <p className="mt-2 pl-1 text-[11px] text-muted-foreground">{t("Comment on removed text")}</p>
         )}
         {comment.status === "unanchored" && !comment.anchor.removed && !finished && !storedIds.has(comment.id) && (
           jumpableCommentIds.has(comment.id) ? (
@@ -463,13 +464,12 @@ export function ReviewPanel({
               }}
               className="mt-2 flex w-full items-center gap-2 rounded-sm px-1 py-1 text-left text-[11px] font-medium text-blue-700 outline outline-2 outline-offset-1 outline-transparent hover:bg-accent focus-visible:outline-ring active:bg-accent/80 dark:text-blue-300">
               <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
-              <span>Passage no longer found. Jump to section</span>
+              <span>{t("Passage no longer found. Jump to section")}</span>
             </button>
           ) : (
             <p className="mt-2 flex items-center gap-2 pl-1 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
               <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
-              Passage no longer found.
-            </p>
+              {t("Passage no longer found.")}</p>
           )
         )}
         {collapsed || finished || storedIds.has(comment.id) ? (
@@ -483,7 +483,7 @@ export function ReviewPanel({
                 if (element) commentTextareaRefs.current.set(comment.id, element)
                 else commentTextareaRefs.current.delete(comment.id)
               }}
-              aria-label="Review Comment"
+              aria-label={t("Review Comment")}
               rows={2}
               value={comment.body}
               onFocus={(event) => {
@@ -525,7 +525,7 @@ export function ReviewPanel({
                     <TooltipTrigger asChild>
                       <button
                         type="button"
-                        aria-label={copiedCommentId === comment.id ? "Comment copied as prompt" : "Copy comment as prompt"}
+                        aria-label={copiedCommentId === comment.id ? t("Comment copied as prompt") : t("Copy comment as prompt")}
                         disabled={copyingCommentId !== null}
                         onClick={() => void copyComment(comment.id)}
                         className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:bg-accent hover:text-foreground focus-visible:outline-ring active:bg-accent/80 disabled:cursor-not-allowed disabled:opacity-50">
@@ -533,7 +533,7 @@ export function ReviewPanel({
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="top">
-                      {copiedCommentId === comment.id ? "Copied" : "Copy comment as prompt"}
+                      {copiedCommentId === comment.id ? t("Copied") : t("Copy comment as prompt")}
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -546,8 +546,7 @@ export function ReviewPanel({
           <div className="review-agent-reply mt-4 rounded-r-md border-l-2 px-3 py-3">
             <p className="review-agent-reply-label flex items-center gap-2 text-[11px] font-semibold tracking-[0.02em]">
               <MessageSquareText size={14} strokeWidth={1.75} className="shrink-0" aria-hidden="true" />
-              Agent reply
-            </p>
+              {t("Agent reply")}</p>
             <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-[1.65]">{result.reply}</p>
           </div>
         )}
@@ -570,34 +569,33 @@ export function ReviewPanel({
         className="min-h-0 flex-1 overflow-y-auto">
       {persistenceError && (
         <div role="alert" className="border-b bg-amber-500/10 px-4 py-3 text-xs text-amber-800 dark:text-amber-200">
-          <span className="flex items-center gap-2 font-semibold"><AlertTriangle size={14} /> Review not saved</span>
-          <p className="mt-1 pl-5 leading-relaxed">Keep this tab open or copy the review before leaving.</p>
+          <span className="flex items-center gap-2 font-semibold"><AlertTriangle size={14} /> {t(" Review not saved")}</span>
+          <p className="mt-1 pl-5 leading-relaxed">{t("Keep this tab open or copy the review before leaving.")}</p>
         </div>
       )}
 
       {historyFile?.status === "resolved" && currentComments.length === 0 && addressedComments.length === 0 && !hasDrafts && <p className="px-4 pt-3 text-xs text-muted-foreground">
-        Review complete
-      </p>}
+        {t("Review complete")}</p>}
       <div className="px-4 pb-3 pt-5">
         {editingNote ? (
           <>
-            <span className="mb-2 block text-sm font-semibold tracking-tight">Overall feedback</span>
+            <span className="mb-2 block text-sm font-semibold tracking-tight">{t("Overall feedback")}</span>
             <textarea
               autoFocus
-              aria-label="Overall feedback"
+              aria-label={t("Overall feedback")}
               value={review?.note ?? ""}
               onBlur={() => setEditingNote(false)}
               onChange={(event) => onNoteChange(event.target.value)}
-              placeholder="Feedback that applies to the whole document"
+              placeholder={t("Feedback that applies to the whole document")}
               className="review-input min-h-28 w-full resize-y rounded-md border px-3 py-2.5 text-sm font-normal leading-relaxed outline outline-2 outline-offset-1 outline-transparent placeholder:text-muted-foreground focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50"
             />
           </>
         ) : review?.note.trim() ? (
           <>
-            <span className="mb-2 block text-sm font-semibold tracking-tight">Overall feedback</span>
+            <span className="mb-2 block text-sm font-semibold tracking-tight">{t("Overall feedback")}</span>
             <button
               type="button"
-              aria-label="Edit the overall feedback"
+              aria-label={t("Edit the overall feedback")}
               onClick={() => setEditingNote(true)}
               className="line-clamp-3 block w-full rounded-md px-1 py-1 text-left text-sm leading-relaxed outline outline-2 outline-offset-1 outline-transparent hover:bg-accent focus-visible:outline-ring">
               {review.note}
@@ -606,8 +604,7 @@ export function ReviewPanel({
               <div className="review-agent-reply mt-3 rounded-r-md border-l-2 px-3 py-3">
                 <p className="review-agent-reply-label flex items-center gap-2 text-[11px] font-semibold tracking-[0.02em]">
                   <MessageSquareText size={14} strokeWidth={1.75} className="shrink-0" aria-hidden="true" />
-                  Agent reply
-                </p>
+                  {t("Agent reply")}</p>
                 <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-[1.65]">{historyFile.noteReply}</p>
               </div>
             )}
@@ -617,22 +614,19 @@ export function ReviewPanel({
             type="button"
             onClick={() => setEditingNote(true)}
             className="flex w-full items-center gap-2 rounded-md border border-dashed px-3 py-2.5 text-sm text-muted-foreground outline outline-2 outline-offset-1 outline-transparent hover:bg-accent hover:text-foreground focus-visible:outline-ring">
-            <Plus size={14} /> Add overall feedback
-          </button>
+            <Plus size={14} /> {t(" Add overall feedback")}</button>
         )}
       </div>
 
       <div className="mx-4 my-2 border-t" aria-hidden="true" />
       {undoDelete && <div role="status" className="mx-4 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-        Comment deleted.
-        <Button variant="ghost" size="sm" onClick={() => { undoDelete(); setUndoDelete(null) }}>Undo</Button>
+        {t("Comment deleted.")}<Button variant="ghost" size="sm" onClick={() => { undoDelete(); setUndoDelete(null) }}>{t("Undo")}</Button>
       </div>}
       {currentComments.length > 0 && (
         <details open className="group/comments mx-4 my-3">
           <summary className="flex cursor-pointer list-none items-center justify-between py-3 text-sm font-semibold tracking-tight outline outline-2 outline-offset-1 outline-transparent focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
             <span className="flex items-center gap-2">
-              Active
-              <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-normal tabular-nums text-muted-foreground">{currentComments.length}</span>
+              {t("Active")}<span className="rounded bg-muted px-1.5 py-0.5 text-xs font-normal tabular-nums text-muted-foreground">{currentComments.length}</span>
             </span>
             <ChevronDown size={14} aria-hidden="true" className="shrink-0 -rotate-90 text-muted-foreground group-open/comments:rotate-0" />
           </summary>
@@ -641,15 +635,13 @@ export function ReviewPanel({
       )}
       {currentComments.length === 0 && addressedComments.length === 0 && resolvedComments.length === 0 && storedComments.length === 0 && (
         <p className="px-4 pb-8 pt-3 text-xs leading-relaxed text-muted-foreground">
-          No comments. Select text in Preview to add comment.
-        </p>
+          {t("No comments. Select text in Preview to add comment.")}</p>
       )}
       {addressedComments.length > 0 && (
         <details ref={addressedCommentsRef} open={!interview} className="group/comments mx-4 my-3">
           <summary className="flex cursor-pointer list-none items-center justify-between py-3 text-sm font-semibold tracking-tight outline outline-2 outline-offset-1 outline-transparent focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
             <span className="flex items-center gap-2">
-              Addressed
-              <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-normal tabular-nums text-muted-foreground">{addressedComments.length}</span>
+              {t("Addressed")}<span className="rounded bg-muted px-1.5 py-0.5 text-xs font-normal tabular-nums text-muted-foreground">{addressedComments.length}</span>
             </span>
             <ChevronDown size={14} aria-hidden="true" className="shrink-0 -rotate-90 text-muted-foreground group-open/comments:rotate-0" />
           </summary>
@@ -660,8 +652,7 @@ export function ReviewPanel({
         <details ref={resolvedCommentsRef} className="group/comments mx-4 my-3">
           <summary className="flex cursor-pointer list-none items-center justify-between py-3 text-sm font-semibold tracking-tight outline outline-2 outline-offset-1 outline-transparent focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
             <span className="flex items-center gap-2">
-              Resolved
-              <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-normal tabular-nums text-muted-foreground">{resolvedComments.length}</span>
+              {t("Resolved")}<span className="rounded bg-muted px-1.5 py-0.5 text-xs font-normal tabular-nums text-muted-foreground">{resolvedComments.length}</span>
             </span>
             <ChevronDown size={14} aria-hidden="true" className="shrink-0 -rotate-90 text-muted-foreground group-open/comments:rotate-0" />
           </summary>
@@ -674,7 +665,7 @@ export function ReviewPanel({
           <div className="mx-4 my-2 border-t" aria-hidden="true" />
           <section className="pb-3 pt-1">
             <div className="flex w-full items-center justify-between px-4 pb-3">
-              <span className="text-sm font-semibold tracking-tight">Review History</span>
+              <span className="text-sm font-semibold tracking-tight">{t("Review History")}</span>
               <span className="text-xs tabular-nums text-muted-foreground">
                 {importedRounds.length}
               </span>
@@ -683,17 +674,16 @@ export function ReviewPanel({
               {importedRounds.map((round, index) => (
                 <div key={round.id}>
                   <div className="flex items-baseline justify-between gap-2 px-1">
-                    <span className="text-sm font-semibold text-foreground">Round {index + 1}</span>
+                    <span className="text-sm font-semibold text-foreground">{t("Round ")}{index + 1}</span>
                     <span className="text-xs text-muted-foreground">
-                      by {round.reviewerName || "Reviewer"} on {round.createdAt.slice(0, 10)}
+                      {t("by {0} on {1}", [round.reviewerName || t("Reviewer"), round.createdAt.slice(0, 10)])}
                     </span>
                   </div>
                   {round.note.trim() && (
                     <div className="review-card mt-2 flex flex-col gap-1.5 rounded-lg border px-4 py-3 shadow-sm">
                       <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
                         <FileText size={13} className="shrink-0 text-amber-500 dark:text-amber-400" aria-hidden="true" />
-                        Overall feedback
-                      </div>
+                        {t("Overall feedback")}</div>
                       <p className="text-sm leading-relaxed text-foreground">{round.note}</p>
                     </div>
                   )}
@@ -737,12 +727,12 @@ export function ReviewPanel({
         {copyError && !inlineCopyError && (
           <div className="mb-2">{copyErrorNotice}</div>
         )}
-        {agentHandoff?.error && <p role="alert" className="mb-2 text-xs text-destructive">{agentHandoff.error}</p>}
+        {agentHandoff?.error && <p role="alert" className="mb-2 text-xs text-destructive">{t(agentHandoff.error)}</p>}
         {(activeAgentHandoff || reviewSourceUrl?.startsWith("file:")) && (
           <>
             {showAgentDisabledHelp && (
               <p id="agent-review-send-help" className="mb-3 text-xs leading-relaxed text-muted-foreground">
-                {activeAgentHandoff?.disabledReason}
+                {activeAgentHandoff?.disabledReason && t(activeAgentHandoff.disabledReason)}
               </p>
             )}
             <Dialog.Root open={sendHelpOpen} onOpenChange={(nextOpen) => {
@@ -761,15 +751,14 @@ export function ReviewPanel({
                   onKeyDown={(event) => event.stopPropagation()}
                   className="fixed left-1/2 top-1/2 max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg border bg-background p-5 text-foreground shadow-xl"
                   style={{ zIndex: 100001 }}>
-                  <Dialog.Title className="text-base font-semibold">Agent integration (Beta)</Dialog.Title>
+                  <Dialog.Title className="text-base font-semibold">{t("Agent integration (Beta)")}</Dialog.Title>
                   <Dialog.Description className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Ask your agent to start a review in Markside, then send your feedback back directly to the agent without copying and pasting a prompt.
-                  </Dialog.Description>
+                    {t("Ask your agent to start a review in Markside, then send your feedback back directly to the agent without copying and pasting a prompt.")}</Dialog.Description>
                   <div className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <h3 className="text-sm font-medium">1. Install the skill</h3>
-                    <p className="text-xs text-muted-foreground">Skip if already installed.</p>
+                    <h3 className="text-sm font-medium">{t("1. Install the skill")}</h3>
+                    <p className="text-xs text-muted-foreground">{t("Skip if already installed.")}</p>
                   </div>
-                  <div role="tablist" aria-label="Installation method" className="mt-2 flex border-b"
+                  <div role="tablist" aria-label={t("Installation method")} className="mt-2 flex border-b"
                     onKeyDown={(event) => {
                       const index = INSTALL_METHODS.findIndex(({ id }) => id === installMethod)
                       const next = event.key === "ArrowRight" ? (index + 1) % INSTALL_METHODS.length
@@ -785,29 +774,29 @@ export function ReviewPanel({
                       <button key={id} type="button" role="tab" id={`skill-install-tab-${id}`}
                         aria-selected={installMethod === id} aria-controls="skill-install-panel" tabIndex={installMethod === id ? 0 : -1}
                         className={`-mb-px flex flex-1 items-center justify-center border-b-2 px-2 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${installMethod === id ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-                        onClick={() => { setInstallMethod(id); setInstallCopyStatus("idle") }}>{label}</button>
+                        onClick={() => { setInstallMethod(id); setInstallCopyStatus("idle") }}>{t(label)}</button>
                     ))}
                   </div>
                   <div role="tabpanel" id="skill-install-panel" aria-labelledby={`skill-install-tab-${installMethod}`}>
-                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{installMethod === "agent" ? "Paste this into your agent's chat." : "Run this in your terminal."}</p>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{installMethod === "agent" ? t("Paste this into your agent's chat.") : t("Run this in your terminal.")}</p>
                   <div className="relative mt-2">
-                    <textarea readOnly value={installText} rows={1} wrap="off" aria-label={`Skill installation ${installLabel}`}
+                    <textarea readOnly value={installText} rows={1} wrap="off" aria-label={t("Skill installation {0}", [t(installLabel)])}
                       onFocus={(event) => event.currentTarget.select()}
                       className="block h-12 w-full resize-none overflow-x-auto whitespace-pre rounded-md border bg-muted p-3 pr-12 font-mono text-xs leading-relaxed focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" />
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="absolute right-2 top-2 h-7 w-7 text-muted-foreground" aria-label={`Copy install ${installLabel}`} onClick={() => void copyHelpCommand(installText, "install")}>
+                        <Button variant="ghost" size="icon" className="absolute right-2 top-2 h-7 w-7 text-muted-foreground" aria-label={t("Copy install {0}", [t(installLabel)])} onClick={() => void copyHelpCommand(installText, "install")}>
                           {installCopyStatus === "copied" ? <Check size={14} /> : <Copy size={14} />}
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent style={{ zIndex: 100002 }}>{installCopyStatus === "copied" ? "Copied" : `Copy install ${installLabel}`}</TooltipContent>
+                      <TooltipContent style={{ zIndex: 100002 }}>{installCopyStatus === "copied" ? t("Copied") : t("Copy install {0}", [t(installLabel)])}</TooltipContent>
                     </Tooltip>
                   </div>
-                  {installCopyStatus === "copied" && <span role="status" className="sr-only">Install {installLabel} copied</span>}
-                  {installCopyStatus === "error" && <p role="alert" className="mt-2 text-xs text-destructive">Couldn't copy. Select the {installLabel} above and copy it.</p>}
+                  {installCopyStatus === "copied" && <span role="status" className="sr-only">{t("Install {0} copied", [t(installLabel)])}</span>}
+                  {installCopyStatus === "error" && <p role="alert" className="mt-2 text-xs text-destructive">{t("Couldn't copy. Select the {0} above and copy it.", [t(installLabel)])}</p>}
                   </div>
-                  <h3 className="mt-5 text-sm font-medium">2. Start a review</h3>
-                  <div role="tablist" aria-label="Your agent" className="mt-2 flex border-b"
+                  <h3 className="mt-5 text-sm font-medium">{t("2. Start a review")}</h3>
+                  <div role="tablist" aria-label={t("Your agent")} className="mt-2 flex border-b"
                     onKeyDown={(event) => {
                       const index = REVIEW_AGENTS.findIndex(({ id }) => id === reviewAgent)
                       const next = event.key === "ArrowRight" ? (index + 1) % REVIEW_AGENTS.length
@@ -835,48 +824,47 @@ export function ReviewPanel({
                             <AgentIcon agent="cursor" />
                           </span>
                         )}
-                        {label}
+                        {t(label)}
                       </button>
                     ))}
                   </div>
                   <div role="tabpanel" id="agent-review-command-panel" aria-labelledby={`agent-review-tab-${reviewAgent}`}>
-                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">Paste this into your agent's chat. Markside finds the review when you return to this tab.</p>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{t("Paste this into your agent's chat. Markside finds the review when you return to this tab.")}</p>
                     <div className="relative mt-4">
-                      <textarea readOnly value={reviewCommand} rows={1} aria-label="Review command for your agent"
+                      <textarea readOnly value={reviewCommand} rows={1} aria-label={t("Review command for your agent")}
                         onFocus={(event) => event.currentTarget.select()}
                         className="block min-h-12 w-full resize-none rounded-md border bg-muted p-3 pr-12 [field-sizing:content] font-mono text-xs leading-relaxed focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" />
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="absolute right-2 top-2 h-7 w-7 text-muted-foreground" aria-label="Copy review command" onClick={() => void copyHelpCommand(reviewCommand, "review")}>
+                          <Button variant="ghost" size="icon" className="absolute right-2 top-2 h-7 w-7 text-muted-foreground" aria-label={t("Copy review command")} onClick={() => void copyHelpCommand(reviewCommand, "review")}>
                             {commandCopyStatus === "copied" ? <Check size={14} /> : <Copy size={14} />}
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent style={{ zIndex: 100002 }}>{commandCopyStatus === "copied" ? "Copied" : "Copy review command"}</TooltipContent>
+                        <TooltipContent style={{ zIndex: 100002 }}>{commandCopyStatus === "copied" ? t("Copied") : t("Copy review command")}</TooltipContent>
                       </Tooltip>
                     </div>
-                    {commandCopyStatus === "copied" && <span role="status" className="sr-only">Review command copied. Ready to paste into your agent's chat.</span>}
-                    {commandCopyStatus === "error" && <p role="alert" className="mt-2 text-xs text-destructive">Couldn't copy. Select the command above and copy it.</p>}
+                    {commandCopyStatus === "copied" && <span role="status" className="sr-only">{t("Review command copied. Ready to paste into your agent's chat.")}</span>}
+                    {commandCopyStatus === "error" && <p role="alert" className="mt-2 text-xs text-destructive">{t("Couldn't copy. Select the command above and copy it.")}</p>}
                   </div>
                   {(reviewFolder || folderStatus !== "idle") && <>
-                    <h3 className="mt-5 text-sm font-medium">3. Allow folder access</h3>
+                    <h3 className="mt-5 text-sm font-medium">{t("3. Allow folder access")}</h3>
                     {reviewFolder ? <>
                       <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                        So your agent can receive your review, Chrome asks once for access to{" "}
+                        {t("So your agent can receive your review, Chrome asks once for access to")}{" "}
                         <span title={reviewFolder.path} className="font-medium text-foreground">{folderName(reviewFolder.path)}</span>.
                       </p>
-                      {folderStatus === "chosen" && <p role="alert" className="mt-2 text-xs text-destructive">That folder doesn't contain this file. Choose {folderName(reviewFolder.path)} or a folder above it.</p>}
+                      {folderStatus === "chosen" && <p role="alert" className="mt-2 text-xs text-destructive">{t("That folder doesn't contain this file. Choose ")}{folderName(reviewFolder.path)} {t(" or a folder above it.")}</p>}
                       <Button variant="outline" className="mt-3" disabled={folderStatus === "choosing"} onClick={async () => {
                         setFolderStatus("choosing")
                         setFolderStatus(await reviewFolder.choose() ? "chosen" : "idle")
                       }}>
-                        <FolderOpen size={14} />Choose folder
-                      </Button>
+                        <FolderOpen size={14} />{t("Choose folder")}</Button>
                     </> : (
-                      <p role="status" className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground"><Check size={14} />Your agent can receive reviews for this file.</p>
+                      <p role="status" className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground"><Check size={14} />{t("Your agent can receive reviews for this file.")}</p>
                     )}
                   </>}
                   <div className="mt-5 flex justify-end">
-                    <Dialog.Close asChild><Button>Done</Button></Dialog.Close>
+                    <Dialog.Close asChild><Button>{t("Done")}</Button></Dialog.Close>
                   </div>
                 </Dialog.Content>
               </Dialog.Portal>
@@ -888,30 +876,29 @@ export function ReviewPanel({
             <p role="status" className="flex items-center gap-2 py-1 text-sm">
               <Check size={16} className="shrink-0 text-green-700 dark:text-green-300" aria-hidden="true" />
               <span className="min-w-0">
-                <span className="font-medium text-green-700 dark:text-green-300">Review sent</span>
-                <span className="text-muted-foreground"> · Waiting for the agent’s reply</span>
+                <span className="font-medium text-green-700 dark:text-green-300">{t("Review sent")}</span>
+                <span className="text-muted-foreground">{t(" · Waiting for the agent’s reply")}</span>
               </span>
             </p>
           ) : (
             <Button className="h-11 w-full whitespace-nowrap px-3 disabled:bg-primary disabled:text-primary-foreground/60 disabled:opacity-100" disabled={activeAgentHandoff.disabled} onClick={() => void activeAgentHandoff.send()} aria-busy={activeAgentHandoff.sending}
               aria-describedby={showAgentDisabledHelp ? "agent-review-send-help" : showAgentFolderHelp ? "agent-review-folder-help" : undefined}>
               <Send size={14} />
-              {activeAgentHandoff.sending ? "Sending review…" : "Send review to agent"}
+              {activeAgentHandoff.sending ? t("Sending review…") : t("Send review to agent")}
             </Button>
           )
         )}
         {showAgentFolderHelp && (
           <p id="agent-review-folder-help" className="mt-2 text-xs leading-relaxed text-muted-foreground">
-            Chrome will ask once for access to{" "}
+            {t("Chrome will ask once for access to")}{" "}
             <span title={activeAgentHandoff.folderToChoose} className="font-medium text-foreground">{folderName(activeAgentHandoff.folderToChoose!)}</span>{" "}
-            so your agent can receive your review.
-          </p>
+            {t("so your agent can receive your review.")}</p>
         )}
         {canFinish && (
           <p className="mb-2 text-xs leading-relaxed text-muted-foreground">
-            {diskChanged ? "Your agent updated the document. Reload to see its changes."
-              : questionsOpen ? "Answer the next questions in the document."
-              : "Anything else to change? Comment on it, or finish."}
+            {diskChanged ? t("Your agent updated the document. Reload to see its changes.")
+              : questionsOpen ? t("Answer the next questions in the document.")
+              : t("Anything else to change? Comment on it, or finish.")}
           </p>
         )}
         <div className={`review-footer-actions flex flex-wrap items-center gap-2 ${showAgentAction && !canFinish ? "mt-2" : ""}`}>
@@ -919,13 +906,13 @@ export function ReviewPanel({
           {activeAgentHandoff && finishOffered && addressedCount > 0 && (
             <Button variant="outline" className="h-11 whitespace-nowrap px-3 text-xs" disabled={statusWriting}
               onClick={activeAgentHandoff.resolveAll} aria-busy={activeAgentHandoff.resolvingAll}>
-              {activeAgentHandoff.resolvingAll ? "Resolving…" : "Resolve all"}
+              {activeAgentHandoff.resolvingAll ? t("Resolving…") : t("Resolve all")}
             </Button>
           )}
           {activeAgentHandoff && finishOffered && (
             <Button variant="outline" className="h-11 whitespace-nowrap px-3 text-xs" disabled={statusWriting}
               onClick={activeAgentHandoff.finish} aria-busy={activeAgentHandoff.finishing}>
-              {activeAgentHandoff.finishing ? "Finishing review…" : "Finish review"}
+              {activeAgentHandoff.finishing ? t("Finishing review…") : t("Finish review")}
             </Button>
           )}
           {showSentStatus && (
@@ -934,9 +921,9 @@ export function ReviewPanel({
               aria-busy={updateCheck === "checking"}>
               <RefreshCw size={14} aria-hidden="true" className={updateCheck === "checking" ? "animate-spin" : ""} />
               <span className="grid">
-                <span aria-hidden="true" className="invisible" style={{ gridArea: "1 / 1" }}>Check for reply</span>
+                <span aria-hidden="true" className="invisible" style={{ gridArea: "1 / 1" }}>{t("Check for reply")}</span>
                 <span aria-live="polite" style={{ gridArea: "1 / 1" }}>
-                  {updateCheck === "checking" ? "Checking…" : updateCheck === "unchanged" ? "No reply yet" : updateCheck === "updated" ? "Updates found" : "Check for reply"}
+                  {updateCheck === "checking" ? t("Checking…") : updateCheck === "unchanged" ? t("No reply yet") : updateCheck === "updated" ? t("Updates found") : t("Check for reply")}
                 </span>
               </span>
             </Button>
@@ -946,24 +933,24 @@ export function ReviewPanel({
           {copyableCount > 0 && canFinish && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 text-muted-foreground hover:text-foreground" aria-label={copied ? "Review copied for this file" : "Copy review as prompt"} onClick={onCopy}>
+                <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 text-muted-foreground hover:text-foreground" aria-label={copied ? t("Review copied for this file") : t("Copy review as prompt")} onClick={onCopy}>
                   {copied
                     ? <Check size={14} strokeWidth={2.5} className="text-[hsl(132_60%_46%)] dark:text-[hsl(130_78%_29%)]" />
                     : <Copy size={14} />}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent style={{ zIndex: 100002 }}>{copied ? "Review copied for this file" : "Copy review as prompt"}</TooltipContent>
+              <TooltipContent style={{ zIndex: 100002 }}>{copied ? t("Review copied for this file") : t("Copy review as prompt")}</TooltipContent>
             </Tooltip>
           )}
-          {copyableCount > 0 && !canFinish && <Button key={showAgentAction ? "secondary" : "primary"} variant={showAgentAction ? "ghost" : "default"} className={`h-11 min-w-max whitespace-nowrap ${showAgentAction ? "shrink-0 px-2 text-xs text-muted-foreground hover:text-foreground" : "flex-1"}`} aria-label={copied ? "Review copied for this file" : "Copy review as prompt"} onClick={onCopy}>
+          {copyableCount > 0 && !canFinish && <Button key={showAgentAction ? "secondary" : "primary"} variant={showAgentAction ? "ghost" : "default"} className={`h-11 min-w-max whitespace-nowrap ${showAgentAction ? "shrink-0 px-2 text-xs text-muted-foreground hover:text-foreground" : "flex-1"}`} aria-label={copied ? t("Review copied for this file") : t("Copy review as prompt")} onClick={onCopy}>
             {copied
               ? <Check size={14} strokeWidth={2.5} className="text-[hsl(132_60%_46%)] dark:text-[hsl(130_78%_29%)]" />
-              : <Copy size={14} />} {copied ? "Review copied for this file" : showSentStatus ? "Copy as prompt" : "Copy review as prompt"}
+              : <Copy size={14} />} {copied ? t("Review copied for this file") : showSentStatus ? t("Copy as prompt") : t("Copy review as prompt")}
           </Button>}
           {(historyFile ? hasDrafts : itemCount > 0) && (
             <Button
               ref={clearButtonRef}
-              title={historyFile ? "Discard unsent changes. Sent feedback and previous reviews are kept." : "Clear this local review."}
+              title={historyFile ? t("Discard unsent changes. Sent feedback and previous reviews are kept.") : t("Clear this local review.")}
               disabled={agentHandoff?.sending || agentHandoff?.updatingCommentId != null}
               className={`h-11 shrink-0 whitespace-nowrap px-4 ${showAgentAction ? "ml-auto text-xs" : ""} ${clearArmed ? "text-red-700 hover:text-red-700 dark:text-red-300 dark:hover:text-red-300" : "text-muted-foreground"}`}
               variant="ghost"
@@ -978,25 +965,24 @@ export function ReviewPanel({
               }}>
               <span style={{ display: "grid" }}>
                 <span aria-hidden="true" className="flex items-center gap-1.5" style={{ gridArea: "1 / 1", visibility: "hidden" }}>
-                  <Trash2 size={14} />{clearLabel}
+                  <Trash2 size={14} />{t(clearLabel)}
                 </span>
                 <span className="flex items-center justify-center gap-1.5" style={{ gridArea: "1 / 1" }}>
-                  <Trash2 size={14} />{clearArmed ? "Confirm" : clearLabel}
+                  <Trash2 size={14} />{clearArmed ? t("Confirm") : t(clearLabel)}
                 </span>
               </span>
             </Button>
           )}
         </div>
         {showSentStatus && updateCheck === "error" && (
-          <p role="status" className="mt-2 text-xs text-muted-foreground">Couldn’t check. Try again.</p>
+          <p role="status" className="mt-2 text-xs text-muted-foreground">{t("Couldn’t check. Try again.")}</p>
         )}
         {showSentStatus && (
           <p className="mt-3 text-left text-xs leading-relaxed text-muted-foreground">
-            Agent not responding?{" "}
+            {t("Agent not responding?")}{" "}
             <button ref={sendHelpRef} type="button" aria-haspopup="dialog" onClick={() => setSendHelpOpen(true)}
               className="rounded-sm text-left underline underline-offset-2 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
-              Start a review in your agent
-            </button>
+              {t("Start a review in your agent")}</button>
           </p>
         )}
         {showStartReview && (
@@ -1005,7 +991,7 @@ export function ReviewPanel({
             <button ref={sendHelpRef} type="button" aria-haspopup="dialog" onClick={() => setSendHelpOpen(true)}
               className="inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-left text-foreground transition-colors hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
               <Bot size={14} aria-hidden="true" className="shrink-0" />
-              {needsNewReview ? "Start another review" : "Start a review in your agent…"}
+              {needsNewReview ? t("Start another review") : t("Start a review in your agent…")}
             </button>
             <button type="button" disabled={agentSessionCheckStatus === "checking"} aria-busy={agentSessionCheckStatus === "checking"} onClick={onCheckAgentSession}
               className="inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
@@ -1013,14 +999,14 @@ export function ReviewPanel({
               {/* Every label occupies the same cell so the width never changes and the row never rewraps. */}
               <span className="grid text-left">
                 {["Check for review", "No review yet", "Checking…"].map((label) => (
-                  <span key={label} aria-hidden="true" className="invisible" style={{ gridArea: "1 / 1" }}>{label}</span>
+                  <span key={label} aria-hidden="true" className="invisible" style={{ gridArea: "1 / 1" }}>{t(label)}</span>
                 ))}
-                <span role="status" style={{ gridArea: "1 / 1" }}>{agentSessionCheckStatus === "checking" ? "Checking…" : showNotFound ? "No review yet" : "Check for review"}</span>
+                <span role="status" style={{ gridArea: "1 / 1" }}>{agentSessionCheckStatus === "checking" ? t("Checking…") : showNotFound ? t("No review yet") : t("Check for review")}</span>
               </span>
             </button>
           </div>
         )}
-        {activeAgentHandoff && copied && <p role="status" className="mt-2 text-xs text-muted-foreground">Review copied for this file</p>}
+        {activeAgentHandoff && copied && <p role="status" className="mt-2 text-xs text-muted-foreground">{t("Review copied for this file")}</p>}
       </div>
     </div>
   )

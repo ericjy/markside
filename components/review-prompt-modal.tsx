@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import { Check, Mail, X } from "lucide-react"
 import { useRef } from "react"
 
@@ -96,18 +97,16 @@ export function ReviewPromptModal({ onDismiss, onReview }: ReviewPromptModalProp
           size="icon"
           onClick={onDismiss}
           className="absolute right-3 top-3 z-10 h-8 w-8 rounded-full bg-background/90 shadow-sm backdrop-blur"
-          aria-label="Not now">
+          aria-label={t("Not now")}>
           <X size={15} />
         </Button>
 
         <div className="flex min-h-[22rem] flex-col p-8 pr-9 sm:p-9">
           <div className="my-auto py-8">
             <h2 id="review-prompt-title" className="text-2xl font-semibold tracking-tight">
-              Leave a Chrome Web Store review
-            </h2>
+              {t("Leave a Chrome Web Store review")}</h2>
             <p id="review-prompt-description" className="mt-4 text-sm leading-6 text-muted-foreground">
-              Markside is free. Your honest review shapes what we improve and helps others find it.
-            </p>
+              {t("Markside is free. Your honest review shapes what we improve and helps others find it.")}</p>
           </div>
           <div className="space-y-2">
             <Button asChild className="w-full shadow-[0_0_0_1px_#078a52]">
@@ -117,19 +116,16 @@ export function ReviewPromptModal({ onDismiss, onReview }: ReviewPromptModalProp
                 rel="noreferrer"
                 autoFocus
                 onClick={onReview}>
-                Leave a review
-              </a>
+                {t("Leave a review")}</a>
             </Button>
             <Button type="button" variant="outline" className="w-full" onClick={onDismiss}>
-              Not now
-            </Button>
+              {t("Not now")}</Button>
             <a
               href={MARKSIDE_FEEDBACK_URL}
               onClick={onDismiss}
               className="mx-auto flex w-fit items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
               <Mail size={13} aria-hidden="true" />
-              Send feedback by email
-            </a>
+              {t("Send feedback by email")}</a>
           </div>
         </div>
 

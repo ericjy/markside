@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import React, { useEffect, useId, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { Check, ChevronLeft, ChevronRight, CircleAlert, Eye, EyeOff, Highlighter, MessageSquarePlus, RefreshCw, Trash2, X } from "lucide-react"
@@ -35,7 +36,7 @@ const formatName: Record<ReadabilityFormat, string> = { list: "List", table: "Ta
 // Only one panel is open at a time, since they all sit in the same corner.
 const PANEL_OPENED = "readability-panel-opened"
 
-const dimensionName = (key: ReadabilityDimension) => READABILITY_DIMENSIONS.find(([dimension]) => dimension === key)?.[1] ?? key
+const dimensionName = (key: ReadabilityDimension) => t(READABILITY_DIMENSIONS.find(([dimension]) => dimension === key)?.[1] ?? key)
 
 export function ReadabilityHeadingControl({ section, result, status, wholeDocument, consentGranted, onConsent, onCheck, onLocate, onComment, onRemove }: {
   section: ReadabilitySection
@@ -117,7 +118,7 @@ export function ReadabilityHeadingControl({ section, result, status, wholeDocume
         const range = ranges.current.get(finding.sentence)
         if (!range || !finding.suggested) continue
         const block = elements.find((element) => element.contains(range.startContainer))
-        if (block) removers.push(addBlockTag(block, `Prose → ${formatName[finding.suggested]}`))
+        if (block) removers.push(addBlockTag(block, t("Prose → {0}", [t(formatName[finding.suggested])])))
       }
     }
     return () => {
@@ -150,24 +151,24 @@ export function ReadabilityHeadingControl({ section, result, status, wholeDocume
   }, [open, panelId])
 
   const weak = result ? countWeakReadabilityScores(result.scores) : 0
-  const weakSummary = weak === 0 ? "No dimensions need work" : weak === 1 ? "1 dimension needs work" : `${weak} dimensions need work`
-  const noun = wholeDocument ? "Document readability" : "Readability"
+  const weakSummary = weak === 0 ? t("No dimensions need work") : weak === 1 ? t("1 dimension needs work") : t("{0} dimensions need work", [weak])
+  const noun = wholeDocument ? t("Document readability") : t("Readability")
   // With a result the pill shows an icon (not a count): an alert when something is low, a tick when not.
   const label: React.ReactNode = status === "outdated"
-    ? "Readability · Outdated"
+    ? t("Readability · Outdated")
     : result
       ? <>{noun}<span className="readability-pill-icon" data-state={weak ? "issues" : "clear"} aria-hidden="true">
         {weak ? <CircleAlert size={13} /> : <Check size={13} />}
       </span></>
-      : wholeDocument ? "Check document readability" : "Check readability"
+      : wholeDocument ? t("Check document readability") : t("Check readability")
   const description = status === "outdated"
-    ? "Readability result outdated"
-    : result ? weakSummary : `Check readability of ${section.path.at(-1)}`
+    ? t("Readability result outdated")
+    : result ? weakSummary : t("Check readability of {0}", [section.path.at(-1)])
   const check = async () => {
     setChecking(true)
     setError(null)
     try { await onCheck(section) }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "Readability Check failed") }
+    catch (cause) { setError(cause instanceof Error ? cause.message : t("Readability Check failed")) }
     finally { setChecking(false) }
   }
   const lowDimensions = result ? locatableLowDimensions(result.scores) : []
@@ -176,7 +177,7 @@ export function ReadabilityHeadingControl({ section, result, status, wholeDocume
     setLocating(true)
     setError(null)
     try { await onLocate(section, result, lowDimensions) }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "Locating sentences failed") }
+    catch (cause) { setError(cause instanceof Error ? cause.message : t("Locating sentences failed")) }
     finally { setLocating(false) }
   }
   // Room to keep clear at the bottom of the window: the panel's height, so the marked text
@@ -213,18 +214,17 @@ export function ReadabilityHeadingControl({ section, result, status, wholeDocume
   const recheck = <button type="button" className="readability-action readability-recheck" disabled={checking}
     onClick={() => consentGranted ? void check() : confirmAndCheck()}>
     <RefreshCw size={13} aria-hidden="true" className={checking ? "readability-spinning" : ""} />
-    {checking ? "Checking…" : consentGranted ? "Recheck" : "Send section and recheck"}
+    {checking ? t("Checking…") : consentGranted ? t("Recheck") : t("Send section and recheck")}
   </button>
   const comment = result && <button type="button" className="readability-action readability-comment-action"
     disabled={status !== "current"} onClick={() => { onComment(section, result); setOpen(false) }}>
     <MessageSquarePlus size={14} aria-hidden="true" />
-    {result.commentId ? "Open section improvement comment" : "Add section improvement comment"}
+    {result.commentId ? t("Open section improvement comment") : t("Add section improvement comment")}
   </button>
   const remove = result && <button type="button" className="readability-action readability-remove"
     onClick={() => { onRemove(result); setOpen(false) }}>
     <Trash2 size={13} aria-hidden="true" />
-    Remove result
-  </button>
+    {t("Remove result")}</button>
 
   const previous = nearest(-1)
   const next = nearest(1)
@@ -243,19 +243,19 @@ export function ReadabilityHeadingControl({ section, result, status, wholeDocume
       }}>
       {label}
     </button>
-    {open && createPortal(<span ref={popover} id={panelId} className={`readability-popover ${result ? "" : "without-scores"}`} role="dialog" aria-label={wholeDocument ? "Document readability" : `Readability of ${section.path.at(-1)}`}
+    {open && createPortal(<span ref={popover} id={panelId} className={`readability-popover ${result ? "" : "without-scores"}`} role="dialog" aria-label={wholeDocument ? t("Document readability") : t("Readability of {0}", [section.path.at(-1)])}
       onClick={(event) => event.stopPropagation()} onMouseUp={(event) => event.stopPropagation()}>
-      <button type="button" className="readability-panel-close" aria-label="Close" onClick={() => setOpen(false)}><X size={15} aria-hidden="true" /></button>
+      <button type="button" className="readability-panel-close" aria-label={t("Close")} onClick={() => setOpen(false)}><X size={15} aria-hidden="true" /></button>
       <span className="readability-panel-header">
         <span className="readability-panel-brand">
           <span className="readability-panel-heading">
-            <span className="readability-panel-title">Readability Check</span>
-            <span className="readability-panel-beta">Beta</span>
+            <span className="readability-panel-title">{t("Readability Check")}</span>
+            <span className="readability-panel-beta">{t("Beta")}</span>
           </span>
-          <span className="readability-panel-provider">Powered by Jev, which receives this section's text.</span>
+          <span className="readability-panel-provider">{t("Powered by Jev, which receives this section's text.")}</span>
         </span>
       </span>
-      {status === "outdated" && <span className="readability-outdated">Section changed since this check.</span>}
+      {status === "outdated" && <span className="readability-outdated">{t("Section changed since this check.")}</span>}
       {result && <TooltipProvider delayDuration={200} disableHoverableContent><span className="readability-scores">{scoredReadabilityDimensions(result.scores).map(([key, name, judges, lowers]) => {
         const score = result.scores[key]
         const band = readabilityBand(score)
@@ -268,11 +268,11 @@ export function ReadabilityHeadingControl({ section, result, status, wholeDocume
         >
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="readability-score-label" tabIndex={0}>{name}</span>
+              <span className="readability-score-label" tabIndex={0}>{t(name)}</span>
             </TooltipTrigger>
             <TooltipContent side="top" className="grid max-w-[280px] gap-1 border-transparent bg-neutral-950 text-xs text-white dark:border-white/15">
               <span>{judges}</span>
-              <span className="text-white/70"><span className="font-medium text-white/90">Lower when:</span> {lowers}</span>
+              <span className="text-white/70"><span className="font-medium text-white/90">{t("Lower when:")}</span> {lowers}</span>
             </TooltipContent>
           </Tooltip>
           <span className="readability-bar" aria-hidden="true">
@@ -280,10 +280,10 @@ export function ReadabilityHeadingControl({ section, result, status, wholeDocume
           </span>
           {filterable
             ? <button type="button" className="readability-score-value readability-score-filter" aria-pressed={filter === key}
-              aria-label={`${readabilityBandLabel(score)}, ${count} ${count === 1 ? "sentence" : "sentences"}. ${filter === key ? "Show all sentences" : `Show only ${name} sentences`}`}>
-              {readabilityBandLabel(score)}<span className="readability-score-count">{count}</span>
+              aria-label={t("{0}, {1} {2}. {3}", [t(readabilityBandLabel(score)), count, count === 1 ? t("sentence") : t("sentences"), filter === key ? t("Show all sentences") : t("Show only {0} sentences", [t(name)])])}>
+              {t(readabilityBandLabel(score))}<span className="readability-score-count">{count}</span>
             </button>
-            : <span className="readability-score-value">{readabilityBandLabel(score)}</span>}
+            : <span className="readability-score-value">{t(readabilityBandLabel(score))}</span>}
         </span>
       })}</span></TooltipProvider>}
       {result && status === "current" && weak > 0 && <span className={`readability-where ${findings === undefined && lowDimensions.length > 0 ? "has-find-action" : ""}`}>
@@ -292,32 +292,30 @@ export function ReadabilityHeadingControl({ section, result, status, wholeDocume
             {locating
               ? <RefreshCw size={13} aria-hidden="true" className="readability-spinning" />
               : <Highlighter size={14} aria-hidden="true" />}
-            {locating ? "Finding sentences…" : "Find problem sentences"}
+            {locating ? t("Finding sentences…") : t("Find problem sentences")}
           </button>
         </> : findings.length === 0 ? <span className="readability-where-hint">
-          No single sentence stood out. The low scores come from the section as a whole.
-        </span> : <>
+          {t("No single sentence stood out. The low scores come from the section as a whole.")}</span> : <>
           <span className="readability-where-header">
-            <span className="readability-where-title">Problems found</span>
+            <span className="readability-where-title">{t("Problems found")}</span>
             <button type="button" className="readability-where-toggle" onClick={() => setShowAll(!showAll)}
               aria-pressed={showAll}>
               {showAll ? <EyeOff size={12} aria-hidden="true" /> : <Eye size={12} aria-hidden="true" />}
-              {showAll ? "Only this one" : "Show all marks"}
+              {showAll ? t("Only this one") : t("Show all marks")}
             </button>
           </span>
           {filter && <span className="readability-where-filter">
-            Showing {dimensionName(filter)} only
-            <button type="button" onClick={() => setFilter(null)}>Show all</button>
+            {t("Showing ")}{dimensionName(filter)}{t(" only")}<button type="button" onClick={() => setFilter(null)}>{t("Show all")}</button>
           </span>}
           {current && <>
             <button type="button" className="readability-finding" disabled={!found}
-              title={found ? "Jump to this text" : "This text is not visible in the page"} onClick={() => goTo(position)}>
+              title={found ? t("Jump to this text") : t("This text is not visible in the page")} onClick={() => goTo(position)}>
               <span className="readability-finding-head">
-                <span className="readability-finding-kind">{block ? "Paragraph" : "Sentence"}</span>
-                {suggested && <span className="readability-format-change" aria-label={`Prose, better as ${formatName[suggested].toLowerCase()}`}>
-                  <span className="readability-format-chip">Prose</span>
+                <span className="readability-finding-kind">{block ? t("Paragraph") : t("Sentence")}</span>
+                {suggested && <span className="readability-format-change" aria-label={t("Prose, better as {0}", [t(formatName[suggested])])}>
+                  <span className="readability-format-chip">{t("Prose")}</span>
                   <span className="readability-format-arrow" aria-hidden="true">→</span>
-                  <span className="readability-format-chip is-suggested">{formatName[suggested]}</span>
+                  <span className="readability-format-chip is-suggested">{t(formatName[suggested])}</span>
                 </span>}
               </span>
               <span className={`readability-finding-quote ${block ? "is-clamped" : ""}`}>{current.sentence.length > (block ? 240 : 140) ? `${current.sentence.slice(0, block ? 237 : 137)}…` : current.sentence}</span>
@@ -326,14 +324,14 @@ export function ReadabilityHeadingControl({ section, result, status, wholeDocume
               </span>)}</span>
             </button>
             <span className="readability-where-nav">
-              <button type="button" className="readability-nav-button" onClick={() => goTo(previous)} disabled={previous < 0}><ChevronLeft size={14} aria-hidden="true" />Previous</button>
-              <button type="button" className="readability-nav-button" onClick={() => goTo(next)} disabled={next < 0}>Next<ChevronRight size={14} aria-hidden="true" /></button>
-              <span className="readability-where-position">{position + 1} of {visibleGroups.length}</span>
+              <button type="button" className="readability-nav-button" onClick={() => goTo(previous)} disabled={previous < 0}><ChevronLeft size={14} aria-hidden="true" />{t("Previous")}</button>
+              <button type="button" className="readability-nav-button" onClick={() => goTo(next)} disabled={next < 0}>{t("Next")}<ChevronRight size={14} aria-hidden="true" /></button>
+              <span className="readability-where-position">{t("{0} of {1}", [position + 1, visibleGroups.length])}</span>
             </span>
           </>}
         </>}
       </span>}
-      {error && <span className="readability-error" role="alert">{error}</span>}
+      {error && <span className="readability-error" role="alert">{t(error)}</span>}
       <span className="readability-actions">
         {result ? <>
           {status === "outdated" ? recheck : comment}
@@ -341,9 +339,9 @@ export function ReadabilityHeadingControl({ section, result, status, wholeDocume
             {status === "outdated" ? null : recheck}
             {remove}
           </span>
-        </> : checking ? <span className="readability-checking"><RefreshCw size={14} className="readability-spinning" aria-hidden="true" />Checking section…</span> : error ?
-          <button type="button" className="readability-action readability-recheck" onClick={() => void check()}><RefreshCw size={13} aria-hidden="true" />Try again</button> :
-          <button type="button" className="readability-action readability-recheck" onClick={confirmAndCheck}>Send section and check</button>}
+        </> : checking ? <span className="readability-checking"><RefreshCw size={14} className="readability-spinning" aria-hidden="true" />{t("Checking section…")}</span> : error ?
+          <button type="button" className="readability-action readability-recheck" onClick={() => void check()}><RefreshCw size={13} aria-hidden="true" />{t("Try again")}</button> :
+          <button type="button" className="readability-action readability-recheck" onClick={confirmAndCheck}>{t("Send section and check")}</button>}
       </span>
     </span>, document.body)}
   </span>

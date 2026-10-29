@@ -120,6 +120,13 @@ node_modules   .git         dist    build
 
 Expanded folders remain expanded when you navigate between files.
 
+## Interface language
+
+Markside follows your browser's interface language. English, Simplified Chinese,
+Traditional Chinese, Korean, Japanese, and Spanish are supported. Other browser
+languages use English. Changing the interface language does not translate your
+Markdown, Review Comments, or text sent to your agent.
+
 ## Supported File Types
 
 | File type | Behavior |

@@ -1,6 +1,7 @@
 // contents/markside.tsx
 import iconSvg from "data-text:~assets/icon.svg"
 import cssText from "data-text:~style.css"
+import localizedCssText from "data-text:~lib/i18n-ui.css"
 import type { PlasmoCSConfig } from "plasmo"
 import React from "react"
 import { createRoot } from "react-dom/client"
@@ -18,6 +19,7 @@ import {
   getThemePreference
 } from "~lib/theme-preference"
 import { installHtmlEmbedNavigationPolicy } from "~lib/html-embed"
+import { getInterfaceLanguage } from "~lib/i18n"
 import {
   readInitialFileContent
 } from "~lib/url"
@@ -122,7 +124,7 @@ async function bootstrap() {
 
   const styleEl = document.createElement("style")
   styleEl.id = "markside-styles"
-  styleEl.textContent = cssText
+  styleEl.textContent = cssText + "\n" + localizedCssText
   document.head.appendChild(styleEl)
 
   const resetEl = document.createElement("style")
@@ -132,6 +134,7 @@ async function bootstrap() {
 
   const mount = document.createElement("div")
   mount.id = "markside-mount"
+  mount.lang = getInterfaceLanguage()
   mount.style.cssText = "height:100%;display:flex;flex-direction:column"
   document.body.appendChild(mount)
   const [initialMode, initialSplitPercent, initialPaneWidthPreferences, initialThemePreference, initialOutlineOpen, initialLeftOpen, newFile] = await Promise.all([

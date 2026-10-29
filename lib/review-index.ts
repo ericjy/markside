@@ -1,3 +1,5 @@
+import { t } from "./i18n"
+
 // A small index of Active Reviews kept in extension storage so the popover can
 // list pending agent hand-offs across tabs.
 //
@@ -86,14 +88,14 @@ const DAY = 24 * HOUR
 
 export function describeReviewAge(updatedAt: string, now: number) {
   const elapsed = now - new Date(updatedAt).getTime()
-  if (!Number.isFinite(elapsed) || elapsed < MINUTE) return "just now"
-  if (elapsed < HOUR) return `${Math.floor(elapsed / MINUTE)} min ago`
+  if (!Number.isFinite(elapsed) || elapsed < MINUTE) return t("just now")
+  if (elapsed < HOUR) return t("{0} min ago", [Math.floor(elapsed / MINUTE)])
   if (elapsed < DAY) {
     const hours = Math.floor(elapsed / HOUR)
-    return `${hours} hour${hours === 1 ? "" : "s"} ago`
+    return t(hours === 1 ? "{0} hour ago" : "{0} hours ago", [hours])
   }
   const days = Math.floor(elapsed / DAY)
-  if (days === 1) return "yesterday"
-  if (days < 30) return `${days} days ago`
+  if (days === 1) return t("yesterday")
+  if (days < 30) return t("{0} days ago", [days])
   return new Date(updatedAt).toISOString().slice(0, 10)
 }

@@ -1,0 +1,4 @@
+{
+  "extensionName": { "message": "Markside：Markdown 阅读器与编辑器" },
+  "extensionDescription": { "message": "阅读、编辑 Markdown，并与团队成员和 AI agent 协作。支持行内评论、大纲、文件树、Mermaid、数学公式和 PDF 导出。" }
+}

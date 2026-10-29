@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 // components/raw-editor.tsx
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
@@ -105,6 +106,14 @@ const githubAlertActions = [
   ["alert-important", "Important", BadgeAlert],
   ["alert-warning", "Warning", TriangleAlert],
   ["alert-caution", "Caution", OctagonAlert],
+] as const
+
+const codeMirrorPhrases = [
+  "Control character", "close", "Folded lines", "Unfolded lines", "to", "folded code",
+  "unfold", "Fold line", "Unfold line", "Selection deleted", "Go to line", "go",
+  "replaced match on line $", "replaced $ matches", "Find", "Replace", "next", "previous",
+  "all", "match case", "regexp", "by word", "replace", "replace all", "current match",
+  "on line", "Completions", "Diagnostics", "No diagnostics",
 ] as const
 
 const markdownHeadingShortcuts = EditorView.domEventHandlers({
@@ -277,6 +286,8 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
         doc: content,
         extensions: [
           basicSetup,
+          EditorView.contentAttributes.of({ lang: "" }),
+          EditorState.phrases.of(Object.fromEntries(codeMirrorPhrases.map((phrase) => [phrase, t(phrase)]))),
           langCompartmentRef.current.of(getLanguage(fileName, isMarkdown)),
           wrapCompartmentRef.current.of(lineWrap ? EditorView.lineWrapping : []),
           shortcutCompartmentRef.current.of(
@@ -427,7 +438,7 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
     <div className="markdown-toolbar-editor-actions ml-auto flex shrink-0 items-center gap-1 pl-2 text-xs text-muted-foreground">
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
-          <button type="button" aria-label="Source options" title="Source options" className={toolbarButtonClass}>
+          <button type="button" aria-label={t("Source options")} title={t("Source options")} className={toolbarButtonClass}>
             <MoreHorizontal size={14} />
           </button>
         </DropdownMenu.Trigger>
@@ -442,8 +453,7 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
               onCheckedChange={setLineWrap}
               onSelect={(event) => event.preventDefault()}
               className="flex cursor-pointer select-none items-center justify-between gap-4 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent">
-              Word wrap
-              <span
+              {t("Word wrap")}<span
                 aria-hidden="true"
                 className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition-colors ${lineWrap ? "bg-green-600" : "bg-muted-foreground/30"}`}>
                 <span className={`h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${lineWrap ? "translate-x-4" : "translate-x-0"}`} />
@@ -454,21 +464,20 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
               onCheckedChange={onToggleFullWidth}
               onSelect={(event) => event.preventDefault()}
               className="flex cursor-pointer select-none items-center justify-between gap-4 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent">
-              Full width
-              <span
+              {t("Full width")}<span
                 aria-hidden="true"
                 className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition-colors ${fullWidth ? "bg-green-600" : "bg-muted-foreground/30"}`}>
                 <span className={`h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${fullWidth ? "translate-x-4" : "translate-x-0"}`} />
               </span>
             </DropdownMenu.CheckboxItem>
             <DropdownMenu.Item
-              aria-label="Copy file contents"
+              aria-label={t("Copy file contents")}
               onSelect={(event) => {
                 event.preventDefault()
                 handleCopy()
               }}
               className="flex cursor-pointer select-none items-center justify-between gap-4 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent">
-              {copied ? "Copied" : "Copy"}
+              {copied ? t("Copied") : t("Copy")}
               {copied ? <Check size={14} /> : <Copy size={14} />}
             </DropdownMenu.Item>
           </DropdownMenu.Content>
@@ -483,7 +492,7 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
         <>
           <div
             role="toolbar"
-            aria-label="Markdown formatting"
+            aria-label={t("Markdown formatting")}
             className="markdown-toolbar flex min-h-10 shrink-0 items-center gap-0.5 overflow-x-hidden px-3 py-1">
             {primaryMarkdownActions.map(([action, label, Icon], index) => (
               <span key={action} className="contents">
@@ -494,10 +503,10 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
                   type="button"
                   title={
                     action === "bold"
-                      ? "Bold (Cmd+B / Ctrl+B)"
-                      : label
+                      ? t("Bold (Cmd+B / Ctrl+B)")
+                      : t(label)
                   }
-                  aria-label={`Insert ${label.toLowerCase()}`}
+                  aria-label={t("Insert {0}", [t(label)])}
                   className={toolbarButtonClass}
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => insertMarkdown(action)}>
@@ -514,8 +523,8 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
                   )}
                   <button
                     type="button"
-                    title={label}
-                    aria-label={`Insert ${label.toLowerCase()}`}
+                    title={t(label)}
+                    aria-label={t("Insert {0}", [t(label)])}
                     className={toolbarButtonClass}
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={() => insertMarkdown(action)}>
@@ -527,8 +536,8 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
             <span aria-hidden="true" className="mx-1 h-4 w-px shrink-0 bg-border" />
             <button
               type="button"
-              title="Common emoji"
-              aria-label="Show common emoji"
+              title={t("Common emoji")}
+              aria-label={t("Show common emoji")}
               aria-expanded={emojiOpen}
               className={`${toolbarButtonClass} ${emojiOpen ? "bg-accent text-foreground" : ""}`}
               onMouseDown={(event) => event.preventDefault()}
@@ -539,8 +548,8 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
               <DropdownMenu.Trigger asChild>
                 <button
                   type="button"
-                  title="GitHub alerts"
-                  aria-label="Insert GitHub alert"
+                  title={t("GitHub alerts")}
+                  aria-label={t("Insert GitHub alert")}
                   className={toolbarButtonClass}>
                   <MessageSquareWarning size={14} strokeWidth={1.8} />
                 </button>
@@ -557,7 +566,7 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
                       className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
                       onSelect={() => insertMarkdown(action)}>
                       <Icon size={14} strokeWidth={1.8} aria-hidden="true" />
-                      {label}
+                      {t(label)}
                     </DropdownMenu.Item>
                   ))}
                 </DropdownMenu.Content>
@@ -567,8 +576,8 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
               <DropdownMenu.Trigger asChild>
                 <button
                   type="button"
-                  title="Heading actions"
-                  aria-label="Heading actions"
+                  title={t("Heading actions")}
+                  aria-label={t("Heading actions")}
                   className={toolbarButtonClass}>
                   <ListChevronsUpDown size={14} strokeWidth={1.8} />
                 </button>
@@ -583,14 +592,12 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
                     className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
                     onSelect={() => shiftHeadings("promote")}>
                     <ArrowUp size={14} strokeWidth={1.8} />
-                    Promote headings
-                  </DropdownMenu.Item>
+                    {t("Promote headings")}</DropdownMenu.Item>
                   <DropdownMenu.Item
                     className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
                     onSelect={() => shiftHeadings("demote")}>
                     <ArrowDown size={14} strokeWidth={1.8} />
-                    Demote headings
-                  </DropdownMenu.Item>
+                    {t("Demote headings")}</DropdownMenu.Item>
                 </DropdownMenu.Content>
               </DropdownMenu.Portal>
             </DropdownMenu.Root>
@@ -598,8 +605,8 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
               <DropdownMenu.Trigger asChild>
                 <button
                   type="button"
-                  title="More formatting"
-                  aria-label="More formatting"
+                  title={t("More formatting")}
+                  aria-label={t("More formatting")}
                   className={`markdown-toolbar-more ${toolbarButtonClass}`}>
                   <MoreHorizontal size={14} strokeWidth={1.8} />
                 </button>
@@ -616,7 +623,7 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
                       className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
                       onSelect={() => insertMarkdown(action)}>
                       <Icon size={14} strokeWidth={1.8} />
-                      {label}
+                      {t(label)}
                     </DropdownMenu.Item>
                   ))}
                 </DropdownMenu.Content>
@@ -627,17 +634,16 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
           {emojiOpen && (
             <div
               role="group"
-              aria-label="Common emoji"
+              aria-label={t("Common emoji")}
               className="flex min-h-9 shrink-0 items-center gap-1 overflow-x-auto border-b border-border/60 bg-muted/30 px-3 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <span className="mr-1 shrink-0 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                Insert
-              </span>
+                {t("Insert")}</span>
               {commonEmojis.map((emoji) => (
                 <button
                   key={emoji}
                   type="button"
-                  title={`Insert ${emoji}`}
-                  aria-label={`Insert ${emoji}`}
+                  title={t("Insert {0}", [emoji])}
+                  aria-label={t("Insert {0}", [emoji])}
                   className="flex h-7 w-8 shrink-0 items-center justify-center rounded-md text-base transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => insertEmoji(emoji)}>
@@ -650,7 +656,7 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
       ) : (
         <div
           role="toolbar"
-          aria-label="Editor actions"
+          aria-label={t("Editor actions")}
           className="flex min-h-9 shrink-0 items-center px-3 py-1">
           <div className="flex h-7 min-w-0 items-center text-xs text-muted-foreground">
             <span className="truncate" title={decodeURIComponent(fileName)}>
@@ -662,7 +668,7 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
       )}
       <div
         ref={containerRef}
-        aria-label={isMarkdown ? "Markdown editor" : "Code editor"}
+        aria-label={isMarkdown ? t("Markdown editor") : t("Code editor")}
         className="flex-1 min-h-0 pt-2 text-sm [&_.cm-editor]:h-full [&_.cm-editor]:outline-none [&_.cm-editor]:!bg-transparent [&_.cm-scroller]:overflow-auto [&_.cm-scroller]:!bg-transparent"
       />
     </div>

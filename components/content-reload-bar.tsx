@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import { Check, ChevronDown, RefreshCw, Trash2 } from "lucide-react"
 import React from "react"
@@ -34,13 +35,13 @@ export function ContentReloadBar({
   // Matches the Review panel: an agent Review clears only unsent drafts.
   const canClear = agentReviewFile ? hasReviewDrafts(review, agentReviewFile) : !!review
   return (
-    <div aria-label="Document changes" className={`pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-2 rounded-xl border bg-background px-2 py-2 text-[13px] text-foreground shadow-sm${diskChanged ? " reload-notice-enter" : ""}`}>
+    <div aria-label={t("Document changes")} className={`pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-2 rounded-xl border bg-background px-2 py-2 text-[13px] text-foreground shadow-sm${diskChanged ? " reload-notice-enter" : ""}`}>
       {diskChanged ? (
         <>
-          <span role="status" className="px-1">File changed on disk</span>
+          <span role="status" className="px-1">{t("File changed on disk")}</span>
           <Button size="sm" className="h-8 text-[13px]" onClick={requestReloadFromDisk} disabled={disabled || reloadLoading}>
             {reloadLoading && <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />}
-            {reloadLoading ? "Reloading…" : "Reload"}
+            {reloadLoading ? t("Reloading…") : t("Reload")}
           </Button>
         </>
       ) : hasReloadChanges ? (
@@ -51,7 +52,7 @@ export function ContentReloadBar({
                 ? "border-transparent bg-secondary text-secondary-foreground"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             }`}
-            title="Show text added and removed since the last reload. Added text is green, removed text is struck through in red.">
+            title={t("Show text added and removed since the last reload. Added text is green, removed text is struck through in red.")}>
             <input
               type="checkbox"
               className="h-3.5 w-3.5 cursor-pointer"
@@ -62,18 +63,16 @@ export function ContentReloadBar({
                 if (event.target.checked && !previewVisible) selectMode("preview")
               }}
             />
-            Show changes
-          </label>
+            {t("Show changes")}</label>
           <div className="flex items-center overflow-hidden rounded-md border">
             <Button
               type="button"
               variant="ghost"
               className="h-7 gap-1.5 rounded-none px-2 text-xs"
-              title="Done reviewing the changes"
+              title={t("Done reviewing the changes")}
               onClick={dismissReloadChanges}>
               <Check size={14} />
-              Done
-            </Button>
+              {t("Done")}</Button>
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild>
                 <Button
@@ -81,7 +80,7 @@ export function ContentReloadBar({
                   variant="ghost"
                   size="icon"
                   className="h-7 w-6 rounded-none border-l"
-                  aria-label="Done options">
+                  aria-label={t("Done options")}>
                   <ChevronDown size={14} />
                 </Button>
               </DropdownMenu.Trigger>
@@ -95,8 +94,7 @@ export function ContentReloadBar({
                     className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
                     onSelect={dismissReloadChanges}>
                     <Check size={14} />
-                    Done
-                  </DropdownMenu.Item>
+                    {t("Done")}</DropdownMenu.Item>
                   {canClear && (
                     <DropdownMenu.Item
                       className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
@@ -105,7 +103,7 @@ export function ContentReloadBar({
                         dismissReloadChanges()
                       }}>
                       <Trash2 size={14} />
-                      {agentReviewFile ? "Done and clear drafts" : "Done and clear comments"}
+                      {agentReviewFile ? t("Done and clear drafts") : t("Done and clear comments")}
                     </DropdownMenu.Item>
                   )}
                 </DropdownMenu.Content>
@@ -114,9 +112,9 @@ export function ContentReloadBar({
           </div>
         </div>
       ) : reloadLoading ? (
-        <span role="status" className="text-xs text-muted-foreground">Reloading…</span>
+        <span role="status" className="text-xs text-muted-foreground">{t("Reloading…")}</span>
       ) : reloadNoticeOpen ? (
-        <span role="status" className="text-xs text-muted-foreground">{reloadComparison ? "No changes on disk" : "Reloaded from disk"}</span>
+        <span role="status" className="text-xs text-muted-foreground">{reloadComparison ? t("No changes on disk") : t("Reloaded from disk")}</span>
       ) : null}
     </div>
   )

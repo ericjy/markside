@@ -34,6 +34,7 @@ export function MarkdownRenderer({ content }: Props) {
   return (
     <div
       ref={ref}
+      lang=""
       className="prose prose-neutral dark:prose-invert mx-auto max-w-3xl px-8 py-6"
     />
   )

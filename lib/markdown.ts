@@ -14,6 +14,7 @@ import {
   WRAP_ICON,
 } from "./code-block"
 import { htmlEmbedQuote, isHtmlEmbedPath } from "./html-embed"
+import { getInterfaceLanguage, t } from "./i18n"
 
 export const md = new MarkdownIt({
   html: true,
@@ -54,7 +55,19 @@ export function addDefaultDetailsSummaries(root: ParentNode) {
     if (hasSummary) return
 
     const summary = details.ownerDocument.createElement("summary")
-    summary.textContent = "Details"
+    if (getInterfaceLanguage() === "en") summary.textContent = "Details"
+    else {
+      const label = details.ownerDocument.createElement("span")
+      label.className = "markside-localized-label"
+      label.lang = getInterfaceLanguage()
+      label.setAttribute("role", "img")
+      label.setAttribute("aria-label", t("Details"))
+      label.dataset.marksideLabel = t("Details")
+      const original = details.ownerDocument.createElement("span")
+      original.textContent = "Details"
+      label.append(original)
+      summary.append(label)
+    }
     details.prepend(summary)
   })
 }
@@ -83,10 +96,11 @@ md.renderer.rules.fence = (tokens, idx, options, env, self) => {
   const label = md.utils.escapeHtml(getCodeBlockLanguageLabel(language))
   const sourceAttr = sourceLine ? ` data-source-line="${sourceLine}"` : ""
   const wrapped = getCodeBlockWrapPreference()
-  const wrapLabel = wrapped ? "Don't wrap lines" : "Wrap lines"
+  const wrapLabel = md.utils.escapeHtml(wrapped ? t("Don't wrap lines") : t("Wrap lines"))
+  const copyLabel = md.utils.escapeHtml(t("Copy code"))
   const classes = `code-block${label ? "" : " code-block-plain"}${wrapped ? " code-block-wrapped" : ""}`
 
-  return `<div class="${classes}"${sourceAttr}><div class="code-block-header"><span class="code-block-lang">${label}</span><div class="code-block-actions"><button type="button" class="code-block-wrap" aria-label="${wrapLabel}" title="${wrapLabel}" aria-pressed="${wrapped}" disabled>${WRAP_ICON}</button><button type="button" class="code-block-copy" aria-label="Copy code" title="Copy code" disabled>${COPY_ICON}</button></div></div>${fence}</div>`
+  return `<div class="${classes}"${sourceAttr}><div class="code-block-header"><span class="code-block-lang">${label}</span><div class="code-block-actions"><button type="button" class="code-block-wrap" aria-label="${wrapLabel}" title="${wrapLabel}" aria-pressed="${wrapped}" disabled>${WRAP_ICON}</button><button type="button" class="code-block-copy" aria-label="${copyLabel}" title="${copyLabel}" disabled>${COPY_ICON}</button></div></div>${fence}</div>`
 }
 
 // Display math: `$$` opens a block that ends at the first line ending in `$$`.
@@ -403,11 +417,21 @@ function markQuestionAnswers(state: StateCore, open: number, close: number) {
   if (recommendation && options.has(recommendation.value)) {
     tokens[open].attrSet("data-question-recommended", recommendation.value)
     tokens[options.get(recommendation.value)!].attrJoin("class", "question-option-recommended")
+    tokens[options.get(recommendation.value)!].attrSet("data-markside-recommended", t("Recommended"))
     tokens[recommendation.index - 1].attrJoin("class", "question-recommendation")
     const children = tokens[recommendation.index].children!
     const label = children[children.findIndex((child) => child.type === "strong_open") + 1]
     if (label?.type === "text") {
-      label.content = label.content.replace(/^Recommended:\s*[A-Z]\b\.?/i, `Why ${recommendation.value}?`)
+      const prefix = /^Recommended:\s*[A-Z]\b\.?/i
+      const replaced = prefix.test(label.content)
+      label.content = label.content.replace(prefix, `Why ${recommendation.value}?`)
+      if (replaced && getInterfaceLanguage() !== "en") {
+        const original = `Why ${recommendation.value}?`
+        const translated = md.utils.escapeHtml(t("Why {0}?", [recommendation.value]))
+        const remainder = label.content.slice(original.length)
+        label.type = "html_inline"
+        label.content = `<span class="markside-localized-label" role="img" lang="${getInterfaceLanguage()}" aria-label="${translated}" data-markside-label="${translated}"><span>${md.utils.escapeHtml(original)}</span></span>${md.utils.escapeHtml(remainder)}`
+      }
     }
   }
   splitOptionLists(state, open, close)
@@ -551,12 +575,15 @@ export function mountQuestionCard(card: HTMLElement): QuestionCard | null {
   }
   const footerMount = card.ownerDocument.createElement("div")
   footerMount.className = "question-card-actions question-card-footer"
+  footerMount.lang = getInterfaceLanguage()
   card.after(footerMount)
   const mount = card.ownerDocument.createElement("div")
   mount.className = "question-card-actions question-card-shortcuts"
+  mount.lang = getInterfaceLanguage()
   card.append(mount)
   const composeMount = card.ownerDocument.createElement("div")
   composeMount.className = "question-card-actions question-card-compose"
+  composeMount.lang = getInterfaceLanguage()
   const list = options[0]?.element.closest("ul")
   const archivedAnswer = card.classList.contains("question-card-archived") ? card.dataset.questionAnswer ?? "" : undefined
   if (archivedAnswer !== undefined) card.append(composeMount)
@@ -569,11 +596,15 @@ md.renderer.rules.markdown_alert_open = (tokens, idx, _options, _env, self) => {
   const title = md.utils.escapeHtml(tokens[idx].meta.title)
   const type = tokens[idx].meta.type
   const icon = `<svg class="markdown-alert-icon" aria-hidden="true" data-alert-icon="${type}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${MARKDOWN_ALERT_ICONS[type]}</svg>`
-  return `${self.renderToken(tokens, idx, _options)}<p class="markdown-alert-title">${icon}${title}</p>\n`
+  const label = getInterfaceLanguage() === "en" ? title :
+    `<span class="markside-localized-label" role="img" lang="${getInterfaceLanguage()}" aria-label="${md.utils.escapeHtml(t(tokens[idx].meta.title))}" data-markside-label="${md.utils.escapeHtml(t(tokens[idx].meta.title))}"><span>${title}</span></span>`
+  return `${self.renderToken(tokens, idx, _options)}<p class="markdown-alert-title">${icon}${label}</p>\n`
 }
 
-md.renderer.rules.question_body_open = (tokens, idx, options, _env, self) =>
-  `${self.renderToken(tokens, idx, options)}<summary aria-label="Full question"><span aria-hidden="true">Full question</span></summary>\n`
+md.renderer.rules.question_body_open = (tokens, idx, options, _env, self) => {
+  const label = md.utils.escapeHtml(t("Full question"))
+  return `${self.renderToken(tokens, idx, options)}<summary aria-label="${label}"><span aria-hidden="true">${label}</span></summary>\n`
+}
 
 md.renderer.rules.question_comparison_open = (tokens, idx, options, _env, self) =>
   `${self.renderToken(tokens, idx, options)}<summary class="question-comparison-summary">\n`

@@ -1,3 +1,4 @@
+import { t, tRich } from "~lib/i18n"
 import React,{ useEffect,useRef,useState } from "react"
 
 import { ContentDialogs } from "~components/content-dialogs"
@@ -228,13 +229,13 @@ export function FileRenderer({
     try {
       chrome.runtime.sendMessage({ type: "navigate-file", url }, (response) => {
         if (chrome.runtime.lastError) {
-          setError("Chrome blocked navigation to the selected local file.")
+          setError(t("Chrome blocked navigation to the selected local file."))
           return
         }
         if (response?.error) setError(response.error)
       })
     } catch {
-      setError("Reload the page to reconnect Markside.")
+      setError(t("Reload the page to reconnect Markside."))
     }
   }
 
@@ -391,7 +392,7 @@ export function FileRenderer({
     if (review && getReviewItemCount(review) > 0) {
       const persisted = await waitForReviewPersistence()
       if (!persisted) {
-        if (!window.confirm("This Review has not been saved. Leave this file and discard the in-memory Review?")) return
+        if (!window.confirm(t("This Review has not been saved. Leave this file and discard the in-memory Review?"))) return
         discardUnpersistedReview()
       }
     }
@@ -530,7 +531,7 @@ export function FileRenderer({
   const reviewNotice = agentHandoff?.error
     ? { kind: "error" as const, message: agentHandoff.error }
     : addressedReviewCount > 0
-      ? { kind: "reply" as const, message: `${addressedReviewCount} ${addressedReviewCount === 1 ? "reply" : "replies"} to review` }
+      ? { kind: "reply" as const, message: t(addressedReviewCount === 1 ? "{0} reply to review" : "{0} replies to review", [addressedReviewCount]) }
       : undefined
   const reviewIndexReady = isMdFile && reviewLoaded && agentReviewLoadedUrl === fileUrl
   useEffect(() => {
@@ -844,12 +845,11 @@ export function FileRenderer({
       {/* Leaves room above the document so a revealed toolbar doesn't crowd it. */}
       {zenMode && <div className="h-5 shrink-0" />}
         {suggestMarkdown && content !== null && !error && (
-          <div role="region" aria-label="Markdown file suggestion" className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b bg-muted/40 px-4 py-2 text-sm print:hidden">
-            <span>This file ends in .md.txt. Open it as Markdown? The filename will stay the same.</span>
+          <div role="region" aria-label={t("Markdown file suggestion")} className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b bg-muted/40 px-4 py-2 text-sm print:hidden">
+            <span>{t("This file ends in .md.txt. Open it as Markdown? The filename will stay the same.")}</span>
             <div className="flex shrink-0 items-center gap-2">
               <button type="button" className="rounded border px-2.5 py-1 text-xs font-medium hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" onClick={() => chooseMarkdownText(false)}>
-                Keep as text
-              </button>
+                {t("Keep as text")}</button>
               <button type="button" className="rounded bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" onClick={() => {
                 cancelPreviewUpdate()
                 pendingDraftSyncRef.current = false
@@ -857,27 +857,22 @@ export function FileRenderer({
                 setMode("preview")
                 chooseMarkdownText(true)
               }}>
-                Open as Markdown
-              </button>
+                {t("Open as Markdown")}</button>
             </div>
           </div>
         )}
         {conflict && (
           <div className="shrink-0 flex items-center justify-between gap-3 px-4 py-2 bg-amber-50 dark:bg-amber-950 border-b border-amber-200 dark:border-amber-800 text-xs">
-            <span className="text-amber-800 dark:text-amber-200">
-              <strong className="font-medium">File was modified externally.</strong> Your unsaved changes conflict with the version on disk.
-            </span>
+            <span className="text-amber-800 dark:text-amber-200">{tRich("{0} Your unsaved changes conflict with the version on disk.", <strong className="font-medium">{t("File was modified externally.")}</strong>)}</span>
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => void doSave(draftRef.current, fileUrl, { force: true })}
                 className="px-2.5 py-1 rounded border border-amber-400 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900 transition-colors font-medium">
-                Overwrite
-              </button>
+                {t("Overwrite")}</button>
               <button
                 onClick={() => void reload.handleReloadFromDisk()}
                 className="px-2.5 py-1 rounded border border-amber-400 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900 transition-colors font-medium">
-                Reload from disk
-              </button>
+                {t("Reload from disk")}</button>
             </div>
           </div>
         )}

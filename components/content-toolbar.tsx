@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import {
   BookOpen,
@@ -156,12 +157,12 @@ export function ContentToolbar({
             {/* Zen mode keeps the file tree hidden, so its toggle becomes the way out. */}
             {zenMode ? (
               <Button variant="ghost" size="icon" className="-ml-1 h-7 w-7" onClick={() => setZenMode(false)}
-                aria-label="Exit Zen mode" title={`Exit Zen mode (${ZEN_MODE_SHORTCUT})`}>
+                aria-label={t("Exit Zen mode")} title={t("Exit Zen mode ({0})", [ZEN_MODE_SHORTCUT])}>
                 <Minimize2 size={16} />
               </Button>
             ) : (
               <SidebarTrigger className={`-ml-1 ${leftOpen ? "bg-accent" : ""}`}
-                aria-label={leftOpen ? "Hide file tree" : "Show file tree"} title={leftOpen ? "Hide file tree" : "Show file tree"} />
+                aria-label={leftOpen ? t("Hide file tree") : t("Show file tree")} title={leftOpen ? t("Hide file tree") : t("Show file tree")} />
             )}
             <Separator orientation="vertical" className="mr-2 h-4" />
           </>
@@ -209,12 +210,12 @@ export function ContentToolbar({
                         })
                       }}
                       className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                      aria-label={copied ? "File path copied" : "Copy file path"}>
+                      aria-label={copied ? t("File path copied") : t("Copy file path")}>
                       {copied ? <Check size={14} /> : <Copy size={14} />}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" sideOffset={8} className="text-xs">
-                    {copied ? "File path copied" : "Copy file path"}
+                    {copied ? t("File path copied") : t("Copy file path")}
                   </TooltipContent>
                 </Tooltip>
                 {!isAddressBarSynced && (
@@ -226,7 +227,7 @@ export function ContentToolbar({
                         size="icon"
                         onClick={() => navigateTabToFile(fileUrl)}
                         className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                        aria-label={`Sync URL to ${currentFileName}`}>
+                        aria-label={t("Sync URL to {0}", [currentFileName])}>
                         <Link2 size={14} />
                       </Button>
                     </TooltipTrigger>
@@ -239,7 +240,7 @@ export function ContentToolbar({
                         whiteSpace: "normal",
                       }}
                       className="text-xs leading-relaxed">
-                      Update the address bar from {addressBarFileName} to {currentFileName}
+                      {t("Update the address bar from ")}{addressBarFileName} {t(" to ")}{currentFileName}
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -256,13 +257,11 @@ export function ContentToolbar({
                     className="h-1.5 w-1.5 rounded-full bg-amber-500"
                     aria-hidden="true"
                   />
-                  Unsaved
-                </span>
+                  {t("Unsaved")}</span>
               )}
               {saveState === "error" && (
                 <span className="text-xs font-medium text-red-600 dark:text-red-400">
-                  Save failed
-                </span>
+                  {t("Save failed")}</span>
               )}
               <button
                 type="button"
@@ -281,12 +280,12 @@ export function ContentToolbar({
                         : "border-zinc-900 bg-zinc-900 text-white hover:bg-zinc-800 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200"
                 }`}>
                 {saveState === "saving"
-                  ? "Saving…"
+                  ? t("Saving…")
                   : saveState === "saved"
-                    ? <><Check size={12} />Saved</>
+                    ? <><Check size={12} />{t("Saved")}</>
                     : saveState === "error"
-                      ? "Retry"
-                      : "Save"}
+                      ? t("Retry")
+                      : t("Save")}
               </button>
             </div>
           )}
@@ -297,16 +296,16 @@ export function ContentToolbar({
             onClick={requestReloadFromDisk}
             disabled={reloadLoading || content === null || saveState === "saving"}
             className="h-8 shrink-0 gap-1.5 px-2 text-xs"
-            title={diskChanged ? "This file changed on disk. Reload to see the changes." : "Reload current file from disk"}
-            aria-label="Reload from disk">
+            title={diskChanged ? t("This file changed on disk. Reload to see the changes.") : t("Reload current file from disk")}
+            aria-label={t("Reload from disk")}>
             <RefreshCw size={14} className={reloadLoading ? "animate-spin" : ""} />
-            {reloadLoading ? "Reloading…" : "Reload"}
+            {reloadLoading ? t("Reloading…") : t("Reload")}
           </Button>
 
           {isMdFile && (
             <div
               role="group"
-              aria-label="Markdown display mode"
+              aria-label={t("Markdown display mode")}
               className="flex items-center overflow-hidden rounded-md border text-xs font-medium">
               {([
                 ["preview", "Preview", Eye],
@@ -317,8 +316,8 @@ export function ContentToolbar({
                   key={nextMode}
                   type="button"
                   onClick={() => selectMode(nextMode)}
-                  title={label}
-                  aria-label={`${label} mode`}
+                  title={t(label)}
+                  aria-label={t("{0} mode", [t(label)])}
                   aria-pressed={mode === nextMode}
                   className={`flex items-center gap-1.5 px-2.5 py-1 transition-colors ${
                     index > 0 ? "border-l" : ""
@@ -328,7 +327,7 @@ export function ContentToolbar({
                       : "hover:bg-accent/50"
                   }`}>
                   <Icon size={13} strokeWidth={1.8} />
-                  <span className="hidden lg:inline">{label}</span>
+                  <span className="hidden lg:inline">{t(label)}</span>
                 </button>
               ))}
             </div>
@@ -348,7 +347,7 @@ export function ContentToolbar({
               )
             }}
             className="h-7 w-7"
-            aria-label="Toggle theme">
+            aria-label={t("Toggle theme")}>
             {dark ? <Sun size={14} /> : <Moon size={14} />}
           </Button>
           {isMdFile && (
@@ -365,13 +364,13 @@ export function ContentToolbar({
                 }
               }}
               className={`relative h-7 w-7 ${reviewOverlayOpen ? "bg-accent" : ""}`}
-              aria-label={reviewNotice ? `Toggle Review, ${reviewNotice.message}` : reviewItemCount > 0
-                ? `Toggle Review, ${reviewItemCount} ${reviewItemCount === 1 ? "item" : "items"}`
-                : "Toggle Review"}
+              aria-label={reviewNotice ? t("Toggle Review, {0}", [t(reviewNotice.message)]) : reviewItemCount > 0
+                ? t("Toggle Review, {0} {1}", [reviewItemCount, reviewItemCount === 1 ? t("item") : t("items")])
+                : t("Toggle Review")}
               aria-pressed={reviewOverlayOpen}
               aria-expanded={reviewOverlayOpen}
               aria-controls="markside-review-overlay"
-              title={reviewNotice ? `Review: ${reviewNotice.message}` : "Review"}>
+              title={reviewNotice ? t("Review: {0}", [t(reviewNotice.message)]) : t("Review")}>
               <MessageSquare size={16} />
               {(reviewItemCount > 0 || reviewNotice) && (
                 <span
@@ -380,7 +379,7 @@ export function ContentToolbar({
                   {reviewNotice?.kind === "error" ? "!" : reviewItemCount > 99 ? "99+" : reviewItemCount || "•"}
                 </span>
               )}
-              {!reviewOverlayOpen && <span role="status" className="sr-only">{reviewNotice?.message}</span>}
+              {!reviewOverlayOpen && <span role="status" className="sr-only">{reviewNotice && t(reviewNotice.message)}</span>}
             </Button>
           )}
           <Button
@@ -388,7 +387,7 @@ export function ContentToolbar({
             size="icon"
             onClick={() => chooseOutlineOpen(!outlineOpen)}
             className={`h-7 w-7 ${outlineOpen ? "bg-accent" : ""}`}
-            aria-label="Toggle outline"
+            aria-label={t("Toggle outline")}
             aria-pressed={outlineOpen}>
             <TableOfContents size={16} />
           </Button>
@@ -400,7 +399,7 @@ export function ContentToolbar({
               disabled={content === null}
               onClick={requestLinkSnapshot}
               className="h-7 w-7"
-              aria-label="Create Share Link">
+              aria-label={t("Create Share Link")}>
               <Share2 size={14} />
             </Button>
           )}
@@ -412,8 +411,8 @@ export function ContentToolbar({
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7"
-                aria-label="File actions"
-                title="File actions">
+                aria-label={t("File actions")}
+                title={t("File actions")}>
                 <MoreHorizontal size={16} />
               </Button>
             </DropdownMenu.Trigger>
@@ -436,21 +435,20 @@ export function ContentToolbar({
                   <DropdownMenu.Sub>
                     <DropdownMenu.SubTrigger className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent">
                       <Type size={14} className="mr-2 w-3.5 shrink-0" />
-                      Typeface
-                      <span className="ml-auto pl-4 text-xs text-muted-foreground">{TYPEFACES[typeface].label}</span>
+                      {t("Typeface")}<span className="ml-auto pl-4 text-xs text-muted-foreground">{t(TYPEFACES[typeface].label)}</span>
                       <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
                     </DropdownMenu.SubTrigger>
                     <DropdownMenu.Portal>
                       <DropdownMenu.SubContent sideOffset={4} alignOffset={-4}
                         style={{ minWidth: "10rem", zIndex: 100000 }}
                         className="rounded-md border bg-background p-1 text-foreground shadow-md">
-                        <DropdownMenu.RadioGroup value={typeface} aria-label="Typeface"
+                        <DropdownMenu.RadioGroup value={typeface} aria-label={t("Typeface")}
                           onValueChange={(value) => void setTypeface(value as Typeface).catch(() => undefined)}>
                           {(Object.keys(TYPEFACES) as Typeface[]).map(id => (
                             <DropdownMenu.RadioItem key={id} value={id}
                               style={{ fontFamily: TYPEFACES[id].stack }}
                               className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent">
-                              {TYPEFACES[id].label}
+                              {t(TYPEFACES[id].label)}
                               <span className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center">
                                 <DropdownMenu.ItemIndicator><Check size={13} strokeWidth={2.5} /></DropdownMenu.ItemIndicator>
                               </span>
@@ -465,9 +463,8 @@ export function ContentToolbar({
                   <DropdownMenu.Sub>
                     <DropdownMenu.SubTrigger className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent">
                       <MoveHorizontal size={14} className="mr-2 w-3.5 shrink-0" />
-                      Page width
-                      <span className="ml-auto pl-4 text-xs text-muted-foreground">
-                        {previewWidth === "standard" ? "Standard" : previewWidth === "extended" ? "Extended" : "Full width"}
+                      {t("Page width")}<span className="ml-auto pl-4 text-xs text-muted-foreground">
+                        {previewWidth === "standard" ? t("Standard") : previewWidth === "extended" ? t("Extended") : t("Full width")}
                       </span>
                       <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
                     </DropdownMenu.SubTrigger>
@@ -475,7 +472,7 @@ export function ContentToolbar({
                       <DropdownMenu.SubContent sideOffset={4} alignOffset={-4}
                         style={{ minWidth: "10rem", zIndex: 100000 }}
                         className="rounded-md border bg-background p-1 text-foreground shadow-md">
-                        <DropdownMenu.RadioGroup value={previewWidth} aria-label="Page width"
+                        <DropdownMenu.RadioGroup value={previewWidth} aria-label={t("Page width")}
                           onValueChange={(value) => {
                             const width = value as PreviewWidth
                             setPreviewWidth(width)
@@ -488,7 +485,7 @@ export function ContentToolbar({
                           ] as const).map(([width, label]) => (
                             <DropdownMenu.RadioItem key={width} value={width}
                               className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent">
-                              {label}
+                              {t(label)}
                               <span className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center">
                                 <DropdownMenu.ItemIndicator><Check size={13} strokeWidth={2.5} /></DropdownMenu.ItemIndicator>
                               </span>
@@ -501,16 +498,15 @@ export function ContentToolbar({
                 )}
                 {isMdFile && previewVisible && (
                   <DropdownMenu.CheckboxItem checked={numberHeadings} disabled={headingsAlreadyNumbered}
-                    title={headingsAlreadyNumbered ? "This document numbers its own headings." : undefined}
+                    title={headingsAlreadyNumbered ? t("This document numbers its own headings.") : undefined}
                     onCheckedChange={(checked) => {
                       setNumberHeadings(checked)
                       void chrome.storage.local.set({ numberHeadings: checked })
                     }}
                     className="group flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[disabled]:cursor-default data-[disabled]:text-muted-foreground">
                     <span aria-hidden="true" className="mr-2 w-3.5 shrink-0 text-center font-mono text-[10px] font-medium leading-none">1.2</span>
-                    Number headings
-                    {headingsAlreadyNumbered
-                      ? <span className="ml-auto pl-4 text-xs">Already numbered</span>
+                    {t("Number headings")}{headingsAlreadyNumbered
+                      ? <span className="ml-auto pl-4 text-xs">{t("Already numbered")}</span>
                       : <span className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border border-muted-foreground/50 transition-colors group-data-[state=checked]:border-foreground group-data-[state=checked]:bg-foreground group-data-[state=checked]:text-background">
                           <DropdownMenu.ItemIndicator><Check size={11} strokeWidth={3} /></DropdownMenu.ItemIndicator>
                         </span>}
@@ -524,8 +520,7 @@ export function ContentToolbar({
                     }}
                     className="group flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent">
                     <BookOpen size={14} aria-hidden="true" className="mr-2 w-3.5 shrink-0" />
-                    Show readability buttons
-                    <span className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border border-muted-foreground/50 transition-colors group-data-[state=checked]:border-foreground group-data-[state=checked]:bg-foreground group-data-[state=checked]:text-background">
+                    {t("Show readability buttons")}<span className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border border-muted-foreground/50 transition-colors group-data-[state=checked]:border-foreground group-data-[state=checked]:bg-foreground group-data-[state=checked]:text-background">
                       <DropdownMenu.ItemIndicator><Check size={11} strokeWidth={3} /></DropdownMenu.ItemIndicator>
                     </span>
                   </DropdownMenu.CheckboxItem>
@@ -534,7 +529,7 @@ export function ContentToolbar({
                   className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
                   onSelect={() => setZenMode(!zenMode)}>
                   {zenMode ? <Minimize2 size={14} className="mr-2 shrink-0" /> : <Maximize2 size={14} className="mr-2 shrink-0" />}
-                  {zenMode ? "Exit Zen mode" : "Zen mode"}
+                  {zenMode ? t("Exit Zen mode") : t("Zen mode")}
                   <kbd className="ml-auto pl-4 font-mono text-xs text-muted-foreground">{ZEN_MODE_SHORTCUT}</kbd>
                 </DropdownMenu.Item>
                 {isMdFile && previewVisible && content !== null && (
@@ -542,16 +537,14 @@ export function ContentToolbar({
                     className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
                     onSelect={() => void copyRenderedPreview()}>
                     <Copy size={14} className="mr-2 shrink-0" />
-                    Copy rendered content
-                  </DropdownMenu.Item>
+                    {t("Copy rendered content")}</DropdownMenu.Item>
                 )}
                 {isPdfExportable && (
                   <DropdownMenu.Item
                     className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
                     onSelect={requestPdfExport}>
                     <Printer size={14} className="mr-2 shrink-0" />
-                    Print or save as PDF
-                  </DropdownMenu.Item>
+                    {t("Print or save as PDF")}</DropdownMenu.Item>
                 )}
               </DropdownMenu.Content>
             </DropdownMenu.Portal>

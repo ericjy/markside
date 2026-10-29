@@ -78,6 +78,9 @@
     "vitest": "^4.1.4"
   },
   "manifest": {
+    "name": "__MSG_extensionName__",
+    "description": "__MSG_extensionDescription__",
+    "default_locale": "en",
     "permissions": [
       "storage",
       "activeTab"

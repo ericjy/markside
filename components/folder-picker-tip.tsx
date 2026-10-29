@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import { Check } from "lucide-react"
 import React from "react"
 
@@ -12,14 +13,14 @@ export function FolderPickerTip({ copied, className }: { copied: boolean; classN
       <span className={copied ? "text-emerald-800 dark:text-emerald-300" : undefined}>
         <span role="status" className={copied ? "font-semibold" : undefined}>
           {copied
-            ? <><Check className="inline h-4 w-4 align-[-3px]" aria-hidden="true" /> Folder path copied.</>
-            : "Choose folder copies its path."}
+            ? <><Check className="inline h-4 w-4 align-[-3px]" aria-hidden="true" /> {t(" Folder path copied.")}</>
+            : t("Choose folder copies its path.")}
         </span>{" "}
-        {copied ? "To jump right to it" : "To jump to it"} in the picker, press{" "}
+        {copied ? t("To jump right to it") : t("To jump to it")} {t(" in the picker, press")}{" "}
         <span className="whitespace-nowrap">
           {keys.map((key, index) => (
             <React.Fragment key={key}>
-              {index > 0 && <><span className="mx-1 opacity-60" aria-hidden="true">→</span><span className="sr-only">then</span></>}
+              {index > 0 && <><span className="mx-1 opacity-60" aria-hidden="true">→</span><span className="sr-only">{t("then")}</span></>}
               <kbd
                 className={cn(
                   "rounded border px-1 font-mono text-[0.9em]",

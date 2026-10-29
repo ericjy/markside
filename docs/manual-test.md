@@ -19,6 +19,12 @@ pull request or review response.
 
 ## Read and change modes
 
+- [ ] In each supported browser interface language, check the popup, Settings,
+  New Draft, file modes, file-access guidance, Review and its preset search,
+  errors, diagram controls, CodeMirror search, keyboard labels, and narrow
+  layouts. Check that filenames, Markdown, Review content and agent instructions
+  stay unchanged. With an unsupported language, check the English fallback.
+
 - [ ] Open a local `.md` file in Chrome. With fresh preferences, it opens in
   Preview. Check headings, code highlighting, diagrams, math, links, and images.
 - [ ] Switch between Preview, Source, and Split. An edit survives mode changes;

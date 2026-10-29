@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import React,{ useEffect,useMemo,useRef,useState } from "react"
 import {
   extractReadabilitySections,
@@ -123,8 +124,8 @@ export function useContentReadability({
     ) ?? null
 
   const runReadabilityCheck = async (section: ReadabilitySection) => {
-    if (!consentRef.current) throw new Error("Confirm before sending this section")
-    if (new TextEncoder().encode(section.source).length > READABILITY_SOURCE_LIMIT_BYTES) throw new Error("This section is too long to check (limit is about 3,000 words). Nested subsections count, so try a heading with fewer subsections.")
+    if (!consentRef.current) throw new Error(t("Confirm before sending this section"))
+    if (new TextEncoder().encode(section.source).length > READABILITY_SOURCE_LIMIT_BYTES) throw new Error(t("This section is too long to check (limit is about 3,000 words). Nested subsections count, so try a heading with fewer subsections."))
     const checkedFileUrl = fileUrl
     const previous = matchingReadabilityResult(section)?.result
     const scores = await checkReadability(section.source)
@@ -145,7 +146,7 @@ export function useContentReadability({
   }
 
   const runReadabilityLocate = async (section: ReadabilitySection, result: ReadabilityResult, dimensions: ReadabilityDimension[]) => {
-    if (!consentRef.current) throw new Error("Confirm before sending this section")
+    if (!consentRef.current) throw new Error(t("Confirm before sending this section"))
     const locatedFileUrl = fileUrl
     const findings = await locateReadability(section.source, dimensions)
     if (fileUrlRef.current !== locatedFileUrl) return

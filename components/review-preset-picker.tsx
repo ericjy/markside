@@ -1,8 +1,10 @@
+import { t, tPresetChip } from "~lib/i18n"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import { useEffect, useRef, useState, type ReactElement } from "react"
 
 import {
   REVIEW_PRESET_GROUPS,
+  REVIEW_PRESETS,
   searchReviewPresets,
   type ReviewPreset,
   type ReviewPresetGroup,
@@ -33,7 +35,12 @@ export function ReviewPresetPicker({
   const [query, setQuery] = useState("")
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
-  const matches = searchReviewPresets(query)
+  const englishMatches = searchReviewPresets(query)
+  const normalizedQuery = query.trim().toLocaleLowerCase()
+  const matches = normalizedQuery
+    ? [...englishMatches, ...REVIEW_PRESETS.filter((preset) => !englishMatches.includes(preset) &&
+      `${tPresetChip(preset.chip)} ${t(preset.name)}`.toLocaleLowerCase().includes(normalizedQuery))]
+    : englishMatches
 
   useEffect(() => setActiveIndex(0), [query])
 
@@ -67,7 +74,7 @@ export function ReviewPresetPicker({
           className="review-overlay w-[22rem] max-w-[calc(100vw-24px)] rounded-md border p-1 text-foreground shadow-md">
           <input
             ref={inputRef}
-            aria-label="Search presets"
+            aria-label={t("Search presets")}
             aria-activedescendant={matches[activeIndex] ? `review-preset-${matches[activeIndex].id}` : undefined}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -87,12 +94,12 @@ export function ReviewPresetPicker({
                 selectPreset(matches[activeIndex])
               }
             }}
-            placeholder="Search presets…"
+            placeholder={t("Search presets…")}
             className="review-input h-10 w-full border-b bg-transparent px-3 text-sm outline-none placeholder:text-muted-foreground"
           />
           <div className="max-h-80 overflow-y-auto p-1">
             {matches.length === 0 && (
-              <p className="px-3 py-6 text-center text-xs text-muted-foreground">No presets found.</p>
+              <p className="px-3 py-6 text-center text-xs text-muted-foreground">{t("No presets found.")}</p>
             )}
             {REVIEW_PRESET_GROUPS.map((group) => {
               const presets = matches.filter((preset) => preset.group === group)
@@ -100,7 +107,7 @@ export function ReviewPresetPicker({
               return (
                 <DropdownMenu.Group key={group}>
                   <DropdownMenu.Label className="px-2 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    {GROUP_LABELS[group]}
+                    {t(GROUP_LABELS[group])}
                   </DropdownMenu.Label>
                   {presets.map((preset) => {
                     const index = matches.indexOf(preset)
@@ -108,14 +115,14 @@ export function ReviewPresetPicker({
                       <DropdownMenu.Item
                         id={`review-preset-${preset.id}`}
                         key={preset.id}
-                        aria-label={`${preset.chip}: ${preset.name}`}
+                        aria-label={`${tPresetChip(preset.chip)}: ${t(preset.name)}`}
                         onPointerMove={() => setActiveIndex(index)}
                         onSelect={() => selectPreset(preset)}
                         className={index === activeIndex
                           ? "flex cursor-pointer select-none items-baseline gap-1.5 rounded-sm bg-accent px-2 py-2 text-sm text-accent-foreground outline-none"
                           : "flex cursor-pointer select-none items-baseline gap-1.5 rounded-sm px-2 py-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground"}>
-                        <span className="font-semibold">{preset.chip}:</span>
-                        <span>{preset.name}</span>
+                        <span className="font-semibold">{tPresetChip(preset.chip)}:</span>
+                        <span>{t(preset.name)}</span>
                       </DropdownMenu.Item>
                     )
                   })}

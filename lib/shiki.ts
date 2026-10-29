@@ -1,3 +1,4 @@
+import { getInterfaceLanguage, t } from "./i18n"
 import { createHighlighterCore } from "@shikijs/core"
 import { createJavaScriptRegexEngine } from "@shikijs/engine-javascript"
 
@@ -111,6 +112,7 @@ export async function highlightCodeBlocks(container: HTMLElement): Promise<void>
 
       const header = document.createElement("div")
       header.className = "code-block-header"
+      header.lang = getInterfaceLanguage()
 
       const langLabel = document.createElement("span")
       langLabel.className = "code-block-lang"
@@ -118,8 +120,8 @@ export async function highlightCodeBlocks(container: HTMLElement): Promise<void>
 
       const copyBtn = document.createElement("button")
       copyBtn.className = "code-block-copy"
-      copyBtn.setAttribute("aria-label", "Copy code")
-      copyBtn.title = "Copy code"
+      copyBtn.setAttribute("aria-label", t("Copy code"))
+      copyBtn.title = t("Copy code")
       copyBtn.innerHTML = COPY_ICON
       copyBtn.addEventListener("click", () => {
         navigator.clipboard.writeText(code).then(() => {
@@ -137,7 +139,7 @@ export async function highlightCodeBlocks(container: HTMLElement): Promise<void>
       wrapBtn.innerHTML = WRAP_ICON
       const syncWrapState = () => {
         const wrapped = getCodeBlockWrapPreference()
-        const wrapLabel = wrapped ? "Don't wrap lines" : "Wrap lines"
+        const wrapLabel = wrapped ? t("Don't wrap lines") : t("Wrap lines")
         container.querySelectorAll<HTMLElement>(".code-block").forEach((block) => {
           block.classList.toggle("code-block-wrapped", wrapped)
         })

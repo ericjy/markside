@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import { currentAgentReview } from "~lib/agent-review"
 import { getReviewItemCount } from "~lib/review"
 import type { ActiveReview } from "~lib/review"
@@ -136,6 +137,7 @@ export function ContentReviewOverlay({
   copyActiveReview,
   clearReview,
 }: ContentReviewOverlayProps) {
+  const sizeLabel = { compact: t("Compact"), standard: t("Standard"), wide: t("Wide") }
   const resizeStart = useRef<{ x: number; width: number } | null>(null)
   const currentReview = agentHandoff?.file ? currentAgentReview(review, agentHandoff.file) : review
   const storedCommentCount = agentHandoff?.file ? agentHandoff.file.comments.filter(({ id }) => !review?.comments.some((comment) => comment.id === id)).length : 0
@@ -173,14 +175,13 @@ export function ContentReviewOverlay({
                   data-review-drag-handle
                   onKeyDown={moveReviewOverlayWithKeyboard}
                   className="-ml-2 h-7 w-6 shrink-0 self-center cursor-grab text-muted-foreground"
-                  aria-label="Move Review. Use arrow keys to reposition it.">
+                  aria-label={t("Move Review. Use arrow keys to reposition it.")}>
                   <GripVertical size={14} />
                 </Button>}
                 <h2 id="markside-review-overlay-title" className="text-sm font-semibold">
-                  Review
-                </h2>
+                  {t("Review")}</h2>
                 <span className="text-xs tabular-nums text-muted-foreground">
-                  {reviewItemCount} {reviewItemCount === 1 ? "item" : "items"}
+                  {reviewItemCount} {reviewItemCount === 1 ? t("item") : t("items")}
                 </span>
               </div>
               <div className="flex items-center gap-1">
@@ -190,18 +191,17 @@ export function ContentReviewOverlay({
                   size="sm"
                   onClick={openImportReviewDialog}
                   className="h-7 gap-1.5 px-2 text-xs text-muted-foreground"
-                  aria-label="Import review from link">
+                  aria-label={t("Import review from link")}>
                   <Download size={13} />
-                  Import
-                </Button>
+                  {t("Import")}</Button>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() => setReviewOverlaySize(nextReviewOverlaySize)}
                   className={reviewOverlayDocked ? "hidden" : "hidden h-7 w-7 xl:inline-flex"}
-                  aria-label={`Review width: ${reviewOverlaySize}. Switch to ${nextReviewOverlaySize}`}
-                  title={`Review width: ${reviewOverlaySize}`}>
+                  aria-label={t("Review width: {0}. Switch to {1}", [sizeLabel[reviewOverlaySize], sizeLabel[nextReviewOverlaySize]])}
+                  title={t("Review width: {0}", [sizeLabel[reviewOverlaySize]])}>
                   <span
                     aria-hidden="true"
                     className={`block h-3 rounded-[2px] border border-current ${
@@ -219,8 +219,8 @@ export function ContentReviewOverlay({
                   size="icon"
                   onClick={toggleReviewDock}
                   className="h-7 w-7"
-                  aria-label={reviewLayout === "docked" ? "Float Review" : "Dock Review right"}
-                  title={reviewLayout === "docked" ? "Float Review" : "Dock Review right"}>
+                  aria-label={reviewLayout === "docked" ? t("Float Review") : t("Dock Review right")}
+                  title={reviewLayout === "docked" ? t("Float Review") : t("Dock Review right")}>
                   {reviewLayout === "docked" ? <PanelsTopLeft size={15} /> : <PanelRight size={15} />}
                 </Button>
                 <Button
@@ -229,7 +229,7 @@ export function ContentReviewOverlay({
                   size="icon"
                   onClick={() => closeReviewOverlay()}
                   className="h-7 w-7"
-                  aria-label="Close Review">
+                  aria-label={t("Close Review")}>
                   <X size={15} />
                 </Button>
               </div>
@@ -237,7 +237,7 @@ export function ContentReviewOverlay({
             {reviewOverlayDocked && (
               <div
                 role="separator"
-                aria-label="Resize Review sidebar"
+                aria-label={t("Resize Review sidebar")}
                 aria-orientation="vertical"
                 aria-valuemin={360}
                 aria-valuemax={600}

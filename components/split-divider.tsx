@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 interface Props {
   previewPercent: number
   updateSplitFromClientX: (clientX: number) => void
@@ -15,7 +16,7 @@ export function SplitDivider({
     <div
       data-markside-split-resizer
       role="separator"
-      aria-label="Resize Source and Preview panes"
+      aria-label={t("Resize Source and Preview panes")}
       aria-orientation="vertical"
       aria-valuemin={0}
       aria-valuemax={100}

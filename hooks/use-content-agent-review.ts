@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { finishReview, parseReviewFile, resolveAddressedComments, setReviewerCommentStatus, type AgentReviewComment, type AgentReviewFile } from "../cli/review-file.mjs"
 import { agentReviewUrl, canFinishAgentReview, checkForAgentReply, getAgentReviewResults, getAgentReviewDisabledReason, prepareAgentReview, reviewSendFingerprint, agentReviewIdentity, currentAgentReview } from "~lib/agent-review"
@@ -136,7 +137,7 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
   const checkForUpdates = async () => {
     if (writingRef.current) return false
     const disk = await readFileFromDisk(null, agentReviewUrl(fileUrl), false)
-    if (disk.text === null) throw new Error("Could not read the agent review.")
+    if (disk.text === null) throw new Error(t("Could not read the agent review."))
     const latest = parseReviewFile(disk.text, doc)
     if (optionsRef.current.fileUrl !== fileUrl || writingRef.current) return false
     const changed = JSON.stringify(latest) !== JSON.stringify(file)
@@ -152,10 +153,10 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       if (!await options.openDirectory("readwrite")) throw new DOMException("Folder selection cancelled", "AbortError")
       entry = await getDirectoryEntryForUrl(fileUrl)
     } else if (await requestHandlePermission(entry.handle, "readwrite") !== "granted") {
-      throw new Error("Allow folder write access, then try again.")
+      throw new Error(t("Allow folder write access, then try again."))
     }
     const parts = entry && getSavePathParts(fileUrl, entry.rootUrl)
-    if (!entry || !parts) throw new Error("Choose the folder containing this document, then send again.")
+    if (!entry || !parts) throw new Error(t("Choose the folder containing this document, then send again."))
     directoryRef.current = entry
     let directory = entry.handle
     for (const part of parts.slice(0, -1)) directory = await directory.getDirectoryHandle(part)
@@ -192,12 +193,12 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
           loaded.body !== currentComment.body || loaded.quote !== currentComment.quote ||
           loaded.status !== currentComment.status || loaded.reply !== currentComment.reply ||
           (local && (local.body !== currentComment.body || local.anchor.exact !== currentComment.quote))) {
-        throw new Error("This comment changed. Reload Review before updating its status.")
+        throw new Error(t("This comment changed. Reload Review before updating its status."))
       }
       await writeReview(handle, setReviewerCommentStatus(latest, id, status))
     } catch (error) {
       if (optionsRef.current.fileUrl === fileUrl && (error as DOMException).name !== "AbortError") {
-        setError(error instanceof Error ? error.message : "Could not update the comment. Try again.")
+        setError(error instanceof Error ? error.message : t("Could not update the comment. Try again."))
       }
     } finally {
       writingRef.current = false
@@ -218,12 +219,12 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       const addressed = (review: AgentReviewFile) => JSON.stringify(review.comments.filter(({ status }) => status === "addressed"))
       if (agentReviewIdentity(latest) !== agentReviewIdentity(file) || addressed(latest) !== addressed(file)) {
         setState({ url: fileUrl, file: latest })
-        throw new Error("This Review changed. Check it before resolving.")
+        throw new Error(t("This Review changed. Check it before resolving."))
       }
       await writeReview(handle, resolveAddressedComments(latest))
     } catch (error) {
       if (optionsRef.current.fileUrl === fileUrl && (error as DOMException).name !== "AbortError") {
-        setError(error instanceof Error ? error.message : "Could not resolve the comments. Try again.")
+        setError(error instanceof Error ? error.message : t("Could not resolve the comments. Try again."))
       }
     } finally {
       writingRef.current = false
@@ -243,12 +244,12 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       if (optionsRef.current.fileUrl !== fileUrl) return
       if (agentReviewIdentity(latest) !== agentReviewIdentity(file) || !canFinishAgentReview(latest, optionsRef.current.review)) {
         setState({ url: fileUrl, file: latest })
-        throw new Error("This Review changed. Check it before finishing.")
+        throw new Error(t("This Review changed. Check it before finishing."))
       }
       await writeReview(handle, finishReview(latest))
     } catch (error) {
       if (optionsRef.current.fileUrl === fileUrl && (error as DOMException).name !== "AbortError") {
-        setError(error instanceof Error ? error.message : "Could not finish the Review. Try again.")
+        setError(error instanceof Error ? error.message : t("Could not finish the Review. Try again."))
       }
     } finally {
       writingRef.current = false
@@ -265,18 +266,18 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
     const current = () => optionsRef.current.fileUrl === fileUrl
     try {
       const { directory, documentName } = await getReviewDirectory()
-      if (options.hasUnsavedDraftRef.current) throw new Error("Save or discard the Unsaved Draft before sending comments.")
+      if (options.hasUnsavedDraftRef.current) throw new Error(t("Save or discard the Unsaved Draft before sending comments."))
       const documentHandle = await directory.getFileHandle(documentName)
       const documentFile = await documentHandle.getFile()
       const bytes = await documentFile.arrayBuffer()
       const diskText = new TextDecoder().decode(bytes)
       if (normalizeDiskText(diskText) !== normalizeDiskText(options.diskContentRef.current)) {
-        throw new Error("The document changed on disk. Reload it and check your comments before sending.")
+        throw new Error(t("The document changed on disk. Reload it and check your comments before sending."))
       }
       const sidecarHandle = await directory.getFileHandle(`${doc}.review.json`)
       const latest = parseReviewFile(await (await sidecarHandle.getFile()).text(), doc)
       if (latest.status === "resolved" || agentReviewIdentity(latest) !== agentReviewIdentity(file)) {
-        throw new Error("This Review request changed. Close and reopen Review before sending.")
+        throw new Error(t("This Review request changed. Close and reopen Review before sending."))
       }
       if (getAgentReviewDisabledReason(latest, reviewToSend)) {
         setState({ url: fileUrl, file: latest })
@@ -304,7 +305,7 @@ export function useContentAgentReview(options: Options): AgentReviewHandoff | un
       return true
     } catch (error) {
       if (current() && (error as DOMException).name !== "AbortError") {
-        setError(error instanceof Error ? error.message : "Could not send comments. Try again.")
+        setError(error instanceof Error ? error.message : t("Could not send comments. Try again."))
       }
       return false
     } finally {

@@ -1,4 +1,5 @@
 import React,{ useRef,useState } from "react"
+import { t } from "~lib/i18n"
 import {
   buildHostedSnapshotUrl,
   DEFAULT_EXPIRY_DAYS,
@@ -200,7 +201,7 @@ export function useContentSnapshots({
     if (kind === "hosted") {
       const currentImages = await readSnapshotImages(markdown, fileUrlRef.current)
       if (markdown !== linkSnapshotDialog.markdown || JSON.stringify(currentImages.images) !== JSON.stringify(linkSnapshotDialog.originalImages) || JSON.stringify(currentImages.missing) !== JSON.stringify(linkSnapshotDialog.missingImages)) {
-        setLinkSnapshotDialog(current => current && { ...current, markdown, embeds, missingEmbeds, creation, resources, requiresSave: false, images: currentImages.images, originalImages: currentImages.images, missingImages: currentImages.missing, compressed: false, imageNotice: "The document or its images changed. Review the details, then create the link again.", status: "confirm" })
+        setLinkSnapshotDialog(current => current && { ...current, markdown, embeds, missingEmbeds, creation, resources, requiresSave: false, images: currentImages.images, originalImages: currentImages.images, missingImages: currentImages.missing, compressed: false, imageNotice: t("The document or its images changed. Review the details, then create the link again."), status: "confirm" })
         return
       }
     }
@@ -232,9 +233,9 @@ export function useContentSnapshots({
         if (outputBytes > MAX_HOSTED_SNAPSHOT_OUTPUT_BYTES || envelope.length + 28 > MAX_HOSTED_SNAPSHOT_UPLOAD_BYTES) {
           const uploadBytes = envelope.length + 28
           const limitDetail = uploadBytes > MAX_HOSTED_SNAPSHOT_UPLOAD_BYTES
-            ? `${(uploadBytes / 1000 / 1000).toFixed(1)} MB; upload limit 4 MB`
-            : `${(outputBytes / 1024 / 1024).toFixed(1)} MiB; content limit 6 MiB`
-          setLinkSnapshotDialog(current => current && { ...current, status: "too-large", imageNotice: `This copy is too large to share (${limitDetail}).` })
+            ? t("{0} MB; upload limit 4 MB", [(uploadBytes / 1000 / 1000).toFixed(1)])
+            : t("{0} MiB; content limit 6 MiB", [(outputBytes / 1024 / 1024).toFixed(1)])
+          setLinkSnapshotDialog(current => current && { ...current, status: "too-large", imageNotice: t("This copy is too large to share ({0}).", [limitDetail]) })
           return
         }
         const { key, blob } = await encryptSnapshotEnvelope(envelope)
@@ -307,7 +308,11 @@ export function useContentSnapshots({
     const outputBytes = new TextEncoder().encode(snapshotEnvelopeJson(snapshot)).length
     const uploadBytes = buildSnapshotEnvelopeBytes(snapshot).length + 28
     const tooLarge = outputBytes > MAX_HOSTED_SNAPSHOT_OUTPUT_BYTES || uploadBytes > MAX_HOSTED_SNAPSHOT_UPLOAD_BYTES
-    const imageNotice = `Image size: ${(before / 1024 / 1024).toFixed(1)} MiB → ${(after / 1024 / 1024).toFixed(1)} MiB. ${changed.length ? `Compressed: ${changed.join(", ")}.` : "No images could be reduced."} Your original files are unchanged.`
+    const imageNotice = t("Image size: {0} MiB → {1} MiB. {2} Your original files are unchanged.", [
+      (before / 1024 / 1024).toFixed(1),
+      (after / 1024 / 1024).toFixed(1),
+      changed.length ? t("Compressed: {0}.", [changed.join(", ")]) : t("No images could be reduced."),
+    ])
     setLinkSnapshotDialog(current => current && { ...current, images, compressed: true, status: tooLarge ? "too-large" : "confirm", imageNotice })
   }
 

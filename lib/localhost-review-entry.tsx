@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 // Unreleased localhost Review entry, kept outside contents/ so Plasmo does not register it.
 // To ship it: move it back into contents/, restore the "scripting" permission, and build
 // with PLASMO_PUBLIC_LOCALHOST_REVIEW=true so the popup offers it.
@@ -212,7 +213,7 @@ function LocalhostReviewApp({
     setReview(next)
     writtenAtRef.current = next.updatedAt
     void saveLocalhostReview(next).catch(() =>
-      setStatus("Markside could not save this Review. Copy it before closing the tab.")
+      setStatus(t("Markside could not save this Review. Copy it before closing the tab."))
     )
   }, [])
 
@@ -521,7 +522,7 @@ function LocalhostReviewApp({
     setToolbar(null)
     if (result.outcome === "duplicate") {
       setSelectedId(result.annotationId)
-      setStatus("That content already has this kind of feedback.")
+      setStatus(t("That content already has this kind of feedback."))
       return
     }
     applyReview(result.review)
@@ -584,7 +585,7 @@ function LocalhostReviewApp({
       annotationId: id,
     })
     if (!(await writeToClipboard(markdown))) {
-      setStatus("Markside could not reach the clipboard. Try again after clicking the page.")
+      setStatus(t("Markside could not reach the clipboard. Try again after clicking the page."))
       return
     }
     setCopiedAnnotationId(id)
@@ -599,7 +600,7 @@ function LocalhostReviewApp({
     setStatus(
       didCopy
         ? null
-        : "Markside could not reach the clipboard. Try again after clicking the page."
+        : t("Markside could not reach the clipboard. Try again after clicking the page.")
     )
     // The confirmation settles back so a second copy can confirm itself too.
     setCopiedAnnotationId(null)
@@ -657,8 +658,8 @@ function LocalhostReviewApp({
           type="button"
           className="mrp-badge"
           data-selected={selectedId === badge.id}
-          aria-label={`Review item ${badge.displayNumber}`}
-          title={`Review item ${badge.displayNumber}`}
+          aria-label={t("Review item {0}", [badge.displayNumber])}
+          title={t("Review item {0}", [badge.displayNumber])}
           style={{ left: badge.left, top: badge.top }}
           onClick={() => setSelectedId(badge.id)}>
           {badge.displayNumber}
@@ -698,21 +699,19 @@ function LocalhostReviewApp({
             viewport(),
             panelBoxRef.current,
           )}>
-          <button type="button" onClick={() => startDraft("comment", "")}>Comment</button>
+          <button type="button" onClick={() => startDraft("comment", "")}>{t("Comment")}</button>
           <button
             type="button"
             onClick={() => startDraft("replacement", "")}>
-            Replace
-          </button>
+            {t("Replace")}</button>
           <button type="button" onClick={() => startDraft("comment", REWORD_REQUEST)}>
-            Reword
-          </button>
+            {t("Reword")}</button>
           <span className="mrp-toolbar-divider" />
           <button
             type="button"
             className="mrp-toolbar-icon"
-            aria-label="Delete text"
-            title="Delete text"
+            aria-label={t("Delete text")}
+            title={t("Delete text")}
             onClick={addDeletion}>
             <Trash2 size={14} />
           </button>
@@ -722,17 +721,17 @@ function LocalhostReviewApp({
       {draft && draftPosition && (
         <div className="mrp-composer" style={draftPosition}>
           <p className="mrp-composer-title">
-            {draft.kind === "comment" ? "Comment" : "Replace text"}
+            {draft.kind === "comment" ? t("Comment") : t("Replace text")}
           </p>
           <span className="mrp-quote">{labelLocalhostTarget(draft.target)}</span>
           <textarea
             className="mrp-input"
             autoFocus
-            aria-label={draft.kind === "comment" ? "Review Comment" : "Replacement text"}
+            aria-label={draft.kind === "comment" ? t("Review Comment") : t("Replacement text")}
             placeholder={
               draft.kind === "comment"
-                ? "What should change here?"
-                : "The text that should appear instead"
+                ? t("What should change here?")
+                : t("The text that should appear instead")
             }
             value={draft.text}
             onChange={(event) => setDraft({ ...draft, text: event.target.value })}
@@ -746,14 +745,13 @@ function LocalhostReviewApp({
                 setDraft(null)
                 setDraftError(null)
               }}>
-              Cancel
-            </button>
+              {t("Cancel")}</button>
             <button
               type="button"
               className="mrp-primary"
               disabled={draft.kind === "replacement" && !draft.text.trim()}
               onClick={addDraft}>
-              {draft.kind === "comment" ? "Add comment" : "Add replacement"}
+              {draft.kind === "comment" ? t("Add comment") : t("Add replacement")}
             </button>
           </div>
         </div>

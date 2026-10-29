@@ -1,4 +1,5 @@
 import { ChevronRight } from "lucide-react"
+import { t } from "~lib/i18n"
 
 // A miniature of the Markside details page in chrome://extensions, replaying the
 // scroll to the file access row and the click that turns it on.
@@ -20,7 +21,7 @@ export function FileAccessDemo() {
         <div className="demo-list">
           {DEMO_ROWS.map(row => (
             <div key={row.label} className={`demo-row${row.kind === "target" ? " target" : ""}`}>
-              <span>{row.label}</span>
+              <span>{t(row.label)}</span>
               {row.kind === "link" ? <ChevronRight size={16} /> : <span className="demo-toggle"><span /></span>}
             </div>
           ))}

@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import React,{ useEffect,useRef,useState } from "react"
 import { type ReviewCopyStatus } from "~components/review-panel"
 import { normalizeDiskText } from "~lib/content-file-access"
@@ -134,10 +135,10 @@ export function useContentReload({
         isImageFile,
       )
       if (fileUrlRef.current !== reloadUrl) return
-      if (draftRef.current !== previousDraft) throw new Error("The draft changed while reloading. Try Reload again.")
+      if (draftRef.current !== previousDraft) throw new Error(t("The draft changed while reloading. Try Reload again."))
       diskLastModifiedRef.current = file.lastModified
       if (isImageFile) {
-        if (!file.buffer) throw new Error("Failed to read image from disk")
+        if (!file.buffer) throw new Error(t("Failed to read image from disk"))
         const blob = new Blob([file.buffer], {
           type: file.type || "application/octet-stream",
         })
@@ -147,7 +148,7 @@ export function useContentReload({
         })
         setContent("")
       } else {
-        if (file.text === null) throw new Error("Failed to read file from disk")
+        if (file.text === null) throw new Error(t("Failed to read file from disk"))
         const text = file.text
         if (isMdFile && previousContent !== null) {
           setReloadComparison({ before: previousContent, after: text })
@@ -177,7 +178,7 @@ export function useContentReload({
       }, RELOAD_NOTICE_MS)
     } catch (err) {
       if (forReviewCopy) throw err
-      setError((err as Error).message ?? "Failed to reload file")
+      setError((err as Error).message ?? t("Failed to reload file"))
     } finally {
       reloadLoadingRef.current = false
       setReloadLoading(false)

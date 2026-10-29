@@ -1,3 +1,4 @@
+import { getInterfaceLanguage, t, tRich } from "~lib/i18n"
 import {
   ArrowUpRight,
   Bot,
@@ -49,10 +50,10 @@ import "~style.css"
 const IS_MAC = navigator.platform.includes("Mac")
 
 const openFileRows = [
-  { icon: FolderInput, action: "Drag a file", target: "to a browser tab" },
-  { icon: Keyboard, action: "Press", keys: [IS_MAC ? "⌘" : "Ctrl", "O"], target: "in any tab" },
-  { icon: MapPin, action: "Paste a path", target: "in the address bar" },
-  { icon: Bot, action: "Ask your agent", target: "to open it in Chrome" },
+  { icon: FolderInput, action: "Drag a file", description: "{0} to a browser tab" },
+  { icon: Keyboard, action: "Press", keys: [IS_MAC ? "⌘" : "Ctrl", "O"], description: "{0} {1} in any tab" },
+  { icon: MapPin, action: "Paste a path", description: "{0} in the address bar" },
+  { icon: Bot, action: "Ask your agent", description: "{0} to open it in Chrome" },
 ]
 
 // System sans keeps the letter O distinct from zero.
@@ -213,7 +214,7 @@ export default function Popup() {
         .draft-card:hover .draft-icon { background: var(--popup-green-bright); }
         .draft-text { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; }
         .draft-title { color: var(--popup-text); font-size: 13px; font-weight: 700; }
-        .draft-hint { color: var(--popup-text-secondary); display: flex; font-size: 11px; line-height: 1.4; white-space: nowrap; }
+        .draft-hint { color: var(--popup-text-secondary); display: flex; flex-wrap: wrap; font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
         .draft-name { color: var(--popup-text); font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
         .draft-age { flex-shrink: 0; }
         .draft-arrow { color: var(--popup-text-secondary); flex-shrink: 0; transition: transform 150ms ease; }
@@ -263,13 +264,13 @@ export default function Popup() {
         @media (prefers-reduced-motion: reduce) { .primary-button, .draft-icon, .draft-arrow { transition: none; } .draft-card:hover .draft-arrow { transform: none; } }
       `}</style>
 
-      <div className="popup-root">
+      <div className="popup-root" lang={getInterfaceLanguage()}>
         <a
           className="popup-brand"
           href="https://markside.app"
           target="_blank"
           rel="noreferrer"
-          aria-label="Open markside.app in a new tab">
+          aria-label={t("Open markside.app in a new tab")}>
           <svg className="popup-brand-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-hidden="true">
             <rect width="128" height="128" rx="28" fill="#000" />
             <path d="M22 92 V 28 h12 l26 38 26 -38 h12 V 92 h-12 V 50 l-22 32 h-8 L34 50 V 92 Z" fill="#fff" />
@@ -278,7 +279,7 @@ export default function Popup() {
               <path d="M109 99 L118 108 L109 117" />
             </g>
           </svg>
-          <h1 className="popup-brand-name">Markside</h1>
+          <h1 className="popup-brand-name">{t("Markside")}</h1>
         </a>
 
         <main className="popup-body">
@@ -296,28 +297,23 @@ export default function Popup() {
               {panelOpen
                 ? <EyeOff size={15} strokeWidth={1.8} />
                 : <Eye size={15} strokeWidth={1.8} />}
-              {panelOpen ? "Exit Review Mode" : "Enter Review Mode"}
+              {panelOpen ? t("Exit Review Mode") : t("Enter Review Mode")}
             </button>
           )}
 
           {documentUrl && (
             <p className="popup-note context-note">
-              Select text in the page to add a comment.
-            </p>
+              {t("Select text in the page to add a comment.")}</p>
           )}
 
           {editingUnsavedDraft && (
-            <p className="popup-note context-note">
-              Press <Keys keys={[IS_MAC ? "⌘" : "Ctrl", "S"]} /> to save it anywhere.
-            </p>
+            <p className="popup-note context-note">{tRich("Press {0} to save it anywhere.", <Keys keys={[IS_MAC ? "⌘" : "Ctrl", "S"]} />)}</p>
           )}
 
           {hasFileAccess === false ? (
             <>
-              <h2 className="setup-title">One last step to set up Markside</h2>
-              <p className="setup-copy">
-                Click Open Extension Details, then turn on <strong>Allow access to file URLs</strong>.
-              </p>
+              <h2 className="setup-title">{t("One last step to set up Markside")}</h2>
+              <p className="setup-copy">{tRich("Click Open Extension Details, then turn on {0}.", <strong>{t("Allow access to file URLs")}</strong>)}</p>
               <div className="setup-demo"><FileAccessDemo /></div>
               <button
                 className="primary-button"
@@ -325,14 +321,13 @@ export default function Popup() {
                   void chrome.storage.local.set({ [FILE_ACCESS_SETUP_KEY]: true })
                   void chrome.tabs.create({ url: `chrome://extensions/?id=${chrome.runtime.id}` })
                 }}>
-                Open Extension Details
-              </button>
+                {t("Open Extension Details")}</button>
             </>
           ) : (
             <>
               {pending.length > 0 && (
                 <div className="section-label">
-                  <span>Pending reviews</span>
+                  <span>{t("Pending reviews")}</span>
                   <span>{pending.length}</span>
                 </div>
               )}
@@ -342,27 +337,25 @@ export default function Popup() {
                   <span className="review-head">
                     <span className="review-name" title={entry.key}>{entry.label}</span>
                     <span className="review-count">
-                      {entry.itemCount} {entry.itemCount === 1 ? "item" : "items"}
+                      {entry.itemCount} {entry.itemCount === 1 ? t("item") : t("items")}
                     </span>
                   </span>
                   <span className="review-meta">
                     {entry.detail && <span className="review-path" title={entry.detail}>{entry.detail}</span>}
                   </span>
                   <span className="review-missing">
-                    File moved or deleted
-                    <button
+                    {t("File moved or deleted")}<button
                       className="review-dismiss"
-                      aria-label={`Dismiss the Review for ${entry.label}`}
+                      aria-label={t("Dismiss the Review for {0}", [entry.label])}
                       onClick={() => void dismissReview(entry)}>
-                      <X size={12} /> Dismiss
-                    </button>
+                      <X size={12} /> {t(" Dismiss")}</button>
                   </span>
                 </div>
               ) : (
                 <button
                   className="review-card"
                   key={`${entry.kind}-${entry.key}`}
-                  aria-label={`Open the Review for ${entry.label}`}
+                  aria-label={t("Open the Review for {0}", [entry.label])}
                   onClick={() => void openReview(entry)}>
                   <span className="review-head">
                     <span
@@ -371,7 +364,7 @@ export default function Popup() {
                       {entry.label}
                     </span>
                     <span className="review-count">
-                      {entry.itemCount} {entry.itemCount === 1 ? "item" : "items"}
+                      {entry.itemCount} {entry.itemCount === 1 ? t("item") : t("items")}
                     </span>
                   </span>
                   <span className="review-meta">
@@ -380,7 +373,7 @@ export default function Popup() {
                       {entry.detail ? "\u00a0· " : ""}{describeReviewAge(entry.updatedAt, Date.now())}
                     </span>
                   </span>
-                  <span className="review-open"><ExternalLink size={12} /> Open</span>
+                  <span className="review-open"><ExternalLink size={12} /> {t(" Open")}</span>
                 </button>
               ))}
 
@@ -391,16 +384,16 @@ export default function Popup() {
                   {unsavedDraft ? <FilePen size={16} strokeWidth={1.8} /> : <FilePlus size={16} strokeWidth={1.8} />}
                 </span>
                 <span className="draft-text">
-                  <span className="draft-title">{unsavedDraft ? "Continue draft" : "New draft"}</span>
+                  <span className="draft-title">{unsavedDraft ? t("Continue draft") : t("New draft")}</span>
                   {unsavedDraft ? (
                     <span className="draft-hint">
                       {unsavedDraft.title && <span className="draft-name">{unsavedDraft.title}</span>}
                       <span className="draft-age">
-                        {unsavedDraft.title ? "\u00a0· " : ""}edited {describeReviewAge(unsavedDraft.updatedAt, Date.now())}
+                        {unsavedDraft.title ? "\u00a0· " : ""}{t("edited ")}{describeReviewAge(unsavedDraft.updatedAt, Date.now())}
                       </span>
                     </span>
                   ) : (
-                    <span className="draft-hint">Write or paste Markdown, save it anywhere</span>
+                    <span className="draft-hint">{t("Write or paste Markdown, save it anywhere")}</span>
                   )}
                 </span>
                 <ArrowUpRight className="draft-arrow" size={16} strokeWidth={1.8} aria-hidden="true" />
@@ -408,19 +401,19 @@ export default function Popup() {
 
               {!reviewable && !draftTab && (
                 <>
-                  <div className="section-label"><span>Ways to open a Markdown file</span></div>
-                  {openFileRows.map(({ icon: Icon, action, keys, target }) => (
+                  <div className="section-label"><span>{t("Ways to open a Markdown file")}</span></div>
+                  {openFileRows.map(({ icon: Icon, action, keys, description }) => (
                     <div className="open-row" key={action}>
                       <span className="open-icon"><Icon size={15} strokeWidth={1.6} /></span>
-                      <span><b>{action}</b>{keys && <> <Keys keys={keys} /></>} {target}</span>
+                      <span>{tRich(description, <b>{t(action)}</b>, ...(keys ? [<Keys keys={keys} />] : []))}</span>
                     </div>
                   ))}
                   {LOCALHOST_REVIEW_ENABLED && (
                     <>
-                      <div className="section-label"><span>Review a localhost page</span></div>
+                      <div className="section-label"><span>{t("Review a localhost page")}</span></div>
                       <div className="open-row">
                         <span className="open-icon"><Eye size={15} strokeWidth={1.6} /></span>
-                        <span>Serve it on <b>localhost</b>, then Enter Review Mode here</span>
+                        <span>{tRich("Serve it on {0}, then Enter Review Mode here", <b>{t("localhost")}</b>)}</span>
                       </div>
                     </>
                   )}
@@ -432,8 +425,7 @@ export default function Popup() {
           <div className="popup-footer">
             <button className="footer-link" onClick={() => chrome.runtime.openOptionsPage()}>
               <Settings size={13} strokeWidth={1.8} />
-              Settings
-            </button>
+              {t("Settings")}</button>
             <span className="footer-dot">·</span>
             <button
               className="footer-link"
@@ -442,8 +434,7 @@ export default function Popup() {
                 void chrome.tabs.create({ url: CHROME_WEB_STORE_REVIEW_URL })
               }}>
               <Star size={13} strokeWidth={1.8} />
-              Rate Markside
-            </button>
+              {t("Rate Markside")}</button>
           </div>
         </main>
       </div>

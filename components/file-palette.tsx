@@ -1,3 +1,4 @@
+import { t } from "~lib/i18n"
 import { Search } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
@@ -87,7 +88,7 @@ export function FilePalette({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Search files…"
+            placeholder={t("Search files…")}
             className="flex-1 py-3 text-sm bg-transparent outline-none placeholder:text-muted-foreground"
           />
         </div>
@@ -96,17 +97,15 @@ export function FilePalette({
         <div className="max-h-72 overflow-y-auto">
           {loading && (
             <p className="px-4 py-6 text-sm text-muted-foreground text-center">
-              Loading…
-            </p>
+              {t("Loading…")}</p>
           )}
           {error && (
             <p className="px-4 py-6 text-sm text-destructive text-center">
-              Could not read folder
-            </p>
+              {t("Could not read folder")}</p>
           )}
           {!loading && !error && results.length === 0 && (
             <p className="px-4 py-6 text-sm text-muted-foreground text-center">
-              {files.length === 0 ? "No files" : "No results"}
+              {files.length === 0 ? t("No files") : t("No results")}
             </p>
           )}
           {!loading && !error && results.length > 0 && (

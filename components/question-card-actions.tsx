@@ -1,3 +1,4 @@
+import { t, tRich } from "~lib/i18n"
 import { Pencil, RefreshCw, RotateCcw } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
@@ -38,19 +39,17 @@ function QuestionCardFooter({ status, answeredCount, questionCount, sendDisabled
   if (status === "ready") {
     return (
       <>
-        <p className="question-card-footer-text" role="status">{answeredCount} / {questionCount} {questionCount === 1 ? "question" : "questions"} answered</p>
-        <button type="button" className="question-card-footer-button question-card-send" disabled={sendDisabled} title={sendDisabledReason ?? undefined} onClick={onSend}>
-          Send review <kbd>{SEND_KEYS}</kbd>
-        </button>
+        <p className="question-card-footer-text" role="status">{t(questionCount === 1 ? "{0} / {1} question answered" : "{0} / {1} questions answered", [answeredCount, questionCount])}</p>
+        <button type="button" className="question-card-footer-button question-card-send" disabled={sendDisabled} title={sendDisabledReason ?? undefined} onClick={onSend}>{tRich("Send review {0}", <kbd>{SEND_KEYS}</kbd>)}</button>
       </>
     )
   }
-  if (status === "sending") return <p className="question-card-footer-text" role="status">Sending…</p>
+  if (status === "sending") return <p className="question-card-footer-text" role="status">{t("Sending…")}</p>
   return (
     <>
       <p className="question-card-footer-text" role="status">
         <span className="question-card-waiting" aria-hidden="true" />
-        {check === "unchanged" ? "No reply yet. The agent is still working." : check === "error" ? "Couldn’t check. Try again." : "Sent. The agent’s next question will appear here."}
+        {check === "unchanged" ? t("No reply yet. The agent is still working.") : check === "error" ? t("Couldn’t check. Try again.") : t("Sent. The agent’s next question will appear here.")}
       </p>
       {onCheck && (
         <button
@@ -66,7 +65,7 @@ function QuestionCardFooter({ status, answeredCount, questionCount, sendDisabled
             }
           }}>
           <RefreshCw aria-hidden="true" className={check === "checking" ? "animate-spin" : ""} />
-          {check === "checking" ? "Checking…" : "Check for reply"}
+          {check === "checking" ? t("Checking…") : t("Check for reply")}
         </button>
       )}
     </>
@@ -124,8 +123,7 @@ export function ArchivedQuestionCardActions({ card, busy, composing, onCompose }
         const rect = event.currentTarget.getBoundingClientRect()
         onCompose({ x: rect.left, y: rect.bottom })
       }}>
-      <RotateCcw aria-hidden="true" /> Revisit question
-    </button>,
+      <RotateCcw aria-hidden="true" /> {t(" Revisit question")}</button>,
     card.composeMount,
   )
 }
@@ -293,21 +291,19 @@ export function QuestionCardActions({ card, answer, busy, composing, keyboard, s
           }}>
           <strong>
             <span className="question-option-key"><Pencil aria-hidden="true" /></span>
-            Something else…
-          </strong>
+            {t("Something else…")}</strong>
           {customChosen
             ? <span className="question-custom-answer-text">{chosen}</span>
-            : <span className="question-custom-answer-hint">Write your answer, or ask to clarify, skip, or delegate the rest</span>}
+            : <span className="question-custom-answer-hint">{t("Write your answer, or ask to clarify, skip, or delegate the rest")}</span>}
         </button>,
         card.composeMount,
       )}
       {status && createPortal(<QuestionCardFooter status={status} answeredCount={answeredCount} questionCount={questionCount} sendDisabled={sendDisabled} sendDisabledReason={sendDisabledReason} onSend={onSend} onCheck={onCheck} />, card.footerMount)}
       {letters.length > 0 && (
         <p className={keyboard ? "question-card-hint" : "question-card-hint question-card-hint-idle"} aria-hidden="true">
-          Press {letters.length > 4
-            ? <><kbd>{letters[0]}</kbd> to <kbd>{letters.at(-1)}</kbd></>
-            : letters.map((letter, index) => <span key={letter}>{index > 0 && " "}<kbd>{letter}</kbd></span>)} to choose
-          {!letters.includes(TYPE_KEY) && <> or <kbd>{TYPE_KEY}</kbd> to type something else</>}
+          {t("Press ")}{letters.length > 4
+            ? <><kbd>{letters[0]}</kbd>{t(" to ")}<kbd>{letters.at(-1)}</kbd></>
+            : letters.map((letter, index) => <span key={letter}>{index > 0 && " "}<kbd>{letter}</kbd></span>)}{t(" to choose")}{!letters.includes(TYPE_KEY) && <>{t(" or ")}<kbd>{TYPE_KEY}</kbd>{t(" to type something else")}</>}
         </p>
       )}
     </>

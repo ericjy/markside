@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { buildRenderedTextIndex } from "./review-dom"
-import { hasQuestionCard, md, mountQuestionCard, sanitizeRenderedMarkdown } from "./markdown"
+import { addDefaultDetailsSummaries, hasQuestionCard, md, mountQuestionCard, sanitizeRenderedMarkdown } from "./markdown"
 
 describe("markdown renderer", () => {
   it("adds an id attribute to H1 headings", () => {
@@ -150,6 +150,27 @@ describe("markdown renderer", () => {
     expect(html).toContain("Note")
     expect(html).toContain("<strong>useful information</strong>")
     expect(html).not.toContain("[!NOTE]")
+  })
+
+  it("localizes generated labels without changing the Review text index", () => {
+    const source = "> [!NOTE]\n> Repeated text.\n\n<details>\n\nRepeated text.\n\n</details>\n\n```question\n### Choose\n\n- **A. First.**\n- **B. Second.**\n\n**Recommended: B.** A reason.\n```"
+    const render = (language: string) => {
+      vi.stubGlobal("chrome", { i18n: { getUILanguage: () => language } })
+      const root = document.createElement("div")
+      root.innerHTML = sanitizeRenderedMarkdown(md.render(source))
+      addDefaultDetailsSummaries(root)
+      return root
+    }
+    try {
+      const english = render("en-US")
+      const chinese = render("zh-TW")
+      expect(buildRenderedTextIndex(chinese).text).toBe(buildRenderedTextIndex(english).text)
+      expect(chinese.querySelector(".markdown-alert-title [aria-label]")?.getAttribute("aria-label")).toBe("備註")
+      expect(chinese.querySelector("summary [aria-label]")?.getAttribute("aria-label")).toBe("詳細內容")
+      expect(chinese.querySelector('.question-recommendation [aria-label]')?.getAttribute("aria-label")).toBe("為什麼選 B？")
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 
   it.each([

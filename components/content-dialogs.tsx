@@ -151,7 +151,7 @@ export function ContentDialogs({
                     {linkSnapshotDialog.status === "copied" ? t("Link copied") : linkSnapshotDialog.status === "copy-failed" ? t("Link ready to copy") : t("Create Share Link")}
                   </h2>
                   {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && (
-                    <span className="rounded-full border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <span className="rounded-full border px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-muted-foreground">
                       {t("Beta")}</span>
                   )}
                 </div>

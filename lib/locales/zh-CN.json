@@ -37,7 +37,7 @@
   "Ask your agent to start a review in Markside, then send your feedback back directly to the agent without copying and pasting a prompt.": "请您的代理在 Markside 中开始审核，然后将您的反馈直接发送给代理，而无需复制和粘贴提示。",
   "Auto Save": "自动保存",
   "Because of how Chrome handles folder access, you need to open a file in that folder before Markside can open the folder. To switch:": "由于 Chrome 处理文件夹访问的方式，您需要先打开该文件夹中的文件，然后 Markside 才能打开该文件夹。切换：",
-  "Beta": "测试版",
+  "Beta": "Beta",
   "Bold (Cmd+B / Ctrl+B)": "粗体（Cmd+B / Ctrl+B）",
   "Cancel": "取消",
   "Change": "更改",

@@ -250,7 +250,7 @@ export function ReadabilityHeadingControl({ section, result, status, wholeDocume
         <span className="readability-panel-brand">
           <span className="readability-panel-heading">
             <span className="readability-panel-title">{t("Readability Check")}</span>
-            <span className="readability-panel-beta">{t("Beta")}</span>
+            <span className="readability-panel-beta" style={{ textTransform: "none" }}>{t("Beta")}</span>
           </span>
           <span className="readability-panel-provider">{t("Powered by Jev, which receives this section's text.")}</span>
         </span>

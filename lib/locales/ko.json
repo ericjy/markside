@@ -37,7 +37,7 @@
   "Ask your agent to start a review in Markside, then send your feedback back directly to the agent without copying and pasting a prompt.": "상담원에게 Markside에서 검토를 시작하도록 요청한 다음 메시지를 복사하여 붙여넣지 않고도 피드백을 상담원에게 직접 다시 보내세요.",
   "Auto Save": "자동 저장",
   "Because of how Chrome handles folder access, you need to open a file in that folder before Markside can open the folder. To switch:": "Chrome이 폴더 액세스를 처리하는 방식으로 인해 Markside가 폴더를 열려면 먼저 해당 폴더에 있는 파일을 열어야 합니다. 전환하려면:",
-  "Beta": "베타",
+  "Beta": "Beta",
   "Bold (Cmd+B / Ctrl+B)": "굵게(Cmd+B / Ctrl+B)",
   "Cancel": "취소",
   "Change": "변경",

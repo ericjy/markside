@@ -172,7 +172,7 @@ Set by `displayName` in `package.json`. Keep the exact search phrase "Markdown V
 ## Short description (132 chars max)
 
 ```
-Read, edit, and collaborate on Markdown with your teammates and AI agents
+Read, edit, and collaborate on Markdown with teammates and AI agents. Inline comment, outline, file tree, Mermaid, math, PDF export.
 ```
 
 Set by `description` in `package.json`, so a change reaches the Store only with
@@ -186,7 +186,9 @@ keywords and third-party brand names as spam, which can lower search rank. The
 full description can be edited in the Dashboard without uploading a package.
 
 ```
-Open any .md file to read it beautifully rendered, edit it in place, comment inline, send review to your AI agent, and share it with teammate. Free and no account required. Learn more at https://markside.app
+Open any .md file to read it beautifully rendered, edit it in place, comment inline, share it with teammate, and send your feedback to your AI agents to update the file.
+
+Free and no account required. Learn more at https://markside.app
 
 ❗ After installing, enable "Allow access to file URLs" on the extension's details page.
 ❗ Markside opens local Markdown files only.
@@ -222,10 +224,6 @@ SET UP IN 30 SECONDS
 1. Install Markside.
 2. In extension settings, enable "Allow access to file URLs."
 3. Open any .md file in Chrome. Markside renders it automatically.
-
-PRIVACY
-
-Local files and reviews stay in your browser during ordinary use. A Link Snapshot carries its content in the URL. A Hosted Snapshot is encrypted in your browser before upload, so Markside's server stores only ciphertext. No analytics or telemetry.
 
 WHAT'S NEW IN 1.8.0
 

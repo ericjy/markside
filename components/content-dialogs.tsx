@@ -194,7 +194,7 @@ export function ContentDialogs({
                           onChange={() => setLinkSnapshotDialog((current) =>
                             current && { ...current, kind: "link", status: "confirm", imageNotice: null, images: current.originalImages, compressed: false })}
                         />
-                        <span className="font-medium">{t("Keep content in the link")}</span>
+                        <span className="font-medium">{t("Include document content in the link")}</span>
                       </span>
                       <span className="shrink-0 tabular-nums text-xs text-muted-foreground">
                         {t("{0}-character link", [linkSnapshotDialog.creation.characters.toLocaleString()])}</span>
@@ -363,7 +363,7 @@ export function ContentDialogs({
             )}
             {linkSnapshotDialog.status === "upload-failed" && (
               <p role="alert" className="mt-4 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
-                {t("Couldn’t upload the encrypted copy. Your document is unchanged. Try again, or choose “Keep content in the link” to share without uploading.")}</p>
+                {t("Couldn’t upload the encrypted copy. Your document is unchanged. Try again, or choose “Include document content in the link” to share without uploading.")}</p>
             )}
             {(linkSnapshotDialog.status === "copied" || linkSnapshotDialog.status === "copy-failed") && (linkSnapshotDialog.creation.status === "ready" || linkSnapshotDialog.shareUrl) && (
               <div className="mt-4">

@@ -5,6 +5,17 @@ version is tagged with the channel(s) it actually shipped on — Chrome Web
 Store and GitHub Releases run independently and can diverge; see
 `docs/github-release.md`.
 
+## 1.8.0 — Unreleased
+
+### Added
+
+- Embed local HTML files in Markdown to show interactive visuals in Preview and Split. Expand an HTML Embed, comment on it, and include it in Snapshots and PDF Export.
+- Ask the Markside Agent Skill to explain a topic or document with interactive visuals, then review the explanation in Markside.
+
+### Fixed
+
+- Import Review accepts a reviewer's Hosted Snapshot link, not only a Link Snapshot.
+
 ## 1.7.0 — Unreleased
 
 ### Added
@@ -36,7 +47,6 @@ Store and GitHub Releases run independently and can diverge; see
 
 ### Fixed
 
-- Import Review accepts a reviewer's Hosted Snapshot link, not only a Link Snapshot.
 - Printed Mermaid diagrams fit the page column.
 - Clicking empty space clears a Review Comment selection.
 - Selected quotes no longer carry surrounding whitespace.

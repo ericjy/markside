@@ -257,12 +257,11 @@ OTHER
 • Word count — See word count and reading time at the top of Preview
 • Free access — Use every local feature with no account required
 
-WHAT'S NEW IN 1.7.0
+WHAT'S NEW IN 1.8.0
 
-• Review with your coding agent: send comments to your agent and see its replies (Beta)
-• Answer agent interviews in Markside with Question Cards (Beta)
-• Faster Mermaid diagrams that match your document's font and colors
-• Calmer reading: a narrower default page width, quieter styling, and Zen mode
+• Embed interactive HTML visuals in Markdown, comment on them, and share them in Snapshots
+• Ask the Markside Agent Skill to explain a topic or document with interactive visuals
+• Import a reviewer's Hosted Snapshot link into Review History
 
 SET UP IN 30 SECONDS
 

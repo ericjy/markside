@@ -1,7 +1,7 @@
 {
   "name": "markside",
   "displayName": "Markside: Markdown Viewer & Editor",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Preview, edit, comment & share local Markdown. AI Review, GitHub-flavored, Mermaid, math, code highlighting, dark mode, PDF export.",
   "author": "Jing Yang",
   "license": "MIT",

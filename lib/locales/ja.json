@@ -864,5 +864,6 @@
   "Choose this folder or a parent folder so Markside can browse and save files.": "Markside でファイルの閲覧と保存ができるように、このフォルダーまたはその親フォルダーを選択してください。",
   "Choose {0}…": "「{0}」を選択…",
   "Choose folder…": "フォルダーを選択…",
-  "Opening the folder picker copies the folder path.": "フォルダー選択画面を開くと、フォルダーのパスがコピーされます。"
+  "Opening the folder picker copies the folder path.": "フォルダー選択画面を開くと、フォルダーのパスがコピーされます。",
+  "Choose the folder once to authorize Markside to browse and save its files.": "フォルダーを一度選択すると、Markside がその中のファイルを閲覧・保存できるようになります。"
 }

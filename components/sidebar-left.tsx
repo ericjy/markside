@@ -227,9 +227,7 @@ export function SidebarLeft({
                 <p className="text-[13px] leading-relaxed text-sidebar-foreground/75">
                   {folderError
                     ? tRich("You chose {0}. Please choose {1}, or a parent folder.", <strong className="font-medium text-sidebar-foreground">{folderError.picked}</strong>, <strong className="font-medium text-sidebar-foreground">{folderError.expected ?? parentFolderName}</strong>)
-                    : parentFolderName
-                      ? t("Choose {0} or a parent folder so Markside can browse and save files.", [parentFolderName])
-                      : t("Choose this folder or a parent folder so Markside can browse and save files.")}
+                    : t("Choose the folder once to authorize Markside to browse and save its files.")}
                 </p>
                 {folderError && (
                   <p className="text-[13px] leading-relaxed text-sidebar-foreground/75">

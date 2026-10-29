@@ -864,5 +864,6 @@
   "Choose this folder or a parent folder so Markside can browse and save files.": "選擇此資料夾或其上層資料夾，讓 Markside 能瀏覽和儲存檔案。",
   "Choose {0}…": "選擇「{0}」…",
   "Choose folder…": "選擇資料夾…",
-  "Opening the folder picker copies the folder path.": "開啟資料夾選擇視窗時會複製資料夾路徑。"
+  "Opening the folder picker copies the folder path.": "開啟資料夾選擇視窗時會複製資料夾路徑。",
+  "Choose the folder once to authorize Markside to browse and save its files.": "選擇一次資料夾，即可授權 Markside 瀏覽及儲存其中的檔案。"
 }

@@ -4,12 +4,14 @@ import { useCallback, useEffect, useRef, useState } from "react"
 
 import { MarkdownRenderer } from "~components/markdown-renderer"
 import { RawEditor } from "~components/raw-editor"
+import { SplitDivider } from "~components/split-divider"
 import { Button } from "~components/ui/button"
 import { useContentPreferences } from "~hooks/use-content-preferences"
+import { useSplitPercent } from "~hooks/use-content-split-pane"
 import { AUTO_SAVE_DELAY_MS, getAutoSaveEnabled, watchAutoSaveEnabled } from "~lib/auto-save"
 import { getFileHandle, setFileHandle } from "~lib/db"
 import { isSaveShortcut, isToggleSourceShortcut } from "~lib/content-app-policy"
-import { toggleSourceMode, type MarkdownMode } from "~lib/markdown-mode"
+import { getSplitPercent, MIN_SPLIT_PANE_WIDTH, toggleSourceMode, DEFAULT_SPLIT_PERCENT, type MarkdownMode } from "~lib/markdown-mode"
 import {
   clearStoredDraft,
   recordSavedDraft,
@@ -52,21 +54,26 @@ async function readSavedFile(handle: FileSystemFileHandle): Promise<DraftStart> 
 }
 
 export default function DraftTab() {
-  const [theme, setTheme] = useState<boolean | null | undefined>(undefined)
+  const [preferences, setPreferences] = useState<{ theme: boolean | null; splitPercent: number } | null>(null)
   const [start, setStart] = useState<DraftStart | null>(null)
 
   useEffect(() => {
-    void getThemePreference().catch(() => null).then(setTheme)
+    void Promise.all([
+      getThemePreference().catch(() => null),
+      getSplitPercent().catch(() => DEFAULT_SPLIT_PERCENT),
+    ]).then(([theme, splitPercent]) => setPreferences({ theme, splitPercent }))
     void loadDraftStart().then(setStart)
   }, [])
 
-  if (theme === undefined || !start) return null
+  if (!preferences || !start) return null
+  const theme = preferences.theme
   if (start.kind === "draft" || start.kind === "file") {
     return (
       <DraftEditor
         initialThemePreference={theme}
         initialContent={start.content}
         initialFile={start.kind === "file" ? start.handle : null}
+        initialSplitPercent={preferences.splitPercent}
       />
     )
   }
@@ -115,13 +122,16 @@ function DraftEditor({
   initialThemePreference,
   initialContent,
   initialFile,
+  initialSplitPercent,
 }: {
   initialThemePreference: boolean | null
   initialContent: string
   initialFile: FileSystemFileHandle | null
+  initialSplitPercent: number
 }) {
   const { dark, setDark, followsSystemThemeRef } = useContentPreferences(initialThemePreference)
   const [content, setContent] = useState(initialContent)
+  const split = useSplitPercent(initialSplitPercent)
   const [mode, setMode] = useState<MarkdownMode>(() => initialDraftMode(window.innerWidth))
   const [sourceFullWidth, setSourceFullWidth] = useState(false)
   const [file, setFile] = useState<FileSystemFileHandle | null>(initialFile)
@@ -389,10 +399,15 @@ function DraftEditor({
         </p>
       )}
 
-      <main className="min-h-0 flex-1">
-        <div className="flex h-full">
+      <main className="min-h-0 flex-1 overflow-x-auto">
+        <div
+          ref={split.splitContainerRef}
+          style={mode === "split" ? { minWidth: `${split.splitMinWidth}px` } : undefined}
+          className="relative flex h-full">
           {mode !== "source" && (
-            <div className={`h-full overflow-auto ${mode === "split" ? "w-1/2 border-r" : "w-full"}`}>
+            <div
+              style={mode === "split" ? { width: `${split.previewPercent}%`, minWidth: `${MIN_SPLIT_PANE_WIDTH}px` } : undefined}
+              className={`h-full min-w-0 overflow-auto ${mode === "split" ? "" : "w-full"}`}>
               {content.trim() ? (
                 <MarkdownRenderer content={content} />
               ) : (
@@ -407,7 +422,9 @@ function DraftEditor({
             </div>
           )}
           {mode !== "preview" && (
-            <div className={`h-full min-w-0 px-8 pb-10 pt-2 ${mode === "split" ? "w-1/2" : "w-full"}`}>
+            <div
+              style={mode === "split" ? { width: `${100 - split.previewPercent}%`, minWidth: `${MIN_SPLIT_PANE_WIDTH}px` } : undefined}
+              className={`h-full min-w-0 px-8 pb-10 pt-2 ${mode === "split" ? "" : "w-full"}`}>
               <div className={`h-full ${sourceFullWidth || mode === "split" ? "" : "mx-auto max-w-5xl"}`}>
                 <RawEditor
                   content={content}
@@ -421,6 +438,14 @@ function DraftEditor({
                 />
               </div>
             </div>
+          )}
+          {mode === "split" && (
+            <SplitDivider
+              previewPercent={split.previewPercent}
+              updateSplitFromClientX={split.updateSplitFromClientX}
+              storeSplitPercent={split.storeSplitPercent}
+              adjustSplitBy={split.adjustSplitBy}
+            />
           )}
         </div>
       </main>

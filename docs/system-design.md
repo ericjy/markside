@@ -403,7 +403,8 @@ shows the tab's state instead: the save shortcut before the first save, or the
 saved filename, which the draft tab records in `chrome.storage.session`. The draft tab
 opens in Split with the editor focused, or in Source when the window is narrower
 than two 320 px panes. The toolbar offers Preview, Source, and
-Split, with an even split and no divider; `Ctrl+E` switches between Source and
+Split, whose divider (`components/split-divider.tsx`, shared with documents)
+resizes the panes and shares their saved position; `Ctrl+E` switches between Source and
 Preview. Preview renders Markdown, code, math, and diagrams but not relative
 images, links, or HTML Embeds.
 

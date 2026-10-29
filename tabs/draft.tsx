@@ -287,7 +287,7 @@ function DraftEditor({
 
   return (
     <div className="flex h-screen flex-col bg-background text-foreground">
-      <header className="flex h-12 shrink-0 items-center gap-3 border-b px-4">
+      <header className="flex h-12 shrink-0 items-center gap-3 border-b px-4 dark:bg-sidebar">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" className="h-5 w-5 shrink-0" aria-hidden="true">
           <rect width="128" height="128" rx="28" fill="#18181b" />
           <path d="M22 92 V 28 h12 l26 38 26 -38 h12 V 92 h-12 V 50 l-22 32 h-8 L34 50 V 92 Z" fill="#fff" />

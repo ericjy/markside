@@ -99,12 +99,12 @@ li[data-reload-removed]::marker {
   }
 
   .dark {
-    --background: 224 71.4% 4.1%;
+    --background: 220 14% 11%;
     --foreground: 210 20% 98%;
     --muted: 215 27.9% 16.9%;
     --muted-foreground: 217.9 10.6% 64.9%;
-    --border: 215 27.9% 16.9%;
-    --input: 215 27.9% 16.9%;
+    --border: 217 14% 18%;
+    --input: 217 14% 18%;
     --ring: 216 12.2% 83.9%;
     --primary: 210 20% 98%;
     --primary-foreground: 220.9 39.3% 11%;
@@ -112,13 +112,13 @@ li[data-reload-removed]::marker {
     --secondary-foreground: 210 20% 98%;
     --accent: 215 27.9% 16.9%;
     --accent-foreground: 210 20% 98%;
-    --sidebar-background: 240 5.9% 10%;
+    --sidebar-background: 220 16% 7%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent: 220 14% 13%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-border: 217 14% 18%;
     --sidebar-ring: 217.2 91.2% 59.8%;
     --scrollbar-thumb: 217 10% 22%;
     --scrollbar-thumb-hover: 217 11% 32%;
@@ -942,6 +942,11 @@ button.readability-score-filter {
   background: color-mix(in srgb, var(--markdown-alert-color) 4%, transparent);
   border: 0;
   border-radius: 0.625rem;
+}
+
+/* On a dark page 4% reads as gray, so dark callouts need more of their color. */
+.dark .prose .markdown-alert:not(.markdown-alert-question) {
+  background: color-mix(in srgb, var(--markdown-alert-color) 8%, transparent);
 }
 
 .prose .markdown-alert-important {

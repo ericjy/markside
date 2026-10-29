@@ -105,6 +105,10 @@ changes nothing.
   permission.
 - **One draft or several?** One in this version (R4). Revisit if users report
   losing a draft by starting another.
+- **Should the draft tab show the Outline?** Not yet. Documents hide the
+  Outline in Split, which is the draft tab's default, and drafts are usually
+  short; the reopened file has the Outline. Revisit if people read long pasted
+  documents in the draft tab's Preview, and add it to Preview and Source only.
 - **Naming.** Unsaved Draft already means edits not yet written to a file.
   Resolved: **New Draft**, added to `CONTEXT.md`.
 

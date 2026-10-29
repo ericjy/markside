@@ -36,6 +36,7 @@ Store and GitHub Releases run independently and can diverge; see
 
 ### Fixed
 
+- Import Review accepts a reviewer's Hosted Snapshot link, not only a Link Snapshot.
 - Printed Mermaid diagrams fit the page column.
 - Clicking empty space clears a Review Comment selection.
 - Selected quotes no longer carry surrounding whitespace.

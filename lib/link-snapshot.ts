@@ -199,6 +199,13 @@ export function buildSnapshotEnvelopeBytes(snapshot: LinkSnapshot): Uint8Array {
   return deflateSync(strToU8(snapshotEnvelopeJson(snapshot)), { level: 9 })
 }
 
+// Reverses buildSnapshotEnvelopeBytes for both the fragment and decrypted hosted paths.
+export function decodeSnapshotEnvelopeBytes(compressed: Uint8Array): LinkSnapshot {
+  const output = inflateSync(compressed, { out: new Uint8Array(MAX_LINK_SNAPSHOT_OUTPUT_BYTES + 1) })
+  if (output.length > MAX_LINK_SNAPSHOT_OUTPUT_BYTES) throw new Error("Snapshot too large")
+  return parseEnvelope(JSON.parse(strFromU8(output)))
+}
+
 export function createLinkSnapshot(snapshot: LinkSnapshot): LinkSnapshotCreation {
   if (!isValidBasename(snapshot.filename)) {
     throw new Error("Link Snapshot filename must be a valid basename")
@@ -233,12 +240,9 @@ export function decodeLinkSnapshotFragment(fragment: string): LinkSnapshotDecode
     const encoded = delimiter === -1 ? value : value.slice(0, delimiter)
     const heading = delimiter === -1 ? null : decodeURIComponent(value.slice(delimiter + 1))
     if (!encoded.startsWith("x1.")) return { status: "invalid" }
-    const compressed = base64UrlToBytes(encoded.slice(3))
-    const output = inflateSync(compressed, { out: new Uint8Array(MAX_LINK_SNAPSHOT_OUTPUT_BYTES + 1) })
-    if (output.length > MAX_LINK_SNAPSHOT_OUTPUT_BYTES) return { status: "invalid" }
     return {
       status: "ready",
-      snapshot: parseEnvelope(JSON.parse(strFromU8(output))),
+      snapshot: decodeSnapshotEnvelopeBytes(base64UrlToBytes(encoded.slice(3))),
       headingId: heading || null,
     }
   } catch {

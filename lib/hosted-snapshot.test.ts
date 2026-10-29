@@ -10,9 +10,12 @@ import {
   HOSTED_SNAPSHOT_BASE_URL,
   HOSTED_SNAPSHOT_UPLOAD_URL,
   HOSTED_SNAPSHOT_URL_CHARACTERS,
+  loadHostedSnapshot,
+  parseHostedSnapshotUrl,
   SNAPSHOT_ORIGIN,
   uploadHostedSnapshot,
 } from "./hosted-snapshot"
+import { buildSnapshotEnvelopeBytes } from "./link-snapshot"
 
 const id = `261017${"A".repeat(22)}`
 
@@ -88,6 +91,70 @@ describe("uploadHostedSnapshot", () => {
   it("throws when the worker reports an error", async () => {
     vi.stubGlobal("chrome", { runtime: { sendMessage: async () => ({ error: "Upload failed" }) } })
     await expect(uploadHostedSnapshot(new Uint8Array([1]), 7)).rejects.toThrow("Upload failed")
+    vi.unstubAllGlobals()
+  })
+})
+
+describe("parseHostedSnapshotUrl", () => {
+  const key = "B".repeat(43)
+
+  it("reads the id and key from a hosted link, with or without a heading", () => {
+    expect(parseHostedSnapshotUrl(buildHostedSnapshotUrl(id, key))).toEqual({ id, key })
+    expect(parseHostedSnapshotUrl(` ${buildHostedSnapshotUrl(id, key)}~intro \n`)).toEqual({ id, key })
+  })
+
+  it("rejects Link Snapshots and malformed hosted links", () => {
+    expect(parseHostedSnapshotUrl("https://markside.app/s#x1.abc")).toBeNull()
+    expect(parseHostedSnapshotUrl(`https://markside.app/s/${id}`)).toBeNull()
+    expect(parseHostedSnapshotUrl(`https://markside.app/s/${id}#h1.short`)).toBeNull()
+    expect(parseHostedSnapshotUrl(`https://markside.app/s/not-an-id#h1.${key}`)).toBeNull()
+    expect(parseHostedSnapshotUrl("not a url")).toBeNull()
+  })
+
+  it("rejects hosted links from another server", () => {
+    expect(parseHostedSnapshotUrl(`http://localhost:4321/s/${id}#h1.${key}`)).toBeNull()
+  })
+})
+
+describe("loadHostedSnapshot", () => {
+  const round = {
+    id: "round-1",
+    reviewerName: "Sam",
+    note: "",
+    comments: [],
+    createdAt: "2026-10-28T00:00:00.000Z",
+  }
+
+  it("decrypts the downloaded ciphertext into the snapshot and its Review", async () => {
+    const { key, blob } = await encryptSnapshotEnvelope(
+      buildSnapshotEnvelopeBytes({ filename: "a.md", markdown: "hello", reviews: [round] }),
+    )
+    const sendMessage = vi.fn(async () => ({ status: 200, blob: Array.from(blob) }))
+    vi.stubGlobal("chrome", { runtime: { sendMessage } })
+
+    expect(await loadHostedSnapshot(id, key)).toEqual({
+      status: "ready",
+      snapshot: { filename: "a.md", markdown: "hello", reviews: [round] },
+    })
+    expect(sendMessage).toHaveBeenCalledWith({ type: "fetch-snapshot", id })
+    vi.unstubAllGlobals()
+  })
+
+  it("reports expired or removed links as unavailable", async () => {
+    for (const status of [404, 410]) {
+      vi.stubGlobal("chrome", { runtime: { sendMessage: async () => ({ status }) } })
+      expect(await loadHostedSnapshot(id, "A".repeat(43))).toEqual({ status: "unavailable" })
+    }
+    vi.unstubAllGlobals()
+  })
+
+  it("separates a failed download from a wrong key", async () => {
+    vi.stubGlobal("chrome", { runtime: { sendMessage: async () => ({ error: "Failed to fetch" }) } })
+    expect(await loadHostedSnapshot(id, "A".repeat(43))).toEqual({ status: "failed" })
+
+    const { blob } = await encryptSnapshotEnvelope(buildSnapshotEnvelopeBytes({ filename: "a.md", markdown: "x" }))
+    vi.stubGlobal("chrome", { runtime: { sendMessage: async () => ({ status: 200, blob: Array.from(blob) }) } })
+    expect(await loadHostedSnapshot(id, "A".repeat(43))).toEqual({ status: "invalid" })
     vi.unstubAllGlobals()
   })
 })

@@ -1,7 +1,7 @@
 export {}
 
 import { FILE_ACCESS_SETUP_KEY } from "~lib/file-access-setup"
-import { HOSTED_SNAPSHOT_UPLOAD_URL, SNAPSHOT_ORIGIN } from "~lib/hosted-snapshot"
+import { HOSTED_SNAPSHOT_UPLOAD_URL, isHostedSnapshotId, SNAPSHOT_ORIGIN } from "~lib/hosted-snapshot"
 import { LOCALHOST_REVIEW_ENABLED } from "~lib/localhost-review"
 import { READABILITY_CHECK_ENABLED } from "~lib/readability-service"
 import { uninstallSurveyUrl } from "~lib/uninstall-survey"
@@ -113,6 +113,23 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         if (!response.ok) throw new Error(`Upload failed (${response.status})`)
         const { id } = await response.json() as { id: string }
         sendResponse({ id })
+      })
+      .catch((err) => sendResponse({ error: err.message }))
+    return true
+  }
+
+  if (msg.type === "fetch-snapshot") {
+    if (typeof msg.id !== "string" || !isHostedSnapshotId(msg.id)) {
+      sendResponse({ error: "Invalid snapshot id" })
+      return
+    }
+    fetch(`${HOSTED_SNAPSHOT_UPLOAD_URL}/${msg.id}`)
+      .then(async (response) => {
+        if (!response.ok) {
+          sendResponse({ status: response.status })
+          return
+        }
+        sendResponse({ status: response.status, blob: Array.from(new Uint8Array(await response.arrayBuffer())) })
       })
       .catch((err) => sendResponse({ error: err.message }))
     return true

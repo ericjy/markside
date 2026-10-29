@@ -4,6 +4,8 @@ import {
   DEFAULT_EXPIRY_DAYS,
   encryptSnapshotEnvelope,
   HOSTED_SNAPSHOT_UPLOAD_URL,
+  loadHostedSnapshot,
+  parseHostedSnapshotUrl,
   uploadHostedSnapshot,
   type ExpiryDays
 } from "~lib/hosted-snapshot"
@@ -46,7 +48,7 @@ export type LinkSnapshotDialog = {
 
 export type ImportReviewDialog = {
   input: string
-  status: "input" | "invalid" | "empty" | "preview" | "imported"
+  status: "input" | "loading" | "invalid" | "unavailable" | "load-failed" | "empty" | "preview" | "imported"
   rounds: ReviewRound[]
 }
 
@@ -281,19 +283,28 @@ export function useContentSnapshots({
     }
   }
 
-  const decodeImportReviewInput = () => {
-    if (!importReviewDialog) return
-    const decoded = decodeLinkSnapshotFragment(extractLinkSnapshotFragment(importReviewDialog.input))
-    if (decoded.status !== "ready") {
-      setImportReviewDialog((current) => current && { ...current, status: "invalid", rounds: [] })
-      return
+  const decodeImportReviewInput = async () => {
+    if (!importReviewDialog || importReviewDialog.status === "loading") return
+    const input = importReviewDialog.input
+    // Ignore a hosted result that arrives after the reviewer edited the link.
+    const settle = (status: ImportReviewDialog["status"], rounds: ReviewRound[] = []) =>
+      setImportReviewDialog((current) => current && current.input === input ? { ...current, status, rounds } : current)
+    const hosted = parseHostedSnapshotUrl(input)
+    let snapshot
+    if (hosted) {
+      settle("loading")
+      const loaded = await loadHostedSnapshot(hosted.id, hosted.key)
+      if (loaded.status === "unavailable") return settle("unavailable")
+      if (loaded.status === "failed") return settle("load-failed")
+      if (loaded.status !== "ready") return settle("invalid")
+      snapshot = loaded.snapshot
+    } else {
+      const decoded = decodeLinkSnapshotFragment(extractLinkSnapshotFragment(input))
+      if (decoded.status !== "ready") return settle("invalid")
+      snapshot = decoded.snapshot
     }
-    const rounds = decoded.snapshot.reviews ?? []
-    if (rounds.length === 0) {
-      setImportReviewDialog((current) => current && { ...current, status: "empty", rounds: [] })
-      return
-    }
-    setImportReviewDialog((current) => current && { ...current, status: "preview", rounds })
+    const rounds = snapshot.reviews ?? []
+    settle(rounds.length === 0 ? "empty" : "preview", rounds)
   }
 
   const confirmImportReview = () => {

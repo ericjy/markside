@@ -13,14 +13,11 @@ import { ReviewPromptModal } from "~components/review-prompt-modal"
 import { SaveFolderDialog } from "~components/save-folder-dialog"
 import { Button } from "~components/ui/button"
 import type { FileNavigationTarget } from "~hooks/use-content-file-loading"
-import type { LinkSnapshotDialog } from "~hooks/use-content-snapshots"
+import type { ImportReviewDialog, LinkSnapshotDialog } from "~hooks/use-content-snapshots"
 import {
   DEFAULT_EXPIRY_DAYS,
   HOSTED_SNAPSHOT_URL_CHARACTERS
 } from "~lib/hosted-snapshot"
-import {
-  type ReviewRound
-} from "~lib/review"
 import { fileFolderPath } from "~lib/url"
 
 interface ContentDialogsProps {
@@ -39,10 +36,10 @@ interface ContentDialogsProps {
   copyBackupUrl: () => Promise<void>
   backupUrlCopyState: "copied" | "idle"
   confirmLinkSnapshot: () => Promise<void>
-  importReviewDialog: { input: string; status: "input" | "invalid" | "empty" | "preview" | "imported"; rounds: ReviewRound[]; } | null
+  importReviewDialog: ImportReviewDialog | null
   closeImportReviewDialog: () => void
-  setImportReviewDialog: React.Dispatch<React.SetStateAction<{ input: string; status: "input" | "invalid" | "empty" | "preview" | "imported"; rounds: ReviewRound[]; } | null>>
-  decodeImportReviewInput: () => void
+  setImportReviewDialog: React.Dispatch<React.SetStateAction<ImportReviewDialog | null>>
+  decodeImportReviewInput: () => Promise<void>
   confirmImportReview: () => void
   pendingNavigation: FileNavigationTarget | null
   setPendingNavigation: React.Dispatch<React.SetStateAction<FileNavigationTarget | null>>
@@ -440,7 +437,7 @@ export function ContentDialogs({
               <div>
                 <h2 id="import-review-title" className="text-base font-semibold">Import Review from link</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Paste a link a reviewer sent you to bring their comments into Review History. Markside decodes it locally, without a network request.
+                  Paste a reviewer's link to add their comments to Review History. Markside's servers never see its contents.
                 </p>
               </div>
               <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Close" onClick={closeImportReviewDialog}>
@@ -459,12 +456,22 @@ export function ContentDialogs({
                     input: event.currentTarget.value,
                     status: "input",
                   })}
-                  placeholder="https://markside.app/s#x1...."
+                  placeholder="https://markside.app/s..."
                   className="review-input mt-4 w-full resize-none rounded-md border px-3 py-2.5 font-mono text-xs outline outline-2 outline-offset-1 outline-transparent placeholder:text-muted-foreground focus-visible:outline-ring"
                 />
                 {importReviewDialog.status === "invalid" && (
                   <p role="alert" className="mt-2 text-sm text-red-600 dark:text-red-400">
                     That link isn't a valid Markside Share Link.
+                  </p>
+                )}
+                {importReviewDialog.status === "unavailable" && (
+                  <p role="alert" className="mt-2 text-sm text-red-600 dark:text-red-400">
+                    That link has expired or was removed.
+                  </p>
+                )}
+                {importReviewDialog.status === "load-failed" && (
+                  <p role="alert" className="mt-2 text-sm text-red-600 dark:text-red-400">
+                    Couldn't download that link. Check your connection and try again.
                   </p>
                 )}
                 {importReviewDialog.status === "empty" && (
@@ -475,9 +482,9 @@ export function ContentDialogs({
                 <div className="mt-4 flex justify-end gap-2">
                   <Button variant="ghost" onClick={closeImportReviewDialog}>Cancel</Button>
                   <Button
-                    disabled={!importReviewDialog.input.trim()}
-                    onClick={decodeImportReviewInput}>
-                    Decode
+                    disabled={!importReviewDialog.input.trim() || importReviewDialog.status === "loading"}
+                    onClick={() => void decodeImportReviewInput()}>
+                    {importReviewDialog.status === "loading" ? "Decoding…" : "Decode"}
                   </Button>
                 </div>
               </>

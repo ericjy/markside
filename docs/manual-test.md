@@ -147,6 +147,9 @@ pull request or review response.
   Check that preference changes reach already open documents.
 - [ ] Open Share, inspect Link and Hosted Snapshot choices, and cancel. If you
   test creating a link, use a disposable document and inspect its rendered view.
+- [ ] On a Hosted Snapshot at `markside.app/s`, add a comment and Share review
+  as Hosted. In the source file choose Import Review, paste the link, and
+  confirm the comment arrives in Review History.
 
 ## Folder tree and other files
 

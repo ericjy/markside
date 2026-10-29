@@ -423,6 +423,12 @@ reports local images and document links that the standalone viewer cannot
 resolve. HTML Embed files travel in the envelope's optional `e` object, keyed by
 the path as written, so they count toward the same size checks.
 
+Recipients can comment in the `/s` viewer and share their Review back as a new
+Link or Hosted Snapshot. Import Review in the source document reads the Review
+Rounds from that link into Review History. A Link Snapshot is decoded in the
+page; for a Hosted Snapshot the background worker downloads the ciphertext from
+`/api/snapshots/<id>` and the page decrypts it with the key from the fragment.
+
 The public `/s` viewer is maintained in the separate website repository. It
 decodes and renders entirely in the browser, limits decompressed output to 256
 KiB, sanitizes rendered HTML, and treats local resources as unavailable. Link

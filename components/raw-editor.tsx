@@ -131,7 +131,8 @@ const markdownLanguage = markdown({
   codeLanguages: getMarkdownCodeLanguage,
 })
 
-function getLanguage(fileName: string) {
+function getLanguage(fileName: string, isMarkdown: boolean) {
+  if (isMarkdown) return markdownLanguage
   const ext = fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase()
   switch (ext) {
     case "js": case "jsx": case "mjs": case "cjs": return javascript({ jsx: true })
@@ -231,6 +232,7 @@ function isMdFileName(fileName: string) {
 
 interface Props {
   autoFocus?: boolean
+  treatAsMarkdown?: boolean
   fullWidth: boolean
   onToggleFullWidth: () => void
   content: string
@@ -245,7 +247,7 @@ export interface RawEditorHandle {
 }
 
 export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
-  { content, dark, fileName, onChange, fullWidth, onToggleFullWidth, autoFocus = false, placeholder },
+  { content, dark, fileName, onChange, fullWidth, onToggleFullWidth, autoFocus = false, placeholder, treatAsMarkdown = false },
   ref,
 ) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -257,10 +259,10 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
   const langCompartmentRef = useRef(new Compartment())
   const wrapCompartmentRef = useRef(new Compartment())
   const shortcutCompartmentRef = useRef(new Compartment())
-  const [lineWrap, setLineWrap] = useState(() => isMdFileName(fileName))
+  const isMarkdown = treatAsMarkdown || isMdFileName(fileName)
+  const [lineWrap, setLineWrap] = useState(() => isMarkdown)
   const [copied, setCopied] = useState(false)
   const [emojiOpen, setEmojiOpen] = useState(false)
-  const isMarkdown = isMdFileName(fileName)
 
   useEffect(() => {
     onChangeRef.current = onChange
@@ -275,7 +277,7 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
         doc: content,
         extensions: [
           basicSetup,
-          langCompartmentRef.current.of(getLanguage(fileName)),
+          langCompartmentRef.current.of(getLanguage(fileName, isMarkdown)),
           wrapCompartmentRef.current.of(lineWrap ? EditorView.lineWrapping : []),
           shortcutCompartmentRef.current.of(
             isMarkdown
@@ -336,7 +338,7 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
     if (!viewRef.current) return
     viewRef.current.dispatch({
       effects: [
-        langCompartmentRef.current.reconfigure(getLanguage(fileName)),
+        langCompartmentRef.current.reconfigure(getLanguage(fileName, isMarkdown)),
         shortcutCompartmentRef.current.reconfigure(
           isMarkdown
             ? [keymap.of(markdownFormattingKeymap), markdownHeadingShortcuts]
@@ -344,12 +346,12 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
         ),
       ],
     })
-  }, [fileName])
+  }, [fileName, isMarkdown])
 
   // Reset line wrap to auto-default when switching files
   useEffect(() => {
-    setLineWrap(isMdFileName(fileName))
-  }, [fileName])
+    setLineWrap(isMarkdown)
+  }, [fileName, isMarkdown])
 
   // Hot-swap line wrapping when lineWrap state changes
   useEffect(() => {

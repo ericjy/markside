@@ -1,6 +1,7 @@
-import React,{ useEffect } from "react"
+import React,{ useEffect,useState } from "react"
 import {
   classifyMarksideFileUrl,
+  isMarkdownTextFileUrl,
 } from "~lib/file-types"
 import {
   resolveFetchedFileContent,
@@ -10,6 +11,19 @@ import {
 export type FileNavigationTarget =
   | { url: string; handle: FileSystemFileHandle }
   | { url: string; text: string }
+
+export function useMarkdownTextChoice(fileUrl: string) {
+  const [choice, setChoice] = useState<{ url: string; markdown: boolean } | null>(null)
+
+  useEffect(() => { setChoice(null) }, [fileUrl])
+
+  const currentChoice = choice?.url === fileUrl ? choice : null
+  return {
+    suggestMarkdown: isMarkdownTextFileUrl(fileUrl) && currentChoice === null,
+    markdownText: currentChoice?.markdown === true,
+    chooseMarkdownText: (markdown: boolean) => setChoice({ url: fileUrl, markdown }),
+  }
+}
 
 interface UseContentFileLoadingOptions {
   initialContent: string | null

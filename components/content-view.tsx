@@ -74,6 +74,7 @@ const QUICK_COMMENT_ICONS: Record<string, LucideIcon> = {
 
 interface ContentViewProps {
   isImageFile: boolean
+  isMarkdown: boolean
   error: string | null
   imageObjectUrl: string | null
   fileUrl: string
@@ -164,6 +165,7 @@ interface ContentViewProps {
 }
 
 export function ContentView({
+  isMarkdown,
   isImageFile,
   error,
   imageObjectUrl,
@@ -366,6 +368,7 @@ export function ContentView({
                       ) : (
                         <RawEditor
                           ref={rawEditorRef}
+                          treatAsMarkdown={isMarkdown}
                           content={draft}
                           dark={dark}
                           fullWidth={sourceFullWidth}

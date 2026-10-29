@@ -292,7 +292,13 @@ recursively indexes the same allowed tree when the quick file switcher opens.
 
 ## Editing and Saving
 
-Markdown files support Preview, Source, and Split. Non-Markdown text files use Source only; images use the image viewer.
+Markdown files support Preview, Source, and Split. Non-Markdown text files use
+Source only; images use the image viewer. A local file ending in `.md.txt`
+starts in Source with a prompt to open it as Markdown or keep it as text. The
+Markdown choice enables the Markdown surfaces and Source editor controls for
+that open file, carrying any Unsaved Draft into Preview. It does not rename the
+file or change its save path. The choice is discarded on file navigation or
+page reload. Ordinary `.txt` files remain Source only.
 
 Source defaults to full width for all text files, including Markdown. Its width
 control is in the Source options menu alongside Word wrap and Copy. Preview defaults to column width and has its

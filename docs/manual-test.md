@@ -23,6 +23,13 @@ pull request or review response.
   Preview. Check headings, code highlighting, diagrams, math, links, and images.
 - [ ] Switch between Preview, Source, and Split. An edit survives mode changes;
   Split updates its rendered pane while typing.
+- [ ] Open a disposable `.md.txt` file and confirm the Markdown suggestion
+  appears above Source. Edit without saving, then choose **Open as Markdown**:
+  Preview shows the edit, Source and Split have Markdown editing controls, and
+  saving writes the original `.md.txt` without renaming it. Reload and confirm
+  the suggestion returns; choose **Keep as text** and confirm Source remains.
+  Navigate away and back to check the suggestion returns. Ordinary `.txt` files
+  do not show it. On Windows, repeat with file extensions hidden and shown.
 - [ ] Close the file tree, refresh the page, and navigate to another local file:
   it stays closed without flashing open. Reopen it and repeat: it stays open.
   Enter Split and reload, then return to Preview: the file tree restores the

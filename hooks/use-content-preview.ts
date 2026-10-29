@@ -271,11 +271,11 @@ export function useContentPreview({
         }
       }
     }
-  }, [content, fileUrl, changesVisible, reloadComparison, imageReloadVersion])
+  }, [content, fileUrl, isMdFile, changesVisible, reloadComparison, imageReloadVersion])
 
   useEffect(() => {
     if (contentRef.current) applyHeadingNumbers(contentRef.current, numberHeadings)
-  }, [content, fileUrl, numberHeadings, changesVisible, reloadComparison])
+  }, [content, fileUrl, isMdFile, numberHeadings, changesVisible, reloadComparison])
 
   useEffect(() => {
     const scroller = previewScrollRef.current

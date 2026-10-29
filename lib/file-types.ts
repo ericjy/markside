@@ -67,6 +67,11 @@ function getLocalFileName(fileUrl: string): string | null {
   }
 }
 
+export function isMarkdownTextFileUrl(fileUrl: string): boolean {
+  const fileName = getLocalFileName(fileUrl)
+  return fileName !== null && /\.md\.txt$/i.test(fileName)
+}
+
 export function classifyMarksideFileUrl(fileUrl: string): MarksideFileKind {
   const fileName = getLocalFileName(fileUrl)
   if (!fileName) return "unsupported"

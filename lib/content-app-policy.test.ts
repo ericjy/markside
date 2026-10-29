@@ -33,6 +33,15 @@ describe("content application characterization", () => {
     expect(getContentFileSurfaces(url, mode)).toMatchObject({ isImageFile: image, previewVisible: preview, sourceVisible: source })
   })
 
+  it("opens an explicitly chosen .md.txt file in all Markdown modes without changing its save path", () => {
+    const url = "file:///docs/my%20notes.md.txt"
+    expect(getContentFileSurfaces(url, "preview")).toMatchObject({ previewVisible: false, sourceVisible: true })
+    expect(getContentFileSurfaces(url, "preview", true)).toMatchObject({ previewVisible: true, sourceVisible: false })
+    expect(getContentFileSurfaces(url, "source", true)).toMatchObject({ previewVisible: false, sourceVisible: true })
+    expect(getContentFileSurfaces(url, "split", true)).toMatchObject({ isSplitView: true, previewVisible: true, sourceVisible: true })
+    expect(getSavePathParts(url, "file:///docs/")).toEqual(["my notes.md.txt"])
+  })
+
   it("resolves the decoded save path inside the matching folder", () => {
     expect(getSavePathParts("file:///docs/nested/a%20b.md#heading", "file:///docs/"))
       .toEqual(["nested", "a b.md"])

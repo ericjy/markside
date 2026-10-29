@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   classifyMarksideFileUrl,
+  isMarkdownTextFileUrl,
   MARKSIDE_CONTENT_GLOBS,
   MARKSIDE_CONTENT_MATCHES,
   shouldPinFileUrl,
@@ -82,6 +83,28 @@ describe("classifyMarksideFileUrl", () => {
     expect(classifyMarksideFileUrl(
       `file:///Users/eric/project/${fileName}`,
     )).toBe("source")
+  })
+})
+
+describe("isMarkdownTextFileUrl", () => {
+  it.each([
+    "file:///docs/note.md.txt",
+    "file:///docs/%ED%95%9C%EA%B8%80.MD.txt#heading",
+    "file:///docs/note.md.TXT",
+  ])("recognizes a local Markdown-looking text file: %s", (url) => {
+    expect(isMarkdownTextFileUrl(url)).toBe(true)
+    expect(classifyMarksideFileUrl(url)).not.toBe("markdown")
+  })
+
+  it.each([
+    "file:///docs/note.txt",
+    "file:///docs/note.md",
+    "file:///docs/note.md.txt.backup",
+    "file:///docs/note.mdx.txt",
+    "https://example.com/note.md.txt",
+    "file:///docs/%ZZ.md.txt",
+  ])("does not suggest Markdown for %s", (url) => {
+    expect(isMarkdownTextFileUrl(url)).toBe(false)
   })
 })
 

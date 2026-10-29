@@ -131,6 +131,14 @@ Expanded folders remain expanded when you navigate between files.
 | Images | Displayed as an image |
 | Everything else | Source editor when opened from the file tree |
 
+If a file ends in `.md.txt`, Markside offers **Open as Markdown** or **Keep as
+text**. Opening it as Markdown enables Preview, Source, and Split for the current
+open file. Any edits still save to the original `.md.txt` file; Markside does not
+rename it. The choice resets when you navigate away or reload. To make it a
+`.md` file for other applications too, rename it outside Markside. On Windows,
+turn on **View → Show → File name extensions** in File Explorer to see the full
+filename.
+
 ## Preview
 
 Preview uses the **Standard** page width, a comfortable reading line. Open

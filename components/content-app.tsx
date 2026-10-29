@@ -18,6 +18,7 @@ import {
 import { useActiveReview } from "~hooks/use-active-review"
 import {
   useContentFileLoading,
+  useMarkdownTextChoice,
   useWikilinkNavigation,
   type FileNavigationTarget
 } from "~hooks/use-content-file-loading"
@@ -105,12 +106,13 @@ export function FileRenderer({
   const [sidebarWidth, setSidebarWidth] = useState(280)
   const [rightSidebarWidth, setRightSidebarWidth] = useState(300)
   const [fileUrl, setFileUrl] = useState(() => window.location.href.split("#")[0])
+  const { suggestMarkdown, markdownText, chooseMarkdownText } = useMarkdownTextChoice(fileUrl)
   const fileUrlRef = useRef(fileUrl)
   fileUrlRef.current = fileUrl
   const isAddressBarSynced = fileUrl === window.location.href.split("#")[0]
-  const isMdFile = classifyMarksideFileUrl(fileUrl) === "markdown"
-  const isPdfExportable = canExportPdf(fileUrl)
-  const { isImageFile, modeSurfaces, isSplitView, sourceVisible, previewVisible } = getContentFileSurfaces(fileUrl, mode)
+  const isMdFile = classifyMarksideFileUrl(fileUrl) === "markdown" || markdownText
+  const isPdfExportable = canExportPdf(fileUrl) || markdownText
+  const { isImageFile, modeSurfaces, isSplitView, sourceVisible, previewVisible } = getContentFileSurfaces(fileUrl, mode, isMdFile)
   const initialSidebarState = resolveInitialSidebarState({
     mode: initialMode,
     isMarkdown: isMdFile,
@@ -841,6 +843,25 @@ export function FileRenderer({
       </div>
       {/* Leaves room above the document so a revealed toolbar doesn't crowd it. */}
       {zenMode && <div className="h-5 shrink-0" />}
+        {suggestMarkdown && content !== null && !error && (
+          <div role="region" aria-label="Markdown file suggestion" className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b bg-muted/40 px-4 py-2 text-sm print:hidden">
+            <span>This file ends in .md.txt. Open it as Markdown? The filename will stay the same.</span>
+            <div className="flex shrink-0 items-center gap-2">
+              <button type="button" className="rounded border px-2.5 py-1 text-xs font-medium hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" onClick={() => chooseMarkdownText(false)}>
+                Keep as text
+              </button>
+              <button type="button" className="rounded bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" onClick={() => {
+                cancelPreviewUpdate()
+                pendingDraftSyncRef.current = false
+                setContent(draftRef.current)
+                setMode("preview")
+                chooseMarkdownText(true)
+              }}>
+                Open as Markdown
+              </button>
+            </div>
+          </div>
+        )}
         {conflict && (
           <div className="shrink-0 flex items-center justify-between gap-3 px-4 py-2 bg-amber-50 dark:bg-amber-950 border-b border-amber-200 dark:border-amber-800 text-xs">
             <span className="text-amber-800 dark:text-amber-200">
@@ -864,6 +885,7 @@ export function FileRenderer({
       <ContentView
         checkReviewUpdates={checkReviewUpdates}
         isImageFile={isImageFile}
+        isMarkdown={isMdFile}
         error={error}
         imageObjectUrl={imageObjectUrl}
         fileUrl={fileUrl}

@@ -1,8 +1,11 @@
 import { classifyMarksideFileUrl } from "./file-types"
 import { getModeSurfaces, type MarkdownMode } from "./markdown-mode"
 
-export function getContentFileSurfaces(fileUrl: string, mode: MarkdownMode) {
-  const isMdFile = classifyMarksideFileUrl(fileUrl) === "markdown"
+export function getContentFileSurfaces(
+  fileUrl: string,
+  mode: MarkdownMode,
+  isMdFile = classifyMarksideFileUrl(fileUrl) === "markdown",
+) {
   const isImageFile = /\.(png|jpe?g|gif|webp|svg|bmp|ico|tiff?)$/i.test(fileUrl)
   const modeSurfaces = getModeSurfaces(mode)
   const isSplitView = isMdFile && mode === "split"

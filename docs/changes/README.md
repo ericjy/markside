@@ -108,4 +108,5 @@ and code examples may no longer match the current source tree.
 - [HTML embeds and explaining in Markside](2026-10-25-html-embeds/spec.md)
 - [New draft from any tab](2026-10-26-new-draft/spec.md)
 - [Open `.md.txt` as Markdown](2026-10-28-markdown-text-files/spec.md)
+- [Interface languages](2026-10-28-interface-languages/spec.md) (Confirmed design)
 - [Local images in Hosted Snapshots](2026-10-28-hosted-snapshot-images/spec.md) (Proposed)

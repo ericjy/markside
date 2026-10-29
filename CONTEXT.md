@@ -8,6 +8,10 @@ Markside is a browser-based viewer and editor for local text files, with rich re
 A preference that writes an edited file after a short period without input. It is disabled by default.
 _Avoid_: Automatic saving, background save
 
+**New Draft**:
+Markdown written in Markside's draft tab, opened with New draft in the popup, before it has a file. It is kept in the browser until its first save, when the user chooses where to save it; the saved file must be reopened from its folder to use the file tree, Reviews, and relative images.
+_Avoid_: Scratch file, untitled file, Unsaved Draft
+
 **Typeface**:
 A preference that sets the font of rendered Markdown. It offers a fixed set of installed system fonts and defaults to Sans.
 _Avoid_: Font, theme

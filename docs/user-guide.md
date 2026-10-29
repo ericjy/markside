@@ -25,6 +25,20 @@ setup, agent Reviews, and interviews.
 
 Press `Cmd+O` / `Ctrl+O` to open Chrome's file picker, then select any supported file. Markside intercepts the `file://` URL and renders it.
 
+### Start a new draft
+
+Click the Markside toolbar icon on any tab and choose **New draft**. A Markside
+tab opens in Split, or Source in a narrow window, where you can type or paste
+Markdown immediately, and switch
+between Preview, Source, and Split as in any Markdown file. The draft is kept if you close the tab, and **New
+draft** brings it back. **Discard** clears it.
+
+Press `Cmd+S` / `Ctrl+S` to choose where to save it. Markside suggests the first
+heading as the filename. You can keep editing and saving in the same tab. To use
+the file tree, Reviews, and relative images, open the saved file with `Cmd+O` /
+`Ctrl+O` or from its folder. If you edit the file in both tabs, the later save
+wins.
+
 ### Set Chrome as the default app
 
 Double-clicking a `.md` file on the desktop opens it in Markside automatically.

@@ -143,6 +143,14 @@ pull request or review response.
   Reload and inspect anchored and unanchored comments before copying again.
 - [ ] Open the popup. Confirm pending Reviews appear with correct counts and
   selecting one opens the corresponding file and Review.
+- [ ] On an ordinary web page, choose New draft in the popup. Confirm the
+  editor has focus, paste Markdown with code, math, and a Mermaid diagram, and
+  check Preview. Close the tab, choose New draft again, and confirm the text
+  returns; with the tab open, confirm New draft focuses it. Check Discard.
+- [ ] Save a New Draft. Confirm the save dialog suggests the first heading,
+  the notice appears, and the file on disk matches. Edit, save again without a
+  dialog, then edit and close the tab to see the leave-page warning. Open the
+  saved file with Cmd+O and confirm it renders normally.
 - [ ] Open Settings from the popup. Check Auto Save and guidance.
   Check that preference changes reach already open documents.
 - [ ] Open Share, inspect Link and Hosted Snapshot choices, and cancel. If you

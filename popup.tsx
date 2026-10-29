@@ -1,8 +1,10 @@
 import {
   Bot,
+  ChevronRight,
   ExternalLink,
   Eye,
   EyeOff,
+  FilePlus,
   FolderInput,
   Keyboard,
   MapPin,
@@ -21,6 +23,7 @@ import {
 import { FileAccessDemo, FILE_ACCESS_DEMO_CSS } from "~lib/file-access-demo"
 import { FILE_ACCESS_SETUP_KEY } from "~lib/file-access-setup"
 import { classifyMarksideFileUrl } from "~lib/file-types"
+import { openNewDraft } from "~lib/new-draft"
 import { requestOpenReview } from "~lib/open-review-request"
 import {
   describeReviewAge,
@@ -172,6 +175,18 @@ export default function Popup() {
         .primary-button:hover { background: var(--popup-green-bright); border-color: var(--popup-green-bright); box-shadow: #000 -4px 4px; transform: translate(2px, -2px); }
         .primary-button:active { box-shadow: none; transform: none; }
         .primary-button:focus-visible { outline: 3px solid var(--popup-matcha); outline-offset: 2px; }
+        .draft-card { align-items: center; background: #fff; border: 1px solid var(--popup-border); border-radius: 12px; cursor: pointer; display: flex; gap: 12px; margin-top: 4px; padding: 12px; text-align: left; width: 100%; }
+        .review-card + .draft-card { margin-top: 16px; }
+        .draft-card:hover { background: var(--popup-cream-deep); border-color: #bdb5a7; }
+        .draft-card:focus-visible { outline: 3px solid var(--popup-matcha); outline-offset: 2px; }
+        .draft-icon { align-items: center; background: var(--popup-text); border-radius: 9px; color: #fff; display: flex; flex-shrink: 0; height: 32px; justify-content: center; transition: background 150ms ease; width: 32px; }
+        .draft-card:hover .draft-icon { background: var(--popup-green-bright); }
+        .draft-text { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; }
+        .draft-title { color: var(--popup-text); font-size: 13px; font-weight: 700; }
+        .draft-hint { color: var(--popup-text-secondary); font-size: 11px; line-height: 1.4; }
+        .draft-arrow { color: var(--popup-text-secondary); flex-shrink: 0; transition: transform 150ms ease; }
+        .draft-card:hover .draft-arrow { color: var(--popup-text); transform: translateX(2px); }
+        .draft-card + .section-label { margin-top: 24px; }
         .popup-note { color: var(--popup-text-secondary); font-size: 11px; line-height: 1.5; margin: 8px 0 0; }
         .context-note { margin: -4px 0 0 12px; }
 
@@ -211,7 +226,7 @@ export default function Popup() {
         .footer-link:hover { color: var(--popup-green-bright); }
         .footer-link:focus-visible { border-radius: 6px; outline: 3px solid var(--popup-matcha); outline-offset: 1px; }
         .footer-dot { color: var(--popup-border); }
-        @media (prefers-reduced-motion: reduce) { .primary-button { transition: none; } }
+        @media (prefers-reduced-motion: reduce) { .primary-button, .draft-icon, .draft-arrow { transition: none; } .draft-card:hover .draft-arrow { transform: none; } }
       `}</style>
 
       <div className="popup-root">
@@ -331,6 +346,17 @@ export default function Popup() {
                   <span className="review-open"><ExternalLink size={12} /> Open</span>
                 </button>
               ))}
+
+              <button
+                className="draft-card"
+                onClick={() => void openNewDraft().then(() => window.close())}>
+                <span className="draft-icon"><FilePlus size={16} strokeWidth={1.8} /></span>
+                <span className="draft-text">
+                  <span className="draft-title">New draft</span>
+                  <span className="draft-hint">Write or paste Markdown, save it anywhere</span>
+                </span>
+                <ChevronRight className="draft-arrow" size={16} strokeWidth={1.8} aria-hidden="true" />
+              </button>
 
               {!reviewable && (
                 <>

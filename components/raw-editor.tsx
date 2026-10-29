@@ -33,7 +33,7 @@ import {
   TriangleAlert,
 } from "lucide-react"
 import { Compartment, EditorState, Transaction } from "@codemirror/state"
-import { EditorView, keymap } from "@codemirror/view"
+import { EditorView, keymap, placeholder as editorPlaceholder } from "@codemirror/view"
 import { markdown } from "@codemirror/lang-markdown"
 import { oneDark } from "@codemirror/theme-one-dark"
 import { basicSetup } from "codemirror"
@@ -237,6 +237,7 @@ interface Props {
   dark: boolean
   fileName: string
   onChange: (value: string, sourceLine: number) => void
+  placeholder?: string
 }
 
 export interface RawEditorHandle {
@@ -244,7 +245,7 @@ export interface RawEditorHandle {
 }
 
 export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
-  { content, dark, fileName, onChange, fullWidth, onToggleFullWidth, autoFocus = false },
+  { content, dark, fileName, onChange, fullWidth, onToggleFullWidth, autoFocus = false, placeholder },
   ref,
 ) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -283,6 +284,7 @@ export const RawEditor = forwardRef<RawEditorHandle, Props>(function RawEditor(
           ),
           baseTheme,
           revealedEditorLineExtension,
+          placeholder ? editorPlaceholder(placeholder) : [],
           compartment.of(dark
             ? [oneDark, darkOverride, inlineCodeHighlighting, headingHighlighting, darkHeadingTheme]
             : [lightTheme, defaultHighlighting, inlineCodeHighlighting, headingHighlighting, headingTheme]),

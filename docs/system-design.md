@@ -8,7 +8,8 @@
 | Content application | `components/content-app.tsx` | Coordinates document state and composes the content UI |
 | Paused entry | `lib/localhost-review-entry.tsx` | Localhost Review code, not registered in any build |
 | Background worker | `background.ts` | Relays local-file reads and tab navigation requested by the content script, and registers the uninstall survey URL |
-| Popup | `popup.tsx` | Lists pending document Reviews, reports file-access readiness, and links to Settings |
+| Popup | `popup.tsx` | Lists pending document Reviews, reports file-access readiness, opens a New Draft, and links to Settings |
+| Draft tab | `tabs/draft.tsx` | Writes a New Draft before it has a file and saves it with the system save dialog |
 | Options page | `options.tsx` | Stores extension preferences and explains supported behavior |
 
 The content application keeps the document state shared by every feature
@@ -389,8 +390,31 @@ explicit action; there is no filesystem watcher or polling.
 
 The background worker opens a normal `file://` tab. A tab-scoped, one-time request
 starts it in Source mode with editor focus, without changing the saved view
-preference. The original tab and its Unsaved Draft remain untouched. Popup
-creation and the separate extension editor page are not part of this flow.
+preference. The original tab and its Unsaved Draft remain untouched.
+
+### New Draft
+
+**New draft** in the popup opens the draft tab, `tabs/draft.html`, from any
+tab. If the tab still editing an unsaved New Draft is open, found with
+`chrome.runtime.getContexts`, the popup focuses it instead. The draft tab
+opens in Split with the editor focused, or in Source when the window is narrower
+than two 320 px panes. The toolbar offers Preview, Source, and
+Split, with an even split and no divider; `Ctrl+E` switches between Source and
+Preview. Preview renders Markdown, code, math, and diagrams but not relative
+images, links, or HTML Embeds.
+
+Until the first save, the text and the editing tab's id are mirrored to
+`chrome.storage.local` under `newDraft`, so a closed tab restores it. Only one
+New Draft is kept. **Discard** empties it after confirmation.
+
+The first save uses `showSaveFilePicker`, suggesting the first heading as the
+filename, or `Untitled.md`. The File System Access API never reveals the saved
+file's path, so the tab cannot become a `file://` document. It keeps the file
+handle in memory, clears the stored draft, and shows a notice to reopen the
+file with `Cmd+O` or from its folder for the file tree, Reviews, and relative
+images. Later saves write to the same handle without a dialog; closing the tab
+with unwritten edits shows the browser's leave-page warning. Auto Save, the
+Outline, and Reviews are not available in the draft tab.
 
 ## Snapshots
 

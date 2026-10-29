@@ -106,3 +106,4 @@ and code examples may no longer match the current source tree.
 - [Render Mermaid diagrams with Pele](2026-10-24-pele-diagrams/spec.md)
 - [Calmer reading](2026-10-24-calmer-reading/spec.md)
 - [HTML embeds and explaining in Markside](2026-10-25-html-embeds/spec.md)
+- [New draft from any tab](2026-10-26-new-draft/spec.md)

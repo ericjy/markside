@@ -498,3 +498,21 @@ permissions and disk writes require manual verification.
 - With Outline and docked Review open, verify the reload bar is centered over
   the document, not either sidebar. Check Split too. Scroll to the last line and
   verify it remains readable above the bar. Done dismisses the comparison bar.
+
+
+### Hosted Snapshot local images
+
+- With the website running a compatible viewer and upload endpoint, share a
+  document referencing Markdown and HTML local images, including a parent
+  directory and a `file:` URL. Confirm Hosted is preselected, the count is
+  shown, and the recipient sees each image without the extension.
+- Share with a missing image; check its path and choose both cancel and continue.
+  Switch to Link Snapshot and verify the missing-image warning.
+- Change an image after opening Share; verify the updated image requires a new
+  confirmation before upload. Test with an Unsaved Draft and a cancelled save.
+- Exceed the Hosted limit. Compress and inspect the paths and size changes
+  before confirming. Verify animated GIF/APNG and SVG stay intact, the source
+  files stay unchanged, and a still-oversized copy asks for manual adjustment.
+- Add a recipient Review and return it as a Hosted Snapshot. Verify its images
+  remain visible and the extension imports the Review. Check that choosing a
+  Link Snapshot warns that local images will not accompany the reply.

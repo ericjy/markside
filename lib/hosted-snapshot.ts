@@ -19,6 +19,9 @@ export const HOSTED_SNAPSHOT_URL_CHARACTERS =
 
 export type ExpiryDays = (typeof EXPIRY_DAY_OPTIONS)[number]
 
+export const MAX_HOSTED_SNAPSHOT_OUTPUT_BYTES = 6 * 1024 * 1024
+export const MAX_HOSTED_SNAPSHOT_UPLOAD_BYTES = 4 * 1000 * 1000
+
 const IV_BYTES = 12
 const TAG_BYTES = 16
 
@@ -126,7 +129,7 @@ export async function loadHostedSnapshot(id: string, key: string): Promise<Hoste
       cryptoKey,
       blob.subarray(IV_BYTES),
     )
-    return { status: "ready", snapshot: decodeSnapshotEnvelopeBytes(new Uint8Array(plaintext)) }
+    return { status: "ready", snapshot: decodeSnapshotEnvelopeBytes(new Uint8Array(plaintext), MAX_HOSTED_SNAPSHOT_OUTPUT_BYTES) }
   } catch {
     return { status: "invalid" }
   }

@@ -75,7 +75,7 @@ An immutable, read-only copy of successfully saved local Markdown carried entire
 _Avoid_: Published Snapshot, shared file, synced document, live document
 
 **Hosted Snapshot**:
-An immutable, read-only copy of successfully saved local Markdown encrypted in the sender's browser before Markside stores its ciphertext. Its decryption key stays in the URL fragment, it expires after 7, 30, or 90 days, and it cannot be revoked early.
+An immutable, read-only copy of successfully saved local Markdown and its readable referenced local images, encrypted in the sender's browser before Markside stores its ciphertext. Its decryption key stays in the URL fragment, it expires after 7, 30, or 90 days, and it cannot be revoked early.
 _Avoid_: Uploaded document, cloud file, live document
 
 **Addressed Review Comment**:

@@ -4,6 +4,8 @@ import {
   DEFAULT_EXPIRY_DAYS,
   encryptSnapshotEnvelope,
   HOSTED_SNAPSHOT_UPLOAD_URL,
+  MAX_HOSTED_SNAPSHOT_OUTPUT_BYTES,
+  MAX_HOSTED_SNAPSHOT_UPLOAD_BYTES,
   loadHostedSnapshot,
   parseHostedSnapshotUrl,
   uploadHostedSnapshot,
@@ -12,11 +14,13 @@ import {
 import {
   buildSnapshotEnvelopeBytes,
   createLinkSnapshot,
+  snapshotEnvelopeJson,
   decodeLinkSnapshotFragment,
   type LinkSnapshotCreation,
 } from "~lib/link-snapshot"
 import { findHtmlEmbedSources,readHtmlEmbedFile } from "~lib/html-embed"
 import { md } from "~lib/markdown"
+import { compressSnapshotImages, readSnapshotImages } from "~lib/snapshot-images"
 import {
   analyzeLinkSnapshotResources,
   type LinkSnapshotResources,
@@ -35,6 +39,11 @@ export type LinkSnapshotDialog = {
   embeds: Record<string, string>
   // Paths of embeds whose files could not be read, so the link leaves them out.
   missingEmbeds: string[]
+  images: Record<string, string>
+  originalImages: Record<string, string>
+  missingImages: string[]
+  imageNotice: string | null
+  compressed: boolean
   creation: LinkSnapshotCreation
   resources: LinkSnapshotResources
   requiresSave: boolean
@@ -43,7 +52,7 @@ export type LinkSnapshotDialog = {
   kind: "link" | "hosted"
   expiryDays: ExpiryDays
   shareUrl: string | null
-  status: "confirm" | "copying" | "uploading" | "copied" | "copy-failed" | "save-failed" | "upload-failed"
+  status: "confirm" | "copying" | "uploading" | "copied" | "copy-failed" | "save-failed" | "upload-failed" | "too-large" | "compressing"
 }
 
 export type ImportReviewDialog = {
@@ -122,6 +131,7 @@ export function useContentSnapshots({
       ? draftRef.current
       : diskContentRef.current ?? content ?? ""
     const { embeds, missingEmbeds } = await readSnapshotEmbeds(markdown)
+    const imageFiles = await readSnapshotImages(markdown, fileUrlRef.current)
     const creation = createLinkSnapshot({
       filename: currentFileName,
       markdown,
@@ -132,12 +142,17 @@ export function useContentSnapshots({
       markdown,
       embeds,
       missingEmbeds,
+      images: imageFiles.images,
+      originalImages: imageFiles.images,
+      missingImages: imageFiles.missing,
+      imageNotice: null,
+      compressed: false,
       creation,
       resources: analyzeLinkSnapshotResources(markdown),
       requiresSave: hasUnsavedDraftRef.current,
       includeReview: false,
       reviewerName: "",
-      kind: creation.status === "ready" && !creation.oversized ? "link" : "hosted",
+      kind: imageFiles.missing.length || Object.keys(imageFiles.images).length ? "hosted" : creation.status === "ready" && !creation.oversized ? "link" : "hosted",
       expiryDays: DEFAULT_EXPIRY_DAYS,
       shareUrl: null,
       status: "confirm",
@@ -162,7 +177,7 @@ export function useContentSnapshots({
   }
 
   const confirmLinkSnapshot = async () => {
-    if (!linkSnapshotDialog || linkSnapshotDialog.creation.status !== "ready") return
+    if (!linkSnapshotDialog || (linkSnapshotDialog.kind === "link" && linkSnapshotDialog.creation.status !== "ready")) return
     const { includeReview, reviewerName, kind, expiryDays } = linkSnapshotDialog
     setLinkSnapshotDialog((current) => current && { ...current, status: "copying" })
     if (hasUnsavedDraftRef.current) {
@@ -182,8 +197,16 @@ export function useContentSnapshots({
       embeds,
     })
     const resources = analyzeLinkSnapshotResources(markdown)
-    if (creation.status !== "ready") {
+    if (kind === "hosted") {
+      const currentImages = await readSnapshotImages(markdown, fileUrlRef.current)
+      if (markdown !== linkSnapshotDialog.markdown || JSON.stringify(currentImages.images) !== JSON.stringify(linkSnapshotDialog.originalImages) || JSON.stringify(currentImages.missing) !== JSON.stringify(linkSnapshotDialog.missingImages)) {
+        setLinkSnapshotDialog(current => current && { ...current, markdown, embeds, missingEmbeds, creation, resources, requiresSave: false, images: currentImages.images, originalImages: currentImages.images, missingImages: currentImages.missing, compressed: false, imageNotice: "The document or its images changed. Review the details, then create the link again.", status: "confirm" })
+        return
+      }
+    }
+    if (creation.status !== "ready" && kind === "link") {
       setLinkSnapshotDialog({
+        ...linkSnapshotDialog,
         markdown,
         embeds,
         missingEmbeds,
@@ -199,16 +222,17 @@ export function useContentSnapshots({
       })
       return
     }
-    let shareUrl = creation.url
+    let shareUrl = creation.status === "ready" ? creation.url : ""
     if (kind === "hosted") {
       setLinkSnapshotDialog((current) => current && { ...current, status: "uploading" })
       try {
-        const envelope = buildSnapshotEnvelopeBytes({
-          filename: currentFileName,
-          markdown,
-          reviews: buildSnapshotReviews(includeReview, reviewerName),
-          embeds,
-        })
+        const snapshot = { filename: currentFileName, markdown, reviews: buildSnapshotReviews(includeReview, reviewerName), embeds, images: linkSnapshotDialog.images }
+        const envelope = buildSnapshotEnvelopeBytes(snapshot)
+        const outputBytes = new TextEncoder().encode(snapshotEnvelopeJson(snapshot)).length
+        if (outputBytes > MAX_HOSTED_SNAPSHOT_OUTPUT_BYTES || envelope.length + 28 > MAX_HOSTED_SNAPSHOT_UPLOAD_BYTES) {
+          setLinkSnapshotDialog(current => current && { ...current, status: "too-large", imageNotice: `This copy is too large to share (${(outputBytes / 1024 / 1024).toFixed(1)} MiB of content; ${(envelope.length / 1000 / 1000).toFixed(1)} MB to upload). Limits: 6 MiB of content and 4 MB for upload.` })
+          return
+        }
         const { key, blob } = await encryptSnapshotEnvelope(envelope)
         const id = await uploadHostedSnapshot(blob, expiryDays)
         shareUrl = buildHostedSnapshotUrl(id, key)
@@ -225,6 +249,7 @@ export function useContentSnapshots({
       await navigator.clipboard.writeText(shareUrl)
       await recordReviewPromptEvent("link-snapshot").catch(() => false)
       setLinkSnapshotDialog({
+        ...linkSnapshotDialog,
         markdown,
         embeds,
         missingEmbeds,
@@ -240,6 +265,7 @@ export function useContentSnapshots({
       })
     } catch {
       setLinkSnapshotDialog({
+        ...linkSnapshotDialog,
         markdown,
         embeds,
         missingEmbeds,
@@ -254,6 +280,20 @@ export function useContentSnapshots({
         status: "copy-failed",
       })
     }
+  }
+
+  const compressLinkSnapshotImages = async () => {
+    if (!linkSnapshotDialog) return
+    setLinkSnapshotDialog(current => current && { ...current, status: "compressing" })
+    const images = await compressSnapshotImages(linkSnapshotDialog.originalImages)
+    const imageBytes = (image: string) => {
+      const data = image.slice(image.indexOf(",") + 1)
+      return data.length * 3 / 4 - (data.endsWith("==") ? 2 : data.endsWith("=") ? 1 : 0)
+    }
+    const before = Object.values(linkSnapshotDialog.originalImages).reduce((sum, image) => sum + imageBytes(image), 0)
+    const after = Object.values(images).reduce((sum, image) => sum + imageBytes(image), 0)
+    const changed = Object.keys(images).filter(src => images[src] !== linkSnapshotDialog.originalImages[src])
+    setLinkSnapshotDialog(current => current && { ...current, images, compressed: true, status: "confirm", imageNotice: `Image size: ${(before / 1024 / 1024).toFixed(1)} MiB → ${(after / 1024 / 1024).toFixed(1)} MiB. ${changed.length ? `Compressed: ${changed.join(", ")}.` : "No images could be reduced."} Your original files are unchanged. Create the link to share this copy.` })
   }
 
   const closeLinkSnapshotDialog = () => {
@@ -328,14 +368,16 @@ export function useContentSnapshots({
   }
 
   const copyBackupUrl = async () => {
-    if (!linkSnapshotDialog || linkSnapshotDialog.creation.status !== "ready") return
-    const urlToCopy = linkSnapshotDialog.shareUrl ?? linkSnapshotDialog.creation.url
+    if (!linkSnapshotDialog) return
+    const urlToCopy = linkSnapshotDialog.shareUrl ?? (linkSnapshotDialog.creation.status === "ready" ? linkSnapshotDialog.creation.url : "")
+    if (!urlToCopy) return
     try {
       await navigator.clipboard.writeText(urlToCopy)
     } catch {
       return
     }
     if (backupUrlCopyTimeoutRef.current) clearTimeout(backupUrlCopyTimeoutRef.current)
+    setLinkSnapshotDialog(current => current?.status === "copy-failed" ? { ...current, status: "copied" } : current)
     setBackupUrlCopyState("copied")
     backupUrlCopyTimeoutRef.current = setTimeout(() => setBackupUrlCopyState("idle"), 2_000)
   }
@@ -346,6 +388,7 @@ export function useContentSnapshots({
 
   return {
     linkSnapshotDialog,
+    compressLinkSnapshotImages,
     setLinkSnapshotDialog,
     backupUrlCopyState,
     importReviewDialog,

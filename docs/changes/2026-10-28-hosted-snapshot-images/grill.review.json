@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "doc": "hosted-snapshot-images.grill.md",
+  "docHash": "8ae93bd13e49bd003a24b8a5e8d18298cab6b94add1ec8f82709cc0fe1923a05",
+  "status": "resolved",
+  "requestedAt": "2026-10-28T22:30:12.572Z",
+  "comments": [
+    {
+      "id": "c111f2dd-b5f6-4fe8-af70-a5df5418bece",
+      "quote": "Q1. 图片应该随哪种 Snapshot 分享？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录：先支持 Hosted Snapshot。"
+    },
+    {
+      "id": "c1d25a5b-9002-4183-b3b2-07c413430b57",
+      "quote": "Q2. 这次最想解决谁的什么问题？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录：目标是让接收者完整阅读。"
+    },
+    {
+      "id": "a05237d9-fa2b-491c-83cd-8da5f0197cbc",
+      "quote": "Q3. 有图片无法读取时，是否允许继续分享？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录：提示缺失图片后允许继续。"
+    },
+    {
+      "id": "a0381774-edc5-4992-89e6-e56006541415",
+      "quote": "Q4. 是否自动打包引用的本地图片？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录：自动打包并在分享前说明。"
+    },
+    {
+      "id": "ffb39676-873e-4b0d-a28d-241d5ee513bc",
+      "quote": "Q5. 是否继续以原地址加载网络图片？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录：网络图片保留原地址。"
+    },
+    {
+      "id": "cfb3e64e-f337-4c59-a051-11e9e33c3169",
+      "quote": "Q6. 遇到图片导致快照超过大小限制时，怎么处理？",
+      "line": null,
+      "body": "让用户选择自动压缩或者手动调整？",
+      "status": "resolved",
+      "reply": "已记录超限时可选择自动压缩或手动调整，并补充压缩问题。"
+    },
+    {
+      "id": "f8371c68-5a69-4207-b475-20c656eb857a",
+      "quote": "Q7. 本地图片引用可以指向文档所在文件夹之外吗？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录：打包所有能读取的本地图片。"
+    },
+    {
+      "id": "a6e4092a-830f-4ae5-8538-9608c88d2b8f",
+      "quote": "Q8. 自动压缩会改变图片时，是否先让发送者确认？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录：展示压缩结果后确认上传。"
+    },
+    {
+      "id": "2ddaa82a-a945-4ede-901f-ad3839a4106b",
+      "quote": "Q9. 自动压缩无法保持动画或 SVG 时，怎么办？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录：保留动画和 SVG 原图。"
+    },
+    {
+      "id": "229dcd92-8436-4d9c-a43d-369f7fce2893",
+      "quote": "Q10. 图片快照的大小上限如何确定？",
+      "line": null,
+      "body": "C",
+      "status": "resolved",
+      "reply": "已记录：具体大小上限由技术验证决定。"
+    },
+    {
+      "id": "b5591c83-709c-4899-8938-99456e618d6e",
+      "quote": "Q11. 哪些本地图片引用需要打包？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录：支持 Markdown 图片和 HTML img。"
+    },
+    {
+      "id": "2428b6d6-8f55-4c40-a6b2-8782a2d820a2",
+      "quote": "Q12. 有本地图片时，是否默认选择 Hosted Snapshot？",
+      "line": 8,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录：有本地图片时默认选择 Hosted Snapshot。"
+    },
+    {
+      "id": "c45edbda-ebb5-40d3-9d56-605021f95e68",
+      "quote": "Q13. 自动压缩后仍超出上限时怎么办？",
+      "line": 19,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录：仍超限时提示并返回手动调整。"
+    }
+  ],
+  "sentAt": "2026-10-28T22:42:53.708Z",
+  "note": ""
+}

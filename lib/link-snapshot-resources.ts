@@ -55,3 +55,26 @@ export function analyzeLinkSnapshotResources(markdown: string): LinkSnapshotReso
   visitTokens(resourceMarkdown.parse(markdown, {}), resources)
   return resources
 }
+
+export function findLocalSnapshotImages(markdown: string): string[] {
+  const sources = new Set<string>()
+  const add = (src: string) => {
+    const trimmed = src.trim()
+    if (!trimmed || isHtmlEmbedPath(trimmed) || trimmed.startsWith("//")) return
+    if (/^[a-z][a-z\d+.-]*:/i.test(trimmed) && !/^file:/i.test(trimmed)) return
+    sources.add(trimmed)
+  }
+  const visit = (tokens: Token[]) => {
+    for (const token of tokens) {
+      if (token.type === "image") add(String(token.attrGet("src") ?? ""))
+      if (token.type === "html_inline" || token.type === "html_block") {
+        const template = document.createElement("template")
+        template.innerHTML = token.content
+        for (const image of template.content.querySelectorAll("img")) add(image.getAttribute("src") ?? "")
+      }
+      if (token.children) visit(token.children)
+    }
+  }
+  visit(resourceMarkdown.parse(markdown, {}))
+  return Array.from(sources)
+}

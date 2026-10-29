@@ -14,6 +14,7 @@ export interface LinkSnapshot {
   reviews?: ReviewRound[]
   // HTML Embed files, keyed by the path as written in the Markdown.
   embeds?: Record<string, string>
+  images?: Record<string, string>
 }
 
 export type LinkSnapshotCreation =
@@ -166,7 +167,7 @@ function parseEnvelope(value: unknown): LinkSnapshot {
   if (
     !keys.includes("f") ||
     !keys.includes("m") ||
-    !keys.every((key) => ["f", "m", "r", "e"].includes(key))
+    !keys.every((key) => ["f", "m", "r", "e", "i"].includes(key))
   ) {
     throw new Error("Invalid envelope")
   }
@@ -181,15 +182,21 @@ function parseEnvelope(value: unknown): LinkSnapshot {
     snapshot.reviews = envelope.r.map(decodeReviewRound)
   }
   if ("e" in envelope) snapshot.embeds = parseEmbeds(envelope.e)
+  if ("i" in envelope) {
+    const images = parseEmbeds(envelope.i)
+    if (Object.values(images).some(value => !/^data:image\/(?:png|jpeg|gif|webp|avif|svg\+xml);base64,[A-Za-z0-9+/]+={0,2}$/.test(value))) throw new Error("Invalid images")
+    snapshot.images = images
+  }
   return snapshot
 }
 
-function snapshotEnvelopeJson(snapshot: LinkSnapshot): string {
+export function snapshotEnvelopeJson(snapshot: LinkSnapshot): string {
   return JSON.stringify({
     f: snapshot.filename,
     m: snapshot.markdown,
     ...(snapshot.reviews?.length ? { r: snapshot.reviews.map(encodeReviewRound) } : {}),
     ...(snapshot.embeds && Object.keys(snapshot.embeds).length ? { e: snapshot.embeds } : {}),
+    ...(snapshot.images && Object.keys(snapshot.images).length ? { i: snapshot.images } : {}),
   })
 }
 
@@ -200,9 +207,9 @@ export function buildSnapshotEnvelopeBytes(snapshot: LinkSnapshot): Uint8Array {
 }
 
 // Reverses buildSnapshotEnvelopeBytes for both the fragment and decrypted hosted paths.
-export function decodeSnapshotEnvelopeBytes(compressed: Uint8Array): LinkSnapshot {
-  const output = inflateSync(compressed, { out: new Uint8Array(MAX_LINK_SNAPSHOT_OUTPUT_BYTES + 1) })
-  if (output.length > MAX_LINK_SNAPSHOT_OUTPUT_BYTES) throw new Error("Snapshot too large")
+export function decodeSnapshotEnvelopeBytes(compressed: Uint8Array, maxBytes = MAX_LINK_SNAPSHOT_OUTPUT_BYTES): LinkSnapshot {
+  const output = inflateSync(compressed, { out: new Uint8Array(maxBytes + 1) })
+  if (output.length > maxBytes) throw new Error("Snapshot too large")
   return parseEnvelope(JSON.parse(strFromU8(output)))
 }
 

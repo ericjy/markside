@@ -212,3 +212,11 @@ describe("Link Snapshot x1 codec", () => {
     expect(JSON.parse(strFromU8(inflateSync(bytes)))).toEqual({ f: "a.md", m: "hello" })
   })
 })
+
+describe("hosted image envelope", () => {
+  it("retains images in a hosted round trip", async () => {
+    const { buildSnapshotEnvelopeBytes, decodeSnapshotEnvelopeBytes } = await import("./link-snapshot")
+    const snapshot = { filename: "a.md", markdown: "![x](x.png)", images: { "x.png": "data:image/png;base64,aGVsbG8=" } }
+    expect(decodeSnapshotEnvelopeBytes(buildSnapshotEnvelopeBytes(snapshot))).toEqual(snapshot)
+  })
+})

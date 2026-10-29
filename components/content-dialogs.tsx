@@ -4,7 +4,6 @@ import {
   Check,
   Copy,
   ExternalLink,
-  Info,
   X
 } from "lucide-react"
 import React from "react"
@@ -14,10 +13,7 @@ import { SaveFolderDialog } from "~components/save-folder-dialog"
 import { Button } from "~components/ui/button"
 import type { FileNavigationTarget } from "~hooks/use-content-file-loading"
 import type { ImportReviewDialog, LinkSnapshotDialog } from "~hooks/use-content-snapshots"
-import {
-  DEFAULT_EXPIRY_DAYS,
-  HOSTED_SNAPSHOT_URL_CHARACTERS
-} from "~lib/hosted-snapshot"
+import { HOSTED_SNAPSHOT_URL_CHARACTERS } from "~lib/hosted-snapshot"
 import { fileFolderPath } from "~lib/url"
 
 interface ContentDialogsProps {
@@ -36,6 +32,7 @@ interface ContentDialogsProps {
   copyBackupUrl: () => Promise<void>
   backupUrlCopyState: "copied" | "idle"
   confirmLinkSnapshot: () => Promise<void>
+  compressLinkSnapshotImages: () => Promise<void>
   importReviewDialog: ImportReviewDialog | null
   closeImportReviewDialog: () => void
   setImportReviewDialog: React.Dispatch<React.SetStateAction<ImportReviewDialog | null>>
@@ -82,6 +79,7 @@ export function ContentDialogs({
   copyBackupUrl,
   backupUrlCopyState,
   confirmLinkSnapshot,
+  compressLinkSnapshotImages,
   importReviewDialog,
   closeImportReviewDialog,
   setImportReviewDialog,
@@ -143,21 +141,27 @@ export function ContentDialogs({
             role="dialog"
             aria-modal="true"
             aria-labelledby="link-snapshot-title"
-            className="w-full max-w-lg rounded-lg border bg-background p-5 shadow-2xl">
+            className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-lg border bg-background p-5 shadow-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 id="link-snapshot-title" className="text-base font-semibold">
-                    Create Share Link
+                  <h2 id="link-snapshot-title" className="flex items-center gap-2 text-base font-semibold" aria-live="polite">
+                    {linkSnapshotDialog.status === "copied" && <Check size={17} className="text-emerald-700 dark:text-emerald-400" aria-hidden="true" />}
+                    {linkSnapshotDialog.status === "copied" ? "Link copied" : linkSnapshotDialog.status === "copy-failed" ? "Link ready to copy" : "Create Share Link"}
                   </h2>
-                  <span className="rounded-full border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Beta
-                  </span>
+                  {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && (
+                    <span className="rounded-full border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Beta
+                    </span>
+                  )}
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  A private link that opens this markdown in the recipient's browser. It's a
-                  frozen copy that won't update if the file changes later.
-                </p>
+                {linkSnapshotDialog.status !== "copied" && (
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {linkSnapshotDialog.status === "copy-failed"
+                      ? "The link was created, but couldn't be copied automatically. Copy it below."
+                      : "Anyone with the link can view this copy. Changes to the file won't update it."}
+                  </p>
+                )}
               </div>
               <Button
                 variant="ghost"
@@ -169,13 +173,7 @@ export function ContentDialogs({
               </Button>
             </div>
 
-            {linkSnapshotDialog.status === "copied" || linkSnapshotDialog.status === "copy-failed" ? (
-              <p className="mt-4 text-sm text-muted-foreground">
-                {linkSnapshotDialog.kind === "link"
-                  ? "This link never expires."
-                  : `This link expires in ${DEFAULT_EXPIRY_DAYS} days.`}
-              </p>
-            ) : (
+            {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && (
               <fieldset className="mt-4">
                 <legend className="mb-2 text-sm font-medium">How to share</legend>
 
@@ -186,27 +184,29 @@ export function ContentDialogs({
                         ? "border-foreground/40 bg-muted/40"
                         : "hover:bg-muted/20"
                     }`}>
-                    <span className="flex items-center justify-between gap-2">
+                    <span className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
                       <span className="flex items-center gap-2">
                         <input
                           type="radio"
                           name="snapshot-kind"
                           checked={linkSnapshotDialog.kind === "link"}
-                          disabled={linkSnapshotDialog.creation.status !== "ready"}
+                          disabled={linkSnapshotDialog.creation.status !== "ready" || ["copying", "uploading", "compressing"].includes(linkSnapshotDialog.status)}
                           onChange={() => setLinkSnapshotDialog((current) =>
-                            current && { ...current, kind: "link" })}
+                            current && { ...current, kind: "link", status: "confirm", imageNotice: null, images: current.originalImages, compressed: false })}
                         />
-                        <span className="font-medium">Content encoded in the link</span>
+                        <span className="font-medium">Keep content in the link</span>
                       </span>
                       <span className="shrink-0 tabular-nums text-xs text-muted-foreground">
-                        {linkSnapshotDialog.creation.characters.toLocaleString()} URL characters
+                        {linkSnapshotDialog.creation.characters.toLocaleString()}-character link
                       </span>
                     </span>
                     <span className="text-muted-foreground">
-                      The document is encoded into the link. Nothing reaches Markside's
-                      servers, and the link never expires.
+                      No upload. The link never expires, but it can be long.
                     </span>
-                    {linkSnapshotDialog.creation.status === "ready" && linkSnapshotDialog.creation.oversized && (
+                    {linkSnapshotDialog.creation.status === "too-large" && (
+                      <span className="mt-1 text-xs text-muted-foreground">This document is too large for a link. Choose the encrypted copy.</span>
+                    )}
+                    {linkSnapshotDialog.kind === "link" && linkSnapshotDialog.creation.status === "ready" && linkSnapshotDialog.creation.oversized && (
                       <span className="mt-1 rounded border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
                         Chat clients like Slack may refuse to send links past 4,000 characters.
                       </span>
@@ -219,47 +219,80 @@ export function ContentDialogs({
                         ? "border-foreground/40 bg-muted/40"
                         : "hover:bg-muted/20"
                     }`}>
-                    <span className="flex items-center justify-between gap-2">
+                    <span className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
                       <span className="flex items-center gap-2">
                         <input
                           type="radio"
                           name="snapshot-kind"
                           checked={linkSnapshotDialog.kind === "hosted"}
+                          disabled={["copying", "uploading", "compressing"].includes(linkSnapshotDialog.status)}
                           onChange={() => setLinkSnapshotDialog((current) =>
-                            current && { ...current, kind: "hosted" })}
+                            current && { ...current, kind: "hosted", status: "confirm", imageNotice: null })}
                         />
-                        <span className="font-medium">Content encrypted and hosted by Markside</span>
+                        <span className="font-medium">Upload an encrypted copy</span>
                       </span>
                       <span className="shrink-0 tabular-nums text-xs text-muted-foreground">
-                        {HOSTED_SNAPSHOT_URL_CHARACTERS.toLocaleString()} URL characters
+                        {HOSTED_SNAPSHOT_URL_CHARACTERS.toLocaleString()}-character link
                       </span>
                     </span>
                     <span className="text-muted-foreground">
-                      The document is encrypted in your browser, then uploaded. The key stays in
-                      the link and never reaches Markside's servers, so all they store is
-                      ciphertext they can't read. The link expires in {DEFAULT_EXPIRY_DAYS} days.
+                      Encrypted before upload. The decryption key stays in the link, and Markside can't read the copy.
+                      Expires in {linkSnapshotDialog.expiryDays} days.
                     </span>
                   </label>
                 </div>
               </fieldset>
             )}
 
-            {linkSnapshotDialog.creation.status === "too-large" ? (
+            {linkSnapshotDialog.kind === "link" && linkSnapshotDialog.creation.status === "too-large" ? (
               <p className="mt-4 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
                 This document is {Math.round(linkSnapshotDialog.creation.bytes / 1024).toLocaleString()} KB, above the{" "}
                 {Math.round(linkSnapshotDialog.creation.maxBytes / 1024).toLocaleString()} KB limit a recipient's
                 browser can open. Shorten the document or send the Markdown file directly instead.
               </p>
             ) : null}
-            {linkSnapshotDialog.resources.localImages > 0 || linkSnapshotDialog.resources.localDocumentLinks > 0 ? (
-              <div role="note" className="mt-3 flex items-start gap-2 px-1 text-xs leading-5 text-muted-foreground">
-                <Info size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
-                <p>
-                  {linkSnapshotDialog.resources.localImages} local image{linkSnapshotDialog.resources.localImages === 1 ? "" : "s"} and {linkSnapshotDialog.resources.localDocumentLinks} local document link{linkSnapshotDialog.resources.localDocumentLinks === 1 ? "" : "s"} are not included in the shared link, keeping the shared content limited to this Markdown and leaving the referenced local files on your device.
-                </p>
+            {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && (
+              <div className="mt-4 space-y-2">
+                {linkSnapshotDialog.kind === "hosted" && Object.keys(linkSnapshotDialog.images).length > 0 && (
+                  <p className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
+                    <Check size={14} className="mt-0.5 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
+                    <span>{Object.keys(linkSnapshotDialog.images).length} local image{Object.keys(linkSnapshotDialog.images).length === 1 ? "" : "s"} included in the encrypted copy.</span>
+                  </p>
+                )}
+                {linkSnapshotDialog.kind === "link" && linkSnapshotDialog.resources.localImages > 0 && (
+                  <p role="note" className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
+                    <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
+                    <span>{linkSnapshotDialog.resources.localImages} image{linkSnapshotDialog.resources.localImages === 1 ? "" : "s"} won't be included in this copy.</span>
+                  </p>
+                )}
+                {linkSnapshotDialog.resources.localDocumentLinks > 0 && (
+                  <p role="note" className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
+                    <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
+                    <span>{linkSnapshotDialog.resources.localDocumentLinks} link{linkSnapshotDialog.resources.localDocumentLinks === 1 ? "" : "s"} to local files won't work for the recipient.</span>
+                  </p>
+                )}
+                {linkSnapshotDialog.kind === "hosted" && linkSnapshotDialog.missingImages.length > 0 && (
+                  <div role="note" className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
+                    <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
+                    <div className="min-w-0">
+                      <p>Couldn't read {linkSnapshotDialog.missingImages.length === 1 ? "this image" : "these images"}. You can still share without {linkSnapshotDialog.missingImages.length === 1 ? "it" : "them"}:</p>
+                      <ul className="mt-1 list-inside list-disc break-all font-mono">
+                        {linkSnapshotDialog.missingImages.map(src => <li key={src}>{src}</li>)}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+                {linkSnapshotDialog.imageNotice && <p role="status" className="break-words rounded-md bg-muted/50 p-3 text-xs leading-5">{linkSnapshotDialog.imageNotice}</p>}
+                {linkSnapshotDialog.status === "too-large" && (
+                  <div className="text-sm">
+                    <p>{linkSnapshotDialog.compressed ? "The copy is still too large. Make the images smaller, then try again." : "Compress the images here, or make them smaller yourself and try again. Animated images and SVGs won't be changed."}</p>
+                    {!linkSnapshotDialog.compressed && <Button variant="outline" className="mt-2" onClick={() => void compressLinkSnapshotImages()}>Compress images</Button>}
+                  </div>
+                )}
+                {linkSnapshotDialog.status === "compressing" && <p role="status" className="text-sm text-muted-foreground">Compressing images…</p>}
               </div>
-            ) : null}
-            {linkSnapshotDialog.missingEmbeds.length > 0 ? (
+            )}
+            {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && linkSnapshotDialog.missingEmbeds.length > 0 ? (
               <div role="note" className="mt-3 flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                 <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
                 <p>
@@ -273,7 +306,7 @@ export function ContentDialogs({
                 </p>
               </div>
             ) : null}
-            {ownReviewItemCount > 0 && (
+            {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && ownReviewItemCount > 0 && (
               <div className="mt-4 rounded-md border p-3">
                 <label className="flex items-start gap-2 text-sm">
                   <input
@@ -300,7 +333,7 @@ export function ContentDialogs({
                 )}
               </div>
             )}
-            {importedRoundCount > 0 && (
+            {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && importedRoundCount > 0 && (
               <p className="mt-3 text-xs text-muted-foreground">
                 {importedRoundCount} previously imported Review Round
                 {importedRoundCount === 1 ? "" : "s"} will also travel with this link.
@@ -316,104 +349,49 @@ export function ContentDialogs({
               <p className="mt-4 text-sm text-muted-foreground">Encrypting and uploading…</p>
             )}
             {linkSnapshotDialog.status === "upload-failed" && (
-              <p className="mt-4 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
-                The upload failed and no link was created. Your document was not changed. Try again, or choose
-                In the link to share without uploading.
+              <p role="alert" className="mt-4 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
+                Couldn’t upload the encrypted copy. Your document is unchanged. Try again, or choose
+                “Keep content in the link” to share without uploading.
               </p>
             )}
-            {linkSnapshotDialog.status === "copied" && linkSnapshotDialog.creation.status === "ready" && (
+            {(linkSnapshotDialog.status === "copied" || linkSnapshotDialog.status === "copy-failed") && (linkSnapshotDialog.creation.status === "ready" || linkSnapshotDialog.shareUrl) && (
               <div className="mt-4">
-                <div className="flex items-center justify-between gap-2">
-                  <p role="status" className="flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                    <Check size={14} /> Link copied
-                  </p>
-                  <div className="flex shrink-0 items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 shrink-0 text-xs"
-                      title="Open the shared link in a new tab"
-                      onClick={() => {
-                        if (linkSnapshotDialog.creation.status === "ready") {
-                          openLinkSnapshotUrl(linkSnapshotDialog.shareUrl ?? linkSnapshotDialog.creation.url)
-                        }
-                      }}>
-                      <ExternalLink size={14} /> Open link
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 shrink-0 text-xs"
-                      onClick={() => void copyBackupUrl()}>
-                      {backupUrlCopyState === "copied" ? <Check size={14} /> : <Copy size={14} />}{" "}
-                      {backupUrlCopyState === "copied" ? "Copied" : "Copy link"}
-                    </Button>
-                  </div>
-                </div>
+                <label htmlFor="link-snapshot-url" className="text-xs font-medium text-muted-foreground">Share link</label>
                 <textarea
                   id="link-snapshot-url"
-                  aria-label="Shared link"
                   readOnly
+                  autoFocus={linkSnapshotDialog.status === "copy-failed"}
                   rows={3}
-                  value={linkSnapshotDialog.shareUrl ?? linkSnapshotDialog.creation.url}
+                  value={linkSnapshotDialog.shareUrl ?? (linkSnapshotDialog.creation.status === "ready" ? linkSnapshotDialog.creation.url : "")}
                   onFocus={(event) => event.currentTarget.select()}
-                  className="mt-2 max-h-20 w-full resize-none overflow-x-hidden overflow-y-auto whitespace-pre-wrap break-all rounded-md border bg-muted/30 p-3 font-mono text-xs"
+                  className="mt-1.5 max-h-20 w-full resize-none overflow-x-hidden overflow-y-auto whitespace-pre-wrap break-all rounded-md border bg-muted/30 p-3 font-mono text-xs"
                 />
-              </div>
-            )}
-            {linkSnapshotDialog.status === "copy-failed" && linkSnapshotDialog.creation.status === "ready" && (
-              <div className="mt-4">
-                <p className="text-sm text-muted-foreground">Clipboard access failed. Select and copy the complete URL.</p>
-                <textarea
-                  readOnly
-                  autoFocus
-                  rows={3}
-                  value={linkSnapshotDialog.shareUrl ?? linkSnapshotDialog.creation.url}
-                  onFocus={(event) => event.currentTarget.select()}
-                  className="mt-2 max-h-20 w-full resize-none overflow-x-hidden overflow-y-auto whitespace-pre-wrap break-all rounded-md border bg-muted/30 p-3 font-mono text-xs"
-                />
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <span className="text-[11px] tabular-nums text-muted-foreground">
-                    {(linkSnapshotDialog.shareUrl?.length ?? linkSnapshotDialog.creation.characters).toLocaleString()} characters
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-9 w-9"
-                      aria-label="Open the shared link in a new tab"
-                      title="Open the shared link in a new tab"
-                      onClick={() => {
-                        if (linkSnapshotDialog.creation.status === "ready") {
-                          openLinkSnapshotUrl(linkSnapshotDialog.shareUrl ?? linkSnapshotDialog.creation.url)
-                        }
-                      }}>
-                      <ExternalLink size={14} />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-9 w-9"
-                      aria-label="Copy full URL"
-                      title="Copy full URL"
-                      onClick={() => void navigator.clipboard.writeText(linkSnapshotDialog.creation.status === "ready" ? linkSnapshotDialog.shareUrl ?? linkSnapshotDialog.creation.url : "").then(
-                        () => setLinkSnapshotDialog((current) => current && { ...current, status: "copied" }),
-                        () => undefined,
-                      )}>
-                      <Copy size={14} />
-                    </Button>
-                  </div>
+                <div className="mt-2 flex flex-wrap items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={() => openLinkSnapshotUrl(linkSnapshotDialog.shareUrl ?? (linkSnapshotDialog.creation.status === "ready" ? linkSnapshotDialog.creation.url : ""))}>
+                    <ExternalLink size={14} /> Open link
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={() => void copyBackupUrl()}>
+                    {backupUrlCopyState === "copied" ? <Check size={14} /> : <Copy size={14} />} {backupUrlCopyState === "copied" ? "Copied" : "Copy link"}
+                  </Button>
                 </div>
               </div>
             )}
 
             <div className="mt-5 flex justify-end gap-2">
               <Button variant="ghost" onClick={closeLinkSnapshotDialog}>
-                {linkSnapshotDialog.status === "copied" ? "Done" : "Cancel"}
+                {linkSnapshotDialog.status === "copied" || linkSnapshotDialog.status === "copy-failed" ? "Done" : "Cancel"}
               </Button>
               {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && (
                 <Button
-                  disabled={linkSnapshotDialog.creation.status !== "ready" || linkSnapshotDialog.status === "copying" || linkSnapshotDialog.status === "uploading"}
+                  disabled={(linkSnapshotDialog.kind === "link" && linkSnapshotDialog.creation.status !== "ready") || ["copying", "uploading", "compressing", "too-large"].includes(linkSnapshotDialog.status)}
                   onClick={() => void confirmLinkSnapshot()}>
                   {linkSnapshotDialog.status === "copying" || linkSnapshotDialog.status === "uploading"
                     ? "Creating…"

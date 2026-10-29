@@ -230,7 +230,11 @@ export function useContentSnapshots({
         const envelope = buildSnapshotEnvelopeBytes(snapshot)
         const outputBytes = new TextEncoder().encode(snapshotEnvelopeJson(snapshot)).length
         if (outputBytes > MAX_HOSTED_SNAPSHOT_OUTPUT_BYTES || envelope.length + 28 > MAX_HOSTED_SNAPSHOT_UPLOAD_BYTES) {
-          setLinkSnapshotDialog(current => current && { ...current, status: "too-large", imageNotice: `This copy is too large to share (${(outputBytes / 1024 / 1024).toFixed(1)} MiB of content; ${(envelope.length / 1000 / 1000).toFixed(1)} MB to upload). Limits: 6 MiB of content and 4 MB for upload.` })
+          const uploadBytes = envelope.length + 28
+          const limitDetail = uploadBytes > MAX_HOSTED_SNAPSHOT_UPLOAD_BYTES
+            ? `${(uploadBytes / 1000 / 1000).toFixed(1)} MB; upload limit 4 MB`
+            : `${(outputBytes / 1024 / 1024).toFixed(1)} MiB; content limit 6 MiB`
+          setLinkSnapshotDialog(current => current && { ...current, status: "too-large", imageNotice: `This copy is too large to share (${limitDetail}).` })
           return
         }
         const { key, blob } = await encryptSnapshotEnvelope(envelope)
@@ -293,7 +297,18 @@ export function useContentSnapshots({
     const before = Object.values(linkSnapshotDialog.originalImages).reduce((sum, image) => sum + imageBytes(image), 0)
     const after = Object.values(images).reduce((sum, image) => sum + imageBytes(image), 0)
     const changed = Object.keys(images).filter(src => images[src] !== linkSnapshotDialog.originalImages[src])
-    setLinkSnapshotDialog(current => current && { ...current, images, compressed: true, status: "confirm", imageNotice: `Image size: ${(before / 1024 / 1024).toFixed(1)} MiB → ${(after / 1024 / 1024).toFixed(1)} MiB. ${changed.length ? `Compressed: ${changed.join(", ")}.` : "No images could be reduced."} Your original files are unchanged. Create the link to share this copy.` })
+    const snapshot = {
+      filename: currentFileName,
+      markdown: linkSnapshotDialog.markdown,
+      reviews: buildSnapshotReviews(linkSnapshotDialog.includeReview, linkSnapshotDialog.reviewerName),
+      embeds: linkSnapshotDialog.embeds,
+      images,
+    }
+    const outputBytes = new TextEncoder().encode(snapshotEnvelopeJson(snapshot)).length
+    const uploadBytes = buildSnapshotEnvelopeBytes(snapshot).length + 28
+    const tooLarge = outputBytes > MAX_HOSTED_SNAPSHOT_OUTPUT_BYTES || uploadBytes > MAX_HOSTED_SNAPSHOT_UPLOAD_BYTES
+    const imageNotice = `Image size: ${(before / 1024 / 1024).toFixed(1)} MiB → ${(after / 1024 / 1024).toFixed(1)} MiB. ${changed.length ? `Compressed: ${changed.join(", ")}.` : "No images could be reduced."} Your original files are unchanged.`
+    setLinkSnapshotDialog(current => current && { ...current, images, compressed: true, status: tooLarge ? "too-large" : "confirm", imageNotice })
   }
 
   const closeLinkSnapshotDialog = () => {

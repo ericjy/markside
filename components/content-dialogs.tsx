@@ -282,14 +282,23 @@ export function ContentDialogs({
                     </div>
                   </div>
                 )}
-                {linkSnapshotDialog.imageNotice && <p role="status" className="break-words rounded-md bg-muted/50 p-3 text-xs leading-5">{linkSnapshotDialog.imageNotice}</p>}
-                {linkSnapshotDialog.status === "too-large" && (
-                  <div className="text-sm">
-                    <p>{linkSnapshotDialog.compressed ? "The copy is still too large. Make the images smaller, then try again." : "Compress the images here, or make them smaller yourself and try again. Animated images and SVGs won't be changed."}</p>
-                    {!linkSnapshotDialog.compressed && <Button variant="outline" className="mt-2" onClick={() => void compressLinkSnapshotImages()}>Compress images</Button>}
+                {linkSnapshotDialog.status === "too-large" ? (
+                  <div role="alert" className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
+                    {linkSnapshotDialog.compressed ? (
+                      <>
+                        <p className="font-medium">Still too large to share</p>
+                        <p className="mt-1 break-words">{linkSnapshotDialog.imageNotice}</p>
+                        <p className="mt-1">Make the images smaller yourself, then try again.</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-medium">{linkSnapshotDialog.imageNotice}</p>
+                        <p className="mt-1">Compress images to continue, or make them smaller yourself. Original files, animations, and SVGs won't change.</p>
+                      </>
+                    )}
                   </div>
-                )}
-                {linkSnapshotDialog.status === "compressing" && <p role="status" className="text-sm text-muted-foreground">Compressing images…</p>}
+                ) : linkSnapshotDialog.imageNotice && <p role="status" className="break-words rounded-md bg-muted/50 p-3 text-xs leading-5">{linkSnapshotDialog.imageNotice}</p>}
+
               </div>
             )}
             {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && linkSnapshotDialog.missingEmbeds.length > 0 ? (
@@ -361,7 +370,7 @@ export function ContentDialogs({
                   id="link-snapshot-url"
                   readOnly
                   autoFocus={linkSnapshotDialog.status === "copy-failed"}
-                  rows={3}
+                  rows={2}
                   value={linkSnapshotDialog.shareUrl ?? (linkSnapshotDialog.creation.status === "ready" ? linkSnapshotDialog.creation.url : "")}
                   onFocus={(event) => event.currentTarget.select()}
                   className="mt-1.5 max-h-20 w-full resize-none overflow-x-hidden overflow-y-auto whitespace-pre-wrap break-all rounded-md border bg-muted/30 p-3 font-mono text-xs"
@@ -389,15 +398,19 @@ export function ContentDialogs({
               <Button variant="ghost" onClick={closeLinkSnapshotDialog}>
                 {linkSnapshotDialog.status === "copied" || linkSnapshotDialog.status === "copy-failed" ? "Done" : "Cancel"}
               </Button>
-              {linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && (
+              {linkSnapshotDialog.status === "too-large" && !linkSnapshotDialog.compressed ? (
+                <Button onClick={() => void compressLinkSnapshotImages()}>Compress images</Button>
+              ) : linkSnapshotDialog.status !== "copied" && linkSnapshotDialog.status !== "copy-failed" && linkSnapshotDialog.status !== "too-large" && (
                 <Button
-                  disabled={(linkSnapshotDialog.kind === "link" && linkSnapshotDialog.creation.status !== "ready") || ["copying", "uploading", "compressing", "too-large"].includes(linkSnapshotDialog.status)}
+                  disabled={(linkSnapshotDialog.kind === "link" && linkSnapshotDialog.creation.status !== "ready") || ["copying", "uploading", "compressing"].includes(linkSnapshotDialog.status)}
                   onClick={() => void confirmLinkSnapshot()}>
-                  {linkSnapshotDialog.status === "copying" || linkSnapshotDialog.status === "uploading"
-                    ? "Creating…"
-                    : linkSnapshotDialog.requiresSave
-                      ? "Save and create link"
-                      : "Create and copy link"}
+                  {linkSnapshotDialog.status === "compressing"
+                    ? "Compressing…"
+                    : linkSnapshotDialog.status === "copying" || linkSnapshotDialog.status === "uploading"
+                      ? "Creating…"
+                      : linkSnapshotDialog.requiresSave
+                        ? "Save and create link"
+                        : "Create and copy link"}
                 </Button>
               )}
             </div>

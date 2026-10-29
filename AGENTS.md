@@ -44,7 +44,8 @@ GitHub and Web Store releases use separate tags and artifacts.
 - `hooks/use-content-*.ts` and `components/content-*.tsx` — content behavior and UI
 - `lib/localhost-review-entry.tsx` — paused localhost Review entry, outside Plasmo's content-script directory
 - `background.ts` — local-file fetch relay
-- `popup.tsx` — pending document Reviews, file-access readiness, and Settings link
+- `popup.tsx` — pending document Reviews, file-access readiness, New draft, and Settings link
+- `tabs/draft.tsx` — New Draft editor before the draft has a file
 - `options.tsx` — preferences and product guidance
 
 ### Pre-bundled dependencies
@@ -57,7 +58,7 @@ Do not add polling or file watching. Users reload a file by navigating to or sel
 
 ### Saving
 
-`doSave()` derives a writable file handle by traversing the stored directory handle. When no saved directory contains the file, Markside asks the user to choose its folder instead of opening a save picker. Auto Save is optional and off by default.
+`doSave()` derives a writable file handle by traversing the stored directory handle. When no saved directory contains the file, Markside asks the user to choose its folder instead of opening a save picker. Auto Save is optional and off by default. A New Draft has no file yet, so its first save is the one place that uses the system save picker.
 
 ### File types
 

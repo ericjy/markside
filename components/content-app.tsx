@@ -725,6 +725,7 @@ export function FileRenderer({
         copyBackupUrl={snapshots.copyBackupUrl}
         backupUrlCopyState={snapshots.backupUrlCopyState}
         confirmLinkSnapshot={snapshots.confirmLinkSnapshot}
+        compressLinkSnapshotImages={snapshots.compressLinkSnapshotImages}
         importReviewDialog={snapshots.importReviewDialog}
         closeImportReviewDialog={snapshots.closeImportReviewDialog}
         setImportReviewDialog={snapshots.setImportReviewDialog}

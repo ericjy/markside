@@ -1,8 +1,11 @@
 import {
+  ArrowUpRight,
   Bot,
   ExternalLink,
   Eye,
   EyeOff,
+  FilePen,
+  FilePlus,
   FolderInput,
   Keyboard,
   MapPin,
@@ -21,6 +24,13 @@ import {
 import { FileAccessDemo, FILE_ACCESS_DEMO_CSS } from "~lib/file-access-demo"
 import { FILE_ACCESS_SETUP_KEY } from "~lib/file-access-setup"
 import { classifyMarksideFileUrl } from "~lib/file-types"
+import {
+  describeDraftTitle,
+  NEW_DRAFT_PAGE,
+  openNewDraft,
+  readSavedDraftName,
+  readStoredDraft,
+} from "~lib/new-draft"
 import { requestOpenReview } from "~lib/open-review-request"
 import {
   describeReviewAge,
@@ -36,12 +46,23 @@ import {
 
 import "~style.css"
 
+const IS_MAC = navigator.platform.includes("Mac")
+
 const openFileRows = [
   { icon: FolderInput, action: "Drag a file", target: "to a browser tab" },
-  { icon: Keyboard, action: "Press ⌘O", target: "in any tab" },
+  { icon: Keyboard, action: "Press", keys: [IS_MAC ? "⌘" : "Ctrl", "O"], target: "in any tab" },
   { icon: MapPin, action: "Paste a path", target: "in the address bar" },
   { icon: Bot, action: "Ask your agent", target: "to open it in Chrome" },
 ]
+
+// System sans keeps the letter O distinct from zero.
+function Keys({ keys }: { keys: readonly string[] }) {
+  return (
+    <span className="popup-keys">
+      {keys.map((key) => <kbd className="popup-key" key={key}>{key}</kbd>)}
+    </span>
+  )
+}
 
 async function fileExists(url: string) {
   try {
@@ -60,6 +81,9 @@ export default function Popup() {
   const [panelOpen, setPanelOpen] = useState(false)
   const [tabLabel, setTabLabel] = useState<string | null>(null)
   const [entries, setEntries] = useState<ReviewIndexEntry[] | null>(null)
+  const [unsavedDraft, setUnsavedDraft] = useState<{ title: string; updatedAt: string } | null>(null)
+  // Set when the active tab is the draft tab: its saved filename, or null before saving.
+  const [draftTab, setDraftTab] = useState<{ savedName: string | null } | null>(null)
   const [missingKeys, setMissingKeys] = useState<ReadonlySet<string>>(new Set())
 
   const loadEntries = useCallback(async () => {
@@ -83,6 +107,9 @@ export default function Popup() {
         const origin = LOCALHOST_REVIEW_ENABLED ? getLocalhostReviewOrigin(tab.url) : null
         setLocalhostOrigin(origin)
         if (origin) setPanelOpen(await isLocalhostReviewPanelOpen(origin).catch(() => false))
+        if (tab.id !== undefined && tab.url.startsWith(chrome.runtime.getURL(NEW_DRAFT_PAGE))) {
+          setDraftTab({ savedName: await readSavedDraftName(tab.id).catch(() => null) })
+        }
         setDocumentUrl(
           tab.url.startsWith("file://") && classifyMarksideFileUrl(tab.url) === "markdown"
             ? tab.url
@@ -101,6 +128,11 @@ export default function Popup() {
       })
       .catch(() => undefined)
     void loadEntries()
+    void readStoredDraft().then((draft) => {
+      if (draft?.content.trim()) {
+        setUnsavedDraft({ title: describeDraftTitle(draft.content), updatedAt: draft.updatedAt })
+      }
+    }).catch(() => undefined)
   }, [loadEntries])
 
   const toggleLocalhostReview = async () => {
@@ -136,7 +168,10 @@ export default function Popup() {
   const reviewable = Boolean(localhostOrigin || documentUrl)
   // Identity only: pairing it with the state in one line truncated whichever
   // came second.
-  const tabTitle = localhostOrigin ? localhostOrigin.replace(/^https?:\/\//, "") : tabLabel
+  const tabTitle = draftTab
+    ? draftTab.savedName ?? "New draft"
+    : localhostOrigin ? localhostOrigin.replace(/^https?:\/\//, "") : tabLabel
+  const editingUnsavedDraft = draftTab !== null && draftTab.savedName === null
 
   return (
     <>
@@ -153,13 +188,11 @@ export default function Popup() {
         html, body { background: transparent; }
         body { margin: 0; }
         .popup-root * { box-sizing: border-box; font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif; }
-        .popup-root { background: var(--popup-cream); overflow: hidden; width: 360px; }
-        .popup-brand { align-items: center; display: flex; gap: 11px; padding: 16px 20px 14px; text-decoration: none; }
-        .popup-brand:focus-visible { border-radius: 10px; outline: 3px solid var(--popup-matcha); outline-offset: 2px; }
-        .popup-brand-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-        .popup-brand-logo { flex-shrink: 0; height: 30px; width: 30px; }
-        .popup-brand-name { color: var(--popup-text); font-size: 16px; font-weight: 700; letter-spacing: -0.25px; line-height: 1; margin: 0; }
-        .popup-tagline { color: var(--popup-text-secondary); font-size: 11.5px; font-weight: 500; line-height: 1.35; margin: 0; }
+        .popup-root { background: var(--popup-cream); display: flex; flex-direction: column; overflow: hidden; width: 360px; }
+        .popup-brand { align-items: center; align-self: flex-start; display: inline-flex; gap: 8px; margin: 16px 20px 12px; text-decoration: none; }
+        .popup-brand:focus-visible { border-radius: 6px; outline: 3px solid var(--popup-matcha); outline-offset: 3px; }
+        .popup-brand-logo { flex-shrink: 0; height: 20px; width: 20px; }
+        .popup-brand-name { color: var(--popup-text); font-size: 14px; font-weight: 700; letter-spacing: -0.2px; line-height: 1; margin: 0; }
         .popup-body { padding: 0 20px 14px; }
 
         .context { align-items: center; background: #fff; border: 1px solid var(--popup-border); border-radius: 999px; display: flex; gap: 8px; margin-bottom: 12px; padding: 7px 12px; }
@@ -172,6 +205,20 @@ export default function Popup() {
         .primary-button:hover { background: var(--popup-green-bright); border-color: var(--popup-green-bright); box-shadow: #000 -4px 4px; transform: translate(2px, -2px); }
         .primary-button:active { box-shadow: none; transform: none; }
         .primary-button:focus-visible { outline: 3px solid var(--popup-matcha); outline-offset: 2px; }
+        .draft-card { align-items: center; background: #fff; border: 1px solid var(--popup-border); border-radius: 12px; cursor: pointer; display: flex; gap: 12px; margin-top: 4px; padding: 12px; text-align: left; width: 100%; }
+        .review-card + .draft-card { margin-top: 16px; }
+        .draft-card:hover { background: var(--popup-cream-deep); border-color: #bdb5a7; }
+        .draft-card:focus-visible { outline: 3px solid var(--popup-matcha); outline-offset: 2px; }
+        .draft-icon { align-items: center; background: var(--popup-text); border-radius: 9px; color: #fff; display: flex; flex-shrink: 0; height: 32px; justify-content: center; transition: background 150ms ease; width: 32px; }
+        .draft-card:hover .draft-icon { background: var(--popup-green-bright); }
+        .draft-text { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; }
+        .draft-title { color: var(--popup-text); font-size: 13px; font-weight: 700; }
+        .draft-hint { color: var(--popup-text-secondary); display: flex; font-size: 11px; line-height: 1.4; white-space: nowrap; }
+        .draft-name { color: var(--popup-text); font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+        .draft-age { flex-shrink: 0; }
+        .draft-arrow { color: var(--popup-text-secondary); flex-shrink: 0; transition: transform 150ms ease; }
+        .draft-card:hover .draft-arrow { color: var(--popup-text); transform: translate(1px, -1px); }
+        .draft-card + .section-label { margin-top: 24px; }
         .popup-note { color: var(--popup-text-secondary); font-size: 11px; line-height: 1.5; margin: 8px 0 0; }
         .context-note { margin: -4px 0 0 12px; }
 
@@ -196,9 +243,11 @@ export default function Popup() {
         .review-dismiss:hover { color: var(--popup-text); }
         .review-dismiss:focus-visible { border-radius: 4px; outline: 3px solid var(--popup-matcha); outline-offset: 1px; }
 
-        .open-row { align-items: center; color: var(--popup-text-secondary); display: flex; font-size: 12px; gap: 9px; padding: 5px 0; }
+        .open-row { align-items: center; color: var(--popup-text-secondary); display: flex; font-size: 12px; gap: 10px; padding: 3px 0; }
         .open-row b { color: var(--popup-text); font-weight: 600; }
-        .open-icon { align-items: center; background: #e7f3e2; border: 1px solid #bfd5b7; border-radius: 8px; color: var(--popup-green-bright); display: flex; flex-shrink: 0; height: 24px; justify-content: center; width: 24px; }
+        .open-icon { color: #8a857c; display: flex; flex-shrink: 0; justify-content: center; width: 16px; }
+        .popup-keys { display: inline-flex; gap: 3px; vertical-align: 1px; }
+        .popup-key { background: #fff; border: 1px solid var(--popup-border); border-bottom-width: 2px; border-radius: 5px; color: var(--popup-text); display: inline-block; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 11px; font-weight: 600; line-height: 16px; min-width: 18px; padding: 0 4px; text-align: center; }
 
         .setup-title { color: var(--popup-text); font-size: 14px; font-weight: 700; margin: 6px 0 6px; }
         .setup-copy { color: var(--popup-text-secondary); font-size: 13px; line-height: 1.55; margin: 0 0 12px; }
@@ -211,7 +260,7 @@ export default function Popup() {
         .footer-link:hover { color: var(--popup-green-bright); }
         .footer-link:focus-visible { border-radius: 6px; outline: 3px solid var(--popup-matcha); outline-offset: 1px; }
         .footer-dot { color: var(--popup-border); }
-        @media (prefers-reduced-motion: reduce) { .primary-button { transition: none; } }
+        @media (prefers-reduced-motion: reduce) { .primary-button, .draft-icon, .draft-arrow { transition: none; } .draft-card:hover .draft-arrow { transform: none; } }
       `}</style>
 
       <div className="popup-root">
@@ -229,14 +278,11 @@ export default function Popup() {
               <path d="M109 99 L118 108 L109 117" />
             </g>
           </svg>
-          <span className="popup-brand-text">
-            <h1 className="popup-brand-name">Markside</h1>
-            <span className="popup-tagline">View and edit Markdown in your browser</span>
-          </span>
+          <h1 className="popup-brand-name">Markside</h1>
         </a>
 
         <main className="popup-body">
-          {reviewable && (
+          {(reviewable || draftTab) && (
             <div className="context">
               <span className="context-dot" />
               <span className="context-label" title={tabTitle ?? undefined}>
@@ -257,6 +303,12 @@ export default function Popup() {
           {documentUrl && (
             <p className="popup-note context-note">
               Select text in the page to add a comment.
+            </p>
+          )}
+
+          {editingUnsavedDraft && (
+            <p className="popup-note context-note">
+              Press <Keys keys={[IS_MAC ? "⌘" : "Ctrl", "S"]} /> to save it anywhere.
             </p>
           )}
 
@@ -332,20 +384,42 @@ export default function Popup() {
                 </button>
               ))}
 
-              {!reviewable && (
+              {!editingUnsavedDraft && <button
+                className="draft-card"
+                onClick={() => void openNewDraft().then(() => window.close())}>
+                <span className="draft-icon">
+                  {unsavedDraft ? <FilePen size={16} strokeWidth={1.8} /> : <FilePlus size={16} strokeWidth={1.8} />}
+                </span>
+                <span className="draft-text">
+                  <span className="draft-title">{unsavedDraft ? "Continue draft" : "New draft"}</span>
+                  {unsavedDraft ? (
+                    <span className="draft-hint">
+                      {unsavedDraft.title && <span className="draft-name">{unsavedDraft.title}</span>}
+                      <span className="draft-age">
+                        {unsavedDraft.title ? "\u00a0· " : ""}edited {describeReviewAge(unsavedDraft.updatedAt, Date.now())}
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="draft-hint">Write or paste Markdown, save it anywhere</span>
+                  )}
+                </span>
+                <ArrowUpRight className="draft-arrow" size={16} strokeWidth={1.8} aria-hidden="true" />
+              </button>}
+
+              {!reviewable && !draftTab && (
                 <>
                   <div className="section-label"><span>Ways to open a Markdown file</span></div>
-                  {openFileRows.map(({ icon: Icon, action, target }) => (
+                  {openFileRows.map(({ icon: Icon, action, keys, target }) => (
                     <div className="open-row" key={action}>
-                      <span className="open-icon"><Icon size={13} strokeWidth={1.8} /></span>
-                      <span><b>{action}</b> {target}</span>
+                      <span className="open-icon"><Icon size={15} strokeWidth={1.6} /></span>
+                      <span><b>{action}</b>{keys && <> <Keys keys={keys} /></>} {target}</span>
                     </div>
                   ))}
                   {LOCALHOST_REVIEW_ENABLED && (
                     <>
                       <div className="section-label"><span>Review a localhost page</span></div>
                       <div className="open-row">
-                        <span className="open-icon"><Eye size={13} strokeWidth={1.8} /></span>
+                        <span className="open-icon"><Eye size={15} strokeWidth={1.6} /></span>
                         <span>Serve it on <b>localhost</b>, then Enter Review Mode here</span>
                       </div>
                     </>

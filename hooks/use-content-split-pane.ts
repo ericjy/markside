@@ -18,39 +18,11 @@ interface UseContentSplitPaneOptions {
   setOutlineOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export function useContentSplitPane({
-  initialSplitPercent,
-  initialSidebarState,
-  isSplitView,
-  leftOpen,
-  setLeftOpen,
-  outlineOpen,
-  setOutlineOpen,
-}: UseContentSplitPaneOptions) {
+// The Split divider's position, shared by documents and the New Draft tab.
+export function useSplitPercent(initialSplitPercent: number) {
   const [previewPercent, setPreviewPercent] = useState(initialSplitPercent)
   const previewPercentRef = useRef(initialSplitPercent)
   const splitContainerRef = useRef<HTMLDivElement>(null)
-  const sidebarStateBeforeSplitRef = useRef(initialSidebarState.stateBeforeSplit)
-  const wasSplitViewRef = useRef(initialSidebarState.wasSplitView)
-
-  // Split view needs the width, so both sidebars close on entry and reopen on exit.
-  useEffect(() => {
-    if (isSplitView === wasSplitViewRef.current) return
-    wasSplitViewRef.current = isSplitView
-
-    if (isSplitView) {
-      sidebarStateBeforeSplitRef.current = { leftOpen, outlineOpen }
-      setLeftOpen(false)
-      setOutlineOpen(false)
-      return
-    }
-
-    const previousState = sidebarStateBeforeSplitRef.current
-    sidebarStateBeforeSplitRef.current = null
-    if (!previousState) return
-    setLeftOpen(previousState.leftOpen)
-    setOutlineOpen(previousState.outlineOpen)
-  }, [isSplitView])
 
   const updateSplitFromClientX = (clientX: number) => {
     const container = splitContainerRef.current
@@ -83,4 +55,39 @@ export function useContentSplitPane({
     storeSplitPercent,
     adjustSplitBy,
   }
+}
+
+export function useContentSplitPane({
+  initialSplitPercent,
+  initialSidebarState,
+  isSplitView,
+  leftOpen,
+  setLeftOpen,
+  outlineOpen,
+  setOutlineOpen,
+}: UseContentSplitPaneOptions) {
+  const split = useSplitPercent(initialSplitPercent)
+  const sidebarStateBeforeSplitRef = useRef(initialSidebarState.stateBeforeSplit)
+  const wasSplitViewRef = useRef(initialSidebarState.wasSplitView)
+
+  // Split view needs the width, so both sidebars close on entry and reopen on exit.
+  useEffect(() => {
+    if (isSplitView === wasSplitViewRef.current) return
+    wasSplitViewRef.current = isSplitView
+
+    if (isSplitView) {
+      sidebarStateBeforeSplitRef.current = { leftOpen, outlineOpen }
+      setLeftOpen(false)
+      setOutlineOpen(false)
+      return
+    }
+
+    const previousState = sidebarStateBeforeSplitRef.current
+    sidebarStateBeforeSplitRef.current = null
+    if (!previousState) return
+    setLeftOpen(previousState.leftOpen)
+    setOutlineOpen(previousState.outlineOpen)
+  }, [isSplitView])
+
+  return split
 }

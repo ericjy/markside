@@ -8,7 +8,8 @@
 | Content application | `components/content-app.tsx` | Coordinates document state and composes the content UI |
 | Paused entry | `lib/localhost-review-entry.tsx` | Localhost Review code, not registered in any build |
 | Background worker | `background.ts` | Relays local-file reads and tab navigation requested by the content script, and registers the uninstall survey URL |
-| Popup | `popup.tsx` | Lists pending document Reviews, reports file-access readiness, and links to Settings |
+| Popup | `popup.tsx` | Lists pending document Reviews, reports file-access readiness, opens a New Draft, and links to Settings |
+| Draft tab | `tabs/draft.tsx` | Writes a New Draft before it has a file and saves it with the system save dialog |
 | Options page | `options.tsx` | Stores extension preferences and explains supported behavior |
 
 The content application keeps the document state shared by every feature
@@ -389,15 +390,44 @@ explicit action; there is no filesystem watcher or polling.
 
 The background worker opens a normal `file://` tab. A tab-scoped, one-time request
 starts it in Source mode with editor focus, without changing the saved view
-preference. The original tab and its Unsaved Draft remain untouched. Popup
-creation and the separate extension editor page are not part of this flow.
+preference. The original tab and its Unsaved Draft remain untouched.
+
+### New Draft
+
+**New draft** in the popup opens the draft tab, `tabs/draft.html`, from any
+tab. If the tab still editing an unsaved New Draft is open, found with
+`chrome.runtime.getContexts`, the popup focuses it instead. While
+the stored draft has content, the popup's card reads **Continue draft** with its
+first heading or first line and edit time. On the draft tab itself the popup
+shows the tab's state instead: the save shortcut before the first save, or the
+saved filename, which the draft tab records in `chrome.storage.session`. The draft tab
+opens in Split with the editor focused, or in Source when the window is narrower
+than two 320 px panes. The toolbar offers Preview, Source, and
+Split, whose divider (`components/split-divider.tsx`, shared with documents)
+resizes the panes and shares their saved position; `Ctrl+E` switches between Source and
+Preview. Preview renders Markdown, code, math, and diagrams but not relative
+images, links, or HTML Embeds.
+
+Until the first save, the text and the editing tab's id are mirrored to
+`chrome.storage.local` under `newDraft`, so a closed tab restores it. Only one
+New Draft is kept. **Discard** empties it after confirmation. An empty draft's
+Preview offers **Insert sample**, which loads `lib/draft-sample.md`.
+
+The first save uses `showSaveFilePicker`, suggesting the first heading as a
+lowercase, hyphenated filename such as `rate-limits-rfc.md`, or `untitled.md`. The File System Access API never reveals the saved
+file's path, so the tab cannot become a `file://` document. It adds
+`?file=<uuid>` to its URL, stores the handle under that URL in the extension's
+IndexedDB, clears the stored draft, and shows a notice to reopen the file with
+`Cmd+O` for the file tree and Reviews. Reloading the tab reads the saved file
+again, asking for permission with **Reopen** when Chrome requires it. Later saves write to the same handle without a dialog; closing the tab
+with unwritten edits shows the browser's leave-page warning. After the first save the tab follows the
+Auto Save preference. The Outline and Reviews are not available in the draft tab.
 
 ## Snapshots
 
 Markdown files expose a Share action. Two kinds of snapshot are available, and
 the sender chooses between them on every share. Both create a read-only copy
-that a recipient can open in a browser without installing the extension. Size
-decides which one is preselected.
+that a recipient can open in a browser without installing the extension. Size and local image references decide which one is preselected.
 
 A **Link Snapshot** carries the document entirely inside the link. `lib/link-snapshot.ts`
 serializes the saved basename and Markdown as compact JSON, compresses it with
@@ -413,14 +443,21 @@ A **Hosted Snapshot** encrypts the document in the sender's browser with
 AES-256-GCM, stores the ciphertext on Vercel Blob, and carries only the
 identifier and decryption key in the link. The key stays in the URL fragment,
 which the browser never sends to the server, so Markside receives and stores
-ciphertext only. When the Link Snapshot URL exceeds 2,000 characters, the
+ciphertext only. When the Link Snapshot URL exceeds 2,000 characters or local images are referenced, the
 Hosted Snapshot is preselected. The sender can always select the other kind.
 Hosted snapshots expire on a sender-chosen 7, 30, or 90 day schedule.
 
 Unsaved drafts must be written successfully before the URL is copied. The
 existing save conflict and permission policies remain authoritative. `lib/link-snapshot-resources.ts`
 reports local images and document links that the standalone viewer cannot
-resolve. HTML Embed files travel in the envelope's optional `e` object, keyed by
+resolve. Hosted Snapshots include readable local Markdown and HTML image
+references, keyed by their original source, and warn about unreadable images.
+HTTPS images remain remote. The dialog re-reads images before upload and asks
+for confirmation if they changed. The encrypted upload is limited to 4 MB and
+the decoded Hosted Snapshot envelope to 6 MiB. On exceeding either limit,
+the sender may choose local compression for static JPEG and PNG images, review
+the changed paths and sizes, or adjust files manually. Animation and SVG stay
+unchanged. Link Snapshots exclude local images. HTML Embed files travel in the envelope's optional `e` object, keyed by
 the path as written, so they count toward the same size checks.
 
 Recipients can comment in the `/s` viewer and share their Review back as a new
@@ -430,8 +467,9 @@ page; for a Hosted Snapshot the background worker downloads the ciphertext from
 `/api/snapshots/<id>` and the page decrypts it with the key from the fragment.
 
 The public `/s` viewer is maintained in the separate website repository. It
-decodes and renders entirely in the browser, limits decompressed output to 256
-KiB, sanitizes rendered HTML, and treats local resources as unavailable. Link
+decodes and renders entirely in the browser, limits Link Snapshot output to 256
+KiB and Hosted Snapshot output to 6 MiB, sanitizes rendered HTML, and renders
+packaged images in Hosted Snapshots. Other local resources remain unavailable. Link
 Snapshots are decoded in the page, and Hosted Snapshots are decrypted after
 fetching from `/api/snapshots/<id>`. See [ADR-0004](adr/0004-carry-link-snapshots-in-url-fragments.md)
 for Link Snapshots and [ADR-0007](adr/0007-host-encrypted-snapshots.md) for

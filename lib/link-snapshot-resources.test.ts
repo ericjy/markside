@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { describe, expect, it } from "vitest"
 
 import { analyzeLinkSnapshotResources } from "./link-snapshot-resources"
@@ -47,4 +49,10 @@ describe("Link Snapshot resource analysis", () => {
       localDocumentLinks: 1,
     })
   })
+})
+
+it("finds distinct local image references in Markdown and HTML", async () => {
+  const { findLocalSnapshotImages } = await import("./link-snapshot-resources")
+  const markdown = ["![chart](../chart.png)", "<img src='./chart.png'>", "![again](../chart.png)", "![remote](https://example.com/a.png)", "![embed](./diagram.html)", "`![code](hidden.png)`"].join("\n\n")
+  expect(findLocalSnapshotImages(markdown)).toEqual(["../chart.png", "./chart.png"])
 })

@@ -172,7 +172,7 @@ Set by `displayName` in `package.json`. Keep the exact search phrase "Markdown V
 ## Short description (132 chars max)
 
 ```
-Read, edit and collaborate on Markdown with your teammate and AI agents. Inline comment, Mermaid. Math, PDF export, and more.
+Read, edit, and collaborate on Markdown with your teammates and AI agents
 ```
 
 Set by `description` in `package.json`, so a change reaches the Store only with

@@ -2,7 +2,7 @@
   "name": "markside",
   "displayName": "Markside: Markdown Viewer & Editor",
   "version": "1.8.0",
-  "description": "Read, edit and collaborate on Markdown with your teammate and AI agents. Inline comment, Mermaid. Math, PDF export, and more.",
+  "description": "Read, edit, and collaborate on Markdown with your teammates and AI agents",
   "author": "Jing Yang",
   "license": "MIT",
   "scripts": {

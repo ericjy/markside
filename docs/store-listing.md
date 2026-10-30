@@ -94,6 +94,15 @@ date, exact commit SHA, ZIP SHA-256, and release tag. The tag maps the version
 to the prepared commit; the hash identifies the uploaded package. Earlier
 user-facing changes are documented in `CHANGELOG.md`.
 
+- 1.8.0 — published 2026-10-29
+  - Commit: `4d73295d0226f966c5737eefba2d4c621c40f09e`
+  - ZIP SHA-256: `16c0e9a1ef74b56757465b87137f7f93ede2940522bb9693068cfd78df4569eb`
+  - Tag: `webstore-v1.8.0`
+- 1.7.0 — published 2026-10-25
+  - Commit: `cac5f7fdf64b36bf9fca05571435613e67fdc7c6`
+  - ZIP SHA-256: `6443be23b9a399118e342d1c614f2877e6b386f30e1a7e8e271dd3d1db42bfcc`
+  - Tag: `webstore-v1.7.0`
+
 ## Release notes and changelog
 
 `CHANGELOG.md` is the durable, version-by-version record of user-facing changes.

@@ -5,7 +5,14 @@ version is tagged with the channel(s) it actually shipped on — Chrome Web
 Store and GitHub Releases run independently and can diverge; see
 `docs/github-release.md`.
 
-## 1.8.0 — Unreleased
+## Unreleased
+
+### Added
+
+- Markside's interface is available in English, Simplified Chinese, Traditional Chinese, Japanese, Korean, and Spanish. It follows the browser language by default; choose a different Interface language in Settings.
+- Open a `.md.txt` file as Markdown to use Preview, Source, and Split. The file keeps its name, and you can keep it as text instead.
+
+## 1.8.0 — 2026-10-29 (Chrome Web Store)
 
 ### Added
 
@@ -22,7 +29,7 @@ Store and GitHub Releases run independently and can diverge; see
 
 - Import Review accepts a reviewer's Hosted Snapshot link, not only a Link Snapshot.
 
-## 1.7.0 — Unreleased
+## 1.7.0 — 2026-10-25 (Chrome Web Store)
 
 ### Added
 

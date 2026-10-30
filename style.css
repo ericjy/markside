@@ -1983,6 +1983,11 @@ button.readability-score-filter {
 }
 
 /* ── Footnotes ── */
+/* markdown-it-footnote adds an <hr> before the section, which already has a top border. */
+.prose .footnotes-sep {
+  display: none;
+}
+
 .prose .footnotes {
   margin-top: 2em;
   padding-top: 1em;

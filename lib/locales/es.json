@@ -265,7 +265,7 @@
   "Open markside.app in a new tab": "Abra markside.app en una nueva pestaña",
   "Open section improvement comment": "Abrir comentario de mejora de sección",
   "Open the Review for {0}": "Abrir la revisión de {0}",
-  "Open this file's folder": "Abra la carpeta de este archivo",
+  "Browse this file's folder?": "¿Explorar la carpeta de este archivo?",
   "Open with": "abrir con",
   "Overall feedback": "Comentarios generales",
   "Overall feedback for this Review": "Comentarios generales sobre esta revisión",
@@ -507,7 +507,6 @@
   "terminal command": "comando terminal",
   "the opened folder": "la carpeta abierta",
   "them": "ellos",
-  "then": "entonces",
   "these HTML Embeds": "estas incrustaciones HTML",
   "these images": "estas imagenes",
   "this HTML Embed": "este HTML incrustado",
@@ -858,12 +857,12 @@
   "{0} items": "{0} elementos",
   "{0} review item": "{0} elemento de revisión",
   "{0} review items": "{0} elementos de revisión",
-  "In the folder picker, press:": "En la ventana de selección de carpetas, pulsa estas teclas en orden:",
-  "Open the {0} folder": "Abrir la carpeta {0}",
+  "In the folder picker, press {0} and paste the path to quickly locate the folder.": "En el selector de carpetas, pulsa {0} y pega la ruta para localizar la carpeta rápidamente.",
+  "Browse the {0} folder?": "¿Explorar la carpeta {0}?",
   "Choose {0} or a parent folder so Markside can browse and save files.": "Elige {0} o una carpeta superior para que Markside pueda explorar y guardar archivos.",
   "Choose this folder or a parent folder so Markside can browse and save files.": "Elige esta carpeta o una carpeta superior para que Markside pueda explorar y guardar archivos.",
   "Choose {0}…": "Elegir {0}…",
   "Choose folder…": "Elegir carpeta…",
-  "Opening the folder picker copies the folder path.": "Al abrir el selector de carpetas, se copia la ruta de la carpeta.",
-  "Choose the folder once to authorize Markside to browse and save its files.": "Elige la carpeta una vez para autorizar a Markside a explorar y guardar sus archivos."
+  "Clicking the button also copies the folder path.": "Al hacer clic en el botón, también se copia la ruta de la carpeta.",
+  "Choose the folder once so Markside can browse and save its files.": "Elige la carpeta una vez para que Markside pueda explorar y guardar sus archivos."
 }

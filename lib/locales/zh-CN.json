@@ -265,7 +265,7 @@
   "Open markside.app in a new tab": "在新选项卡中打开 markside.app",
   "Open section improvement comment": "打开部分改进评论",
   "Open the Review for {0}": "打开 {0} 的审阅",
-  "Open this file's folder": "打开该文件的文件夹",
+  "Browse this file's folder?": "浏览该文件所在的文件夹？",
   "Open with": "打开方式",
   "Overall feedback": "总体反馈",
   "Overall feedback for this Review": "本次审核的总体反馈",
@@ -507,7 +507,6 @@
   "terminal command": "终端命令",
   "the opened folder": "打开的文件夹",
   "them": "他们",
-  "then": "然后",
   "these HTML Embeds": "这些 HTML 嵌入",
   "these images": "这些图像",
   "this HTML Embed": "此 HTML 嵌入",
@@ -858,12 +857,12 @@
   "{0} items": "{0} 项",
   "{0} review item": "{0} 条审阅内容",
   "{0} review items": "{0} 条审阅内容",
-  "In the folder picker, press:": "在文件夹选择窗口中依次按：",
-  "Open the {0} folder": "打开“{0}”文件夹",
+  "In the folder picker, press {0} and paste the path to quickly locate the folder.": "在文件夹选择窗口中按 {0} 并粘贴路径，即可快速定位文件夹。",
+  "Browse the {0} folder?": "浏览“{0}”文件夹？",
   "Choose {0} or a parent folder so Markside can browse and save files.": "选择“{0}”或其上级文件夹，以便 Markside 浏览和保存文件。",
   "Choose this folder or a parent folder so Markside can browse and save files.": "选择此文件夹或其上级文件夹，以便 Markside 浏览和保存文件。",
   "Choose {0}…": "选择“{0}”…",
   "Choose folder…": "选择文件夹…",
-  "Opening the folder picker copies the folder path.": "打开文件夹选择窗口时会复制文件夹路径。",
-  "Choose the folder once to authorize Markside to browse and save its files.": "选择一次文件夹，即可授权 Markside 浏览和保存其中的文件。"
+  "Clicking the button also copies the folder path.": "点击按钮还会复制文件夹路径。",
+  "Choose the folder once so Markside can browse and save its files.": "选择一次文件夹，Markside 就能浏览和保存其中的文件。"
 }

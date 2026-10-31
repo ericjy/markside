@@ -265,7 +265,7 @@
   "Open markside.app in a new tab": "새 탭에서 markside.app 열기",
   "Open section improvement comment": "오픈섹션 개선 코멘트",
   "Open the Review for {0}": "{0}의 검토 열기",
-  "Open this file's folder": "이 파일의 폴더를 엽니다",
+  "Browse this file's folder?": "이 파일의 폴더를 탐색할까요?",
   "Open with": "다음으로 열기",
   "Overall feedback": "전반적인 피드백",
   "Overall feedback for this Review": "이 리뷰에 대한 전반적인 피드백",
@@ -507,7 +507,6 @@
   "terminal command": "터미널 명령",
   "the opened folder": "열린 폴더",
   "them": "그들",
-  "then": "그럼",
   "these HTML Embeds": "이 HTML 삽입",
   "these images": "이 이미지들",
   "this HTML Embed": "이 HTML 삽입",
@@ -858,12 +857,12 @@
   "{0} items": "항목 {0}개",
   "{0} review item": "리뷰 항목 {0}개",
   "{0} review items": "리뷰 항목 {0}개",
-  "In the folder picker, press:": "폴더 선택 창에서 다음 키를 순서대로 누르세요:",
-  "Open the {0} folder": "‘{0}’ 폴더 열기",
+  "In the folder picker, press {0} and paste the path to quickly locate the folder.": "폴더 선택 창에서 {0} 키를 누르고 경로를 붙여 넣으면 폴더를 빠르게 찾을 수 있습니다.",
+  "Browse the {0} folder?": "‘{0}’ 폴더를 탐색할까요?",
   "Choose {0} or a parent folder so Markside can browse and save files.": "Markside에서 파일을 탐색하고 저장할 수 있도록 ‘{0}’ 또는 상위 폴더를 선택하세요.",
   "Choose this folder or a parent folder so Markside can browse and save files.": "Markside에서 파일을 탐색하고 저장할 수 있도록 이 폴더 또는 상위 폴더를 선택하세요.",
   "Choose {0}…": "‘{0}’ 선택…",
   "Choose folder…": "폴더 선택…",
-  "Opening the folder picker copies the folder path.": "폴더 선택 창을 열면 폴더 경로가 복사됩니다.",
-  "Choose the folder once to authorize Markside to browse and save its files.": "폴더를 한 번 선택하여 Markside가 해당 폴더의 파일을 탐색하고 저장할 수 있도록 허용하세요."
+  "Clicking the button also copies the folder path.": "버튼을 클릭하면 폴더 경로도 복사됩니다.",
+  "Choose the folder once so Markside can browse and save its files.": "폴더를 한 번 선택하면 Markside가 해당 폴더의 파일을 탐색하고 저장할 수 있습니다."
 }

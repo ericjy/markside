@@ -265,7 +265,7 @@
   "Open markside.app in a new tab": "新しいタブで markside.app を開く",
   "Open section improvement comment": "セクション改善コメントを開く",
   "Open the Review for {0}": "{0} のレビューを開く",
-  "Open this file's folder": "このファイルのフォルダーを開きます",
+  "Browse this file's folder?": "このファイルのフォルダーを閲覧しますか？",
   "Open with": "で開く",
   "Overall feedback": "全体的なフィードバック",
   "Overall feedback for this Review": "このレビューに対する全体的なフィードバック",
@@ -507,7 +507,6 @@
   "terminal command": "端末コマンド",
   "the opened folder": "開いたフォルダー",
   "them": "彼ら",
-  "then": "それから",
   "these HTML Embeds": "これらの HTML 埋め込み",
   "these images": "これらの画像",
   "this HTML Embed": "このHTML埋め込み",
@@ -858,12 +857,12 @@
   "{0} items": "{0} 件",
   "{0} review item": "レビュー項目 {0} 件",
   "{0} review items": "レビュー項目 {0} 件",
-  "In the folder picker, press:": "フォルダー選択画面で次のキーを順に押してください：",
-  "Open the {0} folder": "「{0}」フォルダーを開く",
+  "In the folder picker, press {0} and paste the path to quickly locate the folder.": "フォルダー選択画面で {0} を押してパスを貼り付けると、フォルダーをすばやく見つけられます。",
+  "Browse the {0} folder?": "「{0}」フォルダーを閲覧しますか？",
   "Choose {0} or a parent folder so Markside can browse and save files.": "Markside でファイルの閲覧と保存ができるように、「{0}」またはその親フォルダーを選択してください。",
   "Choose this folder or a parent folder so Markside can browse and save files.": "Markside でファイルの閲覧と保存ができるように、このフォルダーまたはその親フォルダーを選択してください。",
   "Choose {0}…": "「{0}」を選択…",
   "Choose folder…": "フォルダーを選択…",
-  "Opening the folder picker copies the folder path.": "フォルダー選択画面を開くと、フォルダーのパスがコピーされます。",
-  "Choose the folder once to authorize Markside to browse and save its files.": "フォルダーを一度選択すると、Markside がその中のファイルを閲覧・保存できるようになります。"
+  "Clicking the button also copies the folder path.": "ボタンをクリックすると、フォルダーのパスもコピーされます。",
+  "Choose the folder once so Markside can browse and save its files.": "フォルダーを一度選択すると、Markside がその中のファイルを閲覧・保存できるようになります。"
 }

@@ -221,13 +221,15 @@ export function SidebarLeft({
           <div className="px-5 py-6">
             <div className="flex max-w-60 flex-col gap-3">
               <div className="space-y-1.5">
-                <p className="text-sm font-medium leading-snug text-sidebar-foreground">
-                  {parentFolderName ? t("Open the {0} folder", [parentFolderName]) : t("Open this file's folder")}
+                <p className="break-words text-sm leading-snug text-sidebar-foreground/75">
+                  {parentFolderName
+                    ? tRich("Browse the {0} folder?", <strong className="font-semibold text-sidebar-foreground">{parentFolderName}</strong>)
+                    : t("Browse this file's folder?")}
                 </p>
                 <p className="text-[13px] leading-relaxed text-sidebar-foreground/75">
                   {folderError
                     ? tRich("You chose {0}. Please choose {1}, or a parent folder.", <strong className="font-medium text-sidebar-foreground">{folderError.picked}</strong>, <strong className="font-medium text-sidebar-foreground">{folderError.expected ?? parentFolderName}</strong>)
-                    : t("Choose the folder once to authorize Markside to browse and save its files.")}
+                    : t("Choose the folder once so Markside can browse and save its files.")}
                 </p>
                 {folderError && (
                   <p className="text-[13px] leading-relaxed text-sidebar-foreground/75">

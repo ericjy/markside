@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 type MessageListener = (
-  message: { type: string; url?: string; days?: number; blob?: number[] },
+  message: { type: string; url?: string; days?: number; blob?: number[]; enabled?: boolean },
   sender: { tab?: { id?: number } },
   sendResponse: (response: unknown) => void,
 ) => boolean | undefined
@@ -13,6 +13,11 @@ const fetchFile = vi.fn()
 
 const setBadgeText = vi.fn().mockResolvedValue(undefined)
 const setUninstallURL = vi.fn().mockResolvedValue(undefined)
+const permissionAdded = vi.fn()
+const registerContentScripts = vi.fn().mockResolvedValue(undefined)
+const saveStorage = vi.fn().mockResolvedValue(undefined)
+const tabRemoved = vi.fn()
+const sessionValues: Record<string, unknown> = {}
 
 vi.stubGlobal("chrome", {
   runtime: {
@@ -20,16 +25,23 @@ vi.stubGlobal("chrome", {
     onMessage: { addListener },
     onStartup: { addListener: vi.fn() },
     onInstalled: { addListener: vi.fn() },
-    getManifest: () => ({ version: "1.5.1" }),
+    getManifest: () => ({ version: "1.5.1", content_scripts: [{ js: ["markside.test.js"] }] }),
     setUninstallURL,
   },
-  tabs: { update: updateTab },
+  tabs: { update: updateTab, query: vi.fn().mockResolvedValue([]), onRemoved: { addListener: tabRemoved } },
+  permissions: { onAdded: { addListener: permissionAdded }, contains: vi.fn().mockResolvedValue(true) },
+  scripting: { getRegisteredContentScripts: vi.fn().mockResolvedValue([]), registerContentScripts },
   action: {
     setBadgeText,
     setBadgeBackgroundColor: vi.fn().mockResolvedValue(undefined),
   },
   storage: {
-    local: { get: vi.fn().mockResolvedValue({}) },
+    local: { get: vi.fn().mockResolvedValue({}), set: saveStorage },
+    session: {
+      get: async (key: string) => ({ [key]: sessionValues[key] }),
+      set: async (values: Record<string, unknown>) => { Object.assign(sessionValues, values) },
+      remove: async (key: string) => { delete sessionValues[key] },
+    },
     onChanged: { addListener: vi.fn() },
   },
 })
@@ -38,6 +50,29 @@ vi.stubGlobal("fetch", fetchFile)
 await import("../background")
 
 const listener = addListener.mock.calls[0][0] as MessageListener
+
+describe("online Zen mode", () => {
+  it("keeps the state per tab and clears it when that tab closes", async () => {
+    const send = (message: { type: string; enabled?: boolean }, id: number) => new Promise<unknown>(resolve => {
+      listener(message, { tab: { id } }, resolve)
+    })
+    await expect(send({ type: "set-web-zen-mode", enabled: true }, 42)).resolves.toEqual({ enabled: true })
+    await expect(send({ type: "get-web-zen-mode" }, 42)).resolves.toEqual({ enabled: true })
+    await expect(send({ type: "get-web-zen-mode" }, 43)).resolves.toEqual({ enabled: false })
+    const onRemoved = tabRemoved.mock.calls[0][0] as (tabId: number) => void
+    onRemoved(42)
+    await expect(send({ type: "get-web-zen-mode" }, 42)).resolves.toEqual({ enabled: false })
+  })
+})
+
+describe("online preview permission grant", () => {
+  it("registers preview after Chrome grants website access without relying on the popup", async () => {
+    const onAdded = permissionAdded.mock.calls[0][0] as (permissions: { origins: string[] }) => void
+    onAdded({ origins: ["http://*/*", "https://*/*"] })
+    await vi.waitFor(() => expect(saveStorage).toHaveBeenCalledWith({ webPreviewEnabled: true }))
+    expect(registerContentScripts).toHaveBeenCalledWith([expect.objectContaining({ id: "web-markdown-preview" })])
+  })
+})
 
 describe("review badge", () => {
   it("clears the badge when no Review is waiting", async () => {

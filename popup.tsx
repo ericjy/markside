@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
+import { isWebMarkdownUrl, previewActiveWebTab, setWebPreviewEnabled, webPreviewEnabled } from "~lib/web-preview"
 
 import { getLocalhostReviewOrigin, LOCALHOST_REVIEW_ENABLED } from "~lib/localhost-review"
 import { ensureContentScript } from "~lib/content-script-injection"
@@ -80,6 +81,12 @@ export default function Popup() {
   const [localhostOrigin, setLocalhostOrigin] = useState<string | null>(null)
   const [documentUrl, setDocumentUrl] = useState<string | null>(null)
   const [tabId, setTabId] = useState<number | null>(null)
+  const [webMarkdown, setWebMarkdown] = useState(false)
+  const [webError, setWebError] = useState(false)
+  const [webEnabled, setWebEnabled] = useState<boolean | null>(null)
+  const [webRendered, setWebRendered] = useState(false)
+  const [webFileName, setWebFileName] = useState<string | null>(null)
+  const [webPending, setWebPending] = useState(false)
   const [panelOpen, setPanelOpen] = useState(false)
   const [tabLabel, setTabLabel] = useState<string | null>(null)
   const [entries, setEntries] = useState<ReviewIndexEntry[] | null>(null)
@@ -106,6 +113,21 @@ export default function Popup() {
       .then(async ([tab]) => {
         if (!tab?.url) return
         setTabId(tab.id ?? null)
+        const isWebMarkdown = isWebMarkdownUrl(tab.url)
+        setWebMarkdown(isWebMarkdown)
+        if (isWebMarkdown) {
+          const name = new URL(tab.url).pathname.split("/").pop() ?? ""
+          try { setWebFileName(decodeURIComponent(name)) } catch { setWebFileName(name) }
+          void webPreviewEnabled().then(enabled => {
+            setWebEnabled(enabled)
+            if (enabled && tab.id !== undefined) {
+              void chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                func: () => document.querySelector("#markside-mount .web-preview") !== null,
+              }).then(([result]) => setWebRendered(result?.result === true)).catch(() => undefined)
+            }
+          }).catch(() => setWebError(true))
+        }
         const origin = LOCALHOST_REVIEW_ENABLED ? getLocalhostReviewOrigin(tab.url) : null
         setLocalhostOrigin(origin)
         if (origin) setPanelOpen(await isLocalhostReviewPanelOpen(origin).catch(() => false))
@@ -272,6 +294,25 @@ export default function Popup() {
         </a>
 
         <main className="popup-body">
+          {webMarkdown && webEnabled === false && <section>
+            <button type="button" className="primary-button" disabled={webPending} onClick={() => {
+              setWebError(false)
+              setWebPending(true)
+              void setWebPreviewEnabled(true).then(async enabled => {
+                setWebEnabled(enabled)
+                if (enabled && tabId !== null) {
+                  if (await previewActiveWebTab(tabId)) window.close()
+                  else setWebError(true)
+                }
+              }).catch(() => setWebError(true)).finally(() => setWebPending(false))
+            }}>{t("Enable online Markdown preview")}</button>
+          </section>}
+          {webMarkdown && webError && <p className="popup-note" role="alert">{webEnabled ? t("This page cannot be previewed. Open a raw Markdown file and try again.") : t("Could not change online preview. Please try again.")}</p>}
+          {webMarkdown && webEnabled && !reviewable && !draftTab && <div className="context">
+            <span className={`context-dot${webRendered ? "" : " idle"}`} />
+            <span className="context-label" title={webFileName ?? undefined}>{webFileName}</span>
+            {webRendered && <span className="context-label idle">· {t("Read only")}</span>}
+          </div>}
           {(reviewable || draftTab) && (
             <div className="context">
               <span className="context-dot" />
@@ -299,7 +340,7 @@ export default function Popup() {
             <p className="popup-note context-note">{tRich("Press {0} to save it anywhere.", <Keys keys={[IS_MAC ? "⌘" : "Ctrl", "S"]} />)}</p>
           )}
 
-          {hasFileAccess === false ? (
+          {hasFileAccess === false && !webMarkdown ? (
             <>
               <h2 className="setup-title">{t("One last step to set up Markside")}</h2>
               <p className="setup-copy">{tRich("Click Open Extension Details, then turn on {0}.", <strong><FileAccessSettingLabel /></strong>)}</p>
@@ -366,7 +407,7 @@ export default function Popup() {
                 </button>
               ))}
 
-              {!reviewable && !draftTab && (
+              {!reviewable && !draftTab && !webMarkdown && (
                 <>
                   <div className="section-label"><span>{t("Ways to open a Markdown file")}</span></div>
                   {openFileRows.map(({ icon: Icon, action, keys, description }) => (

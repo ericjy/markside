@@ -1,6 +1,7 @@
 import { INTERFACE_LANGUAGES, parseInterfaceLanguagePreference, setInterfaceLanguagePreference, t, tRich } from "~lib/i18n"
 import { Check, ChevronRight, Copy, FileDown, Mail, Star, X } from "lucide-react"
 import { useEffect, useState } from "react"
+import { WebPreviewSetting } from "~components/web-preview-setting"
 
 import { useInterfaceLanguage } from "~hooks/use-interface-language"
 import {
@@ -204,6 +205,7 @@ export default function Options() {
 
         .state { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink); }
         .state-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+        .state-dot-off { background: #a8a29e; }
         .link-btn { border: 0; background: none; padding: 0; cursor: pointer; color: var(--green); font-size: 14px; font-weight: 500; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color 120ms ease; }
         .link-btn:hover { text-decoration-color: currentColor; }
 
@@ -305,6 +307,10 @@ export default function Options() {
                 ))}
               </select>
             </div>
+          </Group>
+
+          <Group title={t("Online Markdown")}>
+            <WebPreviewSetting />
           </Group>
 
           {hasFileAccess === false && (

@@ -24,6 +24,19 @@ afterEach(() => {
 })
 
 describe("useContentZenMode", () => {
+  it("uses extension-owned persistence for online previews instead of page session storage", () => {
+    const persistZenMode = vi.fn()
+    const hook = renderHook(() => {
+      const [zenMode, setZenMode] = useState(false)
+      return { zenMode, setZenMode, ...useContentZenMode({ zenMode, setZenMode, escapeClosesPanel: false, persistZenMode }) }
+    }, undefined)
+    act(() => hook.result.current.setZenMode(true))
+    expect(persistZenMode).toHaveBeenLastCalledWith(true)
+    expect(sessionStorage.length).toBe(0)
+    press("Escape")
+    expect(persistZenMode).toHaveBeenLastCalledWith(false)
+    hook.unmount()
+  })
   it("toggles with Cmd or Ctrl+period, including from the Source editor", () => {
     const hook = renderHook(useZen, { escapeClosesPanel: false })
     const editor = document.createElement("div")

@@ -20,9 +20,10 @@ interface UseContentZenModeOptions {
   setZenMode: React.Dispatch<React.SetStateAction<boolean>>
   /** True while the Review panel or quick file switcher would consume Escape. */
   escapeClosesPanel: boolean
+  persistZenMode?: (enabled: boolean) => void
 }
 
-export function useContentZenMode({ zenMode, setZenMode, escapeClosesPanel }: UseContentZenModeOptions) {
+export function useContentZenMode({ zenMode, setZenMode, escapeClosesPanel, persistZenMode }: UseContentZenModeOptions) {
   const [hintVisible, setHintVisible] = useState(false)
   const [toolbarRevealed, setToolbarRevealed] = useState(false)
   const [pointerNearTop, setPointerNearTop] = useState(false)
@@ -30,7 +31,8 @@ export function useContentZenMode({ zenMode, setZenMode, escapeClosesPanel }: Us
   escapeClosesPanelRef.current = escapeClosesPanel
 
   useEffect(() => {
-    if (zenMode) sessionStorage.setItem(ZEN_MODE_SESSION_KEY, "on")
+    if (persistZenMode) persistZenMode(zenMode)
+    else if (zenMode) sessionStorage.setItem(ZEN_MODE_SESSION_KEY, "on")
     else sessionStorage.removeItem(ZEN_MODE_SESSION_KEY)
     setHintVisible(zenMode)
     setToolbarRevealed(false)

@@ -86,8 +86,10 @@
     "default_locale": "en",
     "permissions": [
       "storage",
-      "activeTab"
+      "activeTab",
+      "scripting"
     ],
+    "optional_host_permissions": ["http://*/*", "https://*/*"],
     "host_permissions": [
       "$PLASMO_PUBLIC_SNAPSHOT_ORIGIN/*"
     ]

@@ -25,6 +25,8 @@ import {
 } from "~lib/url"
 
 import { FileRenderer } from "~components/content-app"
+import { WebPreview } from "~components/web-preview"
+import { isWebMarkdownUrl } from "~lib/web-preview"
 
 export const config: PlasmoCSConfig & { include_globs: string[] } = {
   // Plasmo only extracts inline string literals into the generated manifest.
@@ -113,6 +115,24 @@ export const config: PlasmoCSConfig & { include_globs: string[] } = {
 }
 
 async function bootstrap() {
+  if (document.getElementById("markside-mount")) return
+  if (location.protocol === "http:" || location.protocol === "https:") {
+    if (!isWebMarkdownUrl(location.href) || document.contentType !== "text/plain" || document.body.children.length !== 1 || document.body.firstElementChild?.tagName !== "PRE") return
+    const source = document.body.firstElementChild.textContent ?? ""
+    const style = document.createElement("style")
+    style.textContent = cssText + "\n" + localizedCssText + "\nhtml,body{margin:0;height:100%}body>pre{display:none!important}"
+    document.head.appendChild(style)
+    const mount = document.createElement("div")
+    mount.id = "markside-mount"
+    document.body.appendChild(mount)
+    const [, zen] = await Promise.all([
+      loadInterfaceLanguagePreference().catch(() => "auto" as const),
+      chrome.runtime.sendMessage({ type: "get-web-zen-mode" }).catch(() => null),
+    ])
+    mount.lang = getInterfaceLanguage()
+    createRoot(mount).render(React.createElement(WebPreview, { source, url: location.href, initialZenMode: zen?.enabled === true }))
+    return
+  }
   const initialContent = readInitialFileContent(document.body)
 
   const faviconEl = document.createElement("link")

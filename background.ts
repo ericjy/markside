@@ -6,6 +6,7 @@ import { LOCALHOST_REVIEW_ENABLED } from "~lib/localhost-review"
 import { READABILITY_CHECK_ENABLED } from "~lib/readability-service"
 import { uninstallSurveyUrl } from "~lib/uninstall-survey"
 import { documentReviewEntries, getReviewBadgeText, resolveReviewIndex, REVIEW_INDEX_KEY } from "~lib/review-index"
+import { completeWebPreviewEnable, restoreWebPreview, WEB_PREVIEW_ORIGINS } from "~lib/web-preview"
 
 // The toolbar icon carries the number of Review items waiting to be handed to an
 // agent, so pending feedback stays visible without opening the popover.
@@ -21,8 +22,25 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === "local" && REVIEW_INDEX_KEY in changes) void paintReviewBadge()
 })
 chrome.runtime.onStartup.addListener(() => void paintReviewBadge())
+const webZenModeKey = (tabId: number) => `webZenMode:${tabId}`
+chrome.tabs.onRemoved.addListener((tabId) => {
+  void chrome.storage.session.remove(webZenModeKey(tabId)).catch(() => undefined)
+})
+let enablingWebPreview: Promise<void> | null = null
+function enableWebPreview() {
+  if (!enablingWebPreview) {
+    enablingWebPreview = completeWebPreviewEnable().finally(() => { enablingWebPreview = null })
+  }
+  return enablingWebPreview
+}
+chrome.permissions.onAdded.addListener((permissions) => {
+  if (permissions.origins?.some(origin => WEB_PREVIEW_ORIGINS.includes(origin) || origin === "*://*/*" || origin === "<all_urls>")) {
+    void enableWebPreview().catch(() => undefined)
+  }
+})
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   void paintReviewBadge()
+  if (reason === "update") await restoreWebPreview().catch(() => undefined)
   // New installs land on Setup because the toolbar icon starts unpinned, so the
   // popup's file-access guidance is otherwise easy to miss.
   if (reason === "install" && !(await chrome.extension.isAllowedFileSchemeAccess())) {
@@ -51,6 +69,21 @@ function encodeBase64(buffer: ArrayBuffer): string {
 
 // Relay fetch requests from content scripts (needed for file:// URLs)
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg.type === "get-web-zen-mode" || msg.type === "set-web-zen-mode") {
+    const tabId = _sender.tab?.id
+    if (tabId === undefined) { sendResponse({ enabled: false }); return }
+    const key = webZenModeKey(tabId)
+    if (msg.type === "set-web-zen-mode" && typeof msg.enabled === "boolean") {
+      void chrome.storage.session.set({ [key]: msg.enabled }).then(() => sendResponse({ enabled: msg.enabled })).catch(() => sendResponse({ enabled: false }))
+    } else {
+      void chrome.storage.session.get(key).then(saved => sendResponse({ enabled: saved[key] === true })).catch(() => sendResponse({ enabled: false }))
+    }
+    return true
+  }
+  if (msg.type === "enable-web-preview") {
+    void enableWebPreview().then(() => sendResponse({ ok: true }), (error) => sendResponse({ ok: false, error: String(error) }))
+    return true
+  }
   if (msg.type === "consume-new-markdown-file") {
     const key = `newMarkdownTab:${_sender.tab?.id}`
     void chrome.storage.session.get(key).then(async stored => {

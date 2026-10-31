@@ -66,6 +66,19 @@ function getHighlighter() {
   return _promise
 }
 
+export async function highlightMarkdownSource(code: HTMLElement, source: string): Promise<void> {
+  const highlighter = await getHighlighter()
+  const html = highlighter.codeToHtml(source, {
+    lang: "markdown",
+    themes: { light: "github-light", dark: "github-dark" },
+    defaultColor: false,
+  })
+  const container = document.createElement("div")
+  container.innerHTML = html
+  const highlighted = container.querySelector("code")
+  if (highlighted && code.isConnected) code.replaceChildren(...highlighted.childNodes)
+}
+
 export async function highlightCodeBlocks(container: HTMLElement): Promise<void> {
   const blocks = Array.from(container.querySelectorAll("pre > code"))
   if (!blocks.length) return

@@ -110,4 +110,4 @@ and code examples may no longer match the current source tree.
 - [Open `.md.txt` as Markdown](2026-10-28-markdown-text-files/spec.md)
 - [Interface languages](2026-10-28-interface-languages/spec.md)
 - [Choosing the Interface language](2026-10-28-language-selection/spec.md)
-- [Local images in Hosted Snapshots](2026-10-28-hosted-snapshot-images/spec.md) (Proposed)
+- [Local images in Hosted Snapshots](2026-10-28-hosted-snapshot-images/spec.md)

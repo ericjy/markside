@@ -1,14 +1,13 @@
 ---
 date: 2026-10-28
-status: proposed
+status: implemented
 intent: intent.md
 interview: grill.md
 ---
 
 # Local images in Hosted Snapshots
 
-This proposal follows the [interview](grill.md). Implementation is in progress;
-Chrome file access and the full sharing flow still need manual verification.
+This design follows the [interview](grill.md).
 
 ## Requirements
 

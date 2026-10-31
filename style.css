@@ -2050,6 +2050,25 @@ button.readability-score-filter {
   --pele-surface-alt: hsl(var(--accent));
   --pele-border: hsl(var(--muted-foreground) / 0.6);
   --pele-accent: hsl(var(--sidebar-ring));
+  --chart-1: #4777ae;
+  --chart-2: #c5714f;
+  --chart-3: #37a28a;
+  --chart-4: #bb8723;
+  --chart-5: #b9679b;
+  --chart-6: #5f8f3e;
+  --chart-7: #7564c4;
+  --chart-8: #c8555a;
+}
+
+.dark .mermaid-block {
+  --chart-1: #6390cd;
+  --chart-2: #cd7651;
+  --chart-3: #2f9f85;
+  --chart-4: #b78c2e;
+  --chart-5: #bf6f9f;
+  --chart-6: #6a9649;
+  --chart-7: #887bd5;
+  --chart-8: #cc6064;
 }
 
 .mermaid-toolbar {

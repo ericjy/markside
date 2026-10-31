@@ -19,7 +19,19 @@ describe("renderVegaLite", () => {
     const svg = await render(lineChart)
     expect(svg).toContain("<svg")
     expect(svg).toMatch(/<text[^>]*>Day<\/text>/)
-    expect(svg).toContain("var(--pele-fg)")
+    expect(svg).toContain("var(--pele-muted)")
+    expect(svg).toContain("var(--chart-1)")
+  })
+
+  it("draws text and rule marks in theme colors", async () => {
+    const svg = await render({
+      data: { values: [{ x: 1, y: 2 }] },
+      layer: [
+        { mark: "text", encoding: { x: { field: "x", type: "quantitative" }, text: { field: "y" } } },
+        { mark: "rule", encoding: { x: { field: "x", type: "quantitative" } } },
+      ],
+    })
+    expect(svg).not.toMatch(/(fill|stroke)="(#000|black)"/)
   })
 
   it("evaluates expressions without compiling code", async () => {

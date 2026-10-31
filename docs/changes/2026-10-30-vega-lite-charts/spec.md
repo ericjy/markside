@@ -44,8 +44,12 @@ sanitized with DOMPurify's SVG profile with `a` and `image` removed.
 ### Block
 
 `lib/mermaid.ts` keeps its `mermaid-*` class names, as the Pele design did, and
-records a chart's language in `data-mermaid-language`. Series keep Vega's
-colors; text, axes, and grid use the `--pele-*` variables.
+records a chart's language in `data-mermaid-language`. Text, axes, and grid use
+the `--pele-*` variables. Series use `--chart-1` through `--chart-8`, a palette
+validated for color-vision deficiency on both theme backgrounds. Vega
+interpolates sequential colors itself and can't read a CSS variable, so they fade
+one blue in opacity, which sinks low values into either theme's background. A
+spec's own `config` overrides all of these defaults.
 
 ### Snapshot viewer
 

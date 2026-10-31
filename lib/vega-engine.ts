@@ -12,17 +12,103 @@ const TEXT = "var(--pele-fg)"
 const MUTED = "var(--pele-muted)"
 const LINE = "var(--pele-line)"
 const GRID = "var(--pele-border)"
+const SURFACE = "var(--pele-bg)"
+const CATEGORY = Array.from({ length: 8 }, (_, index) => `var(--chart-${index + 1})`)
+// Vega interpolates sequential colors itself, so they can't be CSS variables.
+// Fading in opacity lets low values sink into either theme's background.
+const SEQUENTIAL = ["rgba(71, 119, 174, 0.1)", "rgba(71, 119, 174, 1)"]
 
-function chartConfig(fontFamily: string | undefined) {
+type ChartConfig = NonNullable<NonNullable<Parameters<typeof compile>[1]>["config"]>
+
+function chartConfig(fontFamily: string | undefined): ChartConfig {
   return {
     background: "transparent",
     font: fontFamily,
-    title: { color: TEXT },
-    axis: { labelColor: MUTED, titleColor: TEXT, domainColor: LINE, tickColor: LINE, gridColor: GRID, gridOpacity: 0.4 },
-    legend: { labelColor: MUTED, titleColor: TEXT },
-    header: { labelColor: MUTED, titleColor: TEXT },
+    padding: 8,
+    range: { category: CATEGORY, heatmap: SEQUENTIAL, ramp: SEQUENTIAL },
+    title: {
+      color: TEXT,
+      anchor: "start",
+      fontSize: 16,
+      fontWeight: 600,
+      offset: 18,
+      subtitleColor: MUTED,
+      subtitleFontSize: 13,
+      subtitlePadding: 6,
+    },
+    axis: {
+      labelColor: MUTED,
+      labelFontSize: 12,
+      labelPadding: 8,
+      titleColor: MUTED,
+      titleFontSize: 12,
+      titleFontWeight: 500,
+      domain: false,
+      ticks: false,
+      tickCount: 5,
+      gridColor: GRID,
+      gridOpacity: 0.25,
+    },
+    axisX: {
+      domain: true,
+      domainColor: LINE,
+      domainOpacity: 0.7,
+      grid: false,
+      labelAngle: 0,
+      labelOverlap: true,
+      titleAnchor: "end",
+      titlePadding: 10,
+    },
+    // A flat title above the plot reads faster than one rotated along the axis.
+    axisY: { titleAngle: 0, titleAlign: "left", titleBaseline: "bottom", titleX: 0, titleY: -12 },
+    legend: {
+      // Below the plot, because the y-axis title sits above it.
+      orient: "bottom",
+      titleOrient: "left",
+      titlePadding: 10,
+      labelColor: MUTED,
+      labelFontSize: 12,
+      titleColor: MUTED,
+      titleFontSize: 12,
+      titleFontWeight: 500,
+      symbolType: "circle",
+      symbolSize: 70,
+      symbolBaseFillColor: MUTED,
+      symbolBaseStrokeColor: MUTED,
+      columnPadding: 14,
+      offset: 16,
+      gradientLength: 160,
+      gradientThickness: 8,
+      gradientStrokeWidth: 0,
+    },
+    header: {
+      labelColor: TEXT,
+      labelFontSize: 12,
+      labelFontWeight: 500,
+      labelAnchor: "start",
+      labelPadding: 28,
+      titleColor: MUTED,
+      titleFontWeight: 500,
+    },
+    mark: { color: CATEGORY[0] },
+    // Vega-Lite draws these two marks black by default, which disappears in dark mode.
+    text: { color: TEXT, fontSize: 12, fontWeight: 500 },
+    rule: { color: MUTED },
+    line: { strokeWidth: 2.25, strokeCap: "round", strokeJoin: "round" },
+    point: { filled: true, opacity: 0.9, size: 60 },
+    // Large fills look stronger than thin marks of the same color.
+    bar: { discreteBandSize: 28, cornerRadiusEnd: 4, fillOpacity: 0.85, stroke: SURFACE, strokeWidth: 1 },
+    area: { fillOpacity: 0.35, line: { strokeWidth: 2, strokeCap: "round", strokeJoin: "round" } },
+    arc: { padAngle: 0.02, cornerRadius: 4, fillOpacity: 0.85 },
+    rect: { cornerRadius: 3, stroke: SURFACE, strokeWidth: 2 },
     // Vega-Lite's 200px default looks tiny in a document column. A spec's own size wins.
-    view: { stroke: GRID, continuousWidth: 560, continuousHeight: 300, discreteWidth: 560 },
+    view: {
+      stroke: null,
+      continuousWidth: 560,
+      continuousHeight: 280,
+      discreteWidth: 560,
+      discreteHeight: { step: 44 },
+    },
   }
 }
 

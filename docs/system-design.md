@@ -240,7 +240,7 @@ archived question, renders as a callout rather than a quotation: teal for the
 reviewer's decision, amber for the agent's assumed one, and gray otherwise.
 
 A `vega-lite` fence renders in the same block as a Mermaid diagram, with the same
-controls and theme variables. The engine is a separate file, `vega-engine.js`,
+controls and theme variables, plus a `--chart-*` series palette. The engine is a separate file, `vega-engine.js`,
 imported the first time a document has a chart, so other documents never load it.
 Parcel rewrites `import()`, so the import lives in `vega-engine-loader.js`, which
 `scripts/fix-manifest.mjs` adds to the content script and the New Draft page

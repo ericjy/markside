@@ -113,3 +113,4 @@ and code examples may no longer match the current source tree.
 - [Local images in Hosted Snapshots](2026-10-28-hosted-snapshot-images/spec.md)
 - [Vega-Lite charts](2026-10-30-vega-lite-charts/spec.md)
 - [Quieter diagram controls](2026-10-30-diagram-controls/spec.md)
+- [Online Markdown preview](2026-10-30-web-markdown/spec.md) (Confirmed design)

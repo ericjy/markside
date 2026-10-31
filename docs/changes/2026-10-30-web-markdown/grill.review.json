@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "doc": "web-markdown.grill.md",
+  "docHash": "3d436a67521e6f880d5fc3dfdb8e68421f79dcfb832a7020be0feb9276dc5492",
+  "status": "resolved",
+  "requestedAt": "2026-10-30T23:18:23.278Z",
+  "comments": [
+    {
+      "id": "6dbf6b15-69b2-47ef-9e80-b0d520c2056b",
+      "quote": "Q1. 网上 Markdown 应该怎样开启自动渲染？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录选择 A，并加入入口和关闭权限的问题。"
+    },
+    {
+      "id": "e566c3e3-5a07-46ac-b902-4cf7d45e800e",
+      "quote": "Q2. 用户在哪里开启网上文件的自动渲染？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录弹窗和设置入口。"
+    },
+    {
+      "id": "a46df240-1ca9-4af0-8b3c-ed2a4c533f82",
+      "quote": "Q3. 用户关闭自动渲染时，网站权限应该怎样处理？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录关闭时撤销权限。"
+    },
+    {
+      "id": "6e379296-355d-45bc-88cc-a8d84d85fb49",
+      "quote": "Q4. 用户没有开启自动渲染时，还能预览当前文件吗？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录选择，并补充后续问题。"
+    },
+    {
+      "id": "21a1c39c-4cf0-4151-ae6d-b7ed64220ddf",
+      "quote": "Q5. 网上文件中的相对图片和链接如何处理？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录选择，并补充后续问题。"
+    },
+    {
+      "id": "6dce81f2-fba8-4ac1-bc03-5e0b9818ffc0",
+      "quote": "Q6. 页面不符合预览条件或渲染失败时怎么办？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录选择，并补充后续问题。"
+    },
+    {
+      "id": "07f3cded-6ff9-4fa7-9c1b-986c0c3ceda9",
+      "quote": "Q7. 网上文件的预览提供哪些功能？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录选择，并补充与现有提案的差异。"
+    },
+    {
+      "id": "4e9af2f8-3636-477f-b6a7-b48fc054035e",
+      "quote": "Q8. 用户怎样查看原始 Markdown？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录选择，并补充与现有提案的差异。"
+    },
+    {
+      "id": "118a90be-3988-4882-a77d-d316e827cf10",
+      "quote": "Q9. 哪些网上文件名应尝试作为 Markdown 预览？",
+      "line": null,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录选择，并补充与现有提案的差异。"
+    },
+    {
+      "id": "06f43983-c2db-4db8-b1b6-4372035a3ad1",
+      "quote": "Q10. 是否用这次决定更新原有的 Web Preview 提案？",
+      "line": 8,
+      "body": "A",
+      "status": "resolved",
+      "reply": "已记录用这次决定更新提案，并整理最后确认事项。"
+    }
+  ],
+  "sentAt": "2026-10-30T23:24:15.114Z",
+  "note": ""
+}

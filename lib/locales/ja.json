@@ -622,7 +622,7 @@
   "Important": "重要",
   "Inline code": "インラインコード",
   "Install via terminal": "ターミナル経由でインストールする",
-  "Interactive Mermaid diagram. Use the Pan control, hold Shift while dragging, or use arrow keys to pan; hold Control or Command while scrolling, or use plus and minus to zoom.": "インタラクティブな人魚図。パン コントロールを使用するか、Shift キーを押しながらドラッグするか、矢印キーを使用してパンします。 Control または Command を押したままスクロールするか、プラスとマイナスを使用してズームします。",
+  "Interactive Mermaid diagram. Hold Shift while dragging, or use arrow keys, to pan; hold Control or Command while scrolling, or use plus and minus to zoom.": "インタラクティブな Mermaid 図。Shift キーを押しながらドラッグするか、矢印キーでパンします。Control または Command を押しながらスクロールするか、プラスとマイナスでズームします。",
   "Invalid Base64URL": "無効なBase64URL",
   "Invalid Review Round": "無効なレビューラウンド",
   "Invalid anchor": "無効なアンカー",
@@ -866,7 +866,7 @@
   "Clicking the button also copies the folder path.": "ボタンをクリックすると、フォルダーのパスもコピーされます。",
   "Choose the folder once so Markside can browse and save its files.": "フォルダーを一度選択すると、Markside がその中のファイルを閲覧・保存できるようになります。",
   "Expanded Vega-Lite chart": "展開された Vega-Lite グラフ",
-  "Interactive Vega-Lite chart. Use the Pan control, hold Shift while dragging, or use arrow keys to pan; hold Control or Command while scrolling, or use plus and minus to zoom.": "インタラクティブな Vega-Lite グラフ。パンコントロールを使うか、Shift キーを押しながらドラッグするか、矢印キーでパンします。Control または Command を押しながらスクロールするか、プラスとマイナスでズームします。",
+  "Interactive Vega-Lite chart. Hold Shift while dragging, or use arrow keys, to pan; hold Control or Command while scrolling, or use plus and minus to zoom.": "インタラクティブな Vega-Lite グラフ。Shift キーを押しながらドラッグするか、矢印キーでパンします。Control または Command を押しながらスクロールするか、プラスとマイナスでズームします。",
   "Vega-Lite charts can only use data written in the document.": "Vega-Lite グラフでは、ドキュメント内に記述されたデータのみ使用できます。",
   "Vega-Lite error: {0}": "Vega-Lite エラー: {0}"
 }

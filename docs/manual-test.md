@@ -115,6 +115,9 @@ pull request or review response.
   dashes stay still. Zoom a diagram, switch between light and dark, and confirm
   colors change without losing the zoom. Change the typeface and confirm labels
   still fit their boxes. A diagram with a syntax error shows its line and column.
+- [ ] Point at a diagram: zoom and Expand appear at its top right and nothing
+  shifts. Tab to it and they appear too; click its text and they don't stay after
+  the pointer leaves. Expand it, turn on Pan, and close it: dragging selects text.
 - [ ] Open `sample/rendering/vega-lite-charts.md`. The line chart renders, follows
   light and dark without losing its zoom, and expands. Comment on its title, then
   Print or Export PDF and confirm it appears. The external-data chart and invalid

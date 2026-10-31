@@ -207,6 +207,8 @@ reads `id@{ animate … }` lines from the source and animates the matching edges
 itself, except under reduced motion. A diagram Pele cannot render shows an
 error block with Pele's message and, for syntax errors, its line and column. Expanded view temporarily moves the diagram to a
 viewport-filling overlay and restores its inline position and view state on exit.
+In the document, zoom and Expand float over the diagram on hover or keyboard focus
+and take no space; select and pan controls appear only in Expanded view.
 Print and PDF Export ignore the screen's pan, zoom, and viewport height, sizing
 each inline SVG to the document column with its aspect ratio preserved.
 An image line that stands alone in its paragraph and names a relative `.html`

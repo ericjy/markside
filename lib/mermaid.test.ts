@@ -318,6 +318,21 @@ describe("renderMermaidBlocks", () => {
     expect(wrapper.dataset.mermaidY).toBe("60")
   })
 
+  it("returns to text selection when Expanded view closes", async () => {
+    const div = document.createElement("div")
+    div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
+    document.body.append(div)
+    await renderMermaidBlocks(div)
+    const wrapper = div.querySelector(".mermaid-block") as HTMLElement
+    const expand = wrapper.querySelector("[data-mermaid-action='expand']") as HTMLButtonElement
+    expand.click()
+    ;(wrapper.querySelector("[data-mermaid-action='pan']") as HTMLButtonElement).click()
+    expect(wrapper.dataset.mermaidPanEnabled).toBe("true")
+    expand.click()
+    expect(wrapper.dataset.mermaidPanEnabled).toBe("false")
+    div.remove()
+  })
+
   it("pans by dragging when the Pan control is enabled", async () => {
     const div = document.createElement("div")
     div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"

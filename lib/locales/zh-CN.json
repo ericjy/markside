@@ -622,7 +622,7 @@
   "Important": "重要",
   "Inline code": "行内代码",
   "Install via terminal": "通过终端安装",
-  "Interactive Mermaid diagram. Use the Pan control, hold Shift while dragging, or use arrow keys to pan; hold Control or Command while scrolling, or use plus and minus to zoom.": "交互式美人鱼图。使用平移控件，在拖动时按住 Shift 键，或使用箭头键进行平移；滚动时按住 Control 或 Command，或使用加号和减号进行缩放。",
+  "Interactive Mermaid diagram. Hold Shift while dragging, or use arrow keys, to pan; hold Control or Command while scrolling, or use plus and minus to zoom.": "交互式 Mermaid 图表。拖动时按住 Shift 键或使用方向键进行平移；滚动时按住 Control 或 Command，或使用加号和减号进行缩放。",
   "Invalid Base64URL": "Base64URL 无效",
   "Invalid Review Round": "无效审核轮次",
   "Invalid anchor": "锚点无效",
@@ -866,7 +866,7 @@
   "Clicking the button also copies the folder path.": "点击按钮还会复制文件夹路径。",
   "Choose the folder once so Markside can browse and save its files.": "选择一次文件夹，Markside 就能浏览和保存其中的文件。",
   "Expanded Vega-Lite chart": "展开的 Vega-Lite 图表",
-  "Interactive Vega-Lite chart. Use the Pan control, hold Shift while dragging, or use arrow keys to pan; hold Control or Command while scrolling, or use plus and minus to zoom.": "交互式 Vega-Lite 图表。使用平移控件、拖动时按住 Shift 键或使用方向键进行平移；滚动时按住 Control 或 Command，或使用加号和减号进行缩放。",
+  "Interactive Vega-Lite chart. Hold Shift while dragging, or use arrow keys, to pan; hold Control or Command while scrolling, or use plus and minus to zoom.": "交互式 Vega-Lite 图表。拖动时按住 Shift 键或使用方向键进行平移；滚动时按住 Control 或 Command，或使用加号和减号进行缩放。",
   "Vega-Lite charts can only use data written in the document.": "Vega-Lite 图表只能使用写在文档里的数据。",
   "Vega-Lite error: {0}": "Vega-Lite 错误：{0}"
 }

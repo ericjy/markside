@@ -280,6 +280,8 @@ function closeExpandedDiagram(wrapper: HTMLElement): void {
   }
   if (viewport) viewport.style.height = state.viewportHeight
   updateView(wrapper, state.view)
+  // The document has no control to leave Pan mode.
+  setPanEnabled(wrapper, false)
   document.documentElement.style.overflow = state.rootOverflow
   if (state.placeholder.isConnected) state.placeholder.replaceWith(wrapper)
   else wrapper.remove()
@@ -500,8 +502,8 @@ function setMermaidSvg(
     viewport.setAttribute(
       "aria-label",
       wrapper.dataset.mermaidLanguage === VEGA_LITE
-        ? t("Interactive Vega-Lite chart. Use the Pan control, hold Shift while dragging, or use arrow keys to pan; hold Control or Command while scrolling, or use plus and minus to zoom.")
-        : t("Interactive Mermaid diagram. Use the Pan control, hold Shift while dragging, or use arrow keys to pan; hold Control or Command while scrolling, or use plus and minus to zoom.")
+        ? t("Interactive Vega-Lite chart. Hold Shift while dragging, or use arrow keys, to pan; hold Control or Command while scrolling, or use plus and minus to zoom.")
+        : t("Interactive Mermaid diagram. Hold Shift while dragging, or use arrow keys, to pan; hold Control or Command while scrolling, or use plus and minus to zoom.")
     )
     diagram = document.createElement("div")
     diagram.className = "mermaid-diagram"

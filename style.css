@@ -2289,13 +2289,8 @@ button.readability-score-filter {
   padding: 0 0 0.5rem;
 }
 
-/* In a Question Card, or its archived copy, a diagram only explains the choice; keep Expand alone. */
-.mermaid-block.mermaid-question:not(.is-expanded) .mermaid-navigation-controls,
-.mermaid-block.mermaid-question:not(.is-expanded) .mermaid-zoom-controls {
-  display: none;
-}
-
-.mermaid-block.mermaid-question:not(.is-expanded) .mermaid-toolbar {
+/* The controls would cover the diagram's corner, so they appear only on hover or keyboard focus. */
+.mermaid-block:not(.is-expanded) .mermaid-toolbar {
   position: absolute;
   top: 0;
   right: 0;
@@ -2306,10 +2301,24 @@ button.readability-score-filter {
   transition: opacity 120ms ease;
 }
 
-/* Expand would cover the diagram's corner, so it appears only on hover or focus. */
-.mermaid-block.mermaid-question:not(.is-expanded):hover .mermaid-toolbar,
-.mermaid-block.mermaid-question:not(.is-expanded):focus-within .mermaid-toolbar {
+.mermaid-block:not(.is-expanded):hover .mermaid-toolbar,
+.mermaid-block:not(.is-expanded):has(:focus-visible) .mermaid-toolbar {
   opacity: 1;
+}
+
+@media (hover: none) {
+  .mermaid-block:not(.is-expanded) .mermaid-toolbar {
+    opacity: 1;
+  }
+}
+
+.mermaid-block:not(.is-expanded) .mermaid-navigation-controls {
+  display: none;
+}
+
+/* In a Question Card, or its archived copy, a diagram only explains the choice; keep Expand alone. */
+.mermaid-block.mermaid-question:not(.is-expanded) .mermaid-zoom-controls {
+  display: none;
 }
 
 .mermaid-error,

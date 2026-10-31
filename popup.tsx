@@ -1,7 +1,6 @@
 import { t, tRich } from "~lib/i18n"
 import { useInterfaceLanguage } from "~hooks/use-interface-language"
 import {
-  ArrowUpRight,
   Bot,
   ExternalLink,
   Eye,
@@ -210,20 +209,6 @@ export default function Popup() {
         .primary-button:hover { background: var(--popup-green-bright); border-color: var(--popup-green-bright); box-shadow: #000 -4px 4px; transform: translate(2px, -2px); }
         .primary-button:active { box-shadow: none; transform: none; }
         .primary-button:focus-visible { outline: 3px solid var(--popup-matcha); outline-offset: 2px; }
-        .draft-card { align-items: center; background: #fff; border: 1px solid var(--popup-border); border-radius: 12px; cursor: pointer; display: flex; gap: 12px; margin-top: 4px; padding: 12px; text-align: left; width: 100%; }
-        .review-card + .draft-card { margin-top: 16px; }
-        .draft-card:hover { background: var(--popup-cream-deep); border-color: #bdb5a7; }
-        .draft-card:focus-visible { outline: 3px solid var(--popup-matcha); outline-offset: 2px; }
-        .draft-icon { align-items: center; background: var(--popup-text); border-radius: 9px; color: #fff; display: flex; flex-shrink: 0; height: 32px; justify-content: center; transition: background 150ms ease; width: 32px; }
-        .draft-card:hover .draft-icon { background: var(--popup-green-bright); }
-        .draft-text { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; }
-        .draft-title { color: var(--popup-text); font-size: 13px; font-weight: 700; }
-        .draft-hint { color: var(--popup-text-secondary); display: flex; flex-wrap: wrap; font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
-        .draft-name { color: var(--popup-text); font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-        .draft-age { flex-shrink: 0; }
-        .draft-arrow { color: var(--popup-text-secondary); flex-shrink: 0; transition: transform 150ms ease; }
-        .draft-card:hover .draft-arrow { color: var(--popup-text); transform: translate(1px, -1px); }
-        .draft-card + .section-label { margin-top: 24px; }
         .popup-note { color: var(--popup-text-secondary); font-size: 11px; line-height: 1.5; margin: 8px 0 0; }
         .context-note { margin: -4px 0 0 12px; }
 
@@ -260,12 +245,12 @@ export default function Popup() {
         ${FILE_ACCESS_DEMO_CSS}
         .popup-root .demo-window * { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
 
-        .popup-footer { align-items: center; border-top: 1px solid var(--popup-border); display: flex; gap: 6px; justify-content: center; margin-top: 16px; padding-top: 12px; }
+        .popup-footer { align-items: center; border-top: 1px solid var(--popup-border); display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px; padding-top: 12px; }
         .footer-link { align-items: center; background: transparent; border: 0; color: var(--popup-text-secondary); cursor: pointer; display: inline-flex; font-size: 12px; font-weight: 600; gap: 6px; padding: 4px 6px; }
         .footer-link:hover { color: var(--popup-green-bright); }
         .footer-link:focus-visible { border-radius: 6px; outline: 3px solid var(--popup-matcha); outline-offset: 1px; }
         .footer-dot { color: var(--popup-border); }
-        @media (prefers-reduced-motion: reduce) { .primary-button, .draft-icon, .draft-arrow { transition: none; } .draft-card:hover .draft-arrow { transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .primary-button { transition: none; } }
       `}</style>
 
       <div className="popup-root" lang={language}>
@@ -381,28 +366,6 @@ export default function Popup() {
                 </button>
               ))}
 
-              {!editingUnsavedDraft && <button
-                className="draft-card"
-                onClick={() => void openNewDraft().then(() => window.close())}>
-                <span className="draft-icon">
-                  {unsavedDraft ? <FilePen size={16} strokeWidth={1.8} /> : <FilePlus size={16} strokeWidth={1.8} />}
-                </span>
-                <span className="draft-text">
-                  <span className="draft-title">{unsavedDraft ? t("Continue draft") : t("New draft")}</span>
-                  {unsavedDraft ? (
-                    <span className="draft-hint">
-                      {unsavedDraft.title && <span className="draft-name">{unsavedDraft.title}</span>}
-                      <span className="draft-age">
-                        {unsavedDraft.title ? "\u00a0· " : ""}{t("edited ")}{describeReviewAge(unsavedDraft.updatedAt, Date.now())}
-                      </span>
-                    </span>
-                  ) : (
-                    <span className="draft-hint">{t("Write or paste Markdown, save it anywhere")}</span>
-                  )}
-                </span>
-                <ArrowUpRight className="draft-arrow" size={16} strokeWidth={1.8} aria-hidden="true" />
-              </button>}
-
               {!reviewable && !draftTab && (
                 <>
                   <div className="section-label"><span>{t("Ways to open a Markdown file")}</span></div>
@@ -427,6 +390,12 @@ export default function Popup() {
           )}
 
           <div className="popup-footer">
+            {!editingUnsavedDraft && <>
+              <button className="footer-link" title={unsavedDraft?.title || undefined} onClick={() => void openNewDraft().then(() => window.close())}>
+                {unsavedDraft ? <FilePen size={13} strokeWidth={1.8} /> : <FilePlus size={13} strokeWidth={1.8} />}
+                {unsavedDraft ? t("Continue draft") : t("New draft")}</button>
+              <span className="footer-dot">·</span>
+            </>}
             <button className="footer-link" onClick={() => chrome.runtime.openOptionsPage()}>
               <Settings size={13} strokeWidth={1.8} />
               {t("Settings")}</button>

@@ -5,7 +5,7 @@ version is tagged with the channel(s) it actually shipped on — Chrome Web
 Store and GitHub Releases run independently and can diverge; see
 `docs/github-release.md`.
 
-## Unreleased
+## 1.9.0 — Unreleased
 
 ### Added
 
@@ -17,6 +17,11 @@ Store and GitHub Releases run independently and can diverge; see
 ### Improved
 
 - New draft moved to a compact link beside Settings in the popup.
+- Diagram controls appear only when you hover over a diagram.
+
+### Fixed
+
+- Footnotes no longer show a duplicate separator line.
 
 ## 1.8.0 — 2026-10-29 (Chrome Web Store)
 

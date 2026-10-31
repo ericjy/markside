@@ -186,7 +186,7 @@ future change introduces a remote font, image, script, or automatic request.
 Markside: Markdown Viewer & Editor
 ```
 
-Set by `displayName` in `package.json`. Keep the exact search phrase "Markdown Viewer" up front; the descriptions say that Markside opens local files.
+Set by `extensionName` in `locales/en/messages.json`. Keep the exact search phrase "Markdown Viewer" up front; the descriptions say that Markside opens local files.
 
 ## Short description (132 chars max)
 
@@ -194,7 +194,7 @@ Set by `displayName` in `package.json`. Keep the exact search phrase "Markdown V
 Read, edit, and collaborate on Markdown with teammates and AI agents. Inline comment, outline, file tree, Mermaid, math, PDF export.
 ```
 
-Set by `description` in `package.json`, so a change reaches the Store only with
+Set by `extensionDescription` in `locales/en/messages.json`, so a change reaches the Store only with
 the next uploaded package.
 
 ## Full description
@@ -210,7 +210,7 @@ Open any .md file to read it beautifully rendered, edit it in place, comment inl
 Free and no account required. Learn more at https://markside.app
 
 ❗ After installing, enable "Allow access to file URLs" on the extension's details page.
-❗ Markside opens local Markdown files only.
+❗ Markside opens local Markdown files. To preview raw Markdown on websites too, turn on Web Preview; website access is optional and off by default.
 
 READ MARKDOWN
 
@@ -244,11 +244,12 @@ SET UP IN 30 SECONDS
 2. In extension settings, enable "Allow access to file URLs."
 3. Open any .md file in Chrome. Markside renders it automatically.
 
-WHAT'S NEW IN 1.8.0
+WHAT'S NEW IN 1.9.0
 
-• Start a New Draft from any tab and save it where you choose
-• Embed interactive HTML visuals in Markdown and review them with your agent
-• Include local images in encrypted Hosted Snapshots
+• Preview raw Markdown from GitHub, GitLab, and other websites (optional)
+• Use Markside in Simplified Chinese, Traditional Chinese, Japanese, Korean, or Spanish
+• Draw charts in Markdown with vega-lite code blocks
+• Open .md.txt files as Markdown
 ```
 
 ### Search rank
@@ -272,7 +273,7 @@ Developer Tools
 
 ## Single purpose statement
 
-Renders local Markdown files in Chrome with a file tree, syntax-highlighted code blocks, Mermaid diagrams, and a CodeMirror editor that saves to disk.
+Renders Markdown in Chrome: local files with a file tree, syntax-highlighted code blocks, Mermaid diagrams, and a CodeMirror editor that saves to disk, plus optional read-only preview of raw Markdown on websites.
 
 ## Privacy policy URL
 

@@ -111,3 +111,4 @@ and code examples may no longer match the current source tree.
 - [Interface languages](2026-10-28-interface-languages/spec.md)
 - [Choosing the Interface language](2026-10-28-language-selection/spec.md)
 - [Local images in Hosted Snapshots](2026-10-28-hosted-snapshot-images/spec.md)
+- [Vega-Lite charts](2026-10-30-vega-lite-charts/spec.md)

@@ -158,6 +158,10 @@ Keep the dashboard answers and privacy policy consistent with the implementation
   or remote servers
 - Agent Reviews are written to a `.review.json` file beside the document on the
   user's disk, where the user's local agent reads them. Nothing is transmitted.
+- Website access is optional and off by default. With Web Preview on, raw
+  Markdown pages are rendered in the browser. Their text and URLs are not sent
+  to Markside, and browsing history is not collected. Images in a document load
+  from their original hosts.
 - After uninstall, Chrome opens an optional survey at `markside.app/uninstall`
   whose URL carries only the extension version. Answers are sent only if the
   user presses Send and are stored without identifiers.

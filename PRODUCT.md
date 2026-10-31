@@ -35,6 +35,7 @@ assembling quotes and instructions in chat.
 | Capability | What the user can do |
 | --- | --- |
 | Read Markdown | Open `.md`, `.mdx`, and `.markdown` files in Preview with tables, task lists, alerts, frontmatter, math, highlighted code, Mermaid diagrams, and HTML Embeds: interactive local HTML files shown in place in isolated frames. Navigate the outline and adjust the theme, typeface, width, and heading numbering. |
+| Read online Markdown | Opt into automatic Web Preview of compatible raw Markdown pages with optional website access. Web Preview is read-only. |
 | Navigate local work | Authorize a folder, browse its file tree, follow relative links and wikilinks, or find a file with the quick switcher. Saved folders support separate projects in separate tabs. Create a new Markdown file in the open root folder. |
 | Edit and save | Use Source or Split, make changes, and save to the original file. Auto Save is optional and off by default. Other text files use Source; images use an image viewer. |
 | Prepare a Review | Add anchored Review Comments, exact Text Replacements, and a Review Note without modifying the document. Suggest Edits starts an editable instruction for the agent. Copy the whole Review or one comment as a prompt. |

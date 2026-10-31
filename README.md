@@ -79,6 +79,8 @@ keyboard shortcuts, and sharing.
   installing anything.
 - **More file types:** edit text and code files in Source view and open images
   directly.
+- **Online Markdown:** optionally preview raw `.md`, `.markdown`, and `.mdx`
+  pages from GitHub, GitLab, and other websites, read-only.
 - **Light and dark themes** that follow your system or your choice.
 
 ## Use with your coding agent
@@ -107,6 +109,11 @@ Beta and require Node.js 20+; the skill runs the
 Ordinary local reading and editing stay on your computer. Reviews stay in your
 browser unless you explicitly send them to an agent through a local Review file. Markside has
 no analytics or telemetry.
+
+Online Markdown preview is off by default. Turning it on asks Chrome for access
+to HTTP and HTTPS websites so Markside can render raw Markdown pages as you open
+them; other pages are left unchanged. Rendering happens in your browser, and
+turning the preview off removes that access.
 
 Optional snapshot sharing creates a read-only copy of saved Markdown. A Link
 Snapshot encodes the content in the URL without uploading it. A Hosted Snapshot

@@ -81,6 +81,30 @@ where the content script would not initialize.
 
 ## Loading and Rendering
 
+### Web Preview
+
+Web Preview renders compatible HTTP(S) Markdown files as read-only documents.
+Settings and the popup can request optional HTTP and HTTPS host permissions
+and dynamically register the script for automatic preview. The background worker
+finishes registration when Chrome reports the permission grant, even if the
+permission prompt has closed the popup, and injects the script into the current
+eligible page. An interrupted grant is recovered on extension update.
+Disabling automatic
+preview unregisters the script and removes those optional permissions. The saved
+setting restores the registration after an extension update when permission is
+still granted. No website access is required at installation.
+
+The web entry accepts `.md`, `.markdown`, and `.mdx` paths when Chrome displays
+the response as a plain-text page. It leaves other pages intact. It renders the
+original text in a separate component, without opening page-origin IndexedDB or
+local file and Review workflows. The original remains available through View
+original; relative links and images resolve against the page URL. Websites may
+block resources, and responses that Chrome downloads cannot be injected.
+Web Preview supports Zen mode with the same shortcut, top-edge toolbar, and
+temporary Outline controls as local files. Its per-tab state is kept in
+extension session storage by the background worker, rather than website
+storage, and is removed when the tab closes.
+
 ```text
 file:// Markdown page
 → content script reads the initial document or requests the file through background.ts

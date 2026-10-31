@@ -555,3 +555,12 @@ permissions and disk writes require manual verification.
 - Add a recipient Review and return it as a Hosted Snapshot. Verify its images
   remain visible and the extension imports the Review. Check that choosing a
   Link Snapshot warns that local images will not accompany the reply.
+
+## Web Preview
+
+- With automatic preview off, open a raw GitHub Markdown URL and choose **Enable online Markdown preview** in the popup. Accept the permission and confirm the current file renders immediately. Toggle original and Preview, check outline, relative links and images, copy, and PDF Export.
+- Verify this still completes when Chrome closes the extension popup while showing the permission prompt; the user should not need to click the enable button again.
+- Enable automatic preview from Settings and accept Chrome's website permission prompt. Reload the GitHub URL, a GitLab raw URL, and a plain-text Markdown URL on another server; verify each renders. Confirm an HTML page ending in `.md` stays unchanged.
+- Turn automatic preview off in Settings and confirm Chrome no longer grants the optional website access. Reload a raw URL and confirm it remains raw until automatic preview is enabled again.
+- In Preview and Source, enter Zen mode from the file actions menu and with `Cmd+.` / `Ctrl+.`. Check Escape, the top-edge toolbar, and Outline; reload and follow a Markdown link in the same tab, then open a new tab and check that its Zen mode starts off.
+- Verify declining the permission leaves the setting off and local files usable. Check the extension-update permission prompt in a packaged upgrade, and test images and fonts on GitHub Raw's sandboxed response.

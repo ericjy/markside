@@ -2,6 +2,21 @@
 
 Markside is a Chrome extension that renders and edits local Markdown files directly in the browser. Everyday file use stays local: no sync service and no upload. Creating a Hosted Snapshot is the explicit exception; Markside encrypts that saved copy in your browser before uploading it for sharing.
 
+## Preview Markdown on the web
+
+Open a raw Markdown URL ending in `.md`, `.markdown`, or `.mdx`, then open the
+Markside popup and choose **Enable online Markdown preview**. Approve
+Chrome's website access prompt to preview the current file and compatible files
+you open later. You can also enable or turn off this setting in Settings; turning
+it off removes the website access. Web Preview is read-only and offers a switch back to the
+original text. Relative links and images use the original address. Pages that
+already render Markdown, downloads, and resources blocked by a website may not
+work in Web Preview.
+
+Zen mode is also available in Web Preview through the file actions menu or
+`Cmd+.` (`Ctrl+.` on Windows and Linux). Its setting stays in the current tab
+across reloads and links, and turns off when that tab closes.
+
 ## Quick Start
 
 1. **Install the extension** from the Chrome Web Store.

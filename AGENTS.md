@@ -43,10 +43,11 @@ GitHub and Web Store releases use separate tags and artifacts.
 - `components/content-app.tsx` — content application state and orchestration
 - `hooks/use-content-*.ts` and `components/content-*.tsx` — content behavior and UI
 - `lib/localhost-review-entry.tsx` — paused localhost Review entry, outside Plasmo's content-script directory
-- `background.ts` — local-file fetch relay
-- `popup.tsx` — pending document Reviews, file-access readiness, New draft, and Settings link
+- `background.ts` — local-file fetch relay, and completing Web Preview enablement after Chrome grants access
+- `popup.tsx` — pending document Reviews, file-access readiness, enabling Web Preview, New draft, and Settings link
 - `tabs/draft.tsx` — New Draft editor before the draft has a file
 - `options.tsx` — preferences and product guidance
+- `lib/web-preview.ts` and `components/web-*.tsx` — read-only Web Preview for raw Markdown on HTTP(S) pages, separate from local file and Review workflows
 
 ### Pre-bundled dependencies
 

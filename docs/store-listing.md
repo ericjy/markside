@@ -116,6 +116,12 @@ description should remain evergreen.
 
 ## Submission checklist
 
+For Web Preview, justify `scripting` as necessary to preview the active page and
+register automatic preview after consent. Optional HTTP and HTTPS host access is
+requested only when the user enables automatic preview of raw Markdown across
+websites; turning it off removes that access. Verify the permission prompt and
+the privacy disclosures against the packaged release before submission.
+
 - [ ] Upload ZIP contains `manifest.json` at its root
 - [ ] Commit SHA and ZIP SHA-256 are saved for the release history
 - [ ] Store listing uses the current short and full descriptions below

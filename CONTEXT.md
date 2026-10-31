@@ -4,6 +4,11 @@ Markside is a browser-based viewer and editor for local text files, with rich re
 
 ## Language
 
+**Web Preview**:
+A read-only view of a raw Markdown file opened over HTTP or HTTPS. A user grants
+optional website access to render compatible files automatically. Web Preview
+does not edit or review the remote document.
+
 **Interface language**:
 The language used by Markside's controls, help and errors. It follows the
 browser interface language by default, with English as the fallback, or the

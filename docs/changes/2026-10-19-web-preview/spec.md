@@ -1,11 +1,11 @@
 ---
 date: 2026-10-19
-status: proposed
+status: historical
 ---
 
 # Web Preview Design
 
-> Proposed design. Nothing here is implemented yet. Current behavior is in `docs/system-design.md`.
+> Historical proposal, superseded by [Online Markdown preview](../2026-10-30-web-markdown/spec.md). Current behavior is in `docs/system-design.md`.
 
 ## Goal
 

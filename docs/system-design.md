@@ -103,7 +103,9 @@ block resources, and responses that Chrome downloads cannot be injected.
 Web Preview supports Zen mode with the same shortcut, top-edge toolbar, and
 temporary Outline controls as local files. Its per-tab state is kept in
 extension session storage by the background worker, rather than website
-storage, and is removed when the tab closes.
+storage, and is removed when the tab closes. The background worker's file relay
+only serves `file://` URLs requested from `file://` pages, so a website renderer
+cannot use it to read local files or other sites.
 
 ```text
 file:// Markdown page

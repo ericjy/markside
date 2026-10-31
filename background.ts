@@ -67,6 +67,12 @@ function encodeBase64(buffer: ArrayBuffer): string {
   return btoa(binary)
 }
 
+// Web Preview runs the content script in website renderers, which must not be
+// able to read local files or other sites through this relay if compromised.
+function isLocalFileRelay(url: unknown, senderUrl: string | undefined): boolean {
+  return typeof url === "string" && url.startsWith("file:///") && senderUrl?.startsWith("file:///") === true
+}
+
 // Relay fetch requests from content scripts (needed for file:// URLs)
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg.type === "get-web-zen-mode" || msg.type === "set-web-zen-mode") {
@@ -113,6 +119,10 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       sendResponse({ ok: true })
     })().catch(error => sendResponse({ error: error.message }))
     return true
+  }
+  if ((msg.type === "fetch-file" || msg.type === "fetch-file-data") && !isLocalFileRelay(msg.url, _sender.url)) {
+    sendResponse({ error: "Invalid local file request" })
+    return
   }
   if (msg.type === "fetch-file") {
     fetch(msg.url)

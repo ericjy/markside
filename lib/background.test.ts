@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 type MessageListener = (
   message: { type: string; url?: string; days?: number; blob?: number[]; enabled?: boolean },
-  sender: { tab?: { id?: number } },
+  sender: { tab?: { id?: number }; url?: string },
   sendResponse: (response: unknown) => void,
 ) => boolean | undefined
 
@@ -102,7 +102,7 @@ describe("background file navigation", () => {
     const response = new Promise<unknown>((resolve) => {
       expect(listener(
         { type: "fetch-file-data", url: "file:///Users/eric/image.png" },
-        {},
+        { url: "file:///Users/eric/notes.md" },
         resolve,
       )).toBe(true)
     })
@@ -111,6 +111,28 @@ describe("background file navigation", () => {
       base64: "AQID",
       type: "image/png",
     })
+  })
+
+  it.each([
+    ["a website asking for a local file", "file:///Users/eric/.ssh/id_rsa", "https://example.com/README.md"],
+    ["a website asking for another site", "https://mail.example.com/inbox", "https://example.com/README.md"],
+    ["a local page asking for a website", "https://example.com/data", "file:///Users/eric/notes.md"],
+    ["a sender without a URL", "file:///Users/eric/notes.md", undefined],
+  ])("refuses to relay for %s", (_case, url, senderUrl) => {
+    for (const type of ["fetch-file", "fetch-file-data"]) {
+      const sendResponse = vi.fn()
+      listener({ type, url }, { url: senderUrl }, sendResponse)
+      expect(sendResponse).toHaveBeenCalledWith({ error: "Invalid local file request" })
+    }
+    expect(fetchFile).not.toHaveBeenCalled()
+  })
+
+  it("relays file text to a local page", async () => {
+    fetchFile.mockResolvedValue({ text: vi.fn().mockResolvedValue("# Notes") })
+    const response = new Promise<unknown>((resolve) => {
+      listener({ type: "fetch-file", url: "file:///Users/eric/notes.md" }, { url: "file:///Users/eric/index.md" }, resolve)
+    })
+    await expect(response).resolves.toEqual({ text: "# Notes" })
   })
 
   it("navigates the sender's tab through the browser process", () => {

@@ -115,6 +115,13 @@ pull request or review response.
   dashes stay still. Zoom a diagram, switch between light and dark, and confirm
   colors change without losing the zoom. Change the typeface and confirm labels
   still fit their boxes. A diagram with a syntax error shows its line and column.
+- [ ] Open `sample/rendering/vega-lite-charts.md`. The line chart renders, follows
+  light and dark without losing its zoom, and expands. Comment on its title, then
+  Print or Export PDF and confirm it appears. The external-data chart and invalid
+  JSON show errors, DevTools shows no request to example.com, and the `vega` fence
+  stays code. Create a Hosted Snapshot and a Link Snapshot and confirm the chart
+  renders in the viewer. In Split, and in a New Draft, type a chart and confirm it
+  renders. A document without a chart doesn't request `vega-engine.js`.
 - [ ] Open `sample/rendering/html-embeds.md`, which has an HTML Embed with a
   script, a missing embed file, and an embed that tries `fetch`, a remote
   image, a WebSocket, and navigating to example.com. The working embed renders at its

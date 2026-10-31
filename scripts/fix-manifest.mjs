@@ -1,18 +1,40 @@
 /**
  * Plasmo copies content script match patterns into web_accessible_resources.
  * Chrome MV3 rejects file:// patterns there. Replace them with <all_urls>.
+ * Also adds the on-demand Vega-Lite engine and the loader that imports it, which
+ * Parcel must not process: it rewrites import() into its own module lookup.
  *
  * Run with --watch to keep patching whenever plasmo dev rebuilds the manifest.
  */
-import { readFileSync, writeFileSync, watch, existsSync } from "fs"
+import { copyFileSync, readFileSync, writeFileSync, watch, existsSync } from "fs"
 import { join, dirname } from "path"
 import { fileURLToPath } from "url"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
+const vegaEngine = "vega-engine.js"
+const vegaLoader = "vega-engine-loader.js"
+
+function patchDraftPage(pagePath) {
+  if (!existsSync(pagePath)) return
+  const page = readFileSync(pagePath, "utf8")
+  if (page.includes(vegaLoader)) return
+  writeFileSync(pagePath, page.replace("<head>", `<head><script src="/${vegaLoader}"></script>`))
+}
 
 function patchManifest(manifestPath) {
   try {
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"))
+    const buildDir = dirname(manifestPath)
+    copyFileSync(join(__dirname, "../lib/vega-engine-bundle.js"), join(buildDir, vegaEngine))
+    copyFileSync(join(__dirname, vegaLoader), join(buildDir, vegaLoader))
+    patchDraftPage(join(buildDir, "tabs/draft.html"))
+    let contentScriptsChanged = false
+    for (const script of manifest.content_scripts ?? []) {
+      if (script.js?.includes(vegaLoader)) continue
+      script.js?.unshift(vegaLoader)
+      contentScriptsChanged = true
+    }
+    if (contentScriptsChanged) writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
     if (manifest.web_accessible_resources) {
       const patched = manifest.web_accessible_resources.map((entry) => ({
         ...entry,
@@ -20,6 +42,9 @@ function patchManifest(manifestPath) {
           ? ["<all_urls>"]
           : entry.matches
       }))
+      if (!patched.some((entry) => entry.resources.includes(vegaEngine))) {
+        patched.push({ matches: ["<all_urls>"], resources: [vegaEngine] })
+      }
       // Skip write if already patched
       if (JSON.stringify(patched) === JSON.stringify(manifest.web_accessible_resources)) return
       manifest.web_accessible_resources = patched

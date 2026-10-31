@@ -87,7 +87,7 @@ export async function highlightCodeBlocks(container: HTMLElement): Promise<void>
         .find((c) => c.startsWith("language-"))
         ?.replace("language-", "") ?? "text"
 
-    if (lang === "mermaid") continue
+    if (lang === "mermaid" || lang === "vega-lite") continue
 
     const code = codeEl.textContent ?? ""
 

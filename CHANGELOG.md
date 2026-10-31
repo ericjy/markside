@@ -11,6 +11,7 @@ Store and GitHub Releases run independently and can diverge; see
 
 - Markside's interface is available in English, Simplified Chinese, Traditional Chinese, Japanese, Korean, and Spanish. It follows the browser language by default; choose a different Interface language in Settings.
 - Open a `.md.txt` file as Markdown to use Preview, Source, and Split. The file keeps its name, and you can keep it as text instead.
+- Draw charts with `vega-lite` code blocks in Preview, Split, and shared Snapshots. Charts use data written in the document and never load anything from elsewhere.
 
 ## 1.8.0 — 2026-10-29 (Chrome Web Store)
 

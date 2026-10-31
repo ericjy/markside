@@ -3,6 +3,8 @@ import { getInterfaceLanguage, t } from "./i18n"
 
 let idCounter = 0
 
+const VEGA_LITE = "vega-lite"
+
 const MIN_SCALE = 0.5
 const MAX_MANUAL_SCALE = 16
 const SCALE_STEP = 0.25
@@ -77,6 +79,29 @@ function readEdgeAnimations(code: string): Map<string, "slow" | "fast"> {
     else if (speed || animate === "true") animations.set(id, speed ?? animations.get(id) ?? "fast")
   }
   return animations
+}
+
+type VegaEngine = typeof import("./vega-engine")
+
+let vegaEnginePromise: Promise<VegaEngine> | null = null
+
+// scripts/vega-engine-loader.js defines this, because Parcel rewrites import() here.
+function loadVegaEngine(): Promise<VegaEngine> {
+  vegaEnginePromise ??= (globalThis as unknown as { marksideImportVegaEngine: () => Promise<VegaEngine> })
+    .marksideImportVegaEngine()
+    .catch((error) => {
+      vegaEnginePromise = null
+      throw error
+    })
+  return vegaEnginePromise
+}
+
+async function renderChartSvg(code: string, container: HTMLElement): Promise<string> {
+  const { renderVegaLite } = await loadVegaEngine()
+  return renderVegaLite(code, {
+    fontFamily: getComputedStyle(container).fontFamily || undefined,
+    idPrefix: `mermaid-${++idCounter}-`,
+  })
 }
 
 function renderSvg(code: string, container: HTMLElement): string {
@@ -229,7 +254,7 @@ function expandDiagram(wrapper: HTMLElement): void {
   wrapper.classList.add("is-expanded")
   wrapper.setAttribute("role", "dialog")
   wrapper.setAttribute("aria-modal", "true")
-  wrapper.setAttribute("aria-label", t("Expanded Mermaid diagram"))
+  wrapper.setAttribute("aria-label", wrapper.dataset.mermaidLanguage === VEGA_LITE ? t("Expanded Vega-Lite chart") : t("Expanded Mermaid diagram"))
   if (background) background.inert = true
   document.documentElement.style.overflow = "hidden"
   fitViewportToDefaultScale(wrapper)
@@ -474,7 +499,9 @@ function setMermaidSvg(
     viewport.tabIndex = 0
     viewport.setAttribute(
       "aria-label",
-      t("Interactive Mermaid diagram. Use the Pan control, hold Shift while dragging, or use arrow keys to pan; hold Control or Command while scrolling, or use plus and minus to zoom.")
+      wrapper.dataset.mermaidLanguage === VEGA_LITE
+        ? t("Interactive Vega-Lite chart. Use the Pan control, hold Shift while dragging, or use arrow keys to pan; hold Control or Command while scrolling, or use plus and minus to zoom.")
+        : t("Interactive Mermaid diagram. Use the Pan control, hold Shift while dragging, or use arrow keys to pan; hold Control or Command while scrolling, or use plus and minus to zoom.")
     )
     diagram = document.createElement("div")
     diagram.className = "mermaid-diagram"
@@ -489,7 +516,13 @@ function setMermaidSvg(
   else resetView(wrapper)
 }
 
-function errorMessage(error: unknown): string {
+function errorMessage(error: unknown, language: string | undefined): string {
+  if (language === VEGA_LITE) {
+    if (error instanceof Error && error.name === "ExternalChartDataError") {
+      return t("Vega-Lite charts can only use data written in the document.")
+    }
+    return t("Vega-Lite error: {0}", [error instanceof Error ? error.message : String(error)])
+  }
   if (error instanceof PeleError && error.line > 0) {
     return t("Mermaid error at line {0}, column {1}: {2}", [error.line, error.column, error.message])
   }
@@ -498,7 +531,7 @@ function errorMessage(error: unknown): string {
 
 export async function renderMermaidBlocks(container: HTMLElement): Promise<void> {
   const blocks = Array.from(
-    container.querySelectorAll<HTMLElement>("pre > code.language-mermaid")
+    container.querySelectorAll<HTMLElement>("pre > code.language-mermaid, pre > code.language-vega-lite")
   )
   if (!blocks.length) return
 
@@ -507,12 +540,14 @@ export async function renderMermaidBlocks(container: HTMLElement): Promise<void>
     const question = inQuestionCard(pre)
     const code = (codeEl.textContent ?? "").trim()
     const sourceLine = pre.dataset.sourceLine
+    const language = codeEl.classList.contains("language-vega-lite") ? VEGA_LITE : undefined
 
     try {
-      const svg = renderSvg(code, container)
+      const svg = language ? await renderChartSvg(code, container) : renderSvg(code, container)
       const wrapper = document.createElement("div")
       wrapper.className = `mermaid-block not-prose${question ? " mermaid-question" : ""}`
       wrapper.dataset.mermaidSrc = code
+      if (language) wrapper.dataset.mermaidLanguage = language
       if (sourceLine) wrapper.dataset.sourceLine = sourceLine
       pre.replaceWith(wrapper)
       setMermaidSvg(wrapper, svg)
@@ -520,14 +555,15 @@ export async function renderMermaidBlocks(container: HTMLElement): Promise<void>
       const errDiv = document.createElement("div")
       errDiv.className = "mermaid-error"
       errDiv.dataset.mermaidSrc = code
+      if (language) errDiv.dataset.mermaidLanguage = language
       if (sourceLine) errDiv.dataset.sourceLine = sourceLine
-      errDiv.textContent = errorMessage(e)
+      errDiv.textContent = errorMessage(e, language)
       pre.replaceWith(errDiv)
     }
   }
 }
 
-// Pele measures labels in the document font, so a typeface change needs new layouts.
+// Pele and Vega measure labels in the document font, so a typeface change needs new layouts.
 export async function rerenderMermaidBlocks(container: HTMLElement): Promise<void> {
   const wrappers = Array.from(
     container.querySelectorAll<HTMLElement>(".mermaid-block[data-mermaid-src], .mermaid-error[data-mermaid-src]")
@@ -539,7 +575,9 @@ export async function rerenderMermaidBlocks(container: HTMLElement): Promise<voi
     if (!code) continue
     const question = inQuestionCard(wrapper)
     try {
-      const svg = renderSvg(code, container)
+      const svg = wrapper.dataset.mermaidLanguage === VEGA_LITE
+        ? await renderChartSvg(code, container)
+        : renderSvg(code, container)
       if (wrapper.classList.contains("mermaid-error")) {
         wrapper.className = `mermaid-block not-prose${question ? " mermaid-question" : ""}`
         delete wrapper.dataset.mermaidInteractive

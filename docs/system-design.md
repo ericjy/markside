@@ -90,7 +90,7 @@ file:// Markdown page
 → relative image and document links are resolved against the current file
 → HTML Embeds read their files through background.ts and load into sandboxed frames
 → Shiki enhances code blocks
-→ Pele renders Mermaid diagram blocks
+→ Pele renders Mermaid diagram blocks, and Vega-Lite renders charts
 → headings are extracted for the outline
 → question cards receive answer controls
 ```
@@ -238,6 +238,16 @@ A blockquote starting with **Your decision**, **Assumed decision**,
 **Deferred**, or **Open**, the decision line the markside skill writes under an
 archived question, renders as a callout rather than a quotation: teal for the
 reviewer's decision, amber for the agent's assumed one, and gray otherwise.
+
+A `vega-lite` fence renders in the same block as a Mermaid diagram, with the same
+controls and theme variables. The engine is a separate file, `vega-engine.js`,
+imported the first time a document has a chart, so other documents never load it.
+Parcel rewrites `import()`, so the import lives in `vega-engine-loader.js`, which
+`scripts/fix-manifest.mjs` adds to the content script and the New Draft page
+without Parcel seeing it. Vega's loader refuses every request, so a chart that
+asks for a URL or an image shows an error, and links are removed from the output.
+Expressions run through `vega-interpreter` because MV3 blocks `new Function`. The
+Snapshot viewer in the website repository has its own copy of the engine.
 
 The file actions (`…`) menu includes a **Page width** row showing the current
 choice. Its submenu provides mutually exclusive **Standard** (48rem, the
@@ -711,7 +721,7 @@ Opening that email link does not complete the automatic review-prompt sequence.
 
 Shiki and CodeMirror are pre-bundled with esbuild and aliased through `package.json` because Plasmo's Parcel pipeline cannot reliably bundle their ESM dependency graphs for this extension.
 
-Never import those packages directly. Use the project wrappers and update the matching bundle script when adding a language, theme, or editor dependency. Pele, which renders Mermaid diagrams, is bundled by Parcel directly and pinned to an exact version. See [ADR-0001](adr/0001-prebundle-esm-only-dependencies.md).
+Never import those packages directly. Use the project wrappers and update the matching bundle script when adding a language, theme, or editor dependency. Pele, which renders Mermaid diagrams, is bundled by Parcel directly and pinned to an exact version. The Vega-Lite engine is bundled from `lib/vega-engine.ts` and copied into the build by `scripts/fix-manifest.mjs`. See [ADR-0001](adr/0001-prebundle-esm-only-dependencies.md).
 
 ### No file watching
 

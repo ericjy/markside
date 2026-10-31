@@ -102,7 +102,7 @@ md.renderer.rules.fence = (tokens, idx, options, env, self) => {
   const sourceLine = tokens[idx].attrGet("data-source-line")
   if (language === "math") return renderMathBlock(tokens[idx].content, sourceLine)
   const fence = renderFence(tokens, idx, options, env, self)
-  if (language === "mermaid") return fence
+  if (language === "mermaid" || language === "vega-lite") return fence
   const label = md.utils.escapeHtml(getCodeBlockLanguageLabel(language))
   const sourceAttr = sourceLine ? ` data-source-line="${sourceLine}"` : ""
   const wrapped = getCodeBlockWrapPreference()

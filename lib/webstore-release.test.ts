@@ -66,7 +66,8 @@ describe("webstore release CLI", () => {
         {
           manifest_version: 3,
           version: "1.1.0",
-          web_accessible_resources: [{ matches: ["<all_urls>"] }]
+          web_accessible_resources: [{ matches: ["<all_urls>"], resources: ["vega-engine.js"] }],
+          content_scripts: [{ js: ["vega-engine-loader.js", "markside.js"] }]
         },
         "1.1.0"
       )
@@ -77,7 +78,8 @@ describe("webstore release CLI", () => {
         {
           manifest_version: 2,
           version: "1.0.0",
-          web_accessible_resources: [{ matches: ["file://**/*"] }]
+          web_accessible_resources: [{ matches: ["file://**/*"], resources: ["vega-engine.js"] }],
+          content_scripts: [{ js: ["vega-engine-loader.js", "markside.js"] }]
         },
         "1.1.0"
       )

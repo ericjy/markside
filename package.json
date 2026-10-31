@@ -6,9 +6,9 @@
   "author": "Jing Yang",
   "license": "MIT",
   "scripts": {
-    "bundle-engine": "node scripts/bundle-shiki-engine.mjs && node scripts/bundle-codemirror.mjs && node scripts/bundle-katex-css.mjs",
-    "dev": "node scripts/bundle-shiki-engine.mjs && node scripts/bundle-codemirror.mjs && node scripts/bundle-katex-css.mjs && node scripts/fix-manifest.mjs --watch & plasmo dev",
-    "build": "node scripts/bundle-shiki-engine.mjs && node scripts/bundle-codemirror.mjs && node scripts/bundle-katex-css.mjs && plasmo build && node scripts/fix-manifest.mjs",
+    "bundle-engine": "node scripts/bundle-shiki-engine.mjs && node scripts/bundle-codemirror.mjs && node scripts/bundle-katex-css.mjs && node scripts/bundle-vega.mjs",
+    "dev": "node scripts/bundle-shiki-engine.mjs && node scripts/bundle-codemirror.mjs && node scripts/bundle-katex-css.mjs && node scripts/bundle-vega.mjs && node scripts/fix-manifest.mjs --watch & plasmo dev",
+    "build": "node scripts/bundle-shiki-engine.mjs && node scripts/bundle-codemirror.mjs && node scripts/bundle-katex-css.mjs && node scripts/bundle-vega.mjs && plasmo build && node scripts/fix-manifest.mjs",
     "package": "plasmo package",
     "webstore": "node scripts/webstore-release.mjs",
     "webstore:prepare": "node scripts/webstore-release.mjs prepare",
@@ -60,6 +60,9 @@
     "react-dom": "^18.2.0",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^3.4.19",
+    "vega": "6.4.0",
+    "vega-interpreter": "2.3.2",
+    "vega-lite": "6.5.0",
     "yaml": "^2.8.3"
   },
   "devDependencies": {

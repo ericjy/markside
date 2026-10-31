@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { afterEach, describe, it, expect, vi, beforeEach } from "vitest"
 
 // Pele measures labels with a canvas, which jsdom lacks.
 vi.mock("pele", async (importOriginal) => ({
@@ -636,5 +636,67 @@ describe("rerenderMermaidBlocks", () => {
     const wrapper = div.querySelector(".mermaid-block") as HTMLElement
     expect(wrapper.innerHTML).toContain("<text>old</text>")
     consoleSpy.mockRestore()
+  })
+})
+
+describe("Vega-Lite charts", () => {
+  const spec = JSON.stringify({
+    data: { values: [{ day: 1, count: 30 }, { day: 2, count: 55 }] },
+    mark: "line",
+    encoding: { x: { field: "day", type: "quantitative", title: "Day" }, y: { field: "count", type: "quantitative" } },
+  })
+  const chartBlock = (source: string) => {
+    const div = document.createElement("div")
+    const code = document.createElement("code")
+    code.className = "language-vega-lite"
+    code.textContent = source
+    const pre = document.createElement("pre")
+    pre.dataset.sourceLine = "4"
+    pre.append(code)
+    div.append(pre)
+    return div
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.stubGlobal("marksideImportVegaEngine", () => import("./vega-engine"))
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  it("renders a vega-lite fence in the diagram block without calling Pele", async () => {
+    const div = chartBlock(spec)
+    await renderMermaidBlocks(div)
+    const block = div.querySelector<HTMLElement>(".mermaid-block")!
+    expect(block.dataset.mermaidLanguage).toBe("vega-lite")
+    expect(block.dataset.sourceLine).toBe("4")
+    expect(block.querySelector(".mermaid-diagram svg")?.textContent).toContain("Day")
+    expect(block.querySelector(".mermaid-viewport")?.getAttribute("aria-label")).toContain("Vega-Lite")
+    expect(mockRender).not.toHaveBeenCalled()
+  })
+
+  it("explains that a chart cannot use external data", async () => {
+    const div = chartBlock(JSON.stringify({ ...JSON.parse(spec), data: { url: "https://example.com/data.csv" } }))
+    await renderMermaidBlocks(div)
+    expect(div.querySelector(".mermaid-error")?.textContent).toBe("Vega-Lite charts can only use data written in the document.")
+  })
+
+  it("shows the parse error in the error block and recovers on rerender", async () => {
+    const div = chartBlock("{ not json")
+    await renderMermaidBlocks(div)
+    const error = div.querySelector<HTMLElement>(".mermaid-error")!
+    expect(error.textContent).toMatch(/^Vega-Lite error: /)
+
+    error.dataset.mermaidSrc = spec
+    await rerenderMermaidBlocks(div)
+    expect(div.querySelector(".mermaid-block .mermaid-diagram svg")).not.toBeNull()
+  })
+
+  it("does not load the engine for a document without a chart", async () => {
+    const load = vi.fn()
+    vi.stubGlobal("marksideImportVegaEngine", load)
+    const div = document.createElement("div")
+    div.innerHTML = "<pre><code class='language-mermaid'>graph TD; A-->B</code></pre>"
+    await renderMermaidBlocks(div)
+    expect(load).not.toHaveBeenCalled()
   })
 })

@@ -50,7 +50,7 @@ GitHub and Web Store releases use separate tags and artifacts.
 
 ### Pre-bundled dependencies
 
-Shiki and CodeMirror are pre-bundled because Parcel cannot reliably bundle their ESM graphs. Do not import them directly; use the project wrappers. Pele, which renders Mermaid diagrams, is an ordinary dependency pinned to an exact version. When adding a language, theme, or editor dependency, update the matching bundle script and run `pnpm bundle-engine`.
+Shiki and CodeMirror are pre-bundled because Parcel cannot reliably bundle their ESM graphs. Do not import them directly; use the project wrappers. Pele, which renders Mermaid diagrams, is an ordinary dependency pinned to an exact version. Vega-Lite loads on demand through `lib/vega-engine.ts`, the only file that imports it. When adding a language, theme, or editor dependency, update the matching bundle script and run `pnpm bundle-engine`.
 
 ### No file watching
 

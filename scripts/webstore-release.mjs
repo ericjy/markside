@@ -96,6 +96,18 @@ export function validateBuiltManifest(manifest, expectedVersion) {
       "generated web_accessible_resources still contains a file:// match"
     )
   }
+  const hasVegaEngine = (manifest.web_accessible_resources ?? []).some((entry) =>
+    (entry.resources ?? []).includes("vega-engine.js")
+  )
+  if (!hasVegaEngine) {
+    errors.push("generated web_accessible_resources is missing vega-engine.js")
+  }
+  const hasVegaLoader = (manifest.content_scripts ?? []).every((script) =>
+    script.js?.includes("vega-engine-loader.js")
+  )
+  if (!hasVegaLoader) {
+    errors.push("generated content script is missing vega-engine-loader.js")
+  }
   return errors
 }
 

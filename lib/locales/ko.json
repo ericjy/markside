@@ -864,5 +864,9 @@
   "Choose {0}…": "‘{0}’ 선택…",
   "Choose folder…": "폴더 선택…",
   "Clicking the button also copies the folder path.": "버튼을 클릭하면 폴더 경로도 복사됩니다.",
-  "Choose the folder once so Markside can browse and save its files.": "폴더를 한 번 선택하면 Markside가 해당 폴더의 파일을 탐색하고 저장할 수 있습니다."
+  "Choose the folder once so Markside can browse and save its files.": "폴더를 한 번 선택하면 Markside가 해당 폴더의 파일을 탐색하고 저장할 수 있습니다.",
+  "Expanded Vega-Lite chart": "확장된 Vega-Lite 차트",
+  "Interactive Vega-Lite chart. Use the Pan control, hold Shift while dragging, or use arrow keys to pan; hold Control or Command while scrolling, or use plus and minus to zoom.": "대화형 Vega-Lite 차트입니다. 이동 컨트롤을 사용하거나 Shift 키를 누른 채 드래그하거나 화살표 키로 이동합니다. Control 또는 Command 키를 누른 채 스크롤하거나 더하기와 빼기로 확대/축소합니다.",
+  "Vega-Lite charts can only use data written in the document.": "Vega-Lite 차트는 문서에 작성된 데이터만 사용할 수 있습니다.",
+  "Vega-Lite error: {0}": "Vega-Lite 오류: {0}"
 }

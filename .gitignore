@@ -8,6 +8,7 @@ node_modules
 lib/shiki-engine-bundle.mjs
 lib/codemirror-bundle.mjs
 lib/katex-bundle.css
+lib/vega-engine-bundle.js
 skills/*-workspace/
 .hallmark
 

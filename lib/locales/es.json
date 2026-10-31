@@ -864,5 +864,9 @@
   "Choose {0}…": "Elegir {0}…",
   "Choose folder…": "Elegir carpeta…",
   "Clicking the button also copies the folder path.": "Al hacer clic en el botón, también se copia la ruta de la carpeta.",
-  "Choose the folder once so Markside can browse and save its files.": "Elige la carpeta una vez para que Markside pueda explorar y guardar sus archivos."
+  "Choose the folder once so Markside can browse and save its files.": "Elige la carpeta una vez para que Markside pueda explorar y guardar sus archivos.",
+  "Expanded Vega-Lite chart": "Gráfico de Vega-Lite ampliado",
+  "Interactive Vega-Lite chart. Use the Pan control, hold Shift while dragging, or use arrow keys to pan; hold Control or Command while scrolling, or use plus and minus to zoom.": "Gráfico interactivo de Vega-Lite. Usa el control de desplazamiento, mantén pulsada Mayús mientras arrastras o usa las flechas para desplazarte; mantén pulsada Control o Comando mientras te desplazas, o usa más y menos para hacer zoom.",
+  "Vega-Lite charts can only use data written in the document.": "Los gráficos de Vega-Lite solo pueden usar datos escritos en el documento.",
+  "Vega-Lite error: {0}": "Error de Vega-Lite: {0}"
 }

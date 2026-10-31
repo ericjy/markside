@@ -864,5 +864,9 @@
   "Choose {0}…": "选择“{0}”…",
   "Choose folder…": "选择文件夹…",
   "Clicking the button also copies the folder path.": "点击按钮还会复制文件夹路径。",
-  "Choose the folder once so Markside can browse and save its files.": "选择一次文件夹，Markside 就能浏览和保存其中的文件。"
+  "Choose the folder once so Markside can browse and save its files.": "选择一次文件夹，Markside 就能浏览和保存其中的文件。",
+  "Expanded Vega-Lite chart": "展开的 Vega-Lite 图表",
+  "Interactive Vega-Lite chart. Use the Pan control, hold Shift while dragging, or use arrow keys to pan; hold Control or Command while scrolling, or use plus and minus to zoom.": "交互式 Vega-Lite 图表。使用平移控件、拖动时按住 Shift 键或使用方向键进行平移；滚动时按住 Control 或 Command，或使用加号和减号进行缩放。",
+  "Vega-Lite charts can only use data written in the document.": "Vega-Lite 图表只能使用写在文档里的数据。",
+  "Vega-Lite error: {0}": "Vega-Lite 错误：{0}"
 }

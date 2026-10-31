@@ -22,3 +22,10 @@ Bundle each dependency with esbuild into a self-contained `lib/*-bundle.mjs` art
 Mermaid was removed. Pele renders Mermaid diagrams instead, and Parcel bundles
 it directly, so it is imported without a pre-bundle. See
 [Render Mermaid diagrams with Pele](../changes/2026-10-24-pele-diagrams/spec.md).
+
+## Amendment (2026-10-30)
+
+The Vega-Lite engine is also bundled with esbuild, from `lib/vega-engine.ts`, but
+it stays out of the content script and loads only for a document with a chart. No
+package alias points to it. See
+[Vega-Lite charts](../changes/2026-10-30-vega-lite-charts/spec.md).

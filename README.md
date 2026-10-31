@@ -67,7 +67,7 @@ keyboard shortcuts, and sharing.
 ## Features
 
 - **Rich Markdown:** tables, tasks, alerts, math, footnotes, wikilinks, frontmatter, and more.
-- **Code and diagrams:** highlighted code with copy buttons and theme-aware Mermaid diagrams.
+- **Code and diagrams:** highlighted code with copy buttons, theme-aware Mermaid diagrams, and Vega-Lite charts.
 - **Agent-ready Review:** anchored comments and an overall note, copied together or one comment at a time.
 - **Preview, Source, and Split:** a CodeMirror editor beside the live preview,
   with a resizable divider.

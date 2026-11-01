@@ -61,7 +61,7 @@ Hooks whose effects read the rendered preview are called after
 `content-view`, `content-dialogs`, and `content-review-overlay` render the UI.
 
 `content-view` shows document statistics outside the rendered Markdown, in
-Preview's existing top-right margin. `lib/document-stats.ts` counts raw
+Preview's top margin, aligned with the document's left edge. `lib/document-stats.ts` counts raw
 whitespace-separated source chunks and estimates reading time at 200 words per
 minute. Split counts the current draft rather than the delayed rendered content.
 The label scrolls with Preview and is hidden in Source-only mode and print.
@@ -459,10 +459,11 @@ preference. The original tab and its Unsaved Draft remain untouched.
 ### New Draft
 
 **New draft** in the popup opens the draft tab, `tabs/draft.html`, from any
-tab. If the tab still editing an unsaved New Draft is open, found with
-`chrome.runtime.getContexts`, the popup focuses it instead. While
-the stored draft has content, the popup's card reads **Continue draft** with its
-first heading or first line and edit time. On the draft tab itself the popup
+tab. It is a primary button below the ways to open a file when the popup shows
+them, and a footer link beside Settings otherwise. If the tab still editing an
+unsaved New Draft is open, found with `chrome.runtime.getContexts`, the popup
+focuses it instead. While the stored draft has content, it reads **Continue
+draft**, with the draft's first heading or first line as its tooltip. On the draft tab itself the popup
 shows the tab's state instead: the save shortcut before the first save, or the
 saved filename, which the draft tab records in `chrome.storage.session`. The draft tab
 opens in Split with the editor focused, or in Source when the window is narrower

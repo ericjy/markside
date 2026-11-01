@@ -196,8 +196,13 @@ export default function Popup() {
     ? draftTab.savedName ?? "New draft"
     : localhostOrigin ? localhostOrigin.replace(/^https?:\/\//, "") : tabLabel
   const editingUnsavedDraft = draftTab !== null && draftTab.savedName === null
+  const showOpenGuide = hasFileAccess !== false && !reviewable && !draftTab && !webMarkdown
 
   if (!languageReady) return null
+
+  const DraftIcon = unsavedDraft ? FilePen : FilePlus
+  const draftLabel = unsavedDraft ? t("Continue draft") : t("New draft")
+  const openDraft = () => void openNewDraft().then(() => window.close())
 
   return (
     <>
@@ -257,6 +262,7 @@ export default function Popup() {
 
         .open-row { align-items: center; color: var(--popup-text-secondary); display: flex; font-size: 12px; gap: 10px; padding: 3px 0; }
         .open-row b { color: var(--popup-text); font-weight: 600; }
+        .open-guide-draft { margin-top: 14px; }
         .open-icon { color: #8a857c; display: flex; flex-shrink: 0; justify-content: center; width: 16px; }
         .popup-keys { display: inline-flex; gap: 3px; vertical-align: 1px; }
         .popup-key { background: #fff; border: 1px solid var(--popup-border); border-bottom-width: 2px; border-radius: 5px; color: var(--popup-text); display: inline-block; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 11px; font-weight: 600; line-height: 16px; min-width: 18px; padding: 0 4px; text-align: center; }
@@ -407,7 +413,7 @@ export default function Popup() {
                 </button>
               ))}
 
-              {!reviewable && !draftTab && !webMarkdown && (
+              {showOpenGuide && (
                 <>
                   <div className="section-label"><span>{t("Ways to open a Markdown file")}</span></div>
                   {openFileRows.map(({ icon: Icon, action, keys, description }) => (
@@ -416,6 +422,9 @@ export default function Popup() {
                       <span>{tRich(description, <b>{t(action)}</b>, ...(keys ? [<Keys keys={keys} />] : []))}</span>
                     </div>
                   ))}
+                  <button className="primary-button open-guide-draft" title={unsavedDraft?.title || undefined} onClick={openDraft}>
+                    <DraftIcon size={14} strokeWidth={1.8} />
+                    {draftLabel}</button>
                   {LOCALHOST_REVIEW_ENABLED && (
                     <>
                       <div className="section-label"><span>{t("Review a localhost page")}</span></div>
@@ -431,10 +440,10 @@ export default function Popup() {
           )}
 
           <div className="popup-footer">
-            {!editingUnsavedDraft && <>
-              <button className="footer-link" title={unsavedDraft?.title || undefined} onClick={() => void openNewDraft().then(() => window.close())}>
-                {unsavedDraft ? <FilePen size={13} strokeWidth={1.8} /> : <FilePlus size={13} strokeWidth={1.8} />}
-                {unsavedDraft ? t("Continue draft") : t("New draft")}</button>
+            {!editingUnsavedDraft && !showOpenGuide && <>
+              <button className="footer-link" title={unsavedDraft?.title || undefined} onClick={openDraft}>
+                <DraftIcon size={13} strokeWidth={1.8} />
+                {draftLabel}</button>
               <span className="footer-dot">·</span>
             </>}
             <button className="footer-link" onClick={() => chrome.runtime.openOptionsPage()}>
@@ -448,7 +457,7 @@ export default function Popup() {
                 void chrome.tabs.create({ url: CHROME_WEB_STORE_REVIEW_URL })
               }}>
               <Star size={13} strokeWidth={1.8} />
-              {t("Rate Markside")}</button>
+              {t("Rate")}</button>
           </div>
         </main>
       </div>

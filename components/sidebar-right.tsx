@@ -260,7 +260,7 @@ export function SidebarRight({
         </button>
         <SidebarContent className="gap-0 px-3 pt-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden xl:pl-4 xl:pr-8">
           {headings.length === 0 ? (
-            <div className="px-2 py-8 text-xs text-muted-foreground">
+            <div className="px-3 pt-4 text-xs text-muted-foreground">
               {t("No headings found")}</div>
           ) : (
             <SidebarGroup className="p-0 pb-10">

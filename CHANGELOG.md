@@ -16,7 +16,7 @@ Store and GitHub Releases run independently and can diverge; see
 
 ### Improved
 
-- New draft moved to a compact link beside Settings in the popup.
+- On pages without Markdown, the popup offers New draft as a button below the ways to open a file. Elsewhere it is a compact link beside Settings.
 - Diagram controls appear only when you hover over a diagram.
 
 ### Fixed

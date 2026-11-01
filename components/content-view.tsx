@@ -436,7 +436,7 @@ export function ContentView({
                       className="relative min-h-full min-w-0 flex-1 pl-20 pr-8 pt-10 pb-28 transition-[padding] duration-200 print:p-0">
                   {documentStats && (
                     <div className="pointer-events-none absolute inset-x-0 top-3 select-none pl-[inherit] pr-[inherit] print:hidden">
-                      <div className={`${previewWidthClass} whitespace-nowrap text-right text-[11px] tabular-nums text-muted-foreground/70`}>
+                      <div className={`${previewWidthClass} whitespace-nowrap text-left text-[11px] tabular-nums text-muted-foreground/70`}>
                         {documentStats}
                       </div>
                     </div>

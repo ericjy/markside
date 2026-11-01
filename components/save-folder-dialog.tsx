@@ -1,6 +1,6 @@
 import { t, tRich } from "~lib/i18n"
 import * as Dialog from "@radix-ui/react-dialog"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { FolderPickerTip } from "~components/folder-picker-tip"
 import { Button } from "~components/ui/button"
@@ -23,6 +23,9 @@ export function SaveFolderDialog({
 }: SaveFolderDialogProps) {
   const previousFocus = useRef(document.activeElement)
   const [copied, setCopied] = useState(false)
+
+  // A rejected pick ends that attempt, so "copied" would read as success beside the error.
+  useEffect(() => setCopied(false), [folderError])
 
   return (
     <Dialog.Root open onOpenChange={(open) => { if (!open) onCancel() }}>

@@ -108,11 +108,11 @@ file inside Markside uses the `projects/markside` sidebar.
 
 If the folder you choose doesn't contain the current file, the sidebar explains:
 
-> You chose **work**. Please choose **notes**, or a parent folder.
+> Please choose **notes**, which contains **todo.md**.
 >
-> Want to browse **work**? Open a file from it first (`⌘O`), then choose **work**.
+> Want to browse **work** instead? Open a file from it first (`⌘O`).
 
-Click **Choose folder** again and select the correct one. To browse a different folder entirely, first open any file from it using `Cmd+O` / `Ctrl+O` or by dragging the file into Chrome. Then press **Choose folder** to choose the folder.
+Click **Choose folder** again and select that folder or any parent of it. To browse a different folder entirely, first open any file from it using `Cmd+O` / `Ctrl+O` or by dragging the file into Chrome. Then press **Choose folder** to choose the folder.
 
 ### Re-authorizing after a restart
 

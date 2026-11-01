@@ -1,6 +1,6 @@
 import { t, tRich } from "~lib/i18n"
 // components/sidebar-left.tsx
-import { FilePlus2, FolderOpen, Search } from "lucide-react"
+import { AlertTriangle, FilePlus2, FolderOpen, Search } from "lucide-react"
 import React, { useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 
@@ -92,6 +92,9 @@ export function SidebarLeft({
   const [createdFileUrl, setCreatedFileUrl] = React.useState<string | null>(null)
   const [copiedFolderPath, setCopiedFolderPath] = React.useState<string | null>(null)
 
+  // A rejected pick ends that attempt, so "copied" would read as success beside the error.
+  React.useEffect(() => setCopiedFolderPath(null), [folderError])
+
   const createFile = async (event: React.FormEvent) => {
     event.preventDefault()
     if (!handle || !rootUrl || creatingFile) return
@@ -150,6 +153,7 @@ export function SidebarLeft({
     return segments.length >= 2 ? segments[segments.length - 2] : null
   })()
 
+  const currentFileName = decodeURIComponent(currentFileUrl.split(/[?#]/)[0].split("/").pop() ?? "")
   const folderPath = fileFolderPath(currentFileUrl)
 
   const handleFileClick = (node: FileNode) => {
@@ -226,17 +230,25 @@ export function SidebarLeft({
                     ? tRich("Browse the {0} folder?", <strong className="font-semibold text-sidebar-foreground">{parentFolderName}</strong>)
                     : t("Browse this file's folder?")}
                 </p>
-                <p className="text-[13px] leading-relaxed text-sidebar-foreground/75">
-                  {folderError
-                    ? tRich("You chose {0}. Please choose {1}, or a parent folder.", <strong className="font-medium text-sidebar-foreground">{folderError.picked}</strong>, <strong className="font-medium text-sidebar-foreground">{folderError.expected ?? parentFolderName}</strong>)
-                    : t("Choose the folder once so Markside can browse and save its files.")}
-                </p>
-                {folderError && (
+                {!folderError && (
                   <p className="text-[13px] leading-relaxed text-sidebar-foreground/75">
-                    {tRich("Want to browse {0}? Open a file from it first ({1}).", <strong className="font-medium text-sidebar-foreground">{folderError.picked}</strong>, openFileShortcut)}
+                    {t("Choose the folder once so Markside can browse and save its files.")}
                   </p>
                 )}
               </div>
+              {folderError && (
+                <div role="alert" className="flex gap-2 rounded-md border border-red-600/25 bg-red-500/10 px-3 py-2.5 text-[13px] leading-relaxed text-red-700 dark:text-red-300">
+                  <AlertTriangle size={14} className="mt-[3px] shrink-0" aria-hidden="true" />
+                  <div className="min-w-0 space-y-1.5 break-words">
+                    <p>
+                      {tRich("Please choose {0}, which contains {1}.", <strong className="font-semibold">{folderError.expected ?? parentFolderName}</strong>, <strong className="font-semibold">{currentFileName}</strong>)}
+                    </p>
+                    <p>
+                      {tRich("Want to browse {0} instead? Open a file from it first ({1}).", <strong className="font-semibold">{folderError.picked}</strong>, openFileShortcut)}
+                    </p>
+                  </div>
+                </div>
+              )}
               <button
                 onClick={() => {
                   // Chrome's picker can't open at a path, so copy it for the user to paste.

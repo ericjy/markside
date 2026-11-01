@@ -5,7 +5,7 @@ version is tagged with the channel(s) it actually shipped on — Chrome Web
 Store and GitHub Releases run independently and can diverge; see
 `docs/github-release.md`.
 
-## 1.9.0 — Unreleased
+## 1.9.0 — 2026-11-03 (Chrome Web Store)
 
 ### Added
 

@@ -127,6 +127,10 @@ Markside. Duplicate headings receive `-1`, `-2`, and so on. Non-ASCII
 characters stay as written, so the location hash is decoded before Markside
 scrolls to a heading on load.
 
+The Outline scrolls independently with its scrollbar hidden. When the active
+heading changes, it scrolls only as needed to keep the visible active entry in
+view; manually collapsed groups stay collapsed. This also applies to Web Preview.
+
 A fenced `question` block renders as a Question Card whose options are its
 answer controls. Its body is parsed as Markdown before inline parsing and heading
 IDs, with source lines mapped back to the document. Legacy `> [!QUESTION]`

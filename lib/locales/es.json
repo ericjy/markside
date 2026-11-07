@@ -201,8 +201,6 @@
   "Include document content in the link": "Incluir el contenido del documento en el enlace",
   "Keep this tab open or copy the review before leaving.": "Mantenga esta pestaña abierta o copie la reseña antes de salir.",
   "Keyboard shortcuts": "Atajos de teclado",
-  "Leave a Chrome Web Store review": "Deje una reseña de Chrome Web Store",
-  "Leave a review": "Deja una reseña",
   "Link copied": "Enlace copiado",
   "Link not created because the latest changes were not saved. Resolve the save issue and try again.": "Enlace no creado porque no se guardaron los últimos cambios. Resuelva el problema al guardar e inténtelo de nuevo.",
   "Link ready to copy": "Enlace listo para copiar",
@@ -222,7 +220,6 @@
   "Markside Settings": "Configuración de Markside",
   "Markside can open your files now": "Markside ya puede abrir tus archivos",
   "Markside could not read": "Markside no sabía leer",
-  "Markside is free. Your honest review shapes what we improve and helps others find it.": "Markside es gratis. Su opinión honesta da forma a lo que mejoramos y ayuda a otros a encontrarlo.",
   "More": "Más",
   "More formatting": "Más formato",
   "More save options": "Más opciones de guardado",
@@ -293,7 +290,6 @@
   "Prose, better as {0}": "Prosa, mejor como {0}",
   "Quick comment": "comentario rápido",
   "Rate": "Calificar",
-  "Rate on Chrome Web Store": "Calificar en Chrome Web Store",
   "Re-authorize": "Reautorizar",
   "Readability Check": "Verificación de legibilidad",
   "Readability of {0}": "Legibilidad de {0}",
@@ -886,5 +882,7 @@
   "PDF Export": "Exportar PDF",
   "Outline": "Índice",
   "Enable online Markdown preview": "Activar vista previa de Markdown en línea",
-  "Off": "Desactivado"
+  "Off": "Desactivado",
+  "Rate Markside": "Valorar Markside",
+  "Markside is free. A star rating takes a few seconds and helps others find it.": "Markside es gratis. Valorarlo con estrellas lleva unos segundos y ayuda a que otros lo encuentren."
 }

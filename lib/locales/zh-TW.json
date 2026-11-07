@@ -377,8 +377,6 @@
   "Keyboard shortcuts": "鍵盤快速鍵",
   "Lead": "結論先行",
   "Lead with the main point": "先說明重點",
-  "Leave a Chrome Web Store review": "留下 Chrome 線上應用程式商店評論",
-  "Leave a review": "發表評論",
   "Less vague, more specific": "減少模糊，增加具體細節",
   "link": "連結",
   "Link": "連結",
@@ -409,7 +407,6 @@
   "Markside could not read": "Markside 無法讀取",
   "Markside could not save this Review. Copy it before closing the tab.": "Markside 無法儲存此評論。在關閉選項卡之前複製它。",
   "Markside could not verify the source on disk. Copy an unverified {0} anyway?": "Markside 無法驗證磁碟上的來源。仍然要複製未經驗證的 {0} 嗎？",
-  "Markside is free. Your honest review shapes what we improve and helps others find it.": "Markside是免費的。您的誠實評論決定了我們的改進內容並幫助其他人找到它。",
   "Markside Review": "Markside 審閱",
   "Markside Settings": "Markside 設定",
   "match case": "區分大小寫",
@@ -518,7 +515,6 @@
   "Quick comment": "快速評論",
   "Quote": "引言",
   "Rate": "評分",
-  "Rate on Chrome Web Store": "Chrome 線上應用程式商店的評分",
   "Re-authorize": "重新授權",
   "Readability": "可讀性",
   "Readability · Outdated": "可讀性 · 已過期",
@@ -886,5 +882,7 @@
   "PDF Export": "匯出 PDF",
   "Outline": "大綱",
   "Enable online Markdown preview": "啟用線上 Markdown 預覽",
-  "Off": "已關閉"
+  "Off": "已關閉",
+  "Rate Markside": "為 Markside 評分",
+  "Markside is free. A star rating takes a few seconds and helps others find it.": "Markside 完全免費。評個星等只要幾秒，就能幫更多人找到它。"
 }

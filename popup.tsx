@@ -42,7 +42,7 @@ import {
 } from "~lib/review-index"
 import { forgetReviewIndexEntry, readReviewIndex } from "~lib/review-index-storage"
 import {
-  CHROME_WEB_STORE_REVIEW_URL,
+  getStoreReviewUrl,
   stopAutomaticReviewPrompts,
 } from "~lib/review-prompt"
 
@@ -454,7 +454,7 @@ export default function Popup() {
               className="footer-link"
               onClick={() => {
                 void stopAutomaticReviewPrompts().catch(() => undefined)
-                void chrome.tabs.create({ url: CHROME_WEB_STORE_REVIEW_URL })
+                void chrome.tabs.create({ url: getStoreReviewUrl() })
               }}>
               <Star size={13} strokeWidth={1.8} />
               {t("Rate")}</button>

@@ -35,6 +35,12 @@ workflow runs manually from the Actions tab by default. Enabling its optional
 push trigger allows version changes on `main` to create releases automatically.
 GitHub and Web Store releases use separate tags and artifacts.
 
+## Microsoft Edge Add-ons
+
+`docs/edge-addons.md` documents this third channel. It ships the ZIP prepared
+for the Chrome Web Store. Submission and publication are manual in Partner
+Center, and Edge releases use `edge-v<version>` tags.
+
 ## Hard Constraints
 
 ### Surfaces

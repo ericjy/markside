@@ -90,13 +90,10 @@ The Markdown page's console does not expose `chrome.storage.local`.
 To make the first prompt eligible immediately, run:
 
 ```js
-const now = Date.now()
-
 await chrome.storage.local.set({
   reviewPromptState: {
     version: 1,
-    firstUsedAt: now - 21 * 60 * 1000,
-    activeDays: [],
+    activeDays: ["2000-01-01", "2000-01-02"],
     actionTotals: { "file-open": 3, save: 2 },
     dailyActions: { day: "2000-01-01", counts: {} },
     promptsShown: 0,
@@ -119,7 +116,6 @@ const now = Date.now()
 await chrome.storage.local.set({
   reviewPromptState: {
     version: 1,
-    firstUsedAt: now - 30 * 24 * 60 * 60 * 1000,
     activeDays: [],
     actionTotals: { "file-open": 3, save: 2 },
     dailyActions: { day: "2000-01-01", counts: {} },

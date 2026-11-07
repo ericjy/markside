@@ -14,6 +14,7 @@
 - [Pre-bundle ESM-only dependencies](adr/0001-prebundle-esm-only-dependencies.md)
 - [Do not watch local files](adr/0002-no-file-watching.md)
 - [Chrome Web Store](store-listing.md) — release runbook and canonical Store listing copy
+- [Microsoft Edge Add-ons](edge-addons.md) — Edge submission steps and smoke test
 
 ## Changes
 

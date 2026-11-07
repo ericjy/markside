@@ -127,6 +127,10 @@ Markside. Duplicate headings receive `-1`, `-2`, and so on. Non-ASCII
 characters stay as written, so the location hash is decoded before Markside
 scrolls to a heading on load.
 
+The Outline scrolls independently with its scrollbar hidden. When the active
+heading changes, it scrolls only as needed to keep the visible active entry in
+view; manually collapsed groups stay collapsed. This also applies to Web Preview.
+
 A fenced `question` block renders as a Question Card whose options are its
 answer controls. Its body is parsed as Markdown before inline parsing and heading
 IDs, with source lines mapped back to the document. Legacy `> [!QUESTION]`
@@ -724,13 +728,14 @@ lacks, for reasons a user cannot see.
 ## Chrome Web Store review prompt
 
 Markside keeps aggregate review-prompt scheduling state in
-`chrome.storage.local`. It records the first-use time, active-day dates,
+`chrome.storage.local`. It records active-day dates,
 meaningful-action counts by category, per-day caps, prompt count, and snooze
 state. It does not store document contents or paths in this state, and it does
 not transmit the state.
 
-The first prompt becomes eligible after three active days, or after five
-meaningful actions across at least two categories and 20 minutes of use. An
+The first prompt becomes eligible after three active days, or on the second
+active day after five meaningful actions across at least two categories. It
+never appears on the first day of use. An active day is a day with a file open. An
 action category contributes at most three times per day. Adding the first
 Review Comment can qualify the user, but cannot open the prompt because the
 user is mid-task. The content application waits for a completed save, copy,
@@ -740,7 +745,10 @@ Claiming the first prompt starts a 14-day snooze and resets its action count.
 The one permitted follow-up requires both the elapsed snooze and five new
 meaningful actions. Claiming that second prompt disables further automatic
 prompts. Choosing the Store action at any time also disables automatic prompts.
-The popup and Options page keep a permanent Store review action available. The
+The popup and Options page keep a permanent Store review action available.
+The review link targets the store the extension was installed from. Edge
+Add-ons assigns its own extension ID, so an Edge install with a non-Chrome ID
+opens its Edge Add-ons listing. The
 modal and Options page also link to `hello@zhuge.app` for direct feedback.
 Opening that email link does not complete the automatic review-prompt sequence.
 

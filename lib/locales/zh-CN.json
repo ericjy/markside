@@ -201,8 +201,6 @@
   "Include document content in the link": "将文档内容放进链接",
   "Keep this tab open or copy the review before leaving.": "保持此选项卡打开或在离开前复制评论。",
   "Keyboard shortcuts": "键盘快捷键",
-  "Leave a Chrome Web Store review": "留下 Chrome 网上应用店评论",
-  "Leave a review": "发表评论",
   "Link copied": "链接已复制",
   "Link not created because the latest changes were not saved. Resolve the save issue and try again.": "由于未保存最新更改，因此未创建链接。解决保存问题并重试。",
   "Link ready to copy": "链接已准备好复制",
@@ -222,7 +220,6 @@
   "Markside Settings": "Markside 设置",
   "Markside can open your files now": "Markside 现在可以打开您的文件",
   "Markside could not read": "Markside无法阅读",
-  "Markside is free. Your honest review shapes what we improve and helps others find it.": "Markside是免费的。您的诚实评论决定了我们的改进内容并帮助其他人找到它。",
   "More": "更多",
   "More formatting": "更多格式",
   "More save options": "更多保存选项",
@@ -293,7 +290,6 @@
   "Prose, better as {0}": "散文，最好是{0}",
   "Quick comment": "快速评论",
   "Rate": "评价",
-  "Rate on Chrome Web Store": "Chrome 网上应用店中的评分",
   "Re-authorize": "重新授权",
   "Readability Check": "可读性检查",
   "Readability of {0}": "{0} 的可读性",
@@ -886,5 +882,7 @@
   "PDF Export": "导出 PDF",
   "Outline": "大纲",
   "Enable online Markdown preview": "开启在线 Markdown 预览",
-  "Off": "已关闭"
+  "Off": "已关闭",
+  "Rate Markside": "为 Markside 评分",
+  "Markside is free. A star rating takes a few seconds and helps others find it.": "Markside 完全免费。打个星只需几秒，就能帮更多人找到它。"
 }

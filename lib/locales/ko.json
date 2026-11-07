@@ -201,8 +201,6 @@
   "Include document content in the link": "문서 내용을 링크에 담기",
   "Keep this tab open or copy the review before leaving.": "이 탭을 열어두거나 떠나기 전에 리뷰를 복사하세요.",
   "Keyboard shortcuts": "키보드 단축키",
-  "Leave a Chrome Web Store review": "Chrome 웹 스토어 리뷰 남기기",
-  "Leave a review": "리뷰를 남겨주세요",
   "Link copied": "링크가 복사되었습니다",
   "Link not created because the latest changes were not saved. Resolve the save issue and try again.": "최신 변경사항이 저장되지 않아 링크가 생성되지 않았습니다. 저장 문제를 해결하고 다시 시도하세요.",
   "Link ready to copy": "링크 복사 준비 완료",
@@ -222,7 +220,6 @@
   "Markside Settings": "Markside 설정",
   "Markside can open your files now": "이제 Markside에서 파일을 열 수 있습니다",
   "Markside could not read": "Markside를 읽을 수 없습니다.",
-  "Markside is free. Your honest review shapes what we improve and helps others find it.": "Markside는 무료입니다. 귀하의 솔직한 리뷰는 당사의 개선 사항을 형성하고 다른 사람들이 이를 찾는 데 도움이 됩니다.",
   "More": "더보기",
   "More formatting": "추가 서식 지정",
   "More save options": "더 많은 저장 옵션",
@@ -293,7 +290,6 @@
   "Prose, better as {0}": "산문, {0}보다 낫습니다.",
   "Quick comment": "빠른 댓글",
   "Rate": "평가",
-  "Rate on Chrome Web Store": "Chrome 웹 스토어에서 평가하기",
   "Re-authorize": "재승인",
   "Readability Check": "가독성 검사",
   "Readability of {0}": "{0}의 가독성",
@@ -886,5 +882,7 @@
   "PDF Export": "PDF 내보내기",
   "Outline": "목차",
   "Enable online Markdown preview": "온라인 Markdown 미리보기 켜기",
-  "Off": "꺼짐"
+  "Off": "꺼짐",
+  "Rate Markside": "Markside 평가하기",
+  "Markside is free. A star rating takes a few seconds and helps others find it.": "Markside는 무료입니다. 별점은 몇 초면 충분하고, 다른 사람들이 Markside를 찾는 데 도움이 됩니다."
 }

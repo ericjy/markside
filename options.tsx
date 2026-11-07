@@ -12,7 +12,7 @@ import {
 import { FileAccessDemo, FileAccessSettingLabel, FILE_ACCESS_DEMO_CSS } from "~lib/file-access-demo"
 import { FILE_ACCESS_SETUP_KEY } from "~lib/file-access-setup"
 import {
-  CHROME_WEB_STORE_REVIEW_URL,
+  getStoreReviewUrl,
   MARKSIDE_FEEDBACK_EMAIL,
   MARKSIDE_FEEDBACK_URL,
   stopAutomaticReviewPrompts,
@@ -485,9 +485,9 @@ export default function Options() {
                     className="footer-link"
                     onClick={() => {
                       void stopAutomaticReviewPrompts().catch(() => undefined)
-                      void chrome.tabs.create({ url: CHROME_WEB_STORE_REVIEW_URL })
+                      void chrome.tabs.create({ url: getStoreReviewUrl() })
                     }}>
-                    <Star size={14} /> {t(" Rate on Chrome Web Store")}</button>
+                    <Star size={14} /> {t(" Rate Markside")}</button>
                   <a className="footer-link" href={MARKSIDE_FEEDBACK_URL} title={MARKSIDE_FEEDBACK_EMAIL}>
                     <Mail size={14} /> {t(" Email feedback")}</a>
                 </div>

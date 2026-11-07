@@ -201,8 +201,6 @@
   "Include document content in the link": "文書の内容をリンクに含める",
   "Keep this tab open or copy the review before leaving.": "このタブを開いたままにするか、終了する前にレビューをコピーしてください。",
   "Keyboard shortcuts": "キーボードショートカット",
-  "Leave a Chrome Web Store review": "Chrome ウェブストアのレビューを残す",
-  "Leave a review": "レビューを残す",
   "Link copied": "リンクがコピーされました",
   "Link not created because the latest changes were not saved. Resolve the save issue and try again.": "最新の変更が保存されていないため、リンクは作成されませんでした。保存の問題を解決して、再試行してください。",
   "Link ready to copy": "リンクをコピーする準備ができました",
@@ -222,7 +220,6 @@
   "Markside Settings": "Markside 設定",
   "Markside can open your files now": "Markside でファイルを開くことができるようになりました",
   "Markside could not read": "Marksideが読み取れませんでした",
-  "Markside is free. Your honest review shapes what we improve and helps others find it.": "Marksideは無料です。あなたの正直なレビューが私たちの改善点を形作り、他の人がそれを見つけるのに役立ちます。",
   "More": "もっと見る",
   "More formatting": "さらなる書式設定",
   "More save options": "その他の保存オプション",
@@ -293,7 +290,6 @@
   "Prose, better as {0}": "散文、{0} の方が良い",
   "Quick comment": "簡単なコメント",
   "Rate": "評価",
-  "Rate on Chrome Web Store": "Chrome ウェブストアでの評価",
   "Re-authorize": "再認証",
   "Readability Check": "可読性チェック",
   "Readability of {0}": "{0} の可読性",
@@ -886,5 +882,7 @@
   "PDF Export": "PDF に出力",
   "Outline": "目次",
   "Enable online Markdown preview": "オンライン Markdown プレビューを有効にする",
-  "Off": "オフ"
+  "Off": "オフ",
+  "Rate Markside": "Markside を評価",
+  "Markside is free. A star rating takes a few seconds and helps others find it.": "Markside は無料です。星の評価は数秒で済み、ほかの人が Markside を見つける助けになります。"
 }

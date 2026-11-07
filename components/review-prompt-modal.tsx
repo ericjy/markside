@@ -4,7 +4,7 @@ import { useRef } from "react"
 
 import { Button } from "~components/ui/button"
 import {
-  CHROME_WEB_STORE_REVIEW_URL,
+  getStoreReviewUrl,
   MARKSIDE_FEEDBACK_URL,
 } from "~lib/review-prompt"
 
@@ -104,19 +104,19 @@ export function ReviewPromptModal({ onDismiss, onReview }: ReviewPromptModalProp
         <div className="flex min-h-[22rem] flex-col p-8 pr-9 sm:p-9">
           <div className="my-auto py-8">
             <h2 id="review-prompt-title" className="text-2xl font-semibold tracking-tight">
-              {t("Leave a Chrome Web Store review")}</h2>
+              {t("Rate Markside")}</h2>
             <p id="review-prompt-description" className="mt-4 text-sm leading-6 text-muted-foreground">
-              {t("Markside is free. Your honest review shapes what we improve and helps others find it.")}</p>
+              {t("Markside is free. A star rating takes a few seconds and helps others find it.")}</p>
           </div>
           <div className="space-y-2">
             <Button asChild className="w-full shadow-[0_0_0_1px_#078a52]">
               <a
-                href={CHROME_WEB_STORE_REVIEW_URL}
+                href={getStoreReviewUrl()}
                 target="_blank"
                 rel="noreferrer"
                 autoFocus
                 onClick={onReview}>
-                {t("Leave a review")}</a>
+                {t("Rate Markside")}</a>
             </Button>
             <Button type="button" variant="outline" className="w-full" onClick={onDismiss}>
               {t("Not now")}</Button>

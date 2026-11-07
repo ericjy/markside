@@ -1,14 +1,24 @@
 export const REVIEW_PROMPT_STORAGE_KEY = "reviewPromptState"
 
-export const CHROME_WEB_STORE_REVIEW_URL =
-  "https://chromewebstore.google.com/detail/markside/ccokohfaicfjkilcakhnlckbbkhhknhj/reviews"
+export const CHROME_WEB_STORE_ITEM_ID = "ccokohfaicfjkilcakhnlckbbkhhknhj"
+
+// Each store assigns its own extension ID, so an install from Edge Add-ons
+// rates on Edge Add-ons. A Chrome Web Store install rates there in any browser.
+export function getStoreReviewUrl(
+  extensionId = chrome.runtime.id,
+  userAgent = navigator.userAgent,
+): string {
+  if (extensionId !== CHROME_WEB_STORE_ITEM_ID && userAgent.includes(" Edg/")) {
+    return `https://microsoftedge.microsoft.com/addons/detail/${extensionId}`
+  }
+  return `https://chromewebstore.google.com/detail/markside/${CHROME_WEB_STORE_ITEM_ID}/reviews`
+}
 
 export const MARKSIDE_FEEDBACK_EMAIL = "hello@zhuge.app"
 export const MARKSIDE_FEEDBACK_URL =
   `mailto:${MARKSIDE_FEEDBACK_EMAIL}?subject=Markside%20feedback`
 
 export const FIRST_PROMPT_ACTION_THRESHOLD = 5
-export const FIRST_PROMPT_MIN_AGE_MS = 20 * 60 * 1000
 export const REVIEW_PROMPT_SNOOZE_MS = 14 * 24 * 60 * 60 * 1000
 export const DAILY_ACTION_TYPE_LIMIT = 3
 
@@ -27,7 +37,6 @@ type ActionCounts = Partial<Record<ReviewPromptEvent, number>>
 
 export interface ReviewPromptState {
   version: 1
-  firstUsedAt: number
   activeDays: string[]
   actionTotals: ActionCounts
   dailyActions: {
@@ -57,7 +66,6 @@ export function createReviewPromptState(
 ): ReviewPromptState {
   return {
     version: 1,
-    firstUsedAt: now,
     activeDays: [],
     actionTotals: emptyActionCounts(),
     dailyActions: { day, counts: emptyActionCounts() },
@@ -97,10 +105,6 @@ export function resolveReviewPromptState(
 
   return {
     version: 1,
-    firstUsedAt:
-      typeof stored.firstUsedAt === "number" && Number.isFinite(stored.firstUsedAt)
-        ? stored.firstUsedAt
-        : now,
     activeDays: Array.isArray(stored.activeDays)
       ? stored.activeDays.filter((entry): entry is string => typeof entry === "string").slice(-3)
       : [],
@@ -174,9 +178,10 @@ export function shouldShowReviewPrompt(
 
   const actionTotal = getReviewPromptActionTotal(state)
   if (state.promptsShown === 0) {
+    // Never on the first day: a new user has not yet come back to Markside.
     const returnedEnough = state.activeDays.length >= 3
     const usedEnough =
-      now - state.firstUsedAt >= FIRST_PROMPT_MIN_AGE_MS &&
+      state.activeDays.length >= 2 &&
       actionTotal >= FIRST_PROMPT_ACTION_THRESHOLD &&
       getReviewPromptActionTypeCount(state) >= 2
     return returnedEnough || usedEnough

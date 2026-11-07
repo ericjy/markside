@@ -1,7 +1,7 @@
 import { t } from "~lib/i18n"
 // components/SidebarRight.tsx
 import { ChevronRight, X } from "lucide-react"
-import React, { useRef } from "react"
+import React, { useEffect, useRef } from "react"
 
 import {
   Collapsible,
@@ -42,7 +42,19 @@ export function SidebarRight({
   const groups = groupHeadings(headings)
   const outlineButtonClass = "relative h-auto min-h-8 cursor-pointer rounded-l-none rounded-r-md border-l-2 border-transparent px-3 py-1.5 text-[13px] leading-5 text-sidebar-foreground/60 transition-[background-color,border-color,color] hover:bg-sidebar-accent/60 hover:text-sidebar-foreground data-[active=true]:border-sidebar-foreground/70 data-[active=true]:bg-sidebar-accent/80 data-[active=true]:font-medium data-[active=true]:text-sidebar-foreground"
   const widthRef = useRef(width)
+  const contentRef = useRef<HTMLDivElement>(null)
   widthRef.current = width
+
+  useEffect(() => {
+    const content = contentRef.current
+    const active = content?.querySelector<HTMLElement>('[aria-current="location"]')
+    if (!open || !content || !active || active.getClientRects().length === 0) return
+
+    const viewport = content.getBoundingClientRect()
+    const item = active.getBoundingClientRect()
+    if (item.top < viewport.top) content.scrollTop += item.top - viewport.top
+    else if (item.bottom > viewport.bottom) content.scrollTop += item.bottom - viewport.bottom
+  }, [activeHeadingId, open])
 
   const onResizeStart = (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -258,7 +270,7 @@ export function SidebarRight({
           className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring xl:hidden">
           <X size={15} />
         </button>
-        <SidebarContent className="gap-0 px-3 pt-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden xl:pl-4 xl:pr-8">
+        <SidebarContent ref={contentRef} className="gap-0 px-3 pt-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden xl:pl-4 xl:pr-8">
           {headings.length === 0 ? (
             <div className="px-3 pt-4 text-xs text-muted-foreground">
               {t("No headings found")}</div>

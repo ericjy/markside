@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  CHROME_WEB_STORE_ITEM_ID,
   completeReviewPrompt,
   createReviewPromptState,
   DAILY_ACTION_TYPE_LIMIT,
-  FIRST_PROMPT_MIN_AGE_MS,
   getReviewPromptActionTotal,
+  getStoreReviewUrl,
   markReviewPromptShown,
   recordReviewPromptActivity,
   REVIEW_PROMPT_SNOOZE_MS,
@@ -24,16 +25,27 @@ function record(
 }
 
 describe("review prompt policy", () => {
-  it("requires time, five actions, and two action types for first-day eligibility", () => {
+  it("never qualifies on the first active day, however much is used", () => {
+    let state = createReviewPromptState(START, "2026-09-01")
+    for (let minute = 0; minute < DAILY_ACTION_TYPE_LIMIT; minute += 1) {
+      state = record(state, "file-open", minute, "2026-09-01")
+      state = record(state, "save", minute, "2026-09-01")
+      state = record(state, "pdf-export", minute, "2026-09-01")
+    }
+
+    expect(shouldShowReviewPrompt(state, START + 24 * 60 * 60_000 - 1)).toBe(false)
+  })
+
+  it("qualifies five actions across two types once the user returns on a second day", () => {
     let state = createReviewPromptState(START, "2026-09-01")
     state = record(state, "file-open", 0, "2026-09-01")
     state = record(state, "file-open", 1, "2026-09-01")
-    state = record(state, "file-open", 2, "2026-09-01")
+    state = record(state, "save", 2, "2026-09-01")
     state = record(state, "save", 3, "2026-09-01")
-    state = record(state, "save", 4, "2026-09-01")
+    expect(shouldShowReviewPrompt(state, START + 4 * 60_000)).toBe(false)
 
-    expect(shouldShowReviewPrompt(state, START + FIRST_PROMPT_MIN_AGE_MS - 1)).toBe(false)
-    expect(shouldShowReviewPrompt(state, START + FIRST_PROMPT_MIN_AGE_MS)).toBe(true)
+    state = record(state, "file-open", 24 * 60, "2026-09-02")
+    expect(shouldShowReviewPrompt(state, START + 24 * 60 * 60_000)).toBe(true)
   })
 
   it("does not qualify repeated activity from only one action type", () => {
@@ -42,8 +54,10 @@ describe("review prompt policy", () => {
       state = record(state, "save", index, "2026-09-01")
     }
 
+    state = { ...state, activeDays: ["2026-09-01", "2026-09-02"] }
+
     expect(getReviewPromptActionTotal(state)).toBe(DAILY_ACTION_TYPE_LIMIT)
-    expect(shouldShowReviewPrompt(state, START + FIRST_PROMPT_MIN_AGE_MS)).toBe(false)
+    expect(shouldShowReviewPrompt(state, START)).toBe(false)
   })
 
   it("qualifies a returning user on the third active day", () => {
@@ -59,11 +73,11 @@ describe("review prompt policy", () => {
     let state = createReviewPromptState(START, "2026-09-01")
     state = record(state, "file-open", 0, "2026-09-01")
     state = record(state, "file-open", 1, "2026-09-01")
-    state = record(state, "file-open", 2, "2026-09-01")
     state = record(state, "save", 3, "2026-09-01")
     state = record(state, "save", 20, "2026-09-01")
+    state = record(state, "file-open", 24 * 60, "2026-09-02")
 
-    const shownAt = START + FIRST_PROMPT_MIN_AGE_MS
+    const shownAt = START + 24 * 60 * 60_000
     state = markReviewPromptShown(state, shownAt)
 
     expect(state.promptsShown).toBe(1)
@@ -101,5 +115,22 @@ describe("review prompt policy", () => {
 
     const completed = completeReviewPrompt(createReviewPromptState(START))
     expect(shouldShowReviewPrompt(completed, START + 365 * 24 * 60 * 60_000)).toBe(false)
+  })
+})
+
+describe("store review URL", () => {
+  const CHROME_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+  const EDGE_UA = `${CHROME_UA} Edg/130.0.0.0`
+  const EDGE_ITEM_ID = "abcdefghijklmnopabcdefghijklmnop"
+
+  it("rates a Chrome Web Store install on the Chrome Web Store, even in Edge", () => {
+    const url = `https://chromewebstore.google.com/detail/markside/${CHROME_WEB_STORE_ITEM_ID}/reviews`
+    expect(getStoreReviewUrl(CHROME_WEB_STORE_ITEM_ID, CHROME_UA)).toBe(url)
+    expect(getStoreReviewUrl(CHROME_WEB_STORE_ITEM_ID, EDGE_UA)).toBe(url)
+  })
+
+  it("rates an Edge Add-ons install on Edge Add-ons", () => {
+    expect(getStoreReviewUrl(EDGE_ITEM_ID, EDGE_UA))
+      .toBe(`https://microsoftedge.microsoft.com/addons/detail/${EDGE_ITEM_ID}`)
   })
 })

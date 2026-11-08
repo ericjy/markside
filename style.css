@@ -397,6 +397,7 @@ li[data-reload-removed]::marker {
 
 .prose h5 {
   font-size: 1.1em;
+  color: hsl(var(--muted-foreground));
 }
 
 .prose h6 {
